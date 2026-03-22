@@ -1,19 +1,16 @@
 # Project Context
 
 ## Project Summary
-- Name: love-recorder
-- Project type: relationship record product MVP, currently replatforming to a uni-app-based WeChat Mini Program
-- One-sentence purpose: build a relationship-oriented record space whose first MVP module is menstrual tracking, with single-user-first use and same-instance sharing later
-- Primary audience: couples who may start from single-user use and later share the same module with a partner
-- Current phase: legacy repo freeze; the existing native mini program prototype is now a migration/reference source, while active development moves to the separate uni-app project
+- Name: lovey-record
+- Project type: uni-app Vue 3 relationship record product MVP
+- One-sentence purpose: build a relationship-oriented record space in uni-app, with the menstrual tracking module as the first complete MVP slice
+- Primary audience: couples who may start from single-user use and later share the same module instance with a partner
+- Current phase: active mainline implementation in the uni-app repo, using Figma/design docs and the legacy reference repo to drive a runnable prototype
 
 ## Background
-- Why this project exists: the original idea was a menstrual tracking mini program, then expanded into a broader concept for recording small but meaningful details in a relationship
-- Real product / prototype / course project / internal tool: prototype intended to validate product direction and the core menstrual-recording loop before broader expansion
-- Recent direction change: the repo previously moved forward with native WeChat Mini Program code, but the new mainline is now:
-  - Figma as the source of truth for UI structure, component hierarchy, and design language
-  - uni-app as the new implementation layer
-  - the current native implementation as migration material only
+- Why this project exists: the original idea began as a menstrual tracking mini program, then expanded into a broader concept for recording meaningful relationship details in a shared space
+- Real product / prototype / course project / internal tool: prototype intended to validate product direction, core interaction loops, and reusable UI foundations before broader expansion
+- Repo role today: this repository is the active mainline implementation repo, not a legacy freeze or handoff-only repo
 
 ## Product Theme
 - Domain or product theme: relationship record space with modular personal-to-shared workflows
@@ -25,82 +22,103 @@
 - Scenario 3: the owner withdraws the module from the shared space, preserving the original data while removing partner access
 
 ## Goals And Scope
-- Current milestone: finish legacy freeze documentation so the separate uni-app project can use this repo as a stable reference source
-- Success condition: the prototype supports private use, shared-state labeling, status-first home view, inline day-state editing, range backfill, and a same-instance model between personal and shared entry points
-- Minimum usable closed loop: open the mini program, enter the menstrual module, inspect current status, edit today's day state or a historical range, view recent history, and keep the same module identity across private and shared entry points
+- Current milestone: build a runnable uni-app prototype that validates the module-space shell, menstrual module entry flow, and the private-to-shared mental model
+- Success condition: the prototype supports status-first module entry, same-instance private/shared modeling, tokenized UI foundations, reusable page building blocks, and a clear path toward the menstrual recording loop
+- Minimum usable closed loop: open the app, land on the module-space shell, recognize private/shared module placement, enter the target module flow, and keep the information architecture aligned with the approved docs and reference rules
 - Required deliverables:
-  - project context document
-  - technical investigation document
+  - updated `project-context.md`
+  - updated `tech-stack-investigate.md`
   - repo-level `AGENTS.md`
-  - repo-level `CLAUDE.md`
-  - replatform design and implementation plan docs
-  - migration inventory covering pages, components, and reusable logic
-  - Figma-based structured UI design inputs
-  - handoff-ready reference material for the new uni-app project
+  - relevant design and implementation plan docs under `docs/plans/`
+  - runnable uni-app prototype pages registered in `pages.json`
+  - reusable token/foundation styling layer for future page expansion
 - In scope:
-  - legacy product/design/logic documentation
-  - migration inventories and handoff notes
-  - screenshot and design-reference preservation
-  - business-rule preservation for the menstrual tracking MVP
+  - uni-app Vue 3 page and component implementation
+  - WeChat Mini Program-first delivery with H5 awareness where practical
+  - menstrual module MVP information architecture and page shell
+  - single-user-first flow with same-instance sharing model
+  - local-first persistence direction and reusable UI foundation work
 - Out of scope:
   - production-grade authentication and security hardening
   - full real-time shared editing
   - complex health analytics and charting
   - AI interpretation
   - multi-module expansion beyond placeholders or architecture hooks
-  - continuing active feature delivery in this legacy repo
+  - copying or reviving deprecated `D:\CodeSpace\love-record`
 - Constraints:
-  - final preview target is still WeChat Mini Program
-  - current delivery target is a runnable prototype, not a production launch
-  - Figma must describe structure, states, and components, not just polished static screens
-  - old native code may inform business logic and information architecture, but its WXML/WXSS/Page structure should not be treated as the target architecture
-  - the product must support both private and shared mental models without duplicating module data
+  - the primary runtime target is WeChat Mini Program
+  - the codebase should remain compatible with uni-app Vue 3 conventions
+  - shared data must point to the same module instance rather than copied records
+  - design tokens should be the default styling entry point instead of scattered hard-coded values
+  - browser-only APIs and direct DOM access should not appear in shared code unless clearly limited to H5
 - Non-goals:
   - replicating full-featured menstrual apps such as Meiyou
   - building a full relationship operating system in the first milestone
-  - solving all backend and cross-device sync concerns before validating the UX
+  - solving all backend and cloud-sync concerns before validating the UX and information architecture
 - Risks:
-  - leaving the legacy repo role ambiguous and causing new work to land in the wrong place
-  - treating screenshots as pixel-reference only instead of extracting structure and states
-  - over-scoping the replatform into a full redesign of unrelated modules
-  - under-defining the transition from private to shared mode
+  - drifting back into legacy-repo language and confusing where active implementation belongs
+  - letting page-level markup grow without reusable components or token discipline
+  - treating legacy page code as a migration template instead of a business-rule reference
+  - under-defining the private-to-shared transition model while UI shells evolve
 
 ## Repository Facts
 - Key directories:
-  - `assets/` for existing screenshots and design reference material
-  - `docs/plans/` for approved solution-level plans
-  - `pages/`, `services/`, `models/`, `utils/`, and `tests/` for the current native prototype codebase
+  - `pages/` for uni-app pages that must be registered in `pages.json`
+  - `styles/tokens/` for primitive and semantic design tokens
+  - `styles/foundation/` for shared base, pattern, mixin, and utility layers
+  - `docs/` for design references, plans, checklists, and handoff notes
+  - `unpackage/` for generated build artifacts, not source-of-truth implementation
 - Main entrypoints today:
-  - the existing native prototype can still run through the current mini program scaffold
-  - that code is now reference material for migration planning
-- Test entrypoints today:
-  - Node-based domain/service tests under `tests/`
-  - WeChat DevTools manual verification for the native prototype
+  - `main.js` as the uni-app app entry
+  - `App.vue` as the top-level shell
+  - `pages.json` as the page registration source of truth
+  - `uni.scss` as the compatibility bridge into the token layer
+- Current implementation signals:
+  - the repo already contains a tokenized SCSS foundation
+  - the module-space shell page exists under `pages/index/index.vue`
+  - documentation under `docs/` still contains migration-era material that must be interpreted from the perspective of this repo as the mainline
+- Test and verification reality:
+  - page availability depends on `pages.json`
+  - cross-platform behavior must be checked with uni-app runtime expectations, especially for WeChat Mini Program
+  - manual runtime verification is still required for platform-specific UI and navigation behavior
+
+## Legacy Reference Relationship
+- Valid reference repo: `D:\CodeSpace\love-recorder`
+- Invalid / deprecated source: `D:\CodeSpace\love-record` should not be used for project context, architecture decisions, or implementation guidance
+- What to reuse from `love-recorder`:
+  - business rules
+  - day-state and cycle-state definitions
+  - sharing model constraints
+  - interaction contract and information architecture
+  - migration and design notes that still describe approved behavior
+- What not to reuse directly from `love-recorder`:
+  - WXML page structure
+  - WXSS visual implementation
+  - `Page({})` lifecycle wiring
+  - old page glue code as a direct scaffold for uni-app pages
 
 ## Candidate Technical Direction
-- Summary: preserve this repository as a stable legacy reference while a separate uni-app project rebuilds the product around the same business rules and design direction
-- Link to `tech-stack-investigate.md`: [tech-stack-investigate.md](tech-stack-investigate.md)
+- Summary: keep this repository as the single mainline uni-app implementation, with a token-first styling layer, page/component reuse, local-first runtime assumptions, and selective reference to `love-recorder` for business logic and state coverage
+- Link to `tech-stack-investigate.md`: [tech-stack-investigate.md](D:\CodeSpace\hbuilder-projects\lovey-record\tech-stack-investigate.md)
 
 ## Confirmed Facts
-- The product target remains WeChat Mini Program.
-- The long-term direction remains a relationship detail record space.
-- The first MVP module remains menstrual tracking.
+- The product target remains a relationship record experience with menstrual tracking as the first MVP module.
+- This repository is the active mainline implementation repo.
+- The implementation direction is uni-app with Vue 3 SFC pages/components.
+- WeChat Mini Program remains the primary runtime target.
 - The product must support single-user usage before sharing.
 - Shared access must point to the same module instance rather than copied data.
-- This repository is no longer the active implementation target.
-- Figma is now the source of truth for UI structure, component naming, state pages, and design language.
-- uni-app is now the preferred frontend implementation direction.
-- The current native mini program code is retained as migration reference only.
-- Persistence direction remains local-first with a migration path toward cloud-backed sharing.
+- The repo already has a token layer and foundation styling structure.
+- `D:\CodeSpace\love-recorder` is the only valid legacy/reference repo.
 
 ## Reasonable Inferences
-- A uni-app rebuild should reuse domain logic and interaction intent, but not copy the current page-layer code directly.
-- The highest-value migration work is extracting page purposes, component boundaries, and reusable data rules before any scaffold rewrite.
-- Figma outputs should be structured around component systems and state coverage so MCP and AI can generate useful uni-app skeletons.
-- State management can start light if the domain logic is already isolated into services and composables.
+- The next implementation slices should continue to build shared UI foundations before adding many page-local variants.
+- A lightweight data and service layer can remain local-first until the menstrual module loop is more complete.
+- Design and implementation plans under `docs/plans/` should remain the contract for larger UI and architecture moves.
+- H5 compatibility should be considered, but WeChat Mini Program constraints should drive implementation choices first.
 
 ## Open Questions
-- Whether the first uni-app scaffold should stay JavaScript-only or adopt TypeScript at bootstrap
-- Whether a lightweight global store is necessary immediately or can wait until more modules exist
-- Whether shared invitation UX should be real or placeholder in the first uni-app prototype
-- How Figma design tokens should be exported into the uni-app theme layer (`uni.scss`, CSS variables, or both)
+- Whether the repo should adopt TypeScript once the uni-app page/component structure stabilizes
+- When the project will need a lightweight global store instead of page-local or extracted service state
+- Whether shared invitation UX in the first runnable prototype should be a real flow or a placeholder
+- How far the first milestone should go beyond the current module-space shell before adding more module pages
