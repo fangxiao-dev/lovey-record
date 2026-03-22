@@ -1,0 +1,5 @@
+- 微信官方开发文档：https://developers.weixin.qq.com/miniprogram/dev/framework/
+- 官方开发指南：https://developers.weixin.qq.com/miniprogram/dev/framework/quickstart/
+- 官方性能优化建议：https://developers.weixin.qq.com/miniprogram/dev/framework/performance/
+- 官方工程化与最佳实践：https://developers.weixin.qq.com/miniprogram/dev/framework/performance/tips.html
+- 官方项目结构说明：https://developers.weixin.qq.com/miniprogram/dev/framework/structure.html
