@@ -1,0 +1,87 @@
+@import "../tokens/semantic.scss";
+@import "./mixins.scss";
+
+page {
+	background: $bg-page;
+	color: $text-primary;
+	font-family: $font-family-body;
+}
+
+view,
+text {
+	box-sizing: border-box;
+}
+
+.u-page-shell {
+	min-height: 100vh;
+	padding: $page-padding-y $page-padding-x;
+	background: $bg-page;
+}
+
+.u-page-section + .u-page-section {
+	margin-top: $section-gap;
+}
+
+.u-stack-sm {
+	display: flex;
+	flex-direction: column;
+	gap: $space-2;
+}
+
+.u-stack-md {
+	display: flex;
+	flex-direction: column;
+	gap: $card-gap;
+}
+
+.u-stack-lg {
+	display: flex;
+	flex-direction: column;
+	gap: $panel-gap;
+}
+
+.u-row-between {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.u-row-start {
+	display: flex;
+	align-items: center;
+}
+
+.u-text-title-lg {
+	@include text-title($font-size-title-lg);
+	display: block;
+}
+
+.u-text-title-md {
+	@include text-title($font-size-title-md);
+	display: block;
+}
+
+.u-text-title-sm {
+	@include text-title($font-size-title-sm);
+	display: block;
+}
+
+.u-text-body {
+	@include text-body();
+	display: block;
+}
+
+.u-text-body-secondary {
+	@include text-body($text-secondary);
+	display: block;
+}
+
+.u-text-caption {
+	@include text-caption();
+	display: block;
+}
+
+.u-text-caption-muted {
+	@include text-caption($text-tertiary);
+	display: block;
+}

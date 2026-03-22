@@ -1,0 +1,84 @@
+@import "../tokens/semantic.scss";
+@import "./mixins.scss";
+
+.ui-card {
+	@include surface-card();
+}
+
+.ui-card--soft {
+	@include surface-card();
+	background: $bg-surface-soft;
+}
+
+.ui-card__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.ui-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: $radius-button;
+	padding: $button-padding-y $button-padding-x;
+	font-family: $font-family-body;
+	font-size: $font-size-body;
+	font-weight: $font-weight-strong;
+	line-height: $line-height-label;
+}
+
+.ui-button--primary {
+	@include button-primary();
+}
+
+.ui-button--secondary {
+	@include button-secondary();
+}
+
+.ui-button__text {
+	display: block;
+	color: inherit;
+}
+
+.ui-input {
+	display: flex;
+	align-items: center;
+	min-height: 80rpx;
+	padding: $space-3 $space-4;
+	background: $bg-surface;
+	border: 2rpx solid $border-subtle;
+	border-radius: $radius-field;
+	font-family: $font-family-body;
+	font-size: $font-size-body;
+	line-height: $line-height-label;
+	color: $text-primary;
+}
+
+.ui-list-item {
+	display: flex;
+	align-items: center;
+	padding: $space-4;
+	background: $bg-surface;
+	border: 2rpx solid $border-subtle;
+	border-radius: $radius-card;
+}
+
+.ui-page-container {
+	display: flex;
+	flex-direction: column;
+	gap: $section-gap;
+}
+
+.ui-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: $chip-padding-y $chip-padding-x;
+	border-radius: $radius-chip;
+	background: $bg-surface-soft;
+}
+
+.ui-badge__text {
+	@include text-caption($text-secondary);
+}

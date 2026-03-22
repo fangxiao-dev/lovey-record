@@ -1,0 +1,65 @@
+@import "../tokens/semantic.scss";
+
+.u-mt-0 {
+	margin-top: 0;
+}
+
+.u-mt-xs {
+	margin-top: $space-2;
+}
+
+.u-mt-sm {
+	margin-top: $space-3;
+}
+
+.u-mt-md {
+	margin-top: $space-4;
+}
+
+.u-mt-lg {
+	margin-top: $space-6;
+}
+
+.u-mb-sm {
+	margin-bottom: $space-3;
+}
+
+.u-mb-md {
+	margin-bottom: $space-4;
+}
+
+.u-p-card {
+	padding: $card-padding;
+}
+
+.u-p-panel {
+	padding: $space-7;
+}
+
+.u-gap-sm {
+	gap: $space-2;
+}
+
+.u-gap-md {
+	gap: $space-4;
+}
+
+.u-gap-lg {
+	gap: $space-6;
+}
+
+.u-text-accent {
+	color: $text-accent;
+}
+
+.u-text-inverse {
+	color: $text-inverse;
+}
+
+.u-surface-soft {
+	background: $bg-surface-soft;
+}
+
+.u-border-subtle {
+	border: 2rpx solid $border-subtle;
+}

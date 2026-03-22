@@ -5,6 +5,12 @@
 			"style": {
 				"navigationBarTitleText": "记录空间"
 			}
+		},
+		{
+			"path": "pages/dev/tokens/index",
+			"style": {
+				"navigationBarTitleText": "Token Playground"
+			}
 		}
 	],
 	"globalStyle": {

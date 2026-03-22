@@ -1,0 +1,47 @@
+@import "../tokens/semantic.scss";
+
+@mixin text-body($color: $text-primary) {
+	font-family: $font-family-body;
+	font-size: $font-size-body;
+	font-weight: $font-weight-body;
+	line-height: $line-height-label;
+	color: $color;
+}
+
+@mixin text-caption($color: $text-secondary) {
+	font-family: $font-family-body;
+	font-size: $font-size-caption;
+	font-weight: $font-weight-body;
+	line-height: $line-height-label;
+	color: $color;
+}
+
+@mixin text-title($size: $font-size-title-md, $color: $text-primary) {
+	font-family: $font-family-title;
+	font-size: $size;
+	font-weight: $font-weight-title;
+	line-height: $line-height-title;
+	color: $color;
+}
+
+@mixin surface-card($padding: $card-padding) {
+	background: $bg-surface;
+	border-radius: $radius-card;
+	padding: $padding;
+	box-sizing: border-box;
+	box-shadow: $shadow-card;
+}
+
+@mixin button-primary {
+	background: $action-primary-bg;
+	color: $action-primary-text;
+	border-radius: $radius-button;
+	padding: $button-padding-y $button-padding-x;
+}
+
+@mixin button-secondary {
+	background: $action-secondary-bg;
+	color: $action-secondary-text;
+	border-radius: $radius-button;
+	padding: $button-padding-y $button-padding-x;
+}

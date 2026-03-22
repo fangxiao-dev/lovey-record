@@ -1,0 +1,93 @@
+@import "./primitives.scss";
+
+/* Semantic color tokens */
+$bg-page: $color-warm-050;
+$bg-page-muted: $color-warm-100;
+$bg-surface: $color-warm-000;
+$bg-surface-soft: $color-warm-100;
+$bg-surface-interactive: $color-warm-150;
+$bg-mask: $color-black-alpha-16;
+
+$text-primary: $color-brown-900;
+$text-secondary: $color-brown-700;
+$text-tertiary: $color-brown-500;
+$text-inverse: $color-warm-000;
+$text-accent: $color-rose-700;
+
+$border-subtle: $color-warm-200;
+$border-strong: $color-warm-300;
+$border-accent: $color-rose-500;
+
+$fill-primary: $color-rose-700;
+$fill-primary-soft: $color-rose-300;
+$fill-secondary: $color-warm-100;
+$fill-disabled: $color-warm-150;
+
+$status-period: $color-rose-700;
+$status-period-soft: $color-rose-300;
+$status-prediction: $color-warm-150;
+$status-special: $color-gold-500;
+$status-today-ring: $color-brown-700;
+$status-success: $color-state-success;
+$status-warning: $color-state-warning;
+$status-danger: $color-state-danger;
+
+$action-primary-bg: $fill-primary;
+$action-primary-text: $text-inverse;
+$action-secondary-bg: $fill-secondary;
+$action-secondary-text: $text-secondary;
+
+/* Semantic spacing tokens */
+$page-padding-x: $space-4;
+$page-padding-y: $space-8;
+$section-gap: $space-5;
+$card-padding: $space-4;
+$card-gap: $space-3;
+$panel-gap: $space-4;
+$chip-padding-y: $space-2;
+$chip-padding-x: $space-4;
+$button-padding-y: $space-3;
+$button-padding-x: $space-6;
+
+/* Semantic typography tokens */
+$font-family-body: $font-family-base;
+$font-family-title: $font-family-emphasis;
+$font-size-caption: $font-size-1;
+$font-size-footnote: $font-size-2;
+$font-size-body: $font-size-3;
+$font-size-body-lg: $font-size-4;
+$font-size-title-sm: $font-size-5;
+$font-size-title-md: $font-size-6;
+$font-size-title-lg: $font-size-7;
+$font-weight-body: $font-weight-regular;
+$font-weight-strong: $font-weight-medium;
+$font-weight-title: $font-weight-semibold;
+$line-height-copy: $line-height-relaxed;
+$line-height-label: $line-height-base;
+$line-height-title: $line-height-tight;
+
+/* Semantic radius tokens */
+$radius-page-card: $radius-2xl;
+$radius-card: $radius-xl;
+$radius-field: $radius-lg;
+$radius-chip: $radius-pill;
+$radius-button: $radius-pill;
+
+/* Semantic shadow tokens */
+$shadow-card: $shadow-none;
+$shadow-floating: $shadow-soft-s;
+$shadow-overlay: $shadow-soft-m;
+
+/* Semantic z-index tokens */
+$z-page-base: $z-index-base;
+$z-sticky-bar: $z-index-sticky;
+$z-floating-panel: $z-index-overlay;
+$z-modal: $z-index-modal;
+$z-toast: $z-index-toast;
+
+/* Semantic motion tokens */
+$motion-hover-duration: $motion-duration-fast;
+$motion-panel-duration: $motion-duration-base;
+$motion-overlay-duration: $motion-duration-slow;
+$motion-ease-default: $motion-ease-standard;
+$motion-ease-panel: $motion-ease-emphasized;
