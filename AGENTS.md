@@ -4,15 +4,18 @@
 - Project purpose: build the active mainline uni-app Vue 3 implementation of a relationship record product whose first MVP module is menstrual tracking
 - Primary users: builders working on the uni-app mainline, plus future agents that need to keep product intent, sharing constraints, and design-system direction aligned
 - Current milestone: extend the runnable uni-app prototype from its current module-space shell toward a clearer menstrual-module MVP flow
-- Contract baseline: use `project-context.md`, `tech-stack-investigate.md`, and the approved docs under `docs/plans/` as the project contract
+- Contract baseline: use `project-context.md`, `tech-stack-investigate.md`, the approved docs under `docs/plans/`, and the long-lived contracts under `docs/contracts/` as the project contract
 
 ## Reading Order
 1. Read [project-context.md](D:\CodeSpace\hbuilder-projects\lovey-record\project-context.md).
-2. Read [tech-stack-investigate.md](D:\CodeSpace\hbuilder-projects\lovey-record\tech-stack-investigate.md).
-3. Read the latest relevant design or implementation plan under [docs/plans](D:\CodeSpace\hbuilder-projects\lovey-record\docs\plans).
+2. Read the latest relevant design or implementation plan under [docs/plans](D:\CodeSpace\hbuilder-projects\lovey-record\docs\plans).
+3. Read the latest relevant use case, domain model, or application contract under [docs/contracts](D:\CodeSpace\hbuilder-projects\lovey-record\docs\contracts) when the task affects product rules, domain boundaries, or frontend-backend alignment.
 4. Read [docs/README.md](D:\CodeSpace\hbuilder-projects\lovey-record\docs\README.md) when the task depends on design references, checklists, or copied migration notes.
-5. Inspect the legacy reference repo only after the document contract is clear.
-
+5. Read [docs/design/2026-03-23-ui-visual-language-guide.md](D:\CodeSpace\hbuilder-projects\lovey-record\docs\design\2026-03-23-ui-visual-language-guide.md) before changing visual tone, color semantics, component styling, or token presentation.
+6. Read [docs/design/2026-03-22-tokenize-collaboration-rule.md](D:\CodeSpace\hbuilder-projects\lovey-record\docs\design\2026-03-22-tokenize-collaboration-rule.md) before changing token, component-library, or page-level visual design.
+7. Read [docs/design/pencil/README.md](D:\CodeSpace\hbuilder-projects\lovey-record\docs\design\pencil\README.md) before editing `.pen` files or using Pencil MCP tools.
+8. Inspect the legacy reference repo only after the document contract is clear.
+9. Read [tech-stack-investigate.md](D:\CodeSpace\hbuilder-projects\lovey-record\tech-stack-investigate.md) only if you need details on the tech stack.
 ## Architecture Snapshot
 - Main directories:
   - `pages/`
@@ -21,6 +24,11 @@
   - `styles/foundation/`
   - `utils/` for reusable pure logic and wrappers when needed
   - `docs/`
+- Documentation structure:
+  - `docs/plans/` stores stage-specific design docs, implementation plans, migration inventories, and handoff material
+- `docs/contracts/` stores long-lived use cases, domain models, and application contracts that should outlive a single implementation phase
+- `docs/design/` stores visual and interaction design contracts
+- `docs/design/pencil/` stores long-lived Pencil workflow and recovery references for `.pen` collaboration
 - Core runtime rules:
   - this is a uni-app Vue 3 app, not a standard Vue Router web app
   - all pages must be registered in `pages.json`
@@ -44,6 +52,7 @@
 - Simple tasks may execute directly once the existing contract is clear.
 - Before substantial work, inspect repo state and the relevant contract docs.
 - For complex tasks, page restructures, information architecture changes, or changes to the private/shared model, create or update the relevant design or implementation plan under `docs/plans/` before implementation.
+- When the task changes durable product behavior, domain meaning, or frontend-backend boundaries, create or update the relevant contract under `docs/contracts/` instead of hiding those decisions only inside a plan.
 - Follow the delivery order when implementing features:
   1. summarize the plan
   2. create or update tokens if needed
@@ -52,6 +61,8 @@
   5. update `pages.json` if new pages are added
   6. explain key assumptions
   7. list risks or platform caveats
+- For visual design work, keep the flow one-way: token definitions first, then component-library changes, then page composition.
+- For visual design work, treat [docs/design/2026-03-23-ui-visual-language-guide.md](D:\CodeSpace\hbuilder-projects\lovey-record\docs\design\2026-03-23-ui-visual-language-guide.md) as the aesthetic contract and [docs/design/2026-03-22-tokenize-collaboration-rule.md](D:\CodeSpace\hbuilder-projects\lovey-record\docs\design\2026-03-22-tokenize-collaboration-rule.md) as the pipeline rule.
 - When project role, scope, milestone, or core constraints change, update the root context docs instead of leaving the change implicit.
 
 ## Implementation Expectations
@@ -90,6 +101,7 @@
 - Update [project-context.md](D:\CodeSpace\hbuilder-projects\lovey-record\project-context.md) when project purpose, repo role, scope, milestone, or constraints change.
 - Update [tech-stack-investigate.md](D:\CodeSpace\hbuilder-projects\lovey-record\tech-stack-investigate.md) when the technical direction, styling architecture, state strategy, or runtime assumptions change.
 - Update `docs/plans/` when a complex task changes page structure, module responsibilities, product flow, or implementation sequencing.
+- Update `docs/contracts/` when core use cases, domain objects, invariants, or application contracts change.
 - Keep `docs/README.md` and major handoff/reference docs aligned with the root contract when repo positioning changes.
 
 ## Definition Of Done

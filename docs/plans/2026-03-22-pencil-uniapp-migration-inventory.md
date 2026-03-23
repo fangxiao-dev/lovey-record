@@ -1,4 +1,4 @@
-# Figma + uni-app Migration Inventory
+# Pencil + uni-app Migration Inventory
 
 **日期：** 2026-03-22
 
@@ -10,7 +10,7 @@
 2. 组件清单
 3. 旧代码可迁移逻辑清单
 
-它是后续 Figma 结构稿和 uni-app 实现计划的直接输入。
+它是后续 Pencil 结构稿和 uni-app 实现计划的直接输入。
 
 ## 一、页面清单
 
@@ -26,7 +26,7 @@
 | 历史记录页 | `pages/history/index` | 候选保留 | 当前仍有价值，但应在主工作台结构稳定后再决定是否保留为独立页 |
 | 周期详情页 | `pages/cycle-detail/index` | 候选合并 | 如果首页和历史页已能完成主要查看/编辑，可考虑削弱或移除独立详情页 |
 | 记录编辑页 | `pages/record-editor/index`, `pages/record-exception/index` | 优先合并 / 降级 | 新主线倾向把编辑统一收敛到首页面板；独立编辑页不是优先保留项 |
-| 提醒 / 设置页 | `pages/reminders/index` | 候选保留 | 可合并到设置页或保留为轻量占位页，取决于 Figma 后续结构 |
+| 提醒 / 设置页 | `pages/reminders/index` | 候选保留 | 可合并到设置页或保留为轻量占位页，取决于 Pencil 后续结构 |
 
 ### 页面迁移判断
 
@@ -53,7 +53,7 @@
 | --- | --- | --- | --- |
 | `AppTopBar` | 全局 | 顶部标题、返回、上下文入口 | 统一导航样式 |
 | `EntryActionCard` | 进入页 | 展示产品简介和主入口按钮 | 可拆成标题区 + 按钮组 |
-| `PrimaryActionButton` | 多页 | 主按钮 | Figma 里应固化主按钮 token |
+| `PrimaryActionButton` | 多页 | 主按钮 | Pencil 里应固化主按钮 token |
 | `SecondaryActionButton` | 多页 | 次按钮 | 进入页、批量编辑面板都会用到 |
 | `ModuleCard` | 我的模块页 / 共享空间页 | 展示模块名、共享状态、入口动作 | 同一组件可做私有和共享变体 |
 | `SharedStateBadge` | 多页 | 展示“私有 / 已共享”等状态 | 独立成 badge，避免散落文本样式 |
@@ -75,7 +75,7 @@
 ### 组件拆分原则
 
 - 先按结构和职责拆，不先按视觉微差拆
-- `DateCell`、`StatusHeroCard`、`SelectedDatePanel`、`BatchEditPanel` 是 Figma 和 uni-app 两边都必须优先稳定的核心组件
+- `DateCell`、`StatusHeroCard`、`SelectedDatePanel`、`BatchEditPanel` 是 Pencil 和 uni-app 两边都必须优先稳定的核心组件
 - 首页的大部分交互应该通过组合组件表达，而不是继续依赖整页脚本堆逻辑
 
 ## 三、旧代码可迁移逻辑清单
@@ -105,7 +105,7 @@
 
 - 业务规则进入 `services/` 和 `composables/`
 - 纯函数进入 `utils/`
-- UI 状态和组件 props 由 Figma 命名反向驱动
+- UI 状态和组件 props 由 Pencil 命名反向驱动
 - 平台能力统一包成 `platform/` 或 `services/platform/` 适配层
 
 ## 结论
@@ -113,5 +113,5 @@
 本次迁移最重要的不是“把原生代码搬到 uni-app”，而是：
 
 1. 用截图和当前实现还原结构
-2. 用 Figma 固化页面与组件系统
+2. 用 Pencil 固化页面与组件系统
 3. 把高价值业务逻辑迁移到新的运行时分层

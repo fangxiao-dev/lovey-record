@@ -1,10 +1,10 @@
-# Figma + uni-app Replatform Design
+# Pencil + uni-app Replatform Design
 
 **日期：** 2026-03-22
 
 ## 结论
 
-- Figma / Pencil 是新的界面真相源
+- Pencil 是新的界面真相源
 - uni-app 是新的运行时实现层
 - legacy 原生小程序代码仅是逻辑与交互参考
 - 页面重构优先于页面复刻
@@ -19,7 +19,7 @@
 
 ## 设计阶段职责分工
 
-### Figma / Pencil
+### Pencil
 
 负责：
 
@@ -102,5 +102,6 @@
 
 详细清单见：
 
-- [2026-03-22-figma-uniapp-migration-inventory.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/plans/2026-03-22-figma-uniapp-migration-inventory.md)
-- [2026-03-22-pencil-mcp-first-batch-pages-brief.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-22-pencil-mcp-first-batch-pages-brief.md)
+- [2026-03-22-pencil-uniapp-migration-inventory.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/plans/2026-03-22-pencil-uniapp-migration-inventory.md)
+- [design/README.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/README.md)
+- [design/menstrual/Design-Overview.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/Design-Overview.md)

@@ -1,12 +1,12 @@
-# Figma + uni-app Replatform Implementation Plan
+# Pencil + uni-app Replatform Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Rebuild the menstrual-tracking MVP around Figma-structured design inputs and a uni-app frontend, while preserving the same-instance sharing model and the existing `day_record` business rules.
+**Goal:** Rebuild the menstrual-tracking MVP around Pencil-structured design inputs and a uni-app frontend, while preserving the same-instance sharing model and the existing `day_record` business rules.
 
-**Architecture:** Freeze the new UI/source-of-truth contract first, then scaffold uni-app around a componentized page structure that maps to Figma. Migrate business logic and domain helpers into framework-neutral services/composables, wrap `uni.*` platform capabilities, and treat the current native mini program code as reference only.
+**Architecture:** Freeze the new UI/source-of-truth contract first, then scaffold uni-app around a componentized page structure that maps to Pencil. Migrate business logic and domain helpers into framework-neutral services/composables, wrap `uni.*` platform capabilities, and treat the current native mini program code as reference only.
 
-**Tech Stack:** Figma + Figma MCP, uni-app, Vue 3 SFCs, JavaScript for initial bootstrap unless explicitly upgraded, local-first persistence, existing domain/service tests as migration reference
+**Tech Stack:** Pencil, uni-app, Vue 3 SFCs, JavaScript for initial bootstrap unless explicitly upgraded, local-first persistence, existing domain/service tests as migration reference
 
 ---
 
@@ -17,13 +17,13 @@
 - Modify: `tech-stack-investigate.md`
 - Modify: `AGENTS.md`
 - Modify: `CLAUDE.md`
-- Create: `docs/plans/2026-03-22-figma-uniapp-replatform-design.md`
-- Create: `docs/plans/2026-03-22-figma-uniapp-migration-inventory.md`
+- Create: `docs/plans/2026-03-22-pencil-uniapp-replatform-design.md`
+- Create: `docs/plans/2026-03-22-pencil-uniapp-migration-inventory.md`
 
 **Step 1: Document the new mainline**
 
 Freeze these facts:
-- Figma is the UI truth source
+- Pencil is the UI truth source
 - uni-app is the new implementation layer
 - native page code is migration reference only
 
@@ -67,14 +67,14 @@ Add:
 - app entry files
 - route definitions
 - one minimal page per required MVP route
-- theme layer placeholder for Figma tokens
+- theme layer placeholder for Pencil tokens
 
 **Step 3: Run in WeChat DevTools**
 
 Run: compile the uni-app project to WeChat Mini Program and open it in WeChat DevTools
 Expected: the app boots without runtime errors and route navigation works
 
-### Task 3: Translate the Figma page inventory into a uni-app route map
+### Task 3: Translate the Pencil page inventory into a uni-app route map
 
 **Files:**
 - Modify: `pages.json`
@@ -104,7 +104,7 @@ Ensure:
 Run: manual route walkthrough
 Expected: every required user flow maps to one explicit route or one explicit page state
 
-### Task 4: Build the foundational component system from Figma
+### Task 4: Build the foundational component system from Pencil
 
 **Files:**
 - Create: `components/AppTopBar.vue`
@@ -115,7 +115,7 @@ Expected: every required user flow maps to one explicit route or one explicit pa
 - Create: `components/EmptyStateBlock.vue`
 - Modify: `uni.scss`
 
-**Step 1: Map Figma tokens into code**
+**Step 1: Map Pencil tokens into code**
 
 Define:
 - color tokens
@@ -167,7 +167,7 @@ Refactor current `module-home-service` logic into:
 Run: Node-based tests or equivalent migration harness
 Expected: day-state rules, prediction helpers, and shared-state labeling still behave as expected
 
-### Task 6: Rebuild the module-home page around Figma components
+### Task 6: Rebuild the module-home page around Pencil components
 
 **Files:**
 - Create: `components/StatusHeroCard.vue`

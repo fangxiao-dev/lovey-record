@@ -13,9 +13,8 @@
 ### Task 1: Freeze the day-state contract
 
 **Files:**
-- Modify: `docs/plans/2026-03-16-menstrual-module-design.md`
 - Modify: `docs/period_model.md`
-- Modify: `docs/calendar_style.md`
+- Modify: `docs/design/menstrual/function-recording-model.md`
 - Test: `docs/checklists/day-state-rules.md`
 
 **Step 1: Write the contract for persisted state**
@@ -46,7 +45,7 @@ Include examples for:
 **Step 4: Commit**
 
 ```bash
-git add docs/plans/2026-03-16-menstrual-module-design.md docs/period_model.md docs/calendar_style.md docs/checklists/day-state-rules.md
+git add docs/period_model.md docs/design/menstrual/function-recording-model.md docs/checklists/day-state-rules.md
 git commit -m "docs: freeze day-state recording rules"
 ```
 
@@ -199,7 +198,7 @@ git commit -m "refactor: adopt panel-first day-state recording"
 
 **Files:**
 - Modify: `docs/checklists/mvp-acceptance.md`
-- Modify: `docs/plans/2026-03-16-menstrual-module-implementation-plan.md`
+- Modify: `docs/plans/2026-03-22-pencil-uniapp-replatform-implementation-plan.md`
 
 **Step 1: Update the acceptance checklist**
 
@@ -222,6 +221,6 @@ Expected:
 **Step 3: Commit**
 
 ```bash
-git add docs/checklists/mvp-acceptance.md docs/plans/2026-03-16-menstrual-module-implementation-plan.md
+git add docs/checklists/mvp-acceptance.md docs/plans/2026-03-22-pencil-uniapp-replatform-implementation-plan.md
 git commit -m "docs: align QA with day-state model"
 ```

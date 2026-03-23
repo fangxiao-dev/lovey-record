@@ -11,6 +11,7 @@
 - Principle 3: invest in reusable tokens, foundation styles, and shared components before multiplying page-local UI patterns
 - Principle 4: preserve the business-rule and sharing-model knowledge from the legacy repo without importing its page-layer implementation
 - Principle 5: keep the data and state architecture light until the MVP proves where cross-page complexity actually exists
+- Principle 6: keep the design workflow one-way from token definitions to library components to page composition
 
 ## Current Stack Direction
 - Frontend runtime: uni-app with Vue 3 SFC pages and components
@@ -29,7 +30,7 @@
 - Match to project goals: uni-app allows the product to target WeChat Mini Program while building on Vue 3 component structure and a scalable styling layer
 - Match to current repo state: the repo already has `uni.scss`, token files, foundation styles, and a page shell, so the technical direction should explain and strengthen that path rather than describe a separate migration target
 - Match to delivery constraints: lightweight local-first architecture is enough to validate information architecture, module entry, and shared-state modeling before backend investment
-- Match to design workflow: Figma/Pencil-derived page structure and component boundaries can be translated into uni-app pages and reusable components more cleanly than into revived native mini program page code
+- Match to design workflow: Pencil-derived page structure and component boundaries can be translated into uni-app pages and reusable components more cleanly than into revived native mini program page code
 
 ## How The Stack Supports Required Features
 - Module-space shell: implemented as uni-app pages registered in `pages.json`
@@ -53,6 +54,10 @@
   - prefer semantic tokens and shared patterns first
   - add new tokens when a value becomes conceptually meaningful or repeated
   - avoid inline styles and one-off hard-coded values unless the usage is truly local and temporary
+- Design workflow rule:
+  - treat `docs/design-drafts/2026-03-22-design-tokene.pen` as the tokenize workspace for tokens and component-library work
+  - treat `docs/design-drafts/2026-03-22-module-space-and-period-home.pen` as a business-page composition workspace
+  - if a page draft needs a visual pattern that cannot be reused, add the missing component or variant upstream before keeping it in the page draft
 
 ## State, Logic, And Persistence Direction
 - State model:
@@ -86,6 +91,7 @@
   - WeChat Mini Program is the primary runtime target
   - JavaScript remains the current scaffold language
   - the token/foundation styling system is part of the intended architecture, not temporary scaffolding
+  - the current design collaboration rule is `design token -> component library -> business page`
   - local-first persistence is sufficient for the current prototype stage
 - Candidate choices:
   - when to add shared components under `components/` beyond the current page shell

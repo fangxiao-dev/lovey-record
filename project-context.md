@@ -5,12 +5,14 @@
 - Project type: uni-app Vue 3 relationship record product MVP
 - One-sentence purpose: build a relationship-oriented record space in uni-app, with the menstrual tracking module as the first complete MVP slice
 - Primary audience: couples who may start from single-user use and later share the same module instance with a partner
-- Current phase: active mainline implementation in the uni-app repo, using Figma/design docs and the legacy reference repo to drive a runnable prototype
+- Current phase: active mainline implementation in the uni-app repo, using Pencil/design docs and the legacy reference repo to drive a runnable prototype
 
 ## Background
 - Why this project exists: the original idea began as a menstrual tracking mini program, then expanded into a broader concept for recording meaningful relationship details in a shared space
 - Real product / prototype / course project / internal tool: prototype intended to validate product direction, core interaction loops, and reusable UI foundations before broader expansion
 - Repo role today: this repository is the active mainline implementation repo, not a legacy freeze or handoff-only repo
+- Design source of truth for the current UI iteration: approved docs under `docs/plans/`, supported by the working Pencil draft files under `docs/design-drafts/`
+- Product and engineering contract source of truth for durable behavior: long-lived docs under `docs/contracts/`
 
 ## Product Theme
 - Domain or product theme: relationship record space with modular personal-to-shared workflows
@@ -50,6 +52,7 @@
   - the codebase should remain compatible with uni-app Vue 3 conventions
   - shared data must point to the same module instance rather than copied records
   - design tokens should be the default styling entry point instead of scattered hard-coded values
+  - UI visual work follows the tokenize pipeline: `design token -> component library -> business page composition`
   - browser-only APIs and direct DOM access should not appear in shared code unless clearly limited to H5
 - Non-goals:
   - replicating full-featured menstrual apps such as Meiyou
@@ -66,7 +69,7 @@
   - `pages/` for uni-app pages that must be registered in `pages.json`
   - `styles/tokens/` for primitive and semantic design tokens
   - `styles/foundation/` for shared base, pattern, mixin, and utility layers
-  - `docs/` for design references, plans, checklists, and handoff notes
+  - `docs/` for design references, contracts, plans, checklists, and handoff notes
   - `unpackage/` for generated build artifacts, not source-of-truth implementation
 - Main entrypoints today:
   - `main.js` as the uni-app app entry
@@ -76,7 +79,9 @@
 - Current implementation signals:
   - the repo already contains a tokenized SCSS foundation
   - the module-space shell page exists under `pages/index/index.vue`
-  - documentation under `docs/` still contains migration-era material that must be interpreted from the perspective of this repo as the mainline
+  - design draft artifacts currently include a token/library working file and a business-page working file under `docs/design-drafts/`
+  - documentation under `docs/` now separates long-lived contracts in `docs/contracts/` from stage-specific plans in `docs/plans/`
+  - migration-era material under `docs/` must still be interpreted from the perspective of this repo as the active mainline
 - Test and verification reality:
   - page availability depends on `pages.json`
   - cross-platform behavior must be checked with uni-app runtime expectations, especially for WeChat Mini Program
@@ -100,6 +105,9 @@
 ## Candidate Technical Direction
 - Summary: keep this repository as the single mainline uni-app implementation, with a token-first styling layer, page/component reuse, local-first runtime assumptions, and selective reference to `love-recorder` for business logic and state coverage
 - Link to `tech-stack-investigate.md`: [tech-stack-investigate.md](D:\CodeSpace\hbuilder-projects\lovey-record\tech-stack-investigate.md)
+- Domain and application contract entry: [docs/contracts](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/contracts)
+- UI design workflow rule: [docs/design/2026-03-22-tokenize-collaboration-rule.md](D:\CodeSpace\hbuilder-projects\lovey-record\docs\design\2026-03-22-tokenize-collaboration-rule.md)
+- UI visual language guide: [docs/design/2026-03-23-ui-visual-language-guide.md](D:\CodeSpace\hbuilder-projects\lovey-record\docs\design\2026-03-23-ui-visual-language-guide.md)
 
 ## Confirmed Facts
 - The product target remains a relationship record experience with menstrual tracking as the first MVP module.
@@ -110,11 +118,13 @@
 - Shared access must point to the same module instance rather than copied data.
 - The repo already has a token layer and foundation styling structure.
 - `D:\CodeSpace\love-recorder` is the only valid legacy/reference repo.
+- Long-lived use cases, domain models, and application contracts now belong under `docs/contracts/`, while phase-specific rollout documents belong under `docs/plans/`.
 
 ## Reasonable Inferences
 - The next implementation slices should continue to build shared UI foundations before adding many page-local variants.
 - A lightweight data and service layer can remain local-first until the menstrual module loop is more complete.
 - Design and implementation plans under `docs/plans/` should remain the contract for larger UI and architecture moves.
+- The Pencil token/library draft should absorb reusable visual patterns before page drafts take new local variants.
 - H5 compatibility should be considered, but WeChat Mini Program constraints should drive implementation choices first.
 
 ## Open Questions
