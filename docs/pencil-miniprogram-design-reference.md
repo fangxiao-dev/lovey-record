@@ -1,8 +1,8 @@
-# Figma 设计微信小程序参考
+# Pencil 设计微信小程序参考
 
 ## 用途
 
-这份文档只保留当前给 Pencil / Figma 设计使用的规则，不再承载迁移过程说明。
+这份文档只保留当前给 Pencil 设计使用的规则，不再承载迁移过程说明。
 
 它解决三件事：
 
@@ -22,7 +22,9 @@
 
 - [project-context.md](/D:/CodeSpace/hbuilder-projects/lovey-record/project-context.md)
 - [tech-stack-investigate.md](/D:/CodeSpace/hbuilder-projects/lovey-record/tech-stack-investigate.md)
-- [2026-03-22-pencil-mcp-first-batch-pages-brief.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-22-pencil-mcp-first-batch-pages-brief.md)
+- [design/README.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/README.md)
+- [design/menstrual/Design-Overview.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/Design-Overview.md)
+- [design/menstrual/function-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/function-home.md)
 
 ## 本地设计规则
 
@@ -56,10 +58,11 @@
 
 ### 视觉气质
 
-- 基底使用暖白、浅暖色、灰棕系
-- 卡片系统轻量、柔和、留白充足
-- 避免深色重卡片、厚描边、强阴影
-- 整体更像克制、温和、微信原生感较强的工具产品
+- 整体呈现偏清新、克制、带一点高级感，仍保持温暖底色
+- 色彩以暖白、低饱和暖色为主，可引入更干净的浅雾感或半透明层次，避免灰棕感过重
+- 卡片系统保持轻量，但需要更精致的层次和节奏，不要只停留在“柔和工具卡”
+- 优先通过留白、比例、细边界、轻渐变和局部强调建立质感，而不是靠厚重描边或大面积深色块
+- 保持小程序语境下的简洁和可信赖，不做廉价少女粉模板，也不要回到过强的“微信原生感工具页”限制
 
 ## 本项目专项约束
 
@@ -71,12 +74,10 @@
 ## 外部资源
 
 - [微信小程序设计指南](https://developers.weixin.qq.com/miniprogram/design/)
-- [WeUI Design Kit - Official](https://www.figma.com/community/file/868338208253640717)
+- [WeUI 官方站点](https://weui.io/)
 - [WeUI 小程序组件库](https://developers.weixin.qq.com/miniprogram/dev/extended/weui/)
 - [Tencent/weui-wxss](https://github.com/Tencent/weui-wxss)
-- [Figma Dev Mode](https://www.figma.com/dev-mode/)
-- [Guide to the Figma MCP server](https://help.figma.com/hc/en-us/articles/32132100833559-Guide-to-the-Figma-MCP-server)
-- [Figma MCP server docs](https://developers.figma.com/docs/figma-mcp-server/)
+- [Pencil 设计工作流](https://github.com/eveningkid/pencil)
 
 ## 给 AI 的直接指令
 
