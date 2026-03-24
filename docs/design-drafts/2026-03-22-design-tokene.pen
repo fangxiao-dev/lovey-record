@@ -546,7 +546,7 @@
                         },
                         {
                           "type": "frame",
-                          "id": "T8EFP",
+                          "id": "CzMO0",
                           "name": "row4",
                           "width": "fill_container",
                           "layout": "vertical",
@@ -554,7 +554,7 @@
                           "children": [
                             {
                               "type": "text",
-                              "id": "1esGw",
+                              "id": "nohZt",
                               "fill": "$color.text.support",
                               "content": "#6BB98E",
                               "fontFamily": "IBM Plex Sans",
@@ -563,13 +563,13 @@
                             },
                             {
                               "type": "frame",
-                              "id": "iK6Ax",
+                              "id": "jlucT",
                               "name": "bar4",
                               "width": "fill_container",
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "By7Lq",
+                                  "id": "u8OPx",
                                   "width": "fill_container",
                                   "height": 44,
                                   "fill": "#EAF7F0",
@@ -585,7 +585,7 @@
                                   "children": [
                                     {
                                       "type": "text",
-                                      "id": "6arjg",
+                                      "id": "ew6JU",
                                       "fill": "#6F9D83",
                                       "content": "100",
                                       "fontFamily": "IBM Plex Sans",
@@ -596,7 +596,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "mefQb",
+                                  "id": "eKpVb",
                                   "width": "fill_container",
                                   "height": 44,
                                   "fill": "#BDE6CC",
@@ -606,7 +606,7 @@
                                   "children": [
                                     {
                                       "type": "text",
-                                      "id": "WtyzP",
+                                      "id": "wYaoh",
                                       "fill": "#4F8D6A",
                                       "content": "300",
                                       "fontFamily": "IBM Plex Sans",
@@ -617,7 +617,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "S99rT",
+                                  "id": "aN7dq",
                                   "width": "fill_container",
                                   "height": 44,
                                   "fill": "$color.text.support",
@@ -627,7 +627,7 @@
                                   "children": [
                                     {
                                       "type": "text",
-                                      "id": "i4glE",
+                                      "id": "V5Tej",
                                       "fill": "$color.bg.card",
                                       "content": "500",
                                       "fontFamily": "IBM Plex Sans",
@@ -638,7 +638,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "52eW7",
+                                  "id": "1RKed",
                                   "width": "fill_container",
                                   "height": 44,
                                   "fill": "#4F8D6A",
@@ -648,7 +648,7 @@
                                   "children": [
                                     {
                                       "type": "text",
-                                      "id": "rPdDg",
+                                      "id": "MVJ5e",
                                       "fill": "#FFFFFF",
                                       "content": "700",
                                       "fontFamily": "IBM Plex Sans",
@@ -659,7 +659,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "LUW3E",
+                                  "id": "UAMuv",
                                   "width": "fill_container",
                                   "height": 44,
                                   "fill": "#2F5E46",
@@ -675,7 +675,7 @@
                                   "children": [
                                     {
                                       "type": "text",
-                                      "id": "nKctp",
+                                      "id": "BqPEr",
                                       "fill": "#FFFFFF",
                                       "content": "900",
                                       "fontFamily": "IBM Plex Sans",
@@ -1042,7 +1042,7 @@
                       "name": "accent.prediction",
                       "width": "fill_container",
                       "height": 78,
-                      "fill": "$color.accent.prediction",
+                      "fill": "$color.accent.period.soft",
                       "cornerRadius": 12,
                       "layout": "vertical",
                       "gap": 4,
@@ -1051,8 +1051,8 @@
                         {
                           "type": "text",
                           "id": "vvYM4",
-                          "fill": "$color.text.support",
-                          "content": "prediction",
+                          "fill": "$color.text.primary",
+                          "content": "period.soft",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 13,
                           "fontWeight": "600"
@@ -1060,8 +1060,8 @@
                         {
                           "type": "text",
                           "id": "jVsr5",
-                          "fill": "$color.text.support",
-                          "content": "#EAF6F0",
+                          "fill": "$color.text.secondary",
+                          "content": "#FFF4EF",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
                           "fontWeight": "500"
@@ -1217,8 +1217,8 @@
                         {
                           "type": "text",
                           "id": "R7xz8",
-                          "fill": "$color.text.support",
-                          "content": "#6BB98E",
+                          "fill": "$color.text.secondary",
+                          "content": "#FFF4EF",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
                           "fontWeight": "500"
@@ -1588,7 +1588,7 @@
                       "type": "frame",
                       "id": "TokA012",
                       "name": "accentRow",
-                      "width": "fill_container",
+                      "width": 237,
                       "gap": 6,
                       "children": [
                         {
@@ -1635,6 +1635,15 @@
                           "height": 40,
                           "fill": "$color.accent.special",
                           "cornerRadius": 12
+                        },
+                        {
+                          "type": "frame",
+                          "id": "NQURu",
+                          "name": "special",
+                          "width": "fill_container",
+                          "height": 40,
+                          "fill": "$color.support.info",
+                          "cornerRadius": 12
                         }
                       ]
                     },
@@ -1643,7 +1652,7 @@
                       "id": "TokA016",
                       "name": "hint",
                       "fill": "$color.text.secondary",
-                      "content": "period / period.soft / prediction / today / special are the final accent tokens; #6BB98E is reserved for text emphasis only",
+                      "content": "period / period.soft / prediction / today / special  / special",
                       "fontFamily": "IBM Plex Sans",
                       "fontSize": 12,
                       "fontWeight": "normal"
@@ -1771,71 +1780,6 @@
                       "children": [
                         {
                           "type": "frame",
-                          "id": "TokMk013",
-                          "name": "periodMarker",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "gap": 8,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "TokMk013A",
-                              "name": "dot",
-                              "width": 12,
-                              "height": 12,
-                              "fill": "$color.accent.period",
-                              "cornerRadius": 999
-                            },
-                            {
-                              "type": "text",
-                              "id": "TokMk013T",
-                              "name": "label",
-                              "fill": "$color.text.primary",
-                              "content": "period",
-                              "fontFamily": "IBM Plex Sans",
-                              "fontSize": 12,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "TokMk014",
-                          "name": "todayMarker",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "gap": 8,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "TokMk014A",
-                              "name": "ring",
-                              "width": 14,
-                              "height": 14,
-                              "fill": "$color.bg.base",
-                              "cornerRadius": 999,
-                              "stroke": {
-                                "align": "inside",
-                                "thickness": 2,
-                                "fill": "$color.accent.today"
-                              }
-                            },
-                            {
-                              "type": "text",
-                              "id": "TokMk014T",
-                              "name": "label",
-                              "fill": "$color.text.primary",
-                              "content": "today",
-                              "fontFamily": "IBM Plex Sans",
-                              "fontSize": 12,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
                           "id": "TokMk015",
                           "name": "specialMarker",
                           "width": "fill_container",
@@ -1886,7 +1830,7 @@
                       "fill": "$color.text.secondary",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "普通日期仅显示数字；special 使用描边 + 眼睛；prediction 与 period 使用同一块形状，仅通过颜色强弱区分。",
+                      "content": "special 使用描边 + 眼睛",
                       "fontFamily": "IBM Plex Sans",
                       "fontSize": 12,
                       "fontWeight": "normal"
@@ -1897,8 +1841,8 @@
                   "type": "frame",
                   "id": "t33PT",
                   "name": "Marker States",
-                  "width": 204,
-                  "height": 186,
+                  "width": 319,
+                  "height": 105,
                   "fill": "$color.bg.base",
                   "cornerRadius": 14,
                   "layout": "vertical",
@@ -1921,13 +1865,14 @@
                       "type": "frame",
                       "id": "psBM6",
                       "name": "Frame 1",
-                      "width": 146,
+                      "width": 310,
                       "justifyContent": "space_around",
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "lWxZc",
+                          "name": "date-special",
                           "width": 59,
                           "height": 56,
                           "fill": "$color.bg.base",
@@ -1935,7 +1880,7 @@
                           "stroke": {
                             "align": "inside",
                             "thickness": 1,
-                            "fill": "#8E7C6D"
+                            "fill": "$color.accent.period"
                           },
                           "layout": "vertical",
                           "gap": 10,
@@ -1983,6 +1928,8 @@
                         {
                           "type": "frame",
                           "id": "AltQ6",
+                          "name": "date-prediction",
+                          "reusable": true,
                           "width": 59,
                           "height": 56,
                           "fill": "$color.accent.period.soft",
@@ -2011,19 +1958,46 @@
                               "fontWeight": "600"
                             }
                           ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "WoIAs",
-                      "name": "Frame 2",
-                      "width": 136,
-                      "justifyContent": "space_around",
-                      "children": [
+                        },
+                        {
+                          "type": "frame",
+                          "id": "UAWvy",
+                          "name": "date-normal",
+                          "reusable": true,
+                          "width": 59,
+                          "height": 56,
+                          "fill": "$color.bg.base",
+                          "cornerRadius": 10,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 0
+                          },
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": [
+                            12,
+                            4,
+                            8,
+                            4
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "jDPVk",
+                              "fill": "$color.text.primary",
+                              "content": "26",
+                              "fontFamily": "IBM Plex Sans",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
                         {
                           "type": "frame",
                           "id": "yNsdm",
+                          "name": "date-period",
+                          "reusable": true,
                           "width": 57,
                           "height": 56,
                           "fill": "$color.accent.period",
@@ -2054,36 +2028,29 @@
                           ]
                         },
                         {
-                          "type": "frame",
-                          "id": "UAWvy",
-                          "width": 59,
-                          "height": 56,
-                          "fill": "$color.bg.base",
-                          "cornerRadius": 10,
+                          "id": "LcjDQ",
+                          "type": "ref",
+                          "reusable": true,
+                          "ref": "UAWvy",
+                          "x": 249.3,
+                          "y": 0,
+                          "fill": [],
                           "stroke": {
                             "align": "inside",
-                            "thickness": 0
+                            "thickness": 1,
+                            "fill": "$color.accent.today"
                           },
-                          "layout": "vertical",
-                          "gap": 10,
-                          "padding": [
-                            12,
-                            4,
-                            8,
-                            4
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "jDPVk",
-                              "fill": "$color.text.primary",
-                              "content": "26",
-                              "fontFamily": "IBM Plex Sans",
-                              "fontSize": 14,
-                              "fontWeight": "600"
+                          "name": "date-today",
+                          "flipX": false,
+                          "flipY": false,
+                          "width": 59,
+                          "height": 56,
+                          "descendants": {
+                            "jDPVk": {
+                              "x": 21,
+                              "y": 12
                             }
-                          ]
+                          }
                         }
                       ]
                     }
@@ -4687,28 +4654,6 @@
           ]
         }
       ]
-    },
-    {
-      "type": "text",
-      "id": "R8muR",
-      "x": 0,
-      "y": 0,
-      "fill": "#000000",
-      "content": "943165",
-      "fontFamily": "Inter",
-      "fontSize": 12,
-      "fontWeight": "normal"
-    },
-    {
-      "type": "text",
-      "id": "WedgE",
-      "x": 0,
-      "y": 0,
-      "fill": "#000000",
-      "content": "156961",
-      "fontFamily": "Inter",
-      "fontSize": 12,
-      "fontWeight": "normal"
     }
   ],
   "variables": {
