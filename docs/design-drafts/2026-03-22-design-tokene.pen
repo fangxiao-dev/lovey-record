@@ -4,11 +4,11 @@
     {
       "type": "frame",
       "id": "TokFd01",
-      "x": -7,
-      "y": 49,
+      "x": -11,
+      "y": 0,
       "name": "Token Foundations / Light",
       "width": 960,
-      "height": 1607,
+      "height": 1319,
       "fill": "$color.bg.base",
       "layout": "vertical",
       "gap": 20,
@@ -921,7 +921,7 @@
                       "name": "accent.period",
                       "width": 110,
                       "height": 68,
-                      "fill": "$color.accent.period",
+                      "fill": "#d89a8dff",
                       "cornerRadius": 12,
                       "layout": "vertical",
                       "gap": 4,
@@ -1479,172 +1479,283 @@
         },
         {
           "type": "frame",
-          "id": "TokR001",
-          "name": "Shape Tokens",
-          "width": "fill_container",
-          "height": 678,
+          "id": "f1wsn",
+          "name": "Frame 4",
+          "clip": true,
+          "width": 901,
+          "height": 243,
+          "fill": "#FFFFFF",
           "layout": "vertical",
-          "gap": 16,
-          "justifyContent": "center",
           "children": [
             {
-              "type": "text",
-              "id": "TokR002",
-              "name": "TokR002_name",
-              "fill": "$color.text.primary",
-              "content": "形状 & 节奏 · Shape",
-              "fontFamily": "$font.family.base",
-              "fontSize": 14,
-              "fontWeight": "700"
-            },
-            {
               "type": "frame",
-              "id": "TokR010",
-              "name": "Radius Scale",
-              "width": 433,
-              "fill": "$color.bg.base",
-              "cornerRadius": 14,
-              "layout": "vertical",
-              "gap": 8,
-              "padding": 10,
+              "id": "8esAJ",
+              "name": "Frame 3",
+              "clip": true,
+              "width": 883,
+              "height": 40,
+              "fill": "#FFFFFF",
+              "gap": 10,
+              "padding": [
+                0,
+                10
+              ],
+              "alignItems": "center",
               "children": [
                 {
                   "type": "text",
-                  "id": "TokR016",
-                  "name": "meta",
-                  "fill": "$color.text.muted",
-                  "content": "圆角 · Radius",
-                  "fontFamily": "IBM Plex Sans",
-                  "fontSize": 11,
-                  "fontWeight": "500"
-                },
-                {
-                  "type": "frame",
-                  "id": "TokR015",
-                  "name": "radiusRow",
-                  "width": "fill_container",
-                  "gap": 12,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "TokR011",
-                      "name": "radiusControl",
-                      "width": 48,
-                      "height": 48,
-                      "fill": "#F5EFE8",
-                      "cornerRadius": 12
-                    },
-                    {
-                      "type": "frame",
-                      "id": "TokR012",
-                      "name": "radiusPanel",
-                      "width": 64,
-                      "height": 48,
-                      "fill": "#F5EFE8",
-                      "cornerRadius": 14
-                    },
-                    {
-                      "type": "frame",
-                      "id": "3xSUw",
-                      "name": "radiusCard",
-                      "width": 82,
-                      "height": 48,
-                      "fill": "#FCF9F6",
-                      "cornerRadius": 16,
-                      "stroke": {
-                        "align": "inside",
-                        "thickness": 1,
-                        "fill": "#E6DED5"
-                      }
-                    },
-                    {
-                      "type": "frame",
-                      "id": "TokR018",
-                      "name": "radiusPill",
-                      "width": 120,
-                      "height": 48,
-                      "fill": "#FCF9F6",
-                      "cornerRadius": 999
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "id": "TokR017",
-                  "name": "hint",
-                  "fill": "$color.text.muted",
-                  "content": "control·12 / panel·14 / card·16 / pill·999",
-                  "fontFamily": "IBM Plex Sans",
-                  "fontSize": 12,
-                  "fontWeight": "normal"
+                  "id": "TokR002",
+                  "name": "TokR002_name",
+                  "fill": "$color.text.primary",
+                  "content": "形状 & 节奏 · Shape",
+                  "fontFamily": "$font.family.base",
+                  "fontSize": 14,
+                  "fontWeight": "700"
                 }
               ]
             },
             {
               "type": "frame",
-              "id": "TokS010",
-              "name": "Surface Stack",
-              "width": 353,
-              "fill": "$color.bg.base",
-              "cornerRadius": 14,
-              "layout": "vertical",
-              "gap": 8,
-              "padding": 10,
+              "id": "p3odg",
+              "name": "Frame 2",
+              "clip": true,
+              "width": 881,
+              "height": 192,
+              "fill": "#FFFFFF",
+              "gap": 20,
+              "alignItems": "center",
               "children": [
                 {
-                  "type": "text",
-                  "id": "TokS011",
-                  "name": "meta",
-                  "fill": "$color.text.muted",
-                  "content": "表面层叠 · Surface Stack",
-                  "fontFamily": "IBM Plex Sans",
-                  "fontSize": 11,
-                  "fontWeight": "500"
-                },
-                {
                   "type": "frame",
-                  "id": "TokS012",
-                  "name": "surfaceOuter",
-                  "width": 194,
-                  "height": 92,
-                  "fill": "#F5EFE8",
-                  "cornerRadius": 16,
-                  "padding": 12,
+                  "id": "sduyQ",
+                  "name": "Elevation",
+                  "width": 287,
+                  "fill": "$color.bg.base",
+                  "cornerRadius": 14,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 8,
+                  "justifyContent": "center",
                   "children": [
                     {
+                      "type": "text",
+                      "id": "TRKgB",
+                      "name": "meta",
+                      "fill": "$color.text.muted",
+                      "content": "Elevation",
+                      "fontFamily": "IBM Plex Sans",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    },
+                    {
                       "type": "frame",
-                      "id": "TokS013",
-                      "name": "surfaceInner",
+                      "id": "t5mq9",
+                      "name": "elevSampleBg",
                       "width": "fill_container",
-                      "height": "fill_container",
-                      "fill": "#FCF9F6",
-                      "cornerRadius": 14
+                      "fill": "$color.bg.subtle",
+                      "cornerRadius": 12,
+                      "padding": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "c6jbw",
+                          "name": "shadow.soft",
+                          "width": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 10,
+                          "padding": 8,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ms40S",
+                              "fill": "#72685F",
+                              "content": "shadow.soft",
+                              "fontFamily": "IBM Plex Sans",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "o8NDx",
+                              "fill": "#A29488",
+                              "content": "y:2 · blur:8 · opacity:6%",
+                              "fontFamily": "IBM Plex Sans",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "bHGBj",
+                      "name": "hint",
+                      "fill": "$color.text.muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "仅用于卡片轻浮，不作主要分层工具",
+                      "fontFamily": "IBM Plex Sans",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
                 {
-                  "type": "text",
-                  "id": "TokS014",
-                  "name": "hint",
-                  "fill": "$color.text.muted",
-                  "content": "base → subtle → card，三层表面",
-                  "fontFamily": "IBM Plex Sans",
-                  "fontSize": 12,
-                  "fontWeight": "normal"
+                  "type": "frame",
+                  "id": "TokS010",
+                  "name": "Surface Stack",
+                  "width": 237,
+                  "fill": "$color.bg.base",
+                  "cornerRadius": 14,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TokS011",
+                      "name": "meta",
+                      "fill": "$color.text.muted",
+                      "content": "表面层叠 · Surface Stack",
+                      "fontFamily": "IBM Plex Sans",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "TokS012",
+                      "name": "surfaceOuter",
+                      "width": 194,
+                      "height": 72,
+                      "fill": "#F5EFE8",
+                      "cornerRadius": 16,
+                      "padding": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "TokS013",
+                          "name": "surfaceInner",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "#FCF9F6",
+                          "cornerRadius": 14
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "TokS014",
+                      "name": "hint",
+                      "fill": "$color.text.muted",
+                      "content": "base → subtle → card，三层表面",
+                      "fontFamily": "IBM Plex Sans",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "TokR010",
+                  "name": "Radius Scale",
+                  "width": 267,
+                  "fill": "$color.bg.base",
+                  "cornerRadius": 14,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TokR016",
+                      "name": "meta",
+                      "fill": "$color.text.muted",
+                      "content": "圆角 · Radius",
+                      "fontFamily": "IBM Plex Sans",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "TokR015",
+                      "name": "radiusRow",
+                      "width": 248,
+                      "gap": 8,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "TokR011",
+                          "name": "radiusControl",
+                          "width": 48,
+                          "height": 40,
+                          "fill": "#F5EFE8",
+                          "cornerRadius": 12
+                        },
+                        {
+                          "type": "frame",
+                          "id": "TokR012",
+                          "name": "radiusPanel",
+                          "width": 64,
+                          "height": 40,
+                          "fill": "#F5EFE8",
+                          "cornerRadius": 14
+                        },
+                        {
+                          "type": "frame",
+                          "id": "3xSUw",
+                          "name": "radiusCard",
+                          "width": 82,
+                          "height": 40,
+                          "fill": "#FCF9F6",
+                          "cornerRadius": 16,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "#E6DED5"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "TokR017",
+                      "name": "hint",
+                      "fill": "$color.text.muted",
+                      "content": "control·12 / panel·14 / card·16 / pill·999",
+                      "fontFamily": "IBM Plex Sans",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
                 }
               ]
-            },
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "TokR001",
+          "name": "Shape Tokens",
+          "width": 912,
+          "height": 123,
+          "layout": "vertical",
+          "gap": 8,
+          "justifyContent": "space_around",
+          "children": [
             {
               "type": "frame",
               "id": "t33PT",
               "name": "Date States",
               "width": 329,
-              "height": 115,
+              "height": 95,
               "fill": "$color.bg.base",
               "cornerRadius": 14,
               "layout": "vertical",
-              "gap": 12,
-              "padding": 10,
+              "gap": 8,
+              "padding": 8,
               "justifyContent": "space_between",
               "children": [
                 {
@@ -1662,6 +1773,7 @@
                   "id": "psBM6",
                   "name": "Frame 1",
                   "width": 310,
+                  "gap": 8,
                   "justifyContent": "space_around",
                   "alignItems": "center",
                   "children": [
@@ -1670,7 +1782,7 @@
                       "id": "lWxZc",
                       "name": "date-special",
                       "width": 59,
-                      "height": 56,
+                      "height": 48,
                       "fill": "$color.bg.base",
                       "cornerRadius": 10,
                       "stroke": {
@@ -1681,9 +1793,9 @@
                       "layout": "vertical",
                       "gap": 10,
                       "padding": [
-                        12,
-                        4,
                         8,
+                        4,
+                        6,
                         4
                       ],
                       "alignItems": "center",
@@ -1727,7 +1839,7 @@
                       "name": "date-prediction",
                       "reusable": true,
                       "width": 59,
-                      "height": 56,
+                      "height": 48,
                       "fill": "$color.accent.prediction",
                       "cornerRadius": 10,
                       "stroke": {
@@ -1737,9 +1849,9 @@
                       "layout": "vertical",
                       "gap": 10,
                       "padding": [
-                        12,
-                        4,
                         8,
+                        4,
+                        6,
                         4
                       ],
                       "alignItems": "center",
@@ -1761,7 +1873,7 @@
                       "name": "date-normal",
                       "reusable": true,
                       "width": 59,
-                      "height": 56,
+                      "height": 48,
                       "fill": "$color.bg.base",
                       "cornerRadius": 10,
                       "stroke": {
@@ -1771,9 +1883,9 @@
                       "layout": "vertical",
                       "gap": 10,
                       "padding": [
-                        12,
-                        4,
                         8,
+                        4,
+                        6,
                         4
                       ],
                       "alignItems": "center",
@@ -1795,7 +1907,7 @@
                       "name": "date-period",
                       "reusable": true,
                       "width": 57,
-                      "height": 56,
+                      "height": 48,
                       "fill": "$color.accent.period",
                       "cornerRadius": 10,
                       "stroke": {
@@ -1805,9 +1917,9 @@
                       "layout": "vertical",
                       "gap": 10,
                       "padding": [
-                        12,
-                        4,
                         8,
+                        4,
+                        6,
                         4
                       ],
                       "alignItems": "center",
@@ -1840,91 +1952,21 @@
                       "flipX": false,
                       "flipY": false,
                       "width": 59,
-                      "height": 56,
+                      "height": 48,
+                      "padding": [
+                        8,
+                        4,
+                        6,
+                        4
+                      ],
                       "descendants": {
                         "jDPVk": {
                           "x": 21,
-                          "y": 12
+                          "y": 8
                         }
                       }
                     }
                   ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "sduyQ",
-              "name": "Elevation",
-              "width": 287,
-              "fill": "$color.bg.base",
-              "cornerRadius": 14,
-              "layout": "vertical",
-              "gap": 12,
-              "padding": 10,
-              "justifyContent": "center",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "TRKgB",
-                  "name": "meta",
-                  "fill": "$color.text.muted",
-                  "content": "Elevation",
-                  "fontFamily": "IBM Plex Sans",
-                  "fontSize": 11,
-                  "fontWeight": "500"
-                },
-                {
-                  "type": "frame",
-                  "id": "t5mq9",
-                  "name": "elevSampleBg",
-                  "width": "fill_container",
-                  "fill": "$color.bg.subtle",
-                  "cornerRadius": 12,
-                  "padding": 12,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "c6jbw",
-                      "name": "shadow.soft",
-                      "width": "fill_container",
-                      "fill": "#FFFFFF",
-                      "cornerRadius": 10,
-                      "padding": 12,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "ms40S",
-                          "fill": "#72685F",
-                          "content": "shadow.soft",
-                          "fontFamily": "IBM Plex Sans",
-                          "fontSize": 12,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "o8NDx",
-                          "fill": "#A29488",
-                          "content": "y:2 · blur:8 · opacity:6%",
-                          "fontFamily": "IBM Plex Sans",
-                          "fontSize": 11,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "id": "bHGBj",
-                  "name": "hint",
-                  "fill": "$color.text.muted",
-                  "textGrowth": "fixed-width",
-                  "width": "fill_container",
-                  "content": "仅用于卡片轻浮，不作主要分层工具",
-                  "fontFamily": "IBM Plex Sans",
-                  "fontSize": 12,
-                  "fontWeight": "normal"
                 }
               ]
             }
@@ -2135,7 +2177,7 @@
                   "id": "tzvca",
                   "name": "Primitive/EmptyStateBlock",
                   "reusable": true,
-                  "width": 358,
+                  "width": 196,
                   "fill": "$color.bg.card",
                   "cornerRadius": 16,
                   "layout": "vertical",
@@ -2182,7 +2224,7 @@
                   "id": "V11Ja",
                   "name": "Primitive/FieldCard",
                   "reusable": true,
-                  "width": 358,
+                  "width": 155,
                   "fill": "$color.bg.card",
                   "cornerRadius": 14,
                   "layout": "vertical",
@@ -2927,253 +2969,6 @@
                                   "y": 26
                                 }
                               }
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "bp5B9",
-                  "name": "rangeSection",
-                  "layout": "vertical",
-                  "gap": 12,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "C0iRu",
-                      "name": "rangeTitle",
-                      "fill": "$color.text.primary",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Range Selection States",
-                      "fontFamily": "IBM Plex Sans",
-                      "fontSize": 12,
-                      "fontWeight": "600"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "qdyNn",
-                      "name": "DateCellRangeGroup",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "ANvwO",
-                          "name": "rangeStart",
-                          "layout": "vertical",
-                          "gap": 8,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "cu5fk",
-                              "fill": "#2F2A26",
-                              "content": "Range Start",
-                              "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "31yqA",
-                              "width": 44,
-                              "height": 54,
-                              "fill": "$color.accent.prediction",
-                              "cornerRadius": [
-                                10,
-                                0,
-                                0,
-                                10
-                              ],
-                              "layout": "vertical",
-                              "gap": 4,
-                              "padding": [
-                                6,
-                                4
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "rSJvS",
-                                  "fill": "#2F2A26",
-                                  "content": "22",
-                                  "fontFamily": "IBM Plex Sans",
-                                  "fontSize": 12,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "MV0EE",
-                                  "width": 24,
-                                  "height": 6,
-                                  "fill": "$color.accent.period",
-                                  "cornerRadius": 3
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "GNHhj",
-                          "name": "rangeMiddle",
-                          "layout": "vertical",
-                          "gap": 8,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "jkYNX",
-                              "fill": "#2F2A26",
-                              "content": "Middle",
-                              "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "rFReW",
-                              "width": 44,
-                              "height": 54,
-                              "fill": "$color.accent.prediction",
-                              "cornerRadius": 0.5,
-                              "layout": "vertical",
-                              "gap": 4,
-                              "padding": [
-                                6,
-                                4
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "hkTEV",
-                                  "fill": "#2F2A26",
-                                  "content": "22",
-                                  "fontFamily": "IBM Plex Sans",
-                                  "fontSize": 12,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "2mSPb",
-                                  "width": 24,
-                                  "height": 6,
-                                  "fill": "$color.accent.period",
-                                  "cornerRadius": 3
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "8kcvu",
-                          "name": "rangeEnd",
-                          "layout": "vertical",
-                          "gap": 8,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "Lnhen",
-                              "fill": "#2F2A26",
-                              "content": "Range End",
-                              "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "ulnEv",
-                              "width": 44,
-                              "height": 54,
-                              "fill": "$color.accent.prediction",
-                              "cornerRadius": [
-                                0,
-                                10,
-                                10,
-                                0
-                              ],
-                              "layout": "vertical",
-                              "gap": 4,
-                              "padding": [
-                                6,
-                                4
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "3gIWj",
-                                  "fill": "#2F2A26",
-                                  "content": "22",
-                                  "fontFamily": "IBM Plex Sans",
-                                  "fontSize": 12,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "kD2du",
-                                  "width": 24,
-                                  "height": 6,
-                                  "fill": "$color.accent.period",
-                                  "cornerRadius": 3
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "DuY5j",
-                          "name": "rangeSingle",
-                          "layout": "vertical",
-                          "gap": 8,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "LM6pT",
-                              "fill": "#2F2A26",
-                              "content": "Single Day",
-                              "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "JZxGn",
-                              "width": 44,
-                              "height": 54,
-                              "fill": "$color.accent.prediction",
-                              "cornerRadius": 10,
-                              "layout": "vertical",
-                              "gap": 4,
-                              "padding": [
-                                6,
-                                4
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "hWjf0",
-                                  "fill": "#2F2A26",
-                                  "content": "22",
-                                  "fontFamily": "IBM Plex Sans",
-                                  "fontSize": 12,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "bd3DK",
-                                  "width": 24,
-                                  "height": 6,
-                                  "fill": "$color.accent.period",
-                                  "cornerRadius": 3
-                                }
-                              ]
                             }
                           ]
                         }
