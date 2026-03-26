@@ -4466,7 +4466,7 @@
       "y": 0,
       "name": "工作台首页 / 共享变体",
       "width": 390,
-      "height": 980,
+      "height": 682,
       "fill": "$color.bg.base",
       "layout": "vertical",
       "gap": 16,
@@ -4893,13 +4893,6 @@
               "fontWeight": "normal"
             }
           ]
-        },
-        {
-          "type": "frame",
-          "id": "7OF1z",
-          "name": "dashSpacer",
-          "width": "fill_container",
-          "height": "fill_container"
         },
         {
           "type": "frame",

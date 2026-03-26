@@ -8,13 +8,10 @@ Current mainline repo:
 
 `D:\CodeSpace\hbuilder-projects\lovey-record`
 
-Legacy reference repo:
+Legacy reference repo (only reference when it comes to frontend code, not for UI design):
 
 `D:\CodeSpace\love-recorder`
 
-Deprecated repo that should not be used as a source of truth:
-
-`D:\CodeSpace\love-record`
 
 ## Read First
 
