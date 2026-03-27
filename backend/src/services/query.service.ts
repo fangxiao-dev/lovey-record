@@ -1,4 +1,5 @@
 import prisma from '../db/prisma';
+import { getModuleSettings as getModuleSettingsRecord } from './moduleSettings.service';
 
 type AccessInput = {
   moduleInstanceId: string;
@@ -22,6 +23,10 @@ function formatDate(date: Date) {
 
 function lower(value: string | null | undefined) {
   return value ? value.toLowerCase() : value;
+}
+
+function hasDeviation(record: { painLevel: number | null; flowLevel: number | null; colorLevel: number | null }) {
+  return [record.painLevel, record.flowLevel, record.colorLevel].some((value) => value !== null && value !== 3);
 }
 
 async function requireAccess(moduleInstanceId: string, userId: string, profileId?: string) {
@@ -72,12 +77,14 @@ export async function getDayRecordDetail(input: DayDetailInput) {
       profileId: input.profileId,
       dayRecord: {
         date: input.date,
-        bleedingState: 'none',
+        isPeriod: false,
         painLevel: null,
         flowLevel: null,
         colorLevel: null,
         note: null,
+        source: null,
         isExplicit: false,
+        hasDeviation: false,
       },
     };
   }
@@ -87,12 +94,14 @@ export async function getDayRecordDetail(input: DayDetailInput) {
     profileId: input.profileId,
     dayRecord: {
       date: formatDate(record.date),
-      bleedingState: lower(record.bleedingState),
+      isPeriod: record.isPeriod,
       painLevel: record.painLevel ?? null,
       flowLevel: record.flowLevel ?? null,
       colorLevel: record.colorLevel ?? null,
       note: record.note ?? null,
+      source: lower(record.source),
       isExplicit: true,
+      hasDeviation: hasDeviation(record),
     },
   };
 }
@@ -150,8 +159,8 @@ export async function getModuleHomeView(input: AccessInput) {
   if (lastCycle?.derivedFromDates) {
     try {
       const dates = JSON.parse(lastCycle.derivedFromDates) as string[];
-      dates.forEach((date) => {
-        calendarMarks.push({ date, kind: 'period' });
+      dates.forEach((date, index) => {
+        calendarMarks.push({ date, kind: index === 0 ? 'period_start' : 'period' });
       });
     } catch {
       // ignore malformed derived dates
@@ -205,5 +214,17 @@ export async function getModuleHomeView(input: AccessInput) {
           basedOnCycleCount: prediction.basedOnCycleCount,
         }
       : null,
+  };
+}
+
+export async function getModuleSettings(input: AccessInput) {
+  await requireAccess(input.moduleInstanceId, input.userId);
+  const settings = await getModuleSettingsRecord(input.moduleInstanceId);
+
+  return {
+    moduleInstanceId: settings.moduleInstanceId,
+    moduleSettings: {
+      defaultPeriodDurationDays: settings.defaultPeriodDurationDays,
+    },
   };
 }

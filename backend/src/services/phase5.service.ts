@@ -18,13 +18,41 @@ function addDays(date: Date, days: number) {
   return next;
 }
 
-async function requireOwner(moduleInstanceId: string, userId: string) {
+async function requireMaintenance(moduleInstanceId: string, userId: string) {
   const moduleInstance = await prisma.moduleInstance.findFirst({
-    where: { id: moduleInstanceId, ownerUserId: userId },
+    where: {
+      id: moduleInstanceId,
+      OR: [
+        { ownerUserId: userId },
+        {
+          accesses: {
+            some: {
+              userId,
+              accessStatus: 'ACTIVE',
+            },
+          },
+        },
+      ],
+    },
   });
   if (!moduleInstance) {
     throw Object.assign(new Error('MODULE_ACCESS_DENIED'), { code: 'MODULE_ACCESS_DENIED', statusCode: 403 });
   }
+  return moduleInstance;
+}
+
+async function requireOwner(moduleInstanceId: string, userId: string) {
+  const moduleInstance = await prisma.moduleInstance.findFirst({
+    where: { id: moduleInstanceId, ownerUserId: userId },
+  });
+
+  if (!moduleInstance) {
+    const error = new Error('MODULE_ACCESS_DENIED') as Error & { code?: string; statusCode?: number };
+    error.code = 'MODULE_ACCESS_DENIED';
+    error.statusCode = 403;
+    throw error;
+  }
+
   return moduleInstance;
 }
 
@@ -60,7 +88,7 @@ export async function recordDayDetails(input: {
   flowLevel: number;
   colorLevel: number;
 }) {
-  const moduleInstance = await requireOwner(input.moduleInstanceId, input.userId);
+  const moduleInstance = await requireMaintenance(input.moduleInstanceId, input.userId);
   const record = await prisma.dayRecord.findUnique({
     where: {
       moduleInstanceId_profileId_date: {
@@ -75,11 +103,11 @@ export async function recordDayDetails(input: {
     where: { id: record.id },
     data: { painLevel: input.painLevel, flowLevel: input.flowLevel, colorLevel: input.colorLevel },
   });
-  return { detailChanged: true };
+  return { detailChanged: true, hasDeviation: input.painLevel !== 3 || input.flowLevel !== 3 || input.colorLevel !== 3 };
 }
 
 export async function recordDayNote(input: { moduleInstanceId: string; userId: string; date: string; note: string }) {
-  const moduleInstance = await requireOwner(input.moduleInstanceId, input.userId);
+  const moduleInstance = await requireMaintenance(input.moduleInstanceId, input.userId);
   const record = await prisma.dayRecord.findUnique({
     where: {
       moduleInstanceId_profileId_date: {
@@ -137,9 +165,9 @@ export async function getCalendarWindow(input: {
     const date = formatDate(current);
     const record = recordByDate.get(date);
     if (record) {
-      days.push({ date, bleedingState: lower(record.bleedingState), isExplicit: true });
+      days.push({ date, isPeriod: record.isPeriod, source: lower(record.source), isExplicit: true, hasDeviation: [record.painLevel, record.flowLevel, record.colorLevel].some((value) => value !== null && value !== 3) });
     } else {
-      days.push({ date, bleedingState: 'none', isExplicit: false });
+      days.push({ date, isPeriod: false, source: null, isExplicit: false, hasDeviation: false });
     }
   }
 
@@ -151,9 +179,9 @@ export async function getCalendarWindow(input: {
     if (!cycle.derivedFromDates) continue;
     try {
       const dates = JSON.parse(cycle.derivedFromDates) as string[];
-      for (const date of dates) {
+      for (const [index, date] of dates.entries()) {
         if (date >= input.startDate && date <= input.endDate) {
-          marks.push({ date, kind: 'period' });
+          marks.push({ date, kind: index === 0 ? 'period_start' : 'period' });
         }
       }
     } catch {

@@ -47,6 +47,7 @@ model ModuleInstance {
   profile      Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
   accesses     ModuleAccess[]
   dayRecords   DayRecord[]
+  settings     ModuleSettings?
   cycles       DerivedCycle[]
   prediction   Prediction?
 
@@ -77,12 +78,12 @@ model DayRecord {
   moduleInstanceId String        @map("module_instance_id")
   profileId        String        @map("profile_id")
   date             DateTime      @db.Date
-  bleedingState    BleedingState @map("bleeding_state")
+  isPeriod         Boolean       @map("is_period")
   painLevel        Int?          @map("pain_level")
   flowLevel        Int?          @map("flow_level")
   colorLevel       Int?          @map("color_level")
   note             String?       @db.VarChar(500)
-  source           String?
+  source           DayRecordSource
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
 
@@ -93,6 +94,18 @@ model DayRecord {
   @@index([moduleInstanceId, date])
   @@index([profileId, date])
   @@map("day_records")
+}
+
+model ModuleSettings {
+  id                       String   @id @default(cuid())
+  moduleInstanceId         String   @unique @map("module_instance_id")
+  defaultPeriodDurationDays Int    @map("default_period_duration_days")
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  moduleInstance ModuleInstance @relation(fields: [moduleInstanceId], references: [id], onDelete: Cascade)
+
+  @@map("module_settings")
 }
 
 model DerivedCycle {
@@ -137,9 +150,9 @@ enum SharingStatus {
   SHARED
 }
 
-enum BleedingState {
-  PERIOD
-  SPOTTING
+enum DayRecordSource {
+  MANUAL
+  AUTO_FILLED
 }
 
 enum AccessRole {

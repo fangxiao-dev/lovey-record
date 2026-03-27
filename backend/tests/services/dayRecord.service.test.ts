@@ -1,5 +1,5 @@
 import prisma from '../../src/db/prisma';
-import { clearDayRecord, recordDayState, recordDateRangeAsPeriod } from '../../src/services/dayRecord.service';
+import { clearPeriodDay, recordPeriodDay } from '../../src/services/dayRecord.service';
 
 jest.mock('../../src/db/prisma', () => ({
   __esModule: true,
@@ -20,6 +20,9 @@ jest.mock('../../src/db/prisma', () => ({
     prediction: {
       upsert: jest.fn(),
     },
+    moduleSettings: {
+      upsert: jest.fn(),
+    },
   },
 }));
 
@@ -34,24 +37,32 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
     (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({
       id: 'day-1',
-      bleedingState: 'PERIOD',
+      isPeriod: true,
+      source: 'MANUAL',
       painLevel: 3,
       flowLevel: 3,
       colorLevel: 3,
     });
-    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([{ date: new Date('2026-03-23'), bleedingState: 'PERIOD' }]);
+    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([{ date: new Date('2026-03-23'), isPeriod: true, source: 'MANUAL' }]);
 
-    const result = await recordDayState({
+    const result = await recordPeriodDay({
       moduleInstanceId: 'module-1',
       userId: 'user-1',
       date: '2026-03-23',
-      bleedingState: 'PERIOD',
     });
 
     expect(result.dayRecord.painLevel).toBe(3);
-    expect(prisma.dayRecord.upsert).toHaveBeenCalled();
+    expect(prisma.dayRecord.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          isPeriod: true,
+          source: 'MANUAL',
+        }),
+      }),
+    );
   });
 
   it('clears an explicit day record', async () => {
@@ -61,36 +72,17 @@ describe('dayRecord.service', () => {
       ownerUserId: 'user-1',
     });
     (prisma.dayRecord.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([]);
 
-    const result = await clearDayRecord({
+    const result = await clearPeriodDay({
       moduleInstanceId: 'module-1',
       userId: 'user-1',
       date: '2026-03-23',
     });
 
-    expect(result.dayRecordRemoved).toBe(true);
+    expect(result.removedDates).toEqual([]);
     expect(prisma.dayRecord.deleteMany).toHaveBeenCalled();
-  });
-
-  it('records a continuous period range', async () => {
-    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
-      id: 'module-1',
-      profileId: 'profile-1',
-      ownerUserId: 'user-1',
-    });
-    (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
-    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([]);
-
-    const result = await recordDateRangeAsPeriod({
-      moduleInstanceId: 'module-1',
-      userId: 'user-1',
-      startDate: '2026-03-20',
-      endDate: '2026-03-22',
-    });
-
-    expect(result.updatedDayCount).toBe(3);
-    expect(prisma.dayRecord.upsert).toHaveBeenCalledTimes(3);
   });
 
   it('derives a single cycle even if period dates are unsorted', async () => {
@@ -99,24 +91,25 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
     (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({
       id: 'day-1',
-      bleedingState: 'PERIOD',
+      isPeriod: true,
+      source: 'MANUAL',
       painLevel: 3,
       flowLevel: 3,
       colorLevel: 3,
     });
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
-      { date: new Date('2026-03-22'), bleedingState: 'PERIOD' },
-      { date: new Date('2026-03-20'), bleedingState: 'PERIOD' },
-      { date: new Date('2026-03-21'), bleedingState: 'PERIOD' },
+      { date: new Date('2026-03-22'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-20'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-21'), isPeriod: true, source: 'MANUAL' },
     ]);
 
-    await recordDayState({
+    await recordPeriodDay({
       moduleInstanceId: 'module-1',
       userId: 'user-1',
       date: '2026-03-20',
-      bleedingState: 'PERIOD',
     });
 
     expect(prisma.derivedCycle.createMany).toHaveBeenCalledWith({
@@ -139,19 +132,19 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
     (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
 
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
-      { date: new Date('2026-03-20'), bleedingState: 'PERIOD' },
-      { date: new Date('2026-03-21'), bleedingState: 'PERIOD' },
-      { date: new Date('2026-03-23'), bleedingState: 'PERIOD' },
+      { date: new Date('2026-03-20'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-21'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-23'), isPeriod: true, source: 'MANUAL' },
     ]);
 
-    await recordDayState({
+    await recordPeriodDay({
       moduleInstanceId: 'module-1',
       userId: 'user-1',
       date: '2026-03-23',
-      bleedingState: 'PERIOD',
     });
 
     expect(prisma.derivedCycle.createMany).toHaveBeenCalledWith({
@@ -176,17 +169,16 @@ describe('dayRecord.service', () => {
     });
 
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
-      { date: new Date('2026-03-20'), bleedingState: 'PERIOD' },
-      { date: new Date('2026-03-21'), bleedingState: 'PERIOD' },
-      { date: new Date('2026-03-22'), bleedingState: 'PERIOD' },
-      { date: new Date('2026-03-23'), bleedingState: 'PERIOD' },
+      { date: new Date('2026-03-20'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-21'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-22'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-23'), isPeriod: true, source: 'MANUAL' },
     ]);
 
-    await recordDayState({
+    await recordPeriodDay({
       moduleInstanceId: 'module-1',
       userId: 'user-1',
       date: '2026-03-22',
-      bleedingState: 'PERIOD',
     });
 
     expect(prisma.derivedCycle.createMany).toHaveBeenLastCalledWith({
@@ -209,17 +201,17 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
     (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
-      { date: new Date('2026-03-01'), bleedingState: 'PERIOD' },
-      { date: new Date('2026-03-29'), bleedingState: 'PERIOD' },
+      { date: new Date('2026-03-01'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-29'), isPeriod: true, source: 'MANUAL' },
     ]);
 
-    await recordDayState({
+    await recordPeriodDay({
       moduleInstanceId: 'module-1',
       userId: 'user-1',
       date: '2026-03-29',
-      bleedingState: 'PERIOD',
     });
 
     expect(prisma.prediction.upsert).toHaveBeenCalledWith(
@@ -234,24 +226,24 @@ describe('dayRecord.service', () => {
     );
   });
 
-  it('ignores spotting when deriving cycles', async () => {
+  it('ignores non-period days when deriving cycles', async () => {
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
       id: 'module-1',
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
     (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
-      { date: new Date('2026-03-01'), bleedingState: 'PERIOD' },
-      { date: new Date('2026-03-02'), bleedingState: 'SPOTTING' },
-      { date: new Date('2026-03-03'), bleedingState: 'PERIOD' },
+      { date: new Date('2026-03-01'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-02'), isPeriod: false, source: 'MANUAL' },
+      { date: new Date('2026-03-03'), isPeriod: true, source: 'MANUAL' },
     ]);
 
-    await recordDayState({
+    await recordPeriodDay({
       moduleInstanceId: 'module-1',
       userId: 'user-1',
       date: '2026-03-03',
-      bleedingState: 'PERIOD',
     });
 
     expect(prisma.derivedCycle.createMany).toHaveBeenCalledWith({
@@ -282,16 +274,16 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
     (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
-      { date: new Date('2026-03-01'), bleedingState: 'PERIOD' },
+      { date: new Date('2026-03-01'), isPeriod: true, source: 'MANUAL' },
     ]);
 
-    await recordDayState({
+    await recordPeriodDay({
       moduleInstanceId: 'module-1',
       userId: 'user-1',
       date: '2026-03-01',
-      bleedingState: 'PERIOD',
     });
 
     expect(prisma.prediction.upsert).toHaveBeenCalledWith(
@@ -312,13 +304,14 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
     (prisma.dayRecord.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
-      { date: new Date('2026-03-20'), bleedingState: 'PERIOD' },
-      { date: new Date('2026-03-22'), bleedingState: 'PERIOD' },
+      { date: new Date('2026-03-20'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-22'), isPeriod: true, source: 'MANUAL' },
     ]);
 
-    await clearDayRecord({
+    await clearPeriodDay({
       moduleInstanceId: 'module-1',
       userId: 'user-1',
       date: '2026-03-21',

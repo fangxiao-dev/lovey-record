@@ -9,7 +9,7 @@ Use `docs/contracts/` for documents that define:
 - what the product must do
 - which domain concepts exist
 - which invariants cannot drift
-- how frontend and backend should align before transport or storage details are finalized
+- how backend and future frontend work should align before transport or storage details are finalized
 
 Do not use this directory for:
 
@@ -24,17 +24,17 @@ Those belong under `docs/plans/`.
 
 - `use-cases/`: stable, UI-agnostic descriptions of user goals and system responsibilities
 - `domain-models/`: domain objects, relationships, states, enums, and invariants
-- `application-contracts/`: command/query contracts and read models used to align frontend and backend prototype work
+- `application-contracts/`: command/query contracts and read models used to align backend implementation work
 
 ## Read Order
 
-1. [use-cases/2026-03-23-menstrual-core-use-cases.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/contracts/use-cases/2026-03-23-menstrual-core-use-cases.md)
-2. [domain-models/2026-03-23-menstrual-domain-model.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/contracts/domain-models/2026-03-23-menstrual-domain-model.md)
-3. [application-contracts/2026-03-23-menstrual-application-contract-draft.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/contracts/application-contracts/2026-03-23-menstrual-application-contract-draft.md)
+1. [use-cases/2026-03-23-menstrual-core-use-cases.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/contracts/use-cases/2026-03-23-menstrual-core-use-cases.md)
+2. [domain-models/2026-03-23-menstrual-domain-model.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/contracts/domain-models/2026-03-23-menstrual-domain-model.md)
+3. [application-contracts/2026-03-23-menstrual-application-contract-draft.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/contracts/application-contracts/2026-03-23-menstrual-application-contract-draft.md)
 
 ## Working Rule
 
-When a task changes durable product behavior, domain meaning, or frontend-backend boundaries:
+When a task changes durable product behavior, domain meaning, or backend-facing boundaries:
 
 1. update the relevant contract here first
 2. then update any affected plan under `docs/plans/`

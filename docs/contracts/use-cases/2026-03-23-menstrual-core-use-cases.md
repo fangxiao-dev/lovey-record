@@ -1,10 +1,10 @@
-# Menstrual Core Use Cases
+# Period Core Use Cases
 
 **Date:** 2026-03-23
 
 ## Purpose
 
-This document freezes the coarse-grained MVP use cases for the menstrual module.
+This document freezes the coarse-grained MVP use cases for the period module.
 
 It is intentionally UI-agnostic. It describes what the user needs to accomplish and what the system must guarantee, without binding the product to a specific gesture, page control, or transport format.
 
@@ -12,7 +12,7 @@ It is intentionally UI-agnostic. It describes what the user needs to accomplish 
 
 This document covers:
 
-- core menstrual MVP use cases
+- core period MVP use cases
 - the intended user outcome for each use case
 - the expected system responsibility for each use case
 
@@ -28,7 +28,7 @@ This document does not cover:
 
 ### 1. First-time entry and status understanding
 
-The user enters the menstrual module and needs to understand the current status immediately.
+The user enters the period module and needs to understand the current status immediately.
 
 The system should provide:
 
@@ -37,14 +37,14 @@ The system should provide:
 - whether prior records already exist
 - the next meaningful action the user can take
 
-### 2. Record one day as the start of a period
+### 2. Record one day as the first day of a period segment
 
 The user records that one date is in period.
 
 The system should:
 
 - check whether the previous day is already in period
-- if not, treat the selected day as the first day of a new period
+- if not, treat the selected day as the first day of a new anchored segment
 - automatically fill later dates according to the current default period duration
 - persist both the selected day and the auto-filled days as period days
 
@@ -55,8 +55,8 @@ The user reaches the default end of the auto-filled period, but the period has n
 The system should:
 
 - let the user mark one more day as period
-- extend the current period segment by one day
-- keep the new end date consistent in derived cycle and calendar output
+- extend the current anchored segment by one day
+- keep the new end date consistent in derived segment and calendar output
 
 ### 4. End a period earlier than the default duration
 
@@ -66,9 +66,9 @@ The system should:
 
 - let the user clear the first incorrect day
 - remove that day and all later dates belonging to the same current tail interpretation
-- update the cycle end and prediction results accordingly
+- update the segment end and prediction results accordingly
 
-### 5. Minimize interaction for expected periods
+### 5. Minimize interaction for expected segments
 
 The user wants the system to do most of the repetitive work when the period follows the usual pattern.
 
@@ -108,17 +108,7 @@ The system should:
 - enforce a maximum note length
 - reject or block saves that exceed the allowed length
 
-### 9. Automatically update cycle and prediction results after changes
-
-After period start, extension, truncation, or detail-preserving day changes, the user expects the interpreted cycle state to stay up to date.
-
-The system should:
-
-- rebuild the current derived cycle from the updated period segment
-- recompute the next predicted start window from cycle starts
-- keep home and calendar read models synchronized with the corrected result
-
-### 10. Adjust the default period duration
+### 9. Update the default period duration
 
 The user wants the automatic fill behavior to better match their usual period length.
 
@@ -128,9 +118,19 @@ The system should:
 - apply the new duration to future first-day records
 - keep the setting visible and understandable as the source of the automatic fill behavior
 
+### 10. Automatically update segment and prediction results after changes
+
+After period start, extension, truncation, or detail-preserving day changes, the user expects the interpreted segment state to stay up to date.
+
+The system should:
+
+- rebuild the current anchored segment from the updated period dates
+- recompute the next predicted start window from segment starts
+- keep home and calendar read models synchronized with the corrected result
+
 ### 11. Share an existing private module instance
 
-The owner decides to grant access to a partner for the already existing menstrual module instance.
+The owner decides to grant access to a partner for the already existing period module instance.
 
 The system should:
 
@@ -156,7 +156,7 @@ The system should:
 
 - resolve both paths to the same `module instance`
 - return the same `day_record` truth
-- return the same derived cycle and prediction results
+- return the same derived segment and prediction results
 
 ## Notes
 

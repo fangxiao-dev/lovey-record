@@ -15,6 +15,9 @@ jest.mock('../../src/db/prisma', () => ({
     moduleAccess: {
       create: jest.fn(),
     },
+    moduleSettings: {
+      upsert: jest.fn(),
+    },
     user: {
       findUnique: jest.fn(),
     },
@@ -44,6 +47,10 @@ describe('moduleInstance.service', () => {
       userId: 'user-1',
       role: 'OWNER',
     });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      moduleInstanceId: 'module-1',
+      defaultPeriodDurationDays: 6,
+    });
 
     const result = await createModuleInstance({ id: 'user-1', openid: 'openid-1' });
 
@@ -64,6 +71,14 @@ describe('moduleInstance.service', () => {
         userId: 'user-1',
         role: 'OWNER',
       },
+    });
+    expect(prisma.moduleSettings.upsert).toHaveBeenCalledWith({
+      where: { moduleInstanceId: 'module-1' },
+      create: {
+        moduleInstanceId: 'module-1',
+        defaultPeriodDurationDays: 6,
+      },
+      update: {},
     });
   });
 

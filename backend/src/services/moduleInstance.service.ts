@@ -1,4 +1,5 @@
 import prisma from '../db/prisma';
+import { ensureModuleSettings } from './moduleSettings.service';
 
 export class ModuleInstanceError extends Error {
   code: string;
@@ -44,6 +45,8 @@ export async function createModuleInstance(user: { id: string; openid: string })
       role: 'OWNER',
     },
   });
+
+  await ensureModuleSettings(moduleInstance.id);
 
   return { moduleInstance, profile };
 }

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getDayRecordDetail, getModuleAccessState, getModuleHomeView } from '../services/query.service';
+import { getDayRecordDetail, getModuleAccessState, getModuleHomeView, getModuleSettings } from '../services/query.service';
 
 function handleError(res: Response, error: unknown) {
   if (error && typeof error === 'object' && 'code' in error && 'statusCode' in error) {
@@ -55,6 +55,19 @@ export async function getModuleAccessStateHandler(req: Request, res: Response) {
   try {
     const moduleInstanceId = req.query.moduleInstanceId as string;
     const result = await getModuleAccessState({
+      moduleInstanceId,
+      userId: req.user.id,
+    });
+    return res.json({ ok: true, data: result, error: null });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function getModuleSettingsHandler(req: Request, res: Response) {
+  try {
+    const moduleInstanceId = req.query.moduleInstanceId as string;
+    const result = await getModuleSettings({
       moduleInstanceId,
       userId: req.user.id,
     });

@@ -483,7 +483,8 @@
                   "width": 12,
                   "height": 12,
                   "iconFontName": "visibility",
-                  "iconFontFamily": "Material Symbols Rounded",
+                  "iconFontFamily": "Material Symbols Outlined",
+                  "weight": 700,
                   "fill": "$color.accent.period"
                 },
                 {
@@ -2061,7 +2062,7 @@
                       "width": 12,
                       "height": 12,
                       "iconFontName": "visibility",
-                      "iconFontFamily": "Material Symbols Rounded",
+                      "iconFontFamily": "Material Symbols Outlined",
                       "weight": 700,
                       "fill": "$color.accent.period"
                     }
@@ -2154,16 +2155,17 @@
                   "id": "dwkKN",
                   "name": "DateState/Today",
                   "reusable": true,
-                  "width": "fill_container",
+                  "width": 58,
                   "height": 56,
-                  "cornerRadius": "$radius.control",
+                  "fill": "#00000000",
+                  "cornerRadius": 999,
                   "stroke": {
                     "align": "inside",
                     "thickness": 2,
                     "fill": "$color.accent.today"
                   },
                   "layout": "vertical",
-                  "gap": 6,
+                  "gap": 5,
                   "padding": [
                     12,
                     0,
@@ -2201,7 +2203,6 @@
                   "reusable": true,
                   "width": "fill_container",
                   "height": 56,
-                  "fill": "$color.bg.subtle",
                   "cornerRadius": "$radius.control",
                   "stroke": {
                     "align": "inside",
@@ -2265,37 +2266,295 @@
             },
             {
               "type": "frame",
-              "id": "37nTg",
-              "name": "DateState/PeriodToday",
-              "reusable": true,
-              "width": "fill_container",
-              "height": 56,
-              "fill": "$color.accent.period",
-              "cornerRadius": "$radius.control",
-              "stroke": {
-                "align": "inside",
-                "thickness": 2,
-                "fill": "$color.accent.today"
-              },
-              "layout": "vertical",
-              "gap": 6,
-              "padding": [
-                12,
-                0,
-                0,
-                0
-              ],
+              "id": "IzHbY",
+              "name": "selectedDerivedRow",
+              "width": 356,
+              "gap": 8,
               "alignItems": "center",
               "children": [
                 {
-                  "type": "text",
-                  "id": "h9511",
-                  "name": "label",
-                  "fill": "$color.bg.card",
-                  "content": "26",
-                  "fontFamily": "IBM Plex Sans",
-                  "fontSize": "$font.size.body",
-                  "fontWeight": "600"
+                  "type": "frame",
+                  "id": "37nTg",
+                  "name": "Selected/Period",
+                  "reusable": true,
+                  "width": 58,
+                  "height": 56,
+                  "fill": "$color.accent.period",
+                  "cornerRadius": "$radius.control",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$color.accent.today"
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000040",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 4
+                  },
+                  "layout": "vertical",
+                  "gap": 5,
+                  "padding": [
+                    12,
+                    0,
+                    0,
+                    0
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "h9511",
+                      "name": "label",
+                      "fill": "$color.accent.period.contrast",
+                      "content": "26",
+                      "fontFamily": "IBM Plex Sans",
+                      "fontSize": "$font.size.body",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon_font",
+                      "id": "QAiJd",
+                      "name": "eye37",
+                      "width": 12,
+                      "height": 12,
+                      "iconFontName": "visibility",
+                      "iconFontFamily": "Material Symbols Outlined",
+                      "weight": 700,
+                      "fill": "$color.accent.period.contrast"
+                    }
+                  ]
+                },
+                {
+                  "id": "pVXEi",
+                  "type": "ref",
+                  "ref": "37nTg",
+                  "name": "Selected/Prediction",
+                  "fill": "$color.accent.period.soft",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$color.accent.today"
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000040",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 4
+                  },
+                  "width": 58,
+                  "height": 56,
+                  "flipX": false,
+                  "flipY": false,
+                  "x": 66,
+                  "y": 0,
+                  "descendants": {
+                    "h9511": {
+                      "content": "26",
+                      "fill": "$color.text.primary"
+                    },
+                    "QAiJd": {
+                      "x": 23,
+                      "y": 35,
+                      "fill": "$color.accent.period",
+                      "iconFontFamily": "Material Symbols Outlined",
+                      "iconFontName": "visibility"
+                    }
+                  }
+                },
+                {
+                  "id": "JZs5G",
+                  "type": "ref",
+                  "ref": "PtepD",
+                  "name": "Selected/Special",
+                  "fill": [],
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$color.accent.today"
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000040",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 4
+                  },
+                  "width": 58,
+                  "height": 56,
+                  "flipX": false,
+                  "flipY": false,
+                  "x": 132,
+                  "y": 0,
+                  "descendants": {
+                    "G3g0N": {
+                      "content": "26",
+                      "fill": "$color.text.primary"
+                    }
+                  }
+                },
+                {
+                  "id": "sAJcl",
+                  "type": "ref",
+                  "ref": "hm6g5",
+                  "name": "Selected/Base",
+                  "fill": [],
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$color.text.secondary"
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000040",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 4
+                  },
+                  "width": 58,
+                  "height": 56,
+                  "flipX": false,
+                  "flipY": false,
+                  "x": 198,
+                  "y": 0,
+                  "descendants": {
+                    "WQbur": {
+                      "content": "26",
+                      "fill": "$color.text.primary"
+                    }
+                  }
+                },
+                {
+                  "id": "NiPrX",
+                  "type": "ref",
+                  "ref": "DrKTW",
+                  "name": "Selected/TodaySpecial",
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000040",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 4
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "IEz4a",
+              "name": "todayDerivedRow",
+              "width": 256,
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DrKTW",
+                  "name": "DateState/TodaySpecial",
+                  "reusable": true,
+                  "width": 58,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "cornerRadius": 999,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 2,
+                    "fill": "$color.accent.today"
+                  },
+                  "layout": "vertical",
+                  "gap": 5,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "GmAsx",
+                      "name": "label",
+                      "fill": "$color.text.primary",
+                      "content": "26",
+                      "fontFamily": "IBM Plex Sans",
+                      "fontSize": "$font.size.body",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon_font",
+                      "id": "Z5l9f",
+                      "name": "specialEye",
+                      "width": 12,
+                      "height": 12,
+                      "iconFontName": "visibility",
+                      "iconFontFamily": "Material Symbols Outlined",
+                      "weight": 700,
+                      "fill": "$color.accent.period"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "uFDlB",
+                  "name": "Today+Period",
+                  "width": 58,
+                  "height": 56,
+                  "fill": "$color.accent.period",
+                  "cornerRadius": 999,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$color.accent.today"
+                  },
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000040",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 4
+                  },
+                  "layout": "vertical",
+                  "gap": 5,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "oKtR8",
+                      "name": "label",
+                      "fill": "$color.accent.period.contrast",
+                      "content": "26",
+                      "fontFamily": "IBM Plex Sans",
+                      "fontSize": "$font.size.body",
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon_font",
+                      "id": "vOjvQ",
+                      "name": "specialEye",
+                      "width": 12,
+                      "height": 12,
+                      "iconFontName": "visibility",
+                      "iconFontFamily": "Material Symbols Outlined",
+                      "weight": 700,
+                      "fill": "$color.accent.period.contrast"
+                    }
+                  ]
                 }
               ]
             }
@@ -3743,6 +4002,10 @@
                       "content": "22",
                       "x": 12.785714285714285,
                       "y": 12
+                    },
+                    "QAiJd": {
+                      "x": 15.285714285714285,
+                      "y": 35
                     }
                   }
                 },
@@ -3766,6 +4029,14 @@
                   }
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "9cEcV",
+              "name": "weekLine1",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "$color.border.subtle"
             },
             {
               "type": "frame",
@@ -3907,6 +4178,14 @@
                   }
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "kqqv7",
+              "name": "weekLine2",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "$color.border.subtle"
             },
             {
               "type": "frame",
@@ -4063,7 +4342,7 @@
           "name": "homeLegend",
           "height": "fit_content",
           "x": 16,
-          "y": 741,
+          "y": 759,
           "descendants": {
             "B3pLP": {
               "width": "fit_content",
@@ -4110,7 +4389,7 @@
           "name": "homeSelected",
           "height": "fit_content",
           "x": 16,
-          "y": 777,
+          "y": 795,
           "justifyContent": "start",
           "alignItems": "start",
           "descendants": {
@@ -4255,7 +4534,7 @@
           "name": "recordedPanel",
           "height": "fit_content",
           "x": 16,
-          "y": 1046,
+          "y": 1064,
           "descendants": {
             "clUNn": {
               "width": "fill_container",
@@ -4399,7 +4678,7 @@
           "name": "singlePanel",
           "height": "fit_content",
           "x": 16,
-          "y": 1315,
+          "y": 1333,
           "descendants": {
             "clUNn": {
               "width": "fill_container",
@@ -4739,7 +5018,7 @@
           "name": "batchPanelCopy",
           "height": "fit_content",
           "x": 16,
-          "y": 1785,
+          "y": 1803,
           "descendants": {
             "ODFQb": {
               "x": 16,
@@ -6665,6 +6944,10 @@
                       "content": "22",
                       "x": 12.785714285714285,
                       "y": 12
+                    },
+                    "QAiJd": {
+                      "x": 15.285714285714285,
+                      "y": 35
                     }
                   }
                 },
@@ -6688,6 +6971,14 @@
                   }
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "ram8J",
+              "name": "weekLine3",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "$color.border.subtle"
             },
             {
               "type": "frame",
@@ -6829,6 +7120,14 @@
                   }
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "brqRZ",
+              "name": "weekLine4",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "$color.border.subtle"
             },
             {
               "type": "frame",
@@ -6985,7 +7284,7 @@
           "name": "homeLegend",
           "height": "fit_content",
           "x": 16,
-          "y": 681,
+          "y": 699,
           "descendants": {
             "B3pLP": {
               "width": "fit_content",
@@ -7032,7 +7331,7 @@
           "name": "homeSelected",
           "height": "fit_content",
           "x": 16,
-          "y": 713,
+          "y": 731,
           "justifyContent": "start",
           "alignItems": "start",
           "descendants": {
@@ -7744,6 +8043,10 @@
                       "content": "22",
                       "x": 12.785714285714285,
                       "y": 12
+                    },
+                    "QAiJd": {
+                      "x": 15.285714285714285,
+                      "y": 35
                     }
                   }
                 },
@@ -7767,6 +8070,14 @@
                   }
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "ounTi",
+              "name": "weekLine5",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "$color.border.subtle"
             },
             {
               "type": "frame",
@@ -7908,6 +8219,14 @@
                   }
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "K96ub",
+              "name": "weekLine6",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "$color.border.subtle"
             },
             {
               "type": "frame",
@@ -8064,7 +8383,7 @@
           "name": "homeLegend",
           "height": "fit_content",
           "x": 16,
-          "y": 681,
+          "y": 699,
           "descendants": {
             "B3pLP": {
               "width": "fit_content",
@@ -8111,7 +8430,7 @@
           "name": "singlePanel",
           "height": "fit_content",
           "x": 16,
-          "y": 713,
+          "y": 731,
           "descendants": {
             "clUNn": {
               "width": "fill_container",
@@ -9981,6 +10300,10 @@
     "space.tight": {
       "type": "number",
       "value": 8
+    },
+    "color.accent.period.contrast": {
+      "type": "color",
+      "value": "#FFFFFF"
     }
   }
 }

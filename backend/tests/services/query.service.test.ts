@@ -1,5 +1,5 @@
 import prisma from '../../src/db/prisma';
-import { getDayRecordDetail, getModuleAccessState, getModuleHomeView } from '../../src/services/query.service';
+import { getDayRecordDetail, getModuleAccessState, getModuleHomeView, getModuleSettings } from '../../src/services/query.service';
 
 jest.mock('../../src/db/prisma', () => ({
   __esModule: true,
@@ -20,6 +20,9 @@ jest.mock('../../src/db/prisma', () => ({
     moduleAccess: {
       findMany: jest.fn(),
     },
+    moduleSettings: {
+      upsert: jest.fn(),
+    },
   },
 }));
 
@@ -36,7 +39,8 @@ describe('query.service', () => {
     });
     (prisma.dayRecord.findUnique as jest.Mock).mockResolvedValue({
       date: new Date('2026-03-23T00:00:00.000Z'),
-      bleedingState: 'PERIOD',
+      isPeriod: true,
+      source: 'MANUAL',
       painLevel: 3,
       flowLevel: 4,
       colorLevel: 2,
@@ -52,12 +56,14 @@ describe('query.service', () => {
 
     expect(result.dayRecord).toEqual({
       date: '2026-03-23',
-      bleedingState: 'period',
+      isPeriod: true,
       painLevel: 3,
       flowLevel: 4,
       colorLevel: 2,
       note: 'note',
+      source: 'manual',
       isExplicit: true,
+      hasDeviation: true,
     });
   });
 
@@ -78,12 +84,14 @@ describe('query.service', () => {
 
     expect(result.dayRecord).toEqual({
       date: '2026-03-23',
-      bleedingState: 'none',
+      isPeriod: false,
       painLevel: null,
       flowLevel: null,
       colorLevel: null,
       note: null,
+      source: null,
       isExplicit: false,
+      hasDeviation: false,
     });
   });
 
@@ -152,7 +160,7 @@ describe('query.service', () => {
     expect(result.currentStatusSummary?.status).toBe('in_period');
     expect(result.calendarMarks).toEqual(
       expect.arrayContaining([
-        { date: '2026-03-20', kind: 'period' },
+        { date: '2026-03-20', kind: 'period_start' },
         { date: '2026-03-23', kind: 'today' },
         { date: '2026-04-12', kind: 'prediction_start' },
       ]),
@@ -200,5 +208,30 @@ describe('query.service', () => {
       endDate: '2026-04-14',
     });
     jest.useRealTimers();
+  });
+
+  it('returns module settings for an accessible module instance', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+      sharingStatus: 'PRIVATE',
+    });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      moduleInstanceId: 'module-1',
+      defaultPeriodDurationDays: 6,
+    });
+
+    const result = await getModuleSettings({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+    });
+
+    expect(result).toEqual({
+      moduleInstanceId: 'module-1',
+      moduleSettings: {
+        defaultPeriodDurationDays: 6,
+      },
+    });
   });
 });

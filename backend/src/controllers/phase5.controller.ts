@@ -7,6 +7,7 @@ import {
   revokeModuleAccess,
   shareModuleInstance,
 } from '../services/phase5.service';
+import { updateDefaultPeriodDuration as updateDefaultPeriodDurationSetting } from '../services/moduleSettings.service';
 
 export async function recordDayDetailsHandler(req: Request, res: Response) {
   const result = await recordDayDetails({ ...req.body, userId: req.user.id });
@@ -35,5 +36,10 @@ export async function getCalendarWindowHandler(req: Request, res: Response) {
 
 export async function getPredictionSummaryHandler(req: Request, res: Response) {
   const result = await getPredictionSummary({ ...req.query, userId: req.user.id } as any);
+  res.json({ ok: true, data: result, error: null });
+}
+
+export async function updateDefaultPeriodDurationHandler(req: Request, res: Response) {
+  const result = await updateDefaultPeriodDurationSetting(req.body.moduleInstanceId, req.body.defaultPeriodDurationDays);
   res.json({ ok: true, data: result, error: null });
 }

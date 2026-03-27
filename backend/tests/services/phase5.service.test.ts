@@ -63,11 +63,19 @@ describe('phase5.service', () => {
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
       {
         date: new Date('2026-03-20T00:00:00.000Z'),
-        bleedingState: 'PERIOD',
+        isPeriod: true,
+        source: 'MANUAL',
+        painLevel: 3,
+        flowLevel: 3,
+        colorLevel: 3,
       },
       {
         date: new Date('2026-03-22T00:00:00.000Z'),
-        bleedingState: 'SPOTTING',
+        isPeriod: false,
+        source: 'MANUAL',
+        painLevel: 3,
+        flowLevel: 3,
+        colorLevel: 3,
       },
     ]);
     (prisma.derivedCycle.findMany as jest.Mock).mockResolvedValue([
@@ -92,13 +100,13 @@ describe('phase5.service', () => {
 
     expect(windowResult.window).toEqual({ startDate: '2026-03-20', endDate: '2026-03-22' });
     expect(windowResult.days).toEqual([
-      { date: '2026-03-20', bleedingState: 'period', isExplicit: true },
-      { date: '2026-03-21', bleedingState: 'none', isExplicit: false },
-      { date: '2026-03-22', bleedingState: 'spotting', isExplicit: true },
+      { date: '2026-03-20', isPeriod: true, source: 'manual', isExplicit: true, hasDeviation: false },
+      { date: '2026-03-21', isPeriod: false, source: null, isExplicit: false, hasDeviation: false },
+      { date: '2026-03-22', isPeriod: false, source: 'manual', isExplicit: true, hasDeviation: false },
     ]);
     expect(windowResult.marks).toEqual(
       expect.arrayContaining([
-        { date: '2026-03-20', kind: 'period' },
+        { date: '2026-03-20', kind: 'period_start' },
         { date: '2026-03-21', kind: 'today' },
         { date: '2026-03-22', kind: 'prediction_start' },
       ]),

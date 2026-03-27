@@ -1,17 +1,17 @@
-# Menstrual Application Contract Draft
+# Period Application Contract Draft
 
 **Date:** 2026-03-23
 
 ## Purpose
 
-This document captures the application-layer contract between the menstrual domain model and a future backend prototype or frontend service layer.
+This document captures the application-layer contract between the period domain model and a future backend prototype or service layer.
 
 It is still a draft, but it is concrete enough to support:
 
-- frontend mock service work
+- backend endpoint design
 - local-first service implementation
-- backend prototype endpoint design
 - stable payload and read-model discussions
+- frontend mock service work if needed later
 
 It does not commit the project to REST, RPC, or a specific database model.
 
@@ -23,7 +23,7 @@ The contract is expressed in application-service terms:
 - queries return read models
 - payloads use camelCase
 - dates use `YYYY-MM-DD`
-- missing day state is represented as `none` in read models, even though it is implicit in persistence
+- missing day records are represented as absent persistence and `isPeriod: false` in read models
 
 ## Shared Envelope Direction
 
@@ -36,7 +36,7 @@ The contract is expressed in application-service terms:
     "moduleInstanceId": "mi_123",
     "updatedAt": "2026-03-23T14:00:00Z",
     "recomputed": {
-      "cycleChanged": true,
+      "segmentChanged": true,
       "predictionChanged": true
     }
   },
@@ -85,6 +85,7 @@ The contract is expressed in application-service terms:
 - `getCalendarWindow`
 - `getPredictionSummary`
 - `getModuleAccessState`
+- `getModuleSettings`
 
 ## Shared Payload Objects
 
@@ -137,8 +138,38 @@ Rules:
 }
 ```
 
-- `source` is an internal behavior explanation field; user-facing semantics treat `manual` and `auto_filled` as equally valid period days
+- `source` is an internal behavior explanation field; user-visible semantics treat `manual` and `auto_filled` as equally valid period days
 - `hasDeviation` represents whether the day's details deviate from the default pattern
+
+### `AnchoredPeriodSegmentReadModel`
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "profileId": "profile_123",
+  "anchorDate": "2026-03-23",
+  "endDate": "2026-03-28",
+  "durationDays": 6,
+  "defaultPeriodDurationDays": 6,
+  "derivedFromDates": [
+    "2026-03-23",
+    "2026-03-24",
+    "2026-03-25",
+    "2026-03-26",
+    "2026-03-27",
+    "2026-03-28"
+  ]
+}
+```
+
+### `ModuleSettingsReadModel`
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "defaultPeriodDurationDays": 6
+}
+```
 
 ### `PredictionReadModel`
 
@@ -175,7 +206,7 @@ Rules:
 Purpose:
 
 - mark one date as being in period
-- if the previous day is not in period, treat this date as the first day of a new cycle
+- if the previous day is not in period, treat this date as the first day of a new anchored segment
 - automatically fill later dates according to the current default period duration
 
 Suggested input:
@@ -190,10 +221,10 @@ Suggested input:
 
 Effects:
 
-- if the previous day is not period, create a new first-day anchor
+- if the previous day is not period, create a new anchor
 - create or confirm the selected day as period
-- auto-fill the tail of the cycle according to the configured default duration
-- trigger cycle and prediction recomputation
+- auto-fill the tail of the segment according to the configured default duration
+- trigger segment and prediction recomputation
 
 Suggested response data:
 
@@ -202,7 +233,7 @@ Suggested response data:
   "moduleInstanceId": "mi_123",
   "date": "2026-03-23",
   "dayRecordChanged": true,
-  "cycleAnchorRecognized": true,
+  "segmentAnchorRecognized": true,
   "autoFilledDates": [
     "2026-03-24",
     "2026-03-25",
@@ -211,7 +242,7 @@ Suggested response data:
     "2026-03-28"
   ],
   "recomputed": {
-    "cycleChanged": true,
+    "segmentChanged": true,
     "predictionChanged": true
   }
 }
@@ -254,7 +285,7 @@ Suggested response data:
     "2026-03-28"
   ],
   "recomputed": {
-    "cycleChanged": true,
+    "segmentChanged": true,
     "predictionChanged": true
   }
 }
@@ -317,6 +348,10 @@ Effects:
 
 - save note if within length limit
 - reject invalid note lengths
+
+Limit:
+
+- maximum length is `500` characters
 
 Suggested response data:
 
@@ -436,6 +471,7 @@ Returns:
 - calendar marks
 - selected day detail when applicable
 - prediction summary
+- module settings
 
 Suggested response shape:
 
@@ -446,14 +482,15 @@ Suggested response shape:
   "currentStatusSummary": {
     "status": "in_period",
     "anchorDate": "2026-03-23",
-    "currentCycle": {
-      "startDate": "2026-03-23",
+    "currentSegment": {
+      "anchorDate": "2026-03-23",
       "endDate": "2026-03-28",
-      "durationDays": 6
+      "durationDays": 6,
+      "defaultPeriodDurationDays": 6
     }
   },
   "visibleWindow": {
-    "kind": "cycle_window",
+    "kind": "segment_window",
     "startDate": "2026-03-23",
     "endDate": "2026-04-14"
   },
@@ -469,6 +506,9 @@ Suggested response shape:
     "predictionWindowStart": "2026-04-10",
     "predictionWindowEnd": "2026-04-14",
     "basedOnCycleCount": 4
+  },
+  "moduleSettings": {
+    "defaultPeriodDurationDays": 6
   }
 }
 ```
@@ -477,8 +517,8 @@ Suggested response shape:
 
 Returns:
 
-- one day's period state if present
-- implicit `none` if absent
+- one day's period record if present
+- implicit non-period if absent
 - attached levels
 - note
 - source and deviation interpretation
@@ -519,7 +559,7 @@ Returns:
 
 - requested date window
 - day rows for every requested date
-- derived marks for period, period start, prediction start, and today when applicable
+- derived marks for period start, period, prediction start, and today when applicable
 
 Suggested input:
 
@@ -633,6 +673,31 @@ Suggested response shape:
 }
 ```
 
+### `getModuleSettings`
+
+Returns:
+
+- current default period duration for the module instance
+
+Suggested input:
+
+```json
+{
+  "moduleInstanceId": "mi_123"
+}
+```
+
+Suggested response shape:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "moduleSettings": {
+    "defaultPeriodDurationDays": 6
+  }
+}
+```
+
 ## Recommended First Stable Slice
 
 If the team wants the smallest practical first contract, stabilize these first:
@@ -640,6 +705,7 @@ If the team wants the smallest practical first contract, stabilize these first:
 - `recordPeriodDay`
 - `clearPeriodDay`
 - `recordDayDetails`
+- `updateDefaultPeriodDuration`
 - `getModuleHomeView`
 - `getDayRecordDetail`
 - `getCalendarWindow`
@@ -651,11 +717,11 @@ This slice is enough to support:
 - automatic period fill
 - tail correction
 - detail refinement
+- settings refresh
 - prediction refresh
 - same-instance private/shared behavior
 
 ## Open Questions
 
-- the exact maximum note length
 - whether the default period duration should be versioned historically or only stored as the current setting
 - whether deviation should stay a pure read-model interpretation or later gain explicit saved explanation fields

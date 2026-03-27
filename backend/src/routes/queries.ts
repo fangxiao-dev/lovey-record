@@ -3,6 +3,7 @@ import {
   getDayRecordDetailHandler,
   getModuleAccessStateHandler,
   getModuleHomeViewHandler,
+  getModuleSettingsHandler,
 } from '../controllers/query.controller';
 import { getCalendarWindowHandler, getPredictionSummaryHandler } from '../controllers/phase5.controller';
 
@@ -11,6 +12,7 @@ const router = Router();
 router.get('/getModuleHomeView', getModuleHomeViewHandler);
 router.get('/getDayRecordDetail', getDayRecordDetailHandler);
 router.get('/getModuleAccessState', getModuleAccessStateHandler);
+router.get('/getModuleSettings', getModuleSettingsHandler);
 router.get('/getCalendarWindow', getCalendarWindowHandler);
 router.get('/getPredictionSummary', getPredictionSummaryHandler);
 

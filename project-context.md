@@ -5,7 +5,7 @@
 - Project type: uni-app Vue 3 relationship record product MVP
 - One-sentence purpose: build a relationship-oriented record space in uni-app, with the menstrual tracking module as the first complete MVP slice
 - Primary audience: couples who may start from single-user use and later share the same module instance with a partner
-- Current phase: active mainline implementation in the uni-app repo, using Pencil/design docs and the legacy reference repo to drive a runnable prototype
+- Current phase: active mainline implementation in the uni-app repo, with backend period-model contracts now aligned to the new `isPeriod` / `source` / anchored segment model
 
 ## Background
 - Why this project exists: the original idea began as a menstrual tracking mini program, then expanded into a broader concept for recording meaningful relationship details in a shared space
@@ -104,10 +104,10 @@
 
 ## Candidate Technical Direction
 - Summary: keep this repository as the single mainline uni-app implementation, with a token-first styling layer, page/component reuse, local-first runtime assumptions, and selective reference to `love-recorder` for business logic and state coverage
-- Link to `tech-stack-investigate.md`: [tech-stack-investigate.md](D:\CodeSpace\hbuilder-projects\lovey-record\tech-stack-investigate.md)
-- Domain and application contract entry: [docs/contracts](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/contracts)
-- UI design workflow rule: [docs/design/2026-03-22-tokenize-collaboration-rule.md](D:\CodeSpace\hbuilder-projects\lovey-record\docs\design\2026-03-22-tokenize-collaboration-rule.md)
-- UI visual language guide: [docs/design/2026-03-23-ui-visual-language-guide.md](D:\CodeSpace\hbuilder-projects\lovey-record\docs\design\2026-03-23-ui-visual-language-guide.md)
+- Link to `tech-stack-investigate.md`: [tech-stack-investigate.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/tech-stack-investigate.md)
+- Domain and application contract entry: [docs/contracts](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/contracts/README.md)
+- UI design workflow rule: [docs/design/2026-03-22-tokenize-collaboration-rule.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-22-tokenize-collaboration-rule.md)
+- UI visual language guide: [docs/design/2026-03-23-ui-visual-language-guide.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-23-ui-visual-language-guide.md)
 
 ## Confirmed Facts
 - The product target remains a relationship record experience with menstrual tracking as the first MVP module.
@@ -119,6 +119,7 @@
 - The repo already has a token layer and foundation styling structure.
 - `D:\CodeSpace\love-recorder` is the only valid legacy/reference repo.
 - Long-lived use cases, domain models, and application contracts now belong under `docs/contracts/`, while phase-specific rollout documents belong under `docs/plans/`.
+- The backend period model now uses `isPeriod`, `source`, anchored period segments, `ModuleSettings`, and derived `hasDeviation` labels.
 
 ## Reasonable Inferences
 - The next implementation slices should continue to build shared UI foundations before adding many page-local variants.
