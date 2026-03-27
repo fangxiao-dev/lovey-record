@@ -25,21 +25,21 @@ Root-level files in `docs/design/` are only for cross-module rules, such as:
 
 Current examples:
 
-- [2026-03-23-ui-visual-language-guide.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-23-ui-visual-language-guide.md)
-- [2026-03-22-tokenize-collaboration-rule.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-22-tokenize-collaboration-rule.md)
-- [pencil/README.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/pencil/README.md)
+- [2026-03-23-ui-visual-language-guide.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-23-ui-visual-language-guide.md)
+- [2026-03-22-tokenize-collaboration-rule.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-22-tokenize-collaboration-rule.md)
+- [pencil/README.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/README.md)
 
 ### Module Directories
 
 Each major module gets its own directory:
 
-- [navigation/](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/navigation)
-- [management/](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/management)
-- [menstrual/](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual)
+- [navigation/](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/navigation)
+- [management/](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/management)
+- [menstrual/](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual)
 
 There is also one cross-module process/reference directory:
 
-- [pencil/](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/pencil)
+- [pencil/](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil)
 
 Each module directory should contain:
 
@@ -59,11 +59,11 @@ Each module directory should contain:
 
 When working on design or UI implementation:
 
-1. Read [project-context.md](/D:/CodeSpace/hbuilder-projects/lovey-record/project-context.md).
-2. Read [tech-stack-investigate.md](/D:/CodeSpace/hbuilder-projects/lovey-record/tech-stack-investigate.md).
+1. Read [project-context.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/project-context.md).
+2. Read [tech-stack-investigate.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/tech-stack-investigate.md).
 3. Read this file.
 4. Read the relevant cross-module design rules in `docs/design/`.
-5. If the task edits `.pen` files, read [pencil/README.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/pencil/README.md).
+5. If the task edits `.pen` files, read [pencil/README.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/README.md).
 6. Read the target module's `Design-Overview.md`.
 7. Read only the needed `function-*.md` files for that task.
 8. Read implementation plans under `docs/plans/` only when sequencing or migration detail is needed.
@@ -80,25 +80,26 @@ When working on design or UI implementation:
 
 ### Navigation
 
-- [Design-Overview.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/navigation/Design-Overview.md)
-- [function-dashboard-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/navigation/function-dashboard-home.md)
-- [function-tab-structure.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/navigation/function-tab-structure.md)
+- [Design-Overview.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/navigation/Design-Overview.md)
+- [function-dashboard-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/navigation/function-dashboard-home.md)
+- [function-tab-structure.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/navigation/function-tab-structure.md)
 
 ### Management
 
-- [Design-Overview.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/management/Design-Overview.md)
-- [function-module-management-page.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/management/function-module-management-page.md)
-- [function-sharing-expression.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/management/function-sharing-expression.md)
+- [Design-Overview.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/management/Design-Overview.md)
+- [function-module-management-page.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/management/function-module-management-page.md)
+- [function-sharing-expression.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/management/function-sharing-expression.md)
 
 ### Menstrual
 
-- [Design-Overview.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/Design-Overview.md)
-- [function-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/function-home.md)
-- [function-recording-model.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/function-recording-model.md)
+- [Design-Overview.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/Design-Overview.md)
+- [function-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-home.md)
+- [function-recording-model.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-recording-model.md)
 
 ### Pencil Collaboration
 
-- [README.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/pencil/README.md)
-- [Pencil-Workflow.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/pencil/Pencil-Workflow.md)
-- [Pencil-Pitfalls-And-Recovery.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/pencil/Pencil-Pitfalls-And-Recovery.md)
-- [Pencil-Board-Conventions.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/pencil/Pencil-Board-Conventions.md)
+- [README.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/README.md)
+- [Pencil-Workflow.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/Pencil-Workflow.md)
+- [Pencil-Pitfalls-And-Recovery.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/Pencil-Pitfalls-And-Recovery.md)
+- [Pencil-Board-Conventions.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/Pencil-Board-Conventions.md)
+

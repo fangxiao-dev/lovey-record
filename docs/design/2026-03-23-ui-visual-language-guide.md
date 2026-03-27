@@ -11,9 +11,9 @@ Use this document as the style contract before changing:
 - Pencil design drafts that introduce new visual patterns
 
 Companion references:
-- [2026-03-22-tokenize-collaboration-rule.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-22-tokenize-collaboration-rule.md)
-- [2026-03-22-design-tokene.pen](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design-drafts/2026-03-22-design-tokene.pen)
-- [2026-03-22-module-space-and-period-home.pen](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design-drafts/2026-03-22-module-space-and-period-home.pen)
+- [2026-03-22-tokenize-collaboration-rule.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-22-tokenize-collaboration-rule.md)
+- [2026-03-22-design-tokene.pen](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design-drafts/2026-03-22-design-tokene.pen)
+- [2026-03-22-module-space-and-period-home.pen](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design-drafts/2026-03-22-module-space-and-period-home.pen)
 
 ## Product Character
 
@@ -183,7 +183,7 @@ Must preserve:
 - month view is for browsing and locating, not for a second editor
 - `period / prediction / today / special` must be distinguishable, but the hierarchy must remain restrained
 
-### Current state semantics
+### Current period semantics
 
 - `period`: the strongest accent state, still controlled
 - `prediction`: pale and quiet, currently expressed through a light mint surface
@@ -230,3 +230,4 @@ Before adding or revising visual work:
 2. update tokens first if the guide implies a new reusable rule
 3. update the token/component-library draft before page composition
 4. treat violations as a design-system issue, not a page-level shortcut
+

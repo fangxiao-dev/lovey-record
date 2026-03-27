@@ -15,11 +15,11 @@
 
 ## 阅读顺序
 
-1. [../2026-03-22-tokenize-collaboration-rule.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-22-tokenize-collaboration-rule.md)
-2. [../2026-03-23-ui-visual-language-guide.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-23-ui-visual-language-guide.md)
-3. [Pencil-Workflow.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/pencil/Pencil-Workflow.md)
-4. [Pencil-Board-Conventions.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/pencil/Pencil-Board-Conventions.md)
-5. [Pencil-Pitfalls-And-Recovery.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/pencil/Pencil-Pitfalls-And-Recovery.md)
+1. [../2026-03-22-tokenize-collaboration-rule.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-22-tokenize-collaboration-rule.md)
+2. [../2026-03-23-ui-visual-language-guide.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-23-ui-visual-language-guide.md)
+3. [Pencil-Workflow.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/Pencil-Workflow.md)
+4. [Pencil-Board-Conventions.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/Pencil-Board-Conventions.md)
+5. [Pencil-Pitfalls-And-Recovery.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/Pencil-Pitfalls-And-Recovery.md)
 
 ## 与全局 Skill 的关系
 
@@ -39,7 +39,8 @@
 
 当前优先服务 `design token` 场景，尤其是这两个 `.pen` 文件：
 
-- [../../design-drafts/2026-03-22-design-tokene.pen](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design-drafts/2026-03-22-design-tokene.pen)
-- [../../design-drafts/2026-03-22-module-space-and-period-home.pen](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design-drafts/2026-03-22-module-space-and-period-home.pen)
+- [../../design-drafts/2026-03-22-design-tokene.pen](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design-drafts/2026-03-22-design-tokene.pen)
+- [../../design-drafts/2026-03-22-module-space-and-period-home.pen](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design-drafts/2026-03-22-module-space-and-period-home.pen)
 
 后续若扩展到更多 Pencil 文件，也应沿用这里的协作方式。
+

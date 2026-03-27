@@ -29,6 +29,7 @@ It should preserve:
 
 ## Related Function Docs
 
-- [function-module-management-page.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/management/function-module-management-page.md)
-- [function-sharing-expression.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/management/function-sharing-expression.md)
+- [function-module-management-page.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/management/function-module-management-page.md)
+- [function-sharing-expression.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/management/function-sharing-expression.md)
+
 

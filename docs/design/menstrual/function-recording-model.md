@@ -2,15 +2,15 @@
 
 ## Purpose
 
-This document summarizes the design-facing recording model for the menstrual module.
+This document summarizes the design-facing period model for the menstrual module.
 
-For the full data-model contract, also read [period_model.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/period_model.md).
+For the full data-model contract, also read [menstrual-domain-model.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/contracts/domain-models/2026-03-23-menstrual-domain-model.md).
 
 ## Core Rule
 
 - users edit days
-- the system derives cycles
-- the UI displays cycle-like blocks and current state
+- the system derives anchored period segments
+- the UI displays anchored period segments and current period state
 
 ## Interaction Contract
 
@@ -22,16 +22,17 @@ For the full data-model contract, also read [period_model.md](/D:/CodeSpace/hbui
 ## State Rules
 
 - missing day is interpreted as implicit `none`
-- consecutive `period` days derive a cycle block
+- consecutive `isPeriod` days derive an anchored segment block
 - `special` stays an attached event layer
 - future dates are not recordable
 
 ## View Rules
 
-- `Cycle Window` is the default editing view
+- `Segment Window` is the default editing view
 - `Month View` is a browsing view
 - the default center priority is:
   1. current period
   2. predicted period
   3. today
+
 

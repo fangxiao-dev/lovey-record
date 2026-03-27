@@ -6,8 +6,8 @@ This rule keeps UI visual work on a single supply chain so page drafts do not in
 
 ## Scope
 
-- `design token` and foundations work are currently carried by [../design-drafts/2026-03-22-design-tokene.pen](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design-drafts/2026-03-22-design-tokene.pen)
-- `component library`, `date states`, and business-page composition work are currently carried by [../design-drafts/2026-03-22-module-space-and-period-home.pen](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design-drafts/2026-03-22-module-space-and-period-home.pen)
+- `design token` and foundations work are currently carried by [../design-drafts/2026-03-22-design-tokene.pen](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design-drafts/2026-03-22-design-tokene.pen)
+- `component library`, `date states`, and business-page composition work are currently carried by [../design-drafts/2026-03-22-module-space-and-period-home.pen](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design-drafts/2026-03-22-module-space-and-period-home.pen)
 - canonical source of reusable visual components is the business-page file's component-library area
 
 ## Rule
@@ -32,3 +32,4 @@ This rule keeps UI visual work on a single supply chain so page drafts do not in
 - When a page draft exposes a missing reusable pattern, update the token file first only if the gap is token-level.
 - When the gap is component-structure, component-variant, or date-state expression, update the business-page file's component-library area.
 - Page review should treat new page-local visual patterns as a design-system issue, not as an acceptable shortcut.
+
