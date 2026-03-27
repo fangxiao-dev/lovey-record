@@ -14,7 +14,7 @@ Pencil 设计协作遵守单向供应链：
 
 ## 文件分工
 
-### 1. token / foundations / primitives
+### 1. token / foundations
 
 这类内容只在：
 
@@ -25,10 +25,9 @@ Pencil 设计协作遵守单向供应链：
 - `Token Foundations`
 - `Palette Series`
 - 颜色、字体、间距、圆角、基础表面层级
-- marker / date state 的标准表达
-- component primitive 或可复用视觉片段
+- semantic token 的命名与展示
 
-### 2. page composition / business draft
+### 2. component library / date states / business draft
 
 这类内容只在：
 
@@ -36,6 +35,8 @@ Pencil 设计协作遵守单向供应链：
 
 适用内容：
 
+- component library
+- date states
 - 页面布局
 - 模块空间与业务组合
 - 页面如何消费已有 token 与组件
@@ -56,7 +57,7 @@ Pencil 设计协作遵守单向供应链：
 5. 每轮改动后，必须同时做两种检查：
    - 用 `batch_get` 检查关键节点是否真的改到了目标属性
    - 用 `get_screenshot` 检查视觉上是否真的成立
-6. 若 foundations 或 primitives 仍不稳定，不得同步业务页使用方式。
+6. 若 foundations 仍不稳定，不得同步业务页使用方式。
 7. 只有 token 层稳定后，才允许把同一语义传播到 component 或 page。
 
 ## 局部改动优先级
@@ -78,8 +79,15 @@ Pencil 中的操作优先级固定如下：
 
 - 新颜色语义
 - 新 spacing / radius / type 层级
-- 新 marker / date state 表达
-- 可复用组件或组件变体
+- 新 marker 资源或颜色语义
+- 新 surface / type / spacing / radius 层级
+
+## 何时必须先改业务文件中的 component library
+
+只要变更涉及以下任意一项，就必须先改 `2026-03-22-module-space-and-period-home.pen` 中的 component-library 区：
+
+- 新可复用组件或组件变体
+- date state 的正式表达
 - page 中出现了明显可复用的重复结构
 
 ## 何时允许只改业务页
@@ -92,6 +100,6 @@ Pencil 中的操作优先级固定如下：
 
 ## 当前仓库的额外约束
 
-- business-page 文件不是 reusable visual source of truth
+- business-page 文件中的 component-library 区是当前 reusable visual source of truth
 - display board 可以 compact，但不能改变 token 含义
 - foundations 稳定之前，不要把局部试验当成可传播标准

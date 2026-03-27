@@ -59,6 +59,7 @@ board 有展示职责，但展示不能漂移语义。
 职责：
 
 - 展示单个日期单元在不同状态下的最终表达
+- 作为 component-library 层的一部分被维护
 
 要求：
 
@@ -77,7 +78,9 @@ board 有展示职责，但展示不能漂移语义。
 - [../../design-drafts/2026-03-22-design-tokene.pen](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design-drafts/2026-03-22-design-tokene.pen)
   - `Token Foundations`
   - `Palette Series`
+  - token 展示与 foundations
+- [../../design-drafts/2026-03-22-module-space-and-period-home.pen](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design-drafts/2026-03-22-module-space-and-period-home.pen)
+  - component library
   - `Marker States`
   - `Date States`
-- [../../design-drafts/2026-03-22-module-space-and-period-home.pen](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design-drafts/2026-03-22-module-space-and-period-home.pen)
   - 页面组合与业务层表达
