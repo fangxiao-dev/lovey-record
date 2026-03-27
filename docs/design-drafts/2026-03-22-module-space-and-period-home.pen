@@ -6,7 +6,7 @@
       "id": "bi8Au",
       "x": 0,
       "y": 0,
-      "name": "Page Component Dependencies",
+      "name": "Component Library / Active Source",
       "width": 417,
       "fill": "$color.bg.base",
       "layout": "vertical",
@@ -18,7 +18,7 @@
           "id": "PgD001",
           "name": "title",
           "fill": "$color.text.primary",
-          "content": "Page Component Dependencies",
+          "content": "Component Library / Active Source",
           "fontFamily": "$font.family.base",
           "fontSize": 14,
           "fontWeight": "700"
@@ -30,7 +30,7 @@
           "fill": "$color.text.secondary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "业务页面实例仍需本地 ref 依赖；规范源文件为 2026-03-22-design-tokene.pen，这里只保留当前页面实际引用的最小副本。",
+          "content": "当前正式组件源位于业务文件。这里维护页面实际复用的 primitives、composites、date states 与单日编辑模式。",
           "fontFamily": "$font.family.base",
           "fontSize": "$font.size.caption",
           "fontWeight": "normal"
@@ -1408,7 +1408,8 @@
                               "fill": "$color.text.muted",
                               "content": "极少",
                               "fontFamily": "IBM Plex Sans",
-                              "fontSize": 10
+                              "fontSize": 10,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1433,7 +1434,8 @@
                               "fill": "$color.text.muted",
                               "content": "少",
                               "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11
+                              "fontSize": 11,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1462,7 +1464,8 @@
                               "fill": "$color.text.muted",
                               "content": "正常",
                               "fontFamily": "IBM Plex Sans",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1487,7 +1490,8 @@
                               "fill": "$color.text.muted",
                               "content": "多",
                               "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11
+                              "fontSize": 11,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1512,7 +1516,8 @@
                               "fill": "$color.text.muted",
                               "content": "极多",
                               "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11
+                              "fontSize": 11,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -1658,7 +1663,8 @@
                               "fill": "$color.text.muted",
                               "content": "正常",
                               "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11
+                              "fontSize": 11,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1785,7 +1791,8 @@
                               "fill": "$color.accent.period",
                               "content": "极浅",
                               "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11
+                              "fontSize": 11,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1810,7 +1817,8 @@
                               "fill": "$color.accent.period",
                               "content": "浅",
                               "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11
+                              "fontSize": 11,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1850,7 +1858,8 @@
                               "fill": "$color.accent.period.soft",
                               "content": "正常",
                               "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11
+                              "fontSize": 11,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1875,7 +1884,8 @@
                               "fill": "$color.accent.period.soft",
                               "content": "深",
                               "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11
+                              "fontSize": 11,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1900,7 +1910,8 @@
                               "fill": "$color.accent.period.soft",
                               "content": "极深",
                               "fontFamily": "IBM Plex Sans",
-                              "fontSize": 11
+                              "fontSize": 11,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -1923,6 +1934,187 @@
           "fontFamily": "IBM Plex Sans",
           "fontSize": "$font.size.caption",
           "fontWeight": "500"
+        },
+        {
+          "type": "text",
+          "id": "s2ZxZ",
+          "name": "dateStatesTitle",
+          "fill": "$color.text.primary",
+          "content": "Primitive/DateStates",
+          "fontFamily": "IBM Plex Sans",
+          "fontSize": "$font.size.body",
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "RPybR",
+          "name": "dateStatesSub",
+          "fill": "$color.text.secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "五种日期呈现状态在这里定义，页面示例必须复用同一套表达。",
+          "fontFamily": "IBM Plex Sans",
+          "fontSize": "$font.size.caption",
+          "fontWeight": "500"
+        },
+        {
+          "type": "frame",
+          "id": "amd0L",
+          "name": "Primitive/DateStatesRow",
+          "width": "fill_container",
+          "gap": 8,
+          "children": [
+            {
+              "type": "frame",
+              "id": "hm6g5",
+              "name": "DateState/Default",
+              "reusable": true,
+              "width": "fill_container",
+              "height": 56,
+              "fill": "$color.bg.card",
+              "cornerRadius": "$radius.control",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "$color.border.subtle"
+              },
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "WQbur",
+                  "name": "label",
+                  "fill": "$color.text.primary",
+                  "content": "26",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": "$font.size.body",
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "PtepD",
+              "name": "DateState/Special",
+              "reusable": true,
+              "width": "fill_container",
+              "height": 56,
+              "fill": "$color.bg.card",
+              "cornerRadius": "$radius.control",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "$color.border.subtle"
+              },
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "G3g0N",
+                  "name": "label",
+                  "fill": "$color.text.primary",
+                  "content": "26",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": "$font.size.body",
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "icon_font",
+                  "id": "uf4xd",
+                  "name": "specialEye",
+                  "width": 12,
+                  "height": 12,
+                  "iconFontName": "visibility",
+                  "iconFontFamily": "Material Symbols Rounded",
+                  "fill": "$color.accent.period"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "dWyIJ",
+              "name": "DateState/Prediction",
+              "reusable": true,
+              "width": "fill_container",
+              "height": 56,
+              "fill": "$color.accent.prediction",
+              "cornerRadius": "$radius.control",
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Uqpoa",
+                  "name": "label",
+                  "fill": "$color.text.secondary",
+                  "content": "26",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": "$font.size.body",
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "029WO",
+              "name": "DateState/Period",
+              "reusable": true,
+              "width": "fill_container",
+              "height": 56,
+              "fill": "$color.accent.period.soft",
+              "cornerRadius": "$radius.control",
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "pz8BI",
+                  "name": "label",
+                  "fill": "$color.accent.period",
+                  "content": "26",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": "$font.size.body",
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "dwkKN",
+              "name": "DateState/Today",
+              "reusable": true,
+              "width": "fill_container",
+              "height": 56,
+              "fill": "$color.bg.card",
+              "cornerRadius": "$radius.control",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "$color.accent.today"
+              },
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "XzN4k",
+                  "name": "label",
+                  "fill": "$color.text.primary",
+                  "content": "26",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": "$font.size.body",
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -4041,15 +4233,75 @@
               "type": "ref",
               "ref": "uqMCN",
               "width": 326,
+              "height": "fit_content",
+              "x": 16,
+              "y": 93,
               "descendants": {
+                "9ttQ3": {
+                  "width": "fill_container",
+                  "x": 8,
+                  "y": 8
+                },
+                "jlHdM": {
+                  "x": 11,
+                  "y": 10
+                },
+                "J2Tio": {
+                  "x": 29,
+                  "y": 8
+                },
+                "Wt6mx": {
+                  "x": 57,
+                  "y": 6
+                },
                 "dtyRw": {
-                  "content": "中"
+                  "content": "中",
+                  "x": 9.5,
+                  "y": 2
+                },
+                "0qrjA": {
+                  "width": "fill_container",
+                  "x": 114,
+                  "y": 8
+                },
+                "jFzc3": {
+                  "x": 11,
+                  "y": 10
+                },
+                "IjqzP": {
+                  "x": 29,
+                  "y": 8
+                },
+                "QDUIX": {
+                  "x": 57,
+                  "y": 6
                 },
                 "ywcWO": {
-                  "content": "轻微"
+                  "content": "轻微",
+                  "x": 4,
+                  "y": 2
+                },
+                "tA73D": {
+                  "width": "fill_container",
+                  "x": 220,
+                  "y": 8
+                },
+                "hUPNG": {
+                  "x": 11,
+                  "y": 10
+                },
+                "PqgzZ": {
+                  "x": 29,
+                  "y": 8
+                },
+                "q0JVD": {
+                  "x": 57,
+                  "y": 6
                 },
                 "l2Lf2": {
-                  "content": "标准"
+                  "content": "标准",
+                  "x": 4,
+                  "y": 2
                 }
               }
             },
@@ -4125,15 +4377,75 @@
               "type": "ref",
               "ref": "uqMCN",
               "width": 326,
+              "height": "fit_content",
+              "x": 16,
+              "y": 93,
               "descendants": {
+                "9ttQ3": {
+                  "width": "fill_container",
+                  "x": 8,
+                  "y": 8
+                },
+                "jlHdM": {
+                  "x": 11,
+                  "y": 10
+                },
+                "J2Tio": {
+                  "x": 29,
+                  "y": 8
+                },
+                "Wt6mx": {
+                  "x": 57,
+                  "y": 6
+                },
                 "dtyRw": {
-                  "content": "重"
+                  "content": "重",
+                  "x": 9.5,
+                  "y": 2
+                },
+                "0qrjA": {
+                  "width": "fill_container",
+                  "x": 114,
+                  "y": 8
+                },
+                "jFzc3": {
+                  "x": 11,
+                  "y": 10
+                },
+                "IjqzP": {
+                  "x": 29,
+                  "y": 8
+                },
+                "QDUIX": {
+                  "x": 57,
+                  "y": 6
                 },
                 "ywcWO": {
-                  "content": "中等"
+                  "content": "中等",
+                  "x": 4,
+                  "y": 2
+                },
+                "tA73D": {
+                  "width": "fill_container",
+                  "x": 220,
+                  "y": 8
+                },
+                "hUPNG": {
+                  "x": 11,
+                  "y": 10
+                },
+                "PqgzZ": {
+                  "x": 29,
+                  "y": 8
+                },
+                "q0JVD": {
+                  "x": 57,
+                  "y": 6
                 },
                 "l2Lf2": {
-                  "content": "偏深"
+                  "content": "偏深",
+                  "x": 4,
+                  "y": 2
                 }
               }
             },
@@ -4207,7 +4519,261 @@
               "id": "u8rKi",
               "type": "ref",
               "ref": "YAPOj",
-              "width": 326
+              "width": 326,
+              "height": "fit_content",
+              "x": 16,
+              "y": 93,
+              "descendants": {
+                "XAmC1": {
+                  "width": "fill_container"
+                },
+                "FkrRR": {
+                  "width": "fill_container",
+                  "height": "fit_content",
+                  "y": 26
+                },
+                "46UYV": {
+                  "width": "fill_container",
+                  "x": 8,
+                  "y": 8
+                },
+                "Eea6E": {
+                  "x": 11,
+                  "y": 10
+                },
+                "3MPuF": {
+                  "x": 29,
+                  "y": 8
+                },
+                "CVHF4": {
+                  "x": 57,
+                  "y": 6
+                },
+                "oBLBt": {
+                  "x": 4,
+                  "y": 2
+                },
+                "E3Gks": {
+                  "width": "fill_container",
+                  "x": 114,
+                  "y": 8
+                },
+                "QGMQP": {
+                  "x": 11,
+                  "y": 10
+                },
+                "h7JfE": {
+                  "x": 29,
+                  "y": 8
+                },
+                "ESVZm": {
+                  "x": 57,
+                  "y": 6
+                },
+                "cH3xp": {
+                  "x": 9.5,
+                  "y": 2
+                },
+                "2mkWl": {
+                  "width": "fill_container",
+                  "x": 220,
+                  "y": 8
+                },
+                "keCxR": {
+                  "x": 11,
+                  "y": 10
+                },
+                "bAMZH": {
+                  "x": 29,
+                  "y": 8
+                },
+                "WeHmZ": {
+                  "x": 57,
+                  "y": 6
+                },
+                "TteD3": {
+                  "x": 4,
+                  "y": 2
+                },
+                "aRXKk": {
+                  "width": "fill_container",
+                  "y": 84
+                },
+                "AVsCv": {
+                  "width": "fill_container",
+                  "y": 0.6666666666666679
+                },
+                "d0BiU": {
+                  "width": "fit_content",
+                  "height": "fit_content",
+                  "x": 12,
+                  "y": 11.5
+                },
+                "CeOW8": {
+                  "x": 0,
+                  "y": 17
+                },
+                "FPNGm": {
+                  "height": "fit_content",
+                  "x": 59,
+                  "y": 5
+                },
+                "whMFK": {
+                  "width": "fill_container"
+                },
+                "KeEXp": {
+                  "x": 13.100000000000001,
+                  "y": 16
+                },
+                "QJf87": {
+                  "width": "fill_container",
+                  "x": 52.2
+                },
+                "iShOE": {
+                  "x": 17.6,
+                  "y": 15
+                },
+                "IdZjQ": {
+                  "width": "fill_container",
+                  "x": 104.4
+                },
+                "nEdHG": {
+                  "x": 10.600000000000001,
+                  "y": 14.5
+                },
+                "aFCIw": {
+                  "width": "fill_container",
+                  "x": 156.60000000000002
+                },
+                "DvikY": {
+                  "x": 17.6,
+                  "y": 15
+                },
+                "blPgd": {
+                  "width": "fill_container",
+                  "x": 208.8
+                },
+                "eTeZw": {
+                  "x": 12.100000000000001,
+                  "y": 15
+                },
+                "OU47R": {
+                  "width": "fill_container",
+                  "y": 58.00000000000001
+                },
+                "vccO2": {
+                  "width": "fit_content",
+                  "height": "fit_content",
+                  "x": 12,
+                  "y": 11.5
+                },
+                "5SjCc": {
+                  "x": 0,
+                  "y": 17
+                },
+                "NxEBU": {
+                  "height": "fit_content",
+                  "x": 59,
+                  "y": 5
+                },
+                "W72Ht": {
+                  "width": "fill_container"
+                },
+                "T7cNR": {
+                  "x": 18.1,
+                  "y": 16
+                },
+                "As8V1": {
+                  "width": "fill_container",
+                  "x": 52.2
+                },
+                "TCDRf": {
+                  "x": 18.1,
+                  "y": 16
+                },
+                "0lnsR": {
+                  "width": "fill_container",
+                  "x": 104.4
+                },
+                "w4glM": {
+                  "x": 12.100000000000001,
+                  "y": 15
+                },
+                "8KK1b": {
+                  "width": "fill_container",
+                  "x": 156.60000000000002
+                },
+                "zCPBA": {
+                  "x": 18.1,
+                  "y": 16
+                },
+                "yxbN3": {
+                  "width": "fill_container",
+                  "x": 208.8
+                },
+                "NF5lp": {
+                  "x": 13.100000000000001,
+                  "y": 16
+                },
+                "MbGhL": {
+                  "width": "fill_container",
+                  "y": 115.33333333333334
+                },
+                "ZLRFK": {
+                  "width": "fit_content",
+                  "height": "fit_content",
+                  "x": 12,
+                  "y": 11.5
+                },
+                "zgQCf": {
+                  "x": 0,
+                  "y": 17
+                },
+                "HFaOJ": {
+                  "height": "fit_content",
+                  "x": 59,
+                  "y": 5
+                },
+                "p6qPR": {
+                  "width": "fill_container"
+                },
+                "6Zeni": {
+                  "x": 12.100000000000001,
+                  "y": 15
+                },
+                "rEk8V": {
+                  "width": "fill_container",
+                  "x": 52.2
+                },
+                "sshIA": {
+                  "x": 17.6,
+                  "y": 15
+                },
+                "qHC6U": {
+                  "width": "fill_container",
+                  "x": 104.4
+                },
+                "A7i2S": {
+                  "x": 12.100000000000001,
+                  "y": 15
+                },
+                "1CNkd": {
+                  "width": "fill_container",
+                  "x": 156.60000000000002
+                },
+                "iAdLH": {
+                  "x": 17.6,
+                  "y": 15
+                },
+                "yzvfU": {
+                  "width": "fill_container",
+                  "x": 208.8
+                },
+                "zEuNC": {
+                  "x": 12.100000000000001,
+                  "y": 15
+                }
+              }
             },
             "YayuR": {
               "width": "fit_content",
@@ -6840,15 +7406,75 @@
               "type": "ref",
               "ref": "uqMCN",
               "width": 326,
+              "height": "fit_content",
+              "x": 16,
+              "y": 93,
               "descendants": {
+                "9ttQ3": {
+                  "width": "fill_container",
+                  "x": 8,
+                  "y": 8
+                },
+                "jlHdM": {
+                  "x": 11,
+                  "y": 10
+                },
+                "J2Tio": {
+                  "x": 29,
+                  "y": 8
+                },
+                "Wt6mx": {
+                  "x": 57,
+                  "y": 6
+                },
                 "dtyRw": {
-                  "content": "中"
+                  "content": "中",
+                  "x": 9.5,
+                  "y": 2
+                },
+                "0qrjA": {
+                  "width": "fill_container",
+                  "x": 114,
+                  "y": 8
+                },
+                "jFzc3": {
+                  "x": 11,
+                  "y": 10
+                },
+                "IjqzP": {
+                  "x": 29,
+                  "y": 8
+                },
+                "QDUIX": {
+                  "x": 57,
+                  "y": 6
                 },
                 "ywcWO": {
-                  "content": "轻微"
+                  "content": "轻微",
+                  "x": 4,
+                  "y": 2
+                },
+                "tA73D": {
+                  "width": "fill_container",
+                  "x": 220,
+                  "y": 8
+                },
+                "hUPNG": {
+                  "x": 11,
+                  "y": 10
+                },
+                "PqgzZ": {
+                  "x": 29,
+                  "y": 8
+                },
+                "q0JVD": {
+                  "x": 57,
+                  "y": 6
                 },
                 "l2Lf2": {
-                  "content": "标准"
+                  "content": "标准",
+                  "x": 4,
+                  "y": 2
                 }
               }
             },
@@ -6957,15 +7583,75 @@
               "type": "ref",
               "ref": "uqMCN",
               "width": 326,
+              "height": "fit_content",
+              "x": 16,
+              "y": 93,
               "descendants": {
+                "9ttQ3": {
+                  "width": "fill_container",
+                  "x": 8,
+                  "y": 8
+                },
+                "jlHdM": {
+                  "x": 11,
+                  "y": 10
+                },
+                "J2Tio": {
+                  "x": 29,
+                  "y": 8
+                },
+                "Wt6mx": {
+                  "x": 57,
+                  "y": 6
+                },
                 "dtyRw": {
-                  "content": "重"
+                  "content": "重",
+                  "x": 9.5,
+                  "y": 2
+                },
+                "0qrjA": {
+                  "width": "fill_container",
+                  "x": 114,
+                  "y": 8
+                },
+                "jFzc3": {
+                  "x": 11,
+                  "y": 10
+                },
+                "IjqzP": {
+                  "x": 29,
+                  "y": 8
+                },
+                "QDUIX": {
+                  "x": 57,
+                  "y": 6
                 },
                 "ywcWO": {
-                  "content": "中等"
+                  "content": "中等",
+                  "x": 4,
+                  "y": 2
+                },
+                "tA73D": {
+                  "width": "fill_container",
+                  "x": 220,
+                  "y": 8
+                },
+                "hUPNG": {
+                  "x": 11,
+                  "y": 10
+                },
+                "PqgzZ": {
+                  "x": 29,
+                  "y": 8
+                },
+                "q0JVD": {
+                  "x": 57,
+                  "y": 6
                 },
                 "l2Lf2": {
-                  "content": "偏深"
+                  "content": "偏深",
+                  "x": 4,
+                  "y": 2
                 }
               }
             },
@@ -8060,7 +8746,261 @@
               "id": "MfcKS",
               "type": "ref",
               "ref": "YAPOj",
-              "width": 326
+              "width": 326,
+              "height": "fit_content",
+              "x": 16,
+              "y": 93,
+              "descendants": {
+                "XAmC1": {
+                  "width": "fill_container"
+                },
+                "FkrRR": {
+                  "width": "fill_container",
+                  "height": "fit_content",
+                  "y": 26
+                },
+                "46UYV": {
+                  "width": "fill_container",
+                  "x": 8,
+                  "y": 8
+                },
+                "Eea6E": {
+                  "x": 11,
+                  "y": 10
+                },
+                "3MPuF": {
+                  "x": 29,
+                  "y": 8
+                },
+                "CVHF4": {
+                  "x": 57,
+                  "y": 6
+                },
+                "oBLBt": {
+                  "x": 4,
+                  "y": 2
+                },
+                "E3Gks": {
+                  "width": "fill_container",
+                  "x": 114,
+                  "y": 8
+                },
+                "QGMQP": {
+                  "x": 11,
+                  "y": 10
+                },
+                "h7JfE": {
+                  "x": 29,
+                  "y": 8
+                },
+                "ESVZm": {
+                  "x": 57,
+                  "y": 6
+                },
+                "cH3xp": {
+                  "x": 9.5,
+                  "y": 2
+                },
+                "2mkWl": {
+                  "width": "fill_container",
+                  "x": 220,
+                  "y": 8
+                },
+                "keCxR": {
+                  "x": 11,
+                  "y": 10
+                },
+                "bAMZH": {
+                  "x": 29,
+                  "y": 8
+                },
+                "WeHmZ": {
+                  "x": 57,
+                  "y": 6
+                },
+                "TteD3": {
+                  "x": 4,
+                  "y": 2
+                },
+                "aRXKk": {
+                  "width": "fill_container",
+                  "y": 84
+                },
+                "AVsCv": {
+                  "width": "fill_container",
+                  "y": 0.6666666666666679
+                },
+                "d0BiU": {
+                  "width": "fit_content",
+                  "height": "fit_content",
+                  "x": 12,
+                  "y": 11.5
+                },
+                "CeOW8": {
+                  "x": 0,
+                  "y": 17
+                },
+                "FPNGm": {
+                  "height": "fit_content",
+                  "x": 59,
+                  "y": 5
+                },
+                "whMFK": {
+                  "width": "fill_container"
+                },
+                "KeEXp": {
+                  "x": 13.100000000000001,
+                  "y": 16
+                },
+                "QJf87": {
+                  "width": "fill_container",
+                  "x": 52.2
+                },
+                "iShOE": {
+                  "x": 17.6,
+                  "y": 15
+                },
+                "IdZjQ": {
+                  "width": "fill_container",
+                  "x": 104.4
+                },
+                "nEdHG": {
+                  "x": 10.600000000000001,
+                  "y": 14.5
+                },
+                "aFCIw": {
+                  "width": "fill_container",
+                  "x": 156.60000000000002
+                },
+                "DvikY": {
+                  "x": 17.6,
+                  "y": 15
+                },
+                "blPgd": {
+                  "width": "fill_container",
+                  "x": 208.8
+                },
+                "eTeZw": {
+                  "x": 12.100000000000001,
+                  "y": 15
+                },
+                "OU47R": {
+                  "width": "fill_container",
+                  "y": 58.00000000000001
+                },
+                "vccO2": {
+                  "width": "fit_content",
+                  "height": "fit_content",
+                  "x": 12,
+                  "y": 11.5
+                },
+                "5SjCc": {
+                  "x": 0,
+                  "y": 17
+                },
+                "NxEBU": {
+                  "height": "fit_content",
+                  "x": 59,
+                  "y": 5
+                },
+                "W72Ht": {
+                  "width": "fill_container"
+                },
+                "T7cNR": {
+                  "x": 18.1,
+                  "y": 16
+                },
+                "As8V1": {
+                  "width": "fill_container",
+                  "x": 52.2
+                },
+                "TCDRf": {
+                  "x": 18.1,
+                  "y": 16
+                },
+                "0lnsR": {
+                  "width": "fill_container",
+                  "x": 104.4
+                },
+                "w4glM": {
+                  "x": 12.100000000000001,
+                  "y": 15
+                },
+                "8KK1b": {
+                  "width": "fill_container",
+                  "x": 156.60000000000002
+                },
+                "zCPBA": {
+                  "x": 18.1,
+                  "y": 16
+                },
+                "yxbN3": {
+                  "width": "fill_container",
+                  "x": 208.8
+                },
+                "NF5lp": {
+                  "x": 13.100000000000001,
+                  "y": 16
+                },
+                "MbGhL": {
+                  "width": "fill_container",
+                  "y": 115.33333333333334
+                },
+                "ZLRFK": {
+                  "width": "fit_content",
+                  "height": "fit_content",
+                  "x": 12,
+                  "y": 11.5
+                },
+                "zgQCf": {
+                  "x": 0,
+                  "y": 17
+                },
+                "HFaOJ": {
+                  "height": "fit_content",
+                  "x": 59,
+                  "y": 5
+                },
+                "p6qPR": {
+                  "width": "fill_container"
+                },
+                "6Zeni": {
+                  "x": 12.100000000000001,
+                  "y": 15
+                },
+                "rEk8V": {
+                  "width": "fill_container",
+                  "x": 52.2
+                },
+                "sshIA": {
+                  "x": 17.6,
+                  "y": 15
+                },
+                "qHC6U": {
+                  "width": "fill_container",
+                  "x": 104.4
+                },
+                "A7i2S": {
+                  "x": 12.100000000000001,
+                  "y": 15
+                },
+                "1CNkd": {
+                  "width": "fill_container",
+                  "x": 156.60000000000002
+                },
+                "iAdLH": {
+                  "x": 17.6,
+                  "y": 15
+                },
+                "yzvfU": {
+                  "width": "fill_container",
+                  "x": 208.8
+                },
+                "zEuNC": {
+                  "x": 12.100000000000001,
+                  "y": 15
+                }
+              }
             },
             "YayuR": {
               "width": "fit_content",
@@ -8996,7 +9936,8 @@
                                       "fill": "$color.text.muted",
                                       "content": "极少",
                                       "fontFamily": "IBM Plex Sans",
-                                      "fontSize": 10
+                                      "fontSize": 10,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -9021,7 +9962,8 @@
                                       "fill": "$color.text.muted",
                                       "content": "少",
                                       "fontFamily": "IBM Plex Sans",
-                                      "fontSize": 11
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -9050,7 +9992,8 @@
                                       "fill": "$color.text.muted",
                                       "content": "正常",
                                       "fontFamily": "IBM Plex Sans",
-                                      "fontSize": 12
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -9075,7 +10018,8 @@
                                       "fill": "$color.text.muted",
                                       "content": "多",
                                       "fontFamily": "IBM Plex Sans",
-                                      "fontSize": 11
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -9100,7 +10044,8 @@
                                       "fill": "$color.text.muted",
                                       "content": "极多",
                                       "fontFamily": "IBM Plex Sans",
-                                      "fontSize": 11
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -9246,7 +10191,8 @@
                                       "fill": "$color.text.muted",
                                       "content": "正常",
                                       "fontFamily": "IBM Plex Sans",
-                                      "fontSize": 11
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -9373,7 +10319,8 @@
                                       "fill": "$color.accent.period",
                                       "content": "极浅",
                                       "fontFamily": "IBM Plex Sans",
-                                      "fontSize": 11
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -9398,7 +10345,8 @@
                                       "fill": "$color.accent.period",
                                       "content": "浅",
                                       "fontFamily": "IBM Plex Sans",
-                                      "fontSize": 11
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -9438,7 +10386,8 @@
                                       "fill": "$color.accent.period.soft",
                                       "content": "正常",
                                       "fontFamily": "IBM Plex Sans",
-                                      "fontSize": 11
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -9463,7 +10412,8 @@
                                       "fill": "$color.accent.period.soft",
                                       "content": "深",
                                       "fontFamily": "IBM Plex Sans",
-                                      "fontSize": 11
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -9488,7 +10438,8 @@
                                       "fill": "$color.accent.period.soft",
                                       "content": "极深",
                                       "fontFamily": "IBM Plex Sans",
-                                      "fontSize": 11
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
