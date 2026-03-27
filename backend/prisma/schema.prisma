@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== Core Domain =====
+
+model User {
+  id        String   @id @default(cuid())
+  openid    String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile   Profile?
+  accesses  ModuleAccess[]
+
+  @@map("users")
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  ownerUserId String   @unique @map("owner_user_id")
+  displayName String?  @map("display_name")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  owner              User             @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  moduleInstances    ModuleInstance[]
+  dayRecords         DayRecord[]
+  derivedCycles      DerivedCycle[]
+  predictions        Prediction[]
+
+  @@map("profiles")
+}
+
+model ModuleInstance {
+  id            String        @id @default(cuid())
+  moduleType    String        @map("module_type")
+  ownerUserId   String        @map("owner_user_id")
+  profileId     String        @map("profile_id")
+  sharingStatus SharingStatus @default(PRIVATE) @map("sharing_status")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  profile      Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  accesses     ModuleAccess[]
+  dayRecords   DayRecord[]
+  cycles       DerivedCycle[]
+  prediction   Prediction?
+
+  @@index([ownerUserId])
+  @@index([profileId])
+  @@map("module_instances")
+}
+
+model ModuleAccess {
+  id               String       @id @default(cuid())
+  moduleInstanceId String       @map("module_instance_id")
+  userId           String       @map("user_id")
+  role             AccessRole   @default(PARTNER)
+  accessStatus     AccessStatus @default(ACTIVE) @map("access_status")
+  grantedAt        DateTime     @default(now()) @map("granted_at")
+  revokedAt        DateTime?    @map("revoked_at")
+
+  moduleInstance ModuleInstance @relation(fields: [moduleInstanceId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([moduleInstanceId, userId])
+  @@index([userId])
+  @@map("module_accesses")
+}
+
+model DayRecord {
+  id               String        @id @default(cuid())
+  moduleInstanceId String        @map("module_instance_id")
+  profileId        String        @map("profile_id")
+  date             DateTime      @db.Date
+  bleedingState    BleedingState @map("bleeding_state")
+  painLevel        Int?          @map("pain_level")
+  flowLevel        Int?          @map("flow_level")
+  colorLevel       Int?          @map("color_level")
+  note             String?       @db.VarChar(500)
+  source           String?
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  moduleInstance ModuleInstance @relation(fields: [moduleInstanceId], references: [id], onDelete: Cascade)
+  profile        Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([moduleInstanceId, profileId, date])
+  @@index([moduleInstanceId, date])
+  @@index([profileId, date])
+  @@map("day_records")
+}
+
+model DerivedCycle {
+  id               String   @id @default(cuid())
+  moduleInstanceId String   @map("module_instance_id")
+  profileId        String   @map("profile_id")
+  startDate        DateTime @db.Date @map("start_date")
+  endDate          DateTime @db.Date @map("end_date")
+  durationDays     Int      @map("duration_days")
+  derivedFromDates String   @map("derived_from_dates")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  moduleInstance ModuleInstance @relation(fields: [moduleInstanceId], references: [id], onDelete: Cascade)
+  profile        Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([moduleInstanceId, profileId, startDate])
+  @@map("derived_cycles")
+}
+
+model Prediction {
+  id                    String   @id @default(cuid())
+  moduleInstanceId      String   @unique @map("module_instance_id")
+  profileId             String   @map("profile_id")
+  predictedStartDate    DateTime @db.Date @map("predicted_start_date")
+  predictionWindowStart DateTime @db.Date @map("prediction_window_start")
+  predictionWindowEnd   DateTime @db.Date @map("prediction_window_end")
+  basedOnCycleCount     Int      @map("based_on_cycle_count")
+  computedAt            DateTime @default(now()) @map("computed_at")
+
+  moduleInstance ModuleInstance @relation(fields: [moduleInstanceId], references: [id], onDelete: Cascade)
+  profile        Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("predictions")
+}
+
+// ===== Enums =====
+
+enum SharingStatus {
+  PRIVATE
+  SHARED
+}
+
+enum BleedingState {
+  PERIOD
+  SPOTTING
+}
+
+enum AccessRole {
+  OWNER
+  PARTNER
+}
+
+enum AccessStatus {
+  ACTIVE
+  REVOKED
+}
