@@ -1,6 +1,6 @@
 # Menstrual Core Use Cases
 
-**日期：** 2026-03-23
+**Date:** 2026-03-23
 
 ## Purpose
 
@@ -37,33 +37,70 @@ The system should provide:
 - whether prior records already exist
 - the next meaningful action the user can take
 
-### 2. Record a single day's primary menstrual state
+### 2. Record one day as the start of a period
 
-The user records or edits the primary state of a single date.
+The user records that one date is in period.
 
-The system should allow:
+The system should:
 
-- setting a date as `period`
-- setting a date as `spotting`
-- clearing the explicit record for that date
+- check whether the previous day is already in period
+- if not, treat the selected day as the first day of a new period
+- automatically fill later dates according to the current default period duration
+- persist both the selected day and the auto-filled days as period days
 
-The result should update the persisted `day_record` and trigger cycle and prediction recomputation.
+### 3. Extend a period beyond the default duration
 
-### 3. Record a single day's body and menstrual details
+The user reaches the default end of the auto-filled period, but the period has not actually ended yet.
 
-The user records more detailed daily information for one date.
+The system should:
 
-The system should allow editing these attached attributes on a `day_record`:
+- let the user mark one more day as period
+- extend the current period segment by one day
+- keep the new end date consistent in derived cycle and calendar output
 
-- `pain_level`
-- `flow_level`
-- `color_level`
+### 4. End a period earlier than the default duration
 
-Each field has five levels and defaults to the middle level when a new record is created.
+The user realizes the period ended earlier than the auto-filled default tail.
 
-### 4. Add a short note for a single day
+The system should:
 
-The user adds a short note to provide contextual information for one day.
+- let the user clear the first incorrect day
+- remove that day and all later dates belonging to the same current tail interpretation
+- update the cycle end and prediction results accordingly
+
+### 5. Minimize interaction for expected periods
+
+The user wants the system to do most of the repetitive work when the period follows the usual pattern.
+
+The system should:
+
+- require only a lightweight action to mark the period start
+- automatically apply the default duration and default daily detail values
+- avoid forcing the user to open detail controls unless they want to refine something
+
+### 6. Record a day's detail when reality differs from the default pattern
+
+The user sees that pain, flow, or color does not match the expected pattern for that day.
+
+The system should:
+
+- let the user adjust the relevant detail fields on that day
+- preserve the day as a period day
+- derive a deviation interpretation from those changed values rather than making the user choose a competing primary state
+
+### 7. Keep expected days simple
+
+The user has no special correction to make for a day that matches expectations.
+
+The system should:
+
+- keep the default detail values in effect
+- avoid asking the user to explicitly confirm "expected" on each day
+- treat unchanged defaults as the normal case
+
+### 8. Add a short note for one day
+
+The user wants to attach a short note to one day for context.
 
 The system should:
 
@@ -71,58 +108,27 @@ The system should:
 - enforce a maximum note length
 - reject or block saves that exceed the allowed length
 
-### 5. Record a contiguous date range as a period
+### 9. Automatically update cycle and prediction results after changes
 
-The user records several continuous dates as a period in one action.
-
-The system should:
-
-- create or update one `day_record` per selected date
-- apply `period` as the default primary state
-- apply default attached attribute values unless the user later refines them
-- recompute cycle blocks after save
-
-### 6. Cancel an unsaved range selection
-
-The user abandons a temporary multi-date selection before saving.
+After period start, extension, truncation, or detail-preserving day changes, the user expects the interpreted cycle state to stay up to date.
 
 The system should:
 
-- discard the temporary selection
-- keep persisted records unchanged
-- keep derived cycle and prediction results unchanged
-
-### 7. Refine a previously recorded day after quick range recording
-
-The user records a period range quickly first, then later opens one day to refine its details.
-
-The system should:
-
-- preserve the existing day-level primary state
-- allow later edits to `pain_level`, `flow_level`, `color_level`, and `note`
-- avoid requiring all details at initial range save time
-
-### 8. Clear a previously recorded day
-
-The user removes the explicit record for one day and returns it to an unrecorded state.
-
-The system should:
-
-- remove the explicit `day_record` for that date
-- remove attached details and note for that date
-- recompute derived cycle results
-
-### 9. Automatically update derived cycle and prediction results
-
-After any single-day or range save, the user expects the system to refresh the interpreted cycle state automatically.
-
-The system should:
-
-- derive cycle blocks from consecutive `period` days
-- keep `spotting` outside the v1 cycle boundary rule
+- rebuild the current derived cycle from the updated period segment
 - recompute the next predicted start window from cycle starts
+- keep home and calendar read models synchronized with the corrected result
 
-### 10. Share an existing private module instance
+### 10. Adjust the default period duration
+
+The user wants the automatic fill behavior to better match their usual period length.
+
+The system should:
+
+- allow a configurable default period duration in settings
+- apply the new duration to future first-day records
+- keep the setting visible and understandable as the source of the automatic fill behavior
+
+### 11. Share an existing private module instance
 
 The owner decides to grant access to a partner for the already existing menstrual module instance.
 
@@ -132,7 +138,7 @@ The system should:
 - expand access rather than duplicate data
 - let the partner view and maintain the same record set
 
-### 11. Revoke shared access while preserving data
+### 12. Revoke shared access while preserving data
 
 The owner decides to stop partner access without losing the historical records.
 
@@ -142,7 +148,7 @@ The system should:
 - preserve all stored `day_record` data
 - keep the owner's module instance identity unchanged
 
-### 12. Access the same module instance from different entry points
+### 13. Access the same module instance from different entry points
 
 The owner or partner may enter from different private/shared surfaces but should still operate on the same underlying module.
 

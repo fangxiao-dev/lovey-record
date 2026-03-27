@@ -1,10 +1,10 @@
 # Menstrual Application Contract Draft
 
-**日期：** 2026-03-23
+**Date:** 2026-03-23
 
 ## Purpose
 
-This document captures the application-layer contract that sits between the menstrual domain model and a future backend prototype or frontend service layer.
+This document captures the application-layer contract between the menstrual domain model and a future backend prototype or frontend service layer.
 
 It is still a draft, but it is concrete enough to support:
 
@@ -26,8 +26,6 @@ The contract is expressed in application-service terms:
 - missing day state is represented as `none` in read models, even though it is implicit in persistence
 
 ## Shared Envelope Direction
-
-This is not mandatory transport shape, but it is the recommended application-layer structure for the prototype.
 
 ### Command result
 
@@ -72,11 +70,11 @@ This is not mandatory transport shape, but it is the recommended application-lay
 ## Commands
 
 - `createModuleInstance`
-- `recordDayState`
+- `recordPeriodDay`
+- `clearPeriodDay`
 - `recordDayDetails`
 - `recordDayNote`
-- `recordDateRangeAsPeriod`
-- `clearDayRecord`
+- `updateDefaultPeriodDuration`
 - `shareModuleInstance`
 - `revokeModuleAccess`
 
@@ -110,12 +108,14 @@ Rules:
 ```json
 {
   "date": "2026-03-23",
-  "bleedingState": "period",
+  "isPeriod": true,
   "painLevel": 3,
   "flowLevel": 3,
   "colorLevel": 3,
   "note": "short note",
-  "isExplicit": true
+  "source": "auto_filled",
+  "isExplicit": true,
+  "hasDeviation": false
 }
 ```
 
@@ -126,14 +126,19 @@ Rules:
 ```json
 {
   "date": "2026-03-23",
-  "bleedingState": "none",
+  "isPeriod": false,
   "painLevel": null,
   "flowLevel": null,
   "colorLevel": null,
   "note": null,
-  "isExplicit": false
+  "source": null,
+  "isExplicit": false,
+  "hasDeviation": false
 }
 ```
+
+- `source` is an internal behavior explanation field; user-facing semantics treat `manual` and `auto_filled` as equally valid period days
+- `hasDeviation` represents whether the day's details deviate from the default pattern
 
 ### `PredictionReadModel`
 
@@ -165,11 +170,13 @@ Rules:
 
 ## Suggested Command Contracts
 
-### `recordDayState`
+### `recordPeriodDay`
 
 Purpose:
 
-- create or update the explicit primary state for one day
+- mark one date as being in period
+- if the previous day is not in period, treat this date as the first day of a new cycle
+- automatically fill later dates according to the current default period duration
 
 Suggested input:
 
@@ -177,25 +184,15 @@ Suggested input:
 {
   "moduleInstanceId": "mi_123",
   "profileId": "profile_123",
-  "date": "2026-03-23",
-  "bleedingState": "period"
-}
-```
-
-or
-
-```json
-{
-  "moduleInstanceId": "mi_123",
-  "profileId": "profile_123",
-  "date": "2026-03-23",
-  "clear": true
+  "date": "2026-03-23"
 }
 ```
 
 Effects:
 
-- upsert or clear `day_record`
+- if the previous day is not period, create a new first-day anchor
+- create or confirm the selected day as period
+- auto-fill the tail of the cycle according to the configured default duration
 - trigger cycle and prediction recomputation
 
 Suggested response data:
@@ -205,6 +202,57 @@ Suggested response data:
   "moduleInstanceId": "mi_123",
   "date": "2026-03-23",
   "dayRecordChanged": true,
+  "cycleAnchorRecognized": true,
+  "autoFilledDates": [
+    "2026-03-24",
+    "2026-03-25",
+    "2026-03-26",
+    "2026-03-27",
+    "2026-03-28"
+  ],
+  "recomputed": {
+    "cycleChanged": true,
+    "predictionChanged": true
+  }
+}
+```
+
+### `clearPeriodDay`
+
+Purpose:
+
+- remove one date from the current period interpretation
+- if the removed date is inside the current tail, truncate that date and every later date in the same derived tail
+
+Suggested input:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "profileId": "profile_123",
+  "date": "2026-03-25"
+}
+```
+
+Effects:
+
+- remove the explicit record for the selected date
+- remove later period dates that belong to the same tail interpretation
+- remove attached attributes and note for removed dates
+- recompute derived outputs
+
+Suggested response data:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "date": "2026-03-25",
+  "removedDates": [
+    "2026-03-25",
+    "2026-03-26",
+    "2026-03-27",
+    "2026-03-28"
+  ],
   "recomputed": {
     "cycleChanged": true,
     "predictionChanged": true
@@ -216,7 +264,7 @@ Suggested response data:
 
 Purpose:
 
-- update attached 5-level daily fields for one day
+- update attached 5-level daily fields for one period day
 
 Suggested input:
 
@@ -233,8 +281,9 @@ Suggested input:
 
 Effects:
 
-- update or create a `day_record` with default main-state assumptions only if the product later allows that path
-- otherwise require the day record to already exist
+- update an existing `day_record`
+- do not create a new period day implicitly through detail changes alone
+- if the new detail values differ from the default pattern, read models may surface a deviation label
 
 Suggested response data:
 
@@ -242,7 +291,8 @@ Suggested response data:
 {
   "moduleInstanceId": "mi_123",
   "date": "2026-03-23",
-  "detailChanged": true
+  "detailChanged": true,
+  "hasDeviation": true
 }
 ```
 
@@ -278,80 +328,34 @@ Suggested response data:
 }
 ```
 
-### `recordDateRangeAsPeriod`
+### `updateDefaultPeriodDuration`
 
 Purpose:
 
-- batch create or update continuous `period` day records
+- adjust the default period duration used for future auto-fill behavior
 
 Suggested input:
 
 ```json
 {
   "moduleInstanceId": "mi_123",
-  "profileId": "profile_123",
-  "startDate": "2026-03-20",
-  "endDate": "2026-03-24"
+  "defaultPeriodDurationDays": 6
 }
 ```
 
 Effects:
 
-- create or update one `day_record` per day
-- set `bleeding_state = period`
-- initialize attached detail fields to default values if needed
-- recompute derived cycle and prediction outputs
+- update module-level settings
+- future first-day records use the new duration
+- existing historical records are not silently rewritten unless the product later adds an explicit reapply action
 
 Suggested response data:
 
 ```json
 {
   "moduleInstanceId": "mi_123",
-  "range": {
-    "startDate": "2026-03-20",
-    "endDate": "2026-03-24"
-  },
-  "updatedDayCount": 5,
-  "recomputed": {
-    "cycleChanged": true,
-    "predictionChanged": true
-  }
-}
-```
-
-### `clearDayRecord`
-
-Purpose:
-
-- return one date to implicit `none`
-
-Suggested input:
-
-```json
-{
-  "moduleInstanceId": "mi_123",
-  "profileId": "profile_123",
-  "date": "2026-03-23"
-}
-```
-
-Effects:
-
-- remove explicit record
-- remove attached attributes and note
-- recompute derived outputs
-
-Suggested response data:
-
-```json
-{
-  "moduleInstanceId": "mi_123",
-  "date": "2026-03-23",
-  "dayRecordRemoved": true,
-  "recomputed": {
-    "cycleChanged": true,
-    "predictionChanged": true
-  }
+  "defaultPeriodDurationDays": 6,
+  "settingsChanged": true
 }
 ```
 
@@ -428,7 +432,7 @@ Returns:
 - module instance identity
 - sharing state
 - current status summary
-- visible cycle window or browsing window
+- visible period/prediction window
 - calendar marks
 - selected day detail when applicable
 - prediction summary
@@ -443,18 +447,19 @@ Suggested response shape:
     "status": "in_period",
     "anchorDate": "2026-03-23",
     "currentCycle": {
-      "startDate": "2026-03-20",
-      "endDate": "2026-03-24",
-      "durationDays": 5
+      "startDate": "2026-03-23",
+      "endDate": "2026-03-28",
+      "durationDays": 6
     }
   },
   "visibleWindow": {
     "kind": "cycle_window",
-    "startDate": "2026-03-16",
-    "endDate": "2026-04-05"
+    "startDate": "2026-03-23",
+    "endDate": "2026-04-14"
   },
   "calendarMarks": [
-    { "date": "2026-03-20", "kind": "period" },
+    { "date": "2026-03-23", "kind": "period_start" },
+    { "date": "2026-03-24", "kind": "period" },
     { "date": "2026-03-23", "kind": "today" },
     { "date": "2026-04-12", "kind": "prediction_start" }
   ],
@@ -472,10 +477,11 @@ Suggested response shape:
 
 Returns:
 
-- one day's explicit state if present
+- one day's period state if present
 - implicit `none` if absent
 - attached levels
 - note
+- source and deviation interpretation
 
 Suggested input:
 
@@ -495,12 +501,14 @@ Suggested response shape:
   "profileId": "profile_123",
   "dayRecord": {
     "date": "2026-03-23",
-    "bleedingState": "period",
+    "isPeriod": true,
     "painLevel": 3,
     "flowLevel": 4,
     "colorLevel": 2,
     "note": "short note",
-    "isExplicit": true
+    "source": "manual",
+    "isExplicit": true,
+    "hasDeviation": true
   }
 }
 ```
@@ -510,10 +518,8 @@ Suggested response shape:
 Returns:
 
 - requested date window
-- explicit day states
-- derived cycle marks
-- prediction marks
-- today marker
+- day rows for every requested date
+- derived marks for period, period start, prediction start, and today when applicable
 
 Suggested input:
 
@@ -538,19 +544,27 @@ Suggested response shape:
   "days": [
     {
       "date": "2026-03-23",
-      "bleedingState": "period",
+      "isPeriod": true,
+      "source": "manual",
       "isExplicit": true
     },
     {
       "date": "2026-03-24",
-      "bleedingState": "none",
+      "isPeriod": true,
+      "source": "auto_filled",
+      "isExplicit": true
+    },
+    {
+      "date": "2026-03-31",
+      "isPeriod": false,
+      "source": null,
       "isExplicit": false
     }
   ],
   "marks": [
-    { "date": "2026-03-20", "kind": "period" },
-    { "date": "2026-03-23", "kind": "today" },
-    { "date": "2026-04-12", "kind": "prediction_start" }
+    { "date": "2026-03-23", "kind": "period_start" },
+    { "date": "2026-03-24", "kind": "period" },
+    { "date": "2026-03-23", "kind": "today" }
   ]
 }
 ```
@@ -623,24 +637,25 @@ Suggested response shape:
 
 If the team wants the smallest practical first contract, stabilize these first:
 
-- `recordDateRangeAsPeriod`
-- `recordDayState`
-- `clearDayRecord`
+- `recordPeriodDay`
+- `clearPeriodDay`
+- `recordDayDetails`
 - `getModuleHomeView`
 - `getDayRecordDetail`
-- `getModuleAccessState`
+- `getCalendarWindow`
 
 This slice is enough to support:
 
 - first-time entry
-- single-day editing
-- range recording
-- derived cycle and prediction refresh
+- one-tap period start
+- automatic period fill
+- tail correction
+- detail refinement
+- prediction refresh
 - same-instance private/shared behavior
 
 ## Open Questions
 
-- whether `recordDayDetails` may create a record when no explicit `bleeding_state` exists yet, or must only update an existing record
-- the exact note length limit
-- which fields belong in the first stable read model for `getModuleHomeView`
-- whether command and query naming should stay domain-oriented or be adapted to frontend service naming
+- the exact maximum note length
+- whether the default period duration should be versioned historically or only stored as the current setting
+- whether deviation should stay a pure read-model interpretation or later gain explicit saved explanation fields
