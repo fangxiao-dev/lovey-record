@@ -159,4 +159,46 @@ describe('query.service', () => {
     );
     jest.useRealTimers();
   });
+
+  it('expands the visible window to include prediction range when present', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-03-23T00:00:00.000Z'));
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+      sharingStatus: 'PRIVATE',
+    });
+    (prisma.derivedCycle.findMany as jest.Mock).mockResolvedValue([
+      {
+        startDate: new Date('2026-03-20T00:00:00.000Z'),
+        endDate: new Date('2026-03-24T00:00:00.000Z'),
+        durationDays: 5,
+        derivedFromDates: JSON.stringify([
+          '2026-03-20',
+          '2026-03-21',
+          '2026-03-22',
+          '2026-03-23',
+          '2026-03-24',
+        ]),
+      },
+    ]);
+    (prisma.prediction.findUnique as jest.Mock).mockResolvedValue({
+      predictedStartDate: new Date('2026-04-12T00:00:00.000Z'),
+      predictionWindowStart: new Date('2026-04-10T00:00:00.000Z'),
+      predictionWindowEnd: new Date('2026-04-14T00:00:00.000Z'),
+      basedOnCycleCount: 4,
+    });
+
+    const result = await getModuleHomeView({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+    });
+
+    expect(result.visibleWindow).toEqual({
+      kind: 'cycle_window',
+      startDate: '2026-03-20',
+      endDate: '2026-04-14',
+    });
+    jest.useRealTimers();
+  });
 });

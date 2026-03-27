@@ -234,6 +234,48 @@ describe('dayRecord.service', () => {
     );
   });
 
+  it('ignores spotting when deriving cycles', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
+    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
+      { date: new Date('2026-03-01'), bleedingState: 'PERIOD' },
+      { date: new Date('2026-03-02'), bleedingState: 'SPOTTING' },
+      { date: new Date('2026-03-03'), bleedingState: 'PERIOD' },
+    ]);
+
+    await recordDayState({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      date: '2026-03-03',
+      bleedingState: 'PERIOD',
+    });
+
+    expect(prisma.derivedCycle.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          moduleInstanceId: 'module-1',
+          profileId: 'profile-1',
+          startDate: new Date('2026-03-01'),
+          endDate: new Date('2026-03-01'),
+          durationDays: 1,
+          derivedFromDates: JSON.stringify(['2026-03-01']),
+        },
+        {
+          moduleInstanceId: 'module-1',
+          profileId: 'profile-1',
+          startDate: new Date('2026-03-03'),
+          endDate: new Date('2026-03-03'),
+          durationDays: 1,
+          derivedFromDates: JSON.stringify(['2026-03-03']),
+        },
+      ],
+    });
+  });
+
   it('stores empty prediction when fewer than two cycles exist', async () => {
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
       id: 'module-1',
@@ -262,5 +304,45 @@ describe('dayRecord.service', () => {
         }),
       }),
     );
+  });
+
+  it('rebuilds the derived cycle list after clearing a middle day', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.dayRecord.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
+      { date: new Date('2026-03-20'), bleedingState: 'PERIOD' },
+      { date: new Date('2026-03-22'), bleedingState: 'PERIOD' },
+    ]);
+
+    await clearDayRecord({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      date: '2026-03-21',
+    });
+
+    expect(prisma.derivedCycle.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          moduleInstanceId: 'module-1',
+          profileId: 'profile-1',
+          startDate: new Date('2026-03-20'),
+          endDate: new Date('2026-03-20'),
+          durationDays: 1,
+          derivedFromDates: JSON.stringify(['2026-03-20']),
+        },
+        {
+          moduleInstanceId: 'module-1',
+          profileId: 'profile-1',
+          startDate: new Date('2026-03-22'),
+          endDate: new Date('2026-03-22'),
+          durationDays: 1,
+          derivedFromDates: JSON.stringify(['2026-03-22']),
+        },
+      ],
+    });
   });
 });

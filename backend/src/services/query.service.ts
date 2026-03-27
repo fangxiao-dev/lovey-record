@@ -165,17 +165,36 @@ export async function getModuleHomeView(input: AccessInput) {
     });
   }
 
+  const visibleWindow = lastCycle
+    ? {
+        kind: 'cycle_window',
+        startDate: formatDate(lastCycle.startDate),
+        endDate: formatDate(lastCycle.endDate),
+      }
+    : prediction
+      ? {
+          kind: 'cycle_window',
+          startDate: formatDate(prediction.predictionWindowStart),
+          endDate: formatDate(prediction.predictionWindowEnd),
+        }
+      : null;
+
+  if (visibleWindow && prediction) {
+    const start = new Date(visibleWindow.startDate);
+    const end = new Date(visibleWindow.endDate);
+    const predStart = prediction.predictionWindowStart;
+    const predEnd = prediction.predictionWindowEnd;
+    const minStart = start < predStart ? start : predStart;
+    const maxEnd = end > predEnd ? end : predEnd;
+    visibleWindow.startDate = formatDate(minStart);
+    visibleWindow.endDate = formatDate(maxEnd);
+  }
+
   return {
     moduleInstanceId: moduleInstance.id,
     sharingStatus: lower(moduleInstance.sharingStatus),
     currentStatusSummary,
-    visibleWindow: lastCycle
-      ? {
-          kind: 'cycle_window',
-          startDate: formatDate(lastCycle.startDate),
-          endDate: formatDate(lastCycle.endDate),
-        }
-      : null,
+    visibleWindow,
     calendarMarks,
     selectedDay: null,
     predictionSummary: prediction

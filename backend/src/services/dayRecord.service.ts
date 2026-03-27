@@ -125,7 +125,9 @@ async function recompute(moduleInstanceId: string, profileId: string) {
     orderBy: { date: 'asc' },
   });
 
-  const cycles = deriveCycles(periodRecords.map((record) => record.date));
+  const cycles = deriveCycles(
+    periodRecords.filter((record) => record.bleedingState === 'PERIOD').map((record) => record.date),
+  );
 
   await prisma.derivedCycle.deleteMany({
     where: { moduleInstanceId, profileId },

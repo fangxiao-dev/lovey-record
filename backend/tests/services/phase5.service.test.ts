@@ -12,7 +12,7 @@ jest.mock('../../src/db/prisma', () => ({
   __esModule: true,
   default: {
     moduleInstance: { findFirst: jest.fn() },
-    dayRecord: { findUnique: jest.fn(), update: jest.fn() },
+    dayRecord: { findUnique: jest.fn(), update: jest.fn(), findMany: jest.fn() },
     moduleAccess: { findFirst: jest.fn(), upsert: jest.fn(), update: jest.fn(), findMany: jest.fn() },
     derivedCycle: { findMany: jest.fn() },
     prediction: { findUnique: jest.fn() },
@@ -57,10 +57,57 @@ describe('phase5.service', () => {
     expect(revoked.sharingStatus).toBe('private');
   });
 
-  it('returns calendar window and prediction summary', async () => {
+  it('returns calendar window days with implicit none and marks', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-03-21T00:00:00.000Z'));
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({ id: 'module-1', ownerUserId: 'user-1', profileId: 'profile-1', sharingStatus: 'PRIVATE' });
-    (prisma.dayRecord.findUnique as jest.Mock).mockResolvedValue({ id: 'day-1' });
-    (prisma.derivedCycle.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
+      {
+        date: new Date('2026-03-20T00:00:00.000Z'),
+        bleedingState: 'PERIOD',
+      },
+      {
+        date: new Date('2026-03-22T00:00:00.000Z'),
+        bleedingState: 'SPOTTING',
+      },
+    ]);
+    (prisma.derivedCycle.findMany as jest.Mock).mockResolvedValue([
+      {
+        derivedFromDates: JSON.stringify(['2026-03-20']),
+      },
+    ]);
+    (prisma.prediction.findUnique as jest.Mock).mockResolvedValue({
+      predictedStartDate: new Date('2026-03-22T00:00:00.000Z'),
+      predictionWindowStart: new Date('2026-03-20T00:00:00.000Z'),
+      predictionWindowEnd: new Date('2026-03-24T00:00:00.000Z'),
+      basedOnCycleCount: 2,
+    });
+
+    const windowResult = await getCalendarWindow({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      profileId: 'profile-1',
+      startDate: '2026-03-20',
+      endDate: '2026-03-22',
+    });
+
+    expect(windowResult.window).toEqual({ startDate: '2026-03-20', endDate: '2026-03-22' });
+    expect(windowResult.days).toEqual([
+      { date: '2026-03-20', bleedingState: 'period', isExplicit: true },
+      { date: '2026-03-21', bleedingState: 'none', isExplicit: false },
+      { date: '2026-03-22', bleedingState: 'spotting', isExplicit: true },
+    ]);
+    expect(windowResult.marks).toEqual(
+      expect.arrayContaining([
+        { date: '2026-03-20', kind: 'period' },
+        { date: '2026-03-21', kind: 'today' },
+        { date: '2026-03-22', kind: 'prediction_start' },
+      ]),
+    );
+    jest.useRealTimers();
+  });
+
+  it('returns prediction summary shape', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({ id: 'module-1', ownerUserId: 'user-1', profileId: 'profile-1', sharingStatus: 'PRIVATE' });
     (prisma.prediction.findUnique as jest.Mock).mockResolvedValue({
       predictedStartDate: new Date('2026-04-12T00:00:00.000Z'),
       predictionWindowStart: new Date('2026-04-10T00:00:00.000Z'),
@@ -68,10 +115,16 @@ describe('phase5.service', () => {
       basedOnCycleCount: 4,
     });
 
-    const windowResult = await getCalendarWindow({ moduleInstanceId: 'module-1', userId: 'user-1', profileId: 'profile-1', startDate: '2026-03-01', endDate: '2026-03-31' });
     const prediction = await getPredictionSummary({ moduleInstanceId: 'module-1', userId: 'user-1', profileId: 'profile-1' });
 
-    expect(windowResult.window).toEqual({ startDate: '2026-03-01', endDate: '2026-03-31' });
-    expect(prediction.prediction?.predictedStartDate).toBe('2026-04-12');
+    expect(prediction).toEqual({
+      moduleInstanceId: 'module-1',
+      prediction: {
+        predictedStartDate: '2026-04-12',
+        predictionWindowStart: '2026-04-10',
+        predictionWindowEnd: '2026-04-14',
+        basedOnCycleCount: 4,
+      },
+    });
   });
 });
