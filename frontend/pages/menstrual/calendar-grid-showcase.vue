@@ -1,24 +1,40 @@
 <template>
 	<view class="calendar-grid-showcase u-page-shell">
 		<view class="calendar-grid-showcase__card ui-card u-page-section">
-			<text class="calendar-grid-showcase__title u-text-title-lg">{{ board.title }}</text>
-			<text class="calendar-grid-showcase__copy u-text-body-secondary">
-				CalendarGrid 先负责真实周历结构：周标题、周分割线、DateCell 组合，以及每个格子的状态标识。
-			</text>
+			<view class="calendar-grid-showcase__card-head">
+				<view class="calendar-grid-showcase__heading">
+					<text class="calendar-grid-showcase__eyebrow">Calendar Acceptance</text>
+					<text class="calendar-grid-showcase__title u-text-title-lg">{{ page.monthCard.title }}</text>
+					<text class="calendar-grid-showcase__copy u-text-body-secondary">
+						{{ page.monthCard.subtitle }}
+					</text>
+				</view>
+				<view class="calendar-grid-showcase__summary-list">
+					<view
+						v-for="item in page.monthCard.summary"
+						:key="item.key"
+						class="calendar-grid-showcase__summary-item"
+					>
+						<text class="calendar-grid-showcase__summary-label">{{ item.label }}</text>
+						<text class="calendar-grid-showcase__summary-value">{{ item.value }}</text>
+					</view>
+				</view>
+			</view>
 			<CalendarGrid
-				:weeks="board.weeks"
-				:weekday-labels="board.weekdayLabels"
+				:weeks="page.monthCard.weeks"
+				:weekday-labels="page.monthCard.weekdayLabels"
 			/>
+			<CalendarLegend :items="page.monthCard.legend" />
 		</view>
 
 		<view class="calendar-grid-showcase__samples ui-card u-page-section">
-			<text class="calendar-grid-showcase__title u-text-title-sm">Selection Samples</text>
+			<text class="calendar-grid-showcase__title u-text-title-sm">{{ page.samples.title }}</text>
 			<text class="calendar-grid-showcase__copy u-text-body-secondary">
-				下面这组只负责展示 selected 派生态，方便核对高对比填充、today 外环和 special 眼睛标识。
+				{{ page.samples.copy }}
 			</text>
 			<view class="calendar-grid-showcase__sample-row">
 				<view
-					v-for="item in sampleCells"
+					v-for="item in page.samples.items"
 					:key="item.key"
 					class="calendar-grid-showcase__sample-cell"
 				>
@@ -32,25 +48,20 @@
 
 <script>
 	import CalendarGrid from '../../components/menstrual/CalendarGrid.vue';
+	import CalendarLegend from '../../components/menstrual/CalendarLegend.vue';
 	import DateCell from '../../components/menstrual/DateCell.vue';
-	import { createCalendarGridShowcase } from '../../components/menstrual/calendar-grid-showcase-data.js';
+	import { createCalendarGridAcceptancePage } from '../../components/menstrual/calendar-grid-acceptance-page-data.js';
 
 	export default {
 		name: 'CalendarGridShowcasePage',
 		components: {
 			CalendarGrid,
+			CalendarLegend,
 			DateCell
 		},
 		data() {
 			return {
-				board: createCalendarGridShowcase(),
-				sampleCells: [
-					{ key: 'selected', label: '26', variant: 'selected', caption: 'selected' },
-					{ key: 'selected-special', label: '26', variant: 'selectedSpecial', caption: 'selectedSpecial' },
-					{ key: 'selected-prediction', label: '26', variant: 'selectedPrediction', caption: 'selectedPrediction' },
-					{ key: 'selected-today', label: '26', variant: 'selectedTodaySpecial', caption: 'selectedTodaySpecial' },
-					{ key: 'selected-period', label: '26', variant: 'selectedPeriodSpecial', caption: 'selectedPeriodSpecial' }
-				]
+				page: createCalendarGridAcceptancePage()
 			};
 		}
 	};
@@ -65,7 +76,7 @@
 	.calendar-grid-showcase__card {
 		display: flex;
 		flex-direction: column;
-		gap: $space-4;
+		gap: $space-5;
 		background: $bg-base;
 	}
 
@@ -76,13 +87,63 @@
 		background: $bg-base;
 	}
 
+	.calendar-grid-showcase__card-head {
+		display: flex;
+		flex-direction: column;
+		gap: $space-4;
+	}
+
+	.calendar-grid-showcase__heading {
+		display: flex;
+		flex-direction: column;
+		gap: $space-2;
+	}
+
+	.calendar-grid-showcase__eyebrow {
+		font-size: 18rpx;
+		line-height: 1;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: $text-muted;
+	}
+
 	.calendar-grid-showcase__copy {
 		display: block;
 	}
 
-	.calendar-grid-showcase__sample-row {
+	.calendar-grid-showcase__summary-list {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(112rpx, 1fr));
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		column-gap: $space-3;
+		row-gap: $space-3;
+		padding: $space-4;
+		border-radius: $radius-card;
+		background: $bg-card;
+	}
+
+	.calendar-grid-showcase__summary-item {
+		display: flex;
+		flex-direction: column;
+		gap: $space-1;
+		min-width: 0;
+	}
+
+	.calendar-grid-showcase__summary-label {
+		font-size: 18rpx;
+		line-height: 1.2;
+		color: $text-muted;
+	}
+
+	.calendar-grid-showcase__summary-value {
+		font-size: 22rpx;
+		line-height: 1.25;
+		font-weight: $font-weight-strong;
+		color: $text-primary;
+	}
+
+	.calendar-grid-showcase__sample-row {
+		display: flex;
+		flex-wrap: wrap;
 		column-gap: $space-5;
 		row-gap: $space-5;
 	}
@@ -92,6 +153,7 @@
 		flex-direction: column;
 		align-items: center;
 		gap: $space-2;
+		width: 116rpx;
 	}
 
 	.calendar-grid-showcase__sample-cell :deep(.date-cell) {
