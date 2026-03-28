@@ -37,6 +37,16 @@ test('todayPeriod keeps today outline while switching to period contrast text', 
   assert.equal(presentation.shape, 'circle');
 });
 
+test('todayPrediction keeps the today circle while showing prediction fill', () => {
+  const presentation = getDateCellPresentation('todayPrediction');
+
+  assert.equal(presentation.backgroundToken, 'accent.period.soft');
+  assert.equal(presentation.borderToken, 'border.today');
+  assert.equal(presentation.textToken, 'text.primary');
+  assert.equal(presentation.shape, 'circle');
+  assert.equal(presentation.usesSpecialMarker, false);
+});
+
 test('selectedSpecial uses selected shadow and period-colored marker', () => {
   const presentation = getDateCellPresentation('selectedSpecial');
 
@@ -109,6 +119,28 @@ test('todaySpecial preserves today outline while keeping period-colored special 
   assert.equal(presentation.usesSpecialMarker, true);
 });
 
+test('selectedTodayPrediction keeps the today circle while layering selected shadow', () => {
+  const presentation = getDateCellPresentation('selectedTodayPrediction');
+
+  assert.equal(presentation.backgroundToken, 'accent.period.soft');
+  assert.equal(presentation.borderToken, 'border.today');
+  assert.equal(presentation.shadowToken, 'shadow.selected');
+  assert.equal(presentation.textToken, 'text.primary');
+  assert.equal(presentation.shape, 'circle');
+  assert.equal(presentation.usesSpecialMarker, false);
+});
+
+test('selectedTodayPeriod keeps period contrast while adding selected shadow over today geometry', () => {
+  const presentation = getDateCellPresentation('selectedTodayPeriod');
+
+  assert.equal(presentation.backgroundToken, 'accent.period');
+  assert.equal(presentation.borderToken, 'border.today');
+  assert.equal(presentation.shadowToken, 'shadow.selected');
+  assert.equal(presentation.textToken, 'accent.period.contrast');
+  assert.equal(presentation.shape, 'circle');
+  assert.equal(presentation.usesSpecialMarker, false);
+});
+
 test('dateCellVariants exposes the full approved variant matrix', () => {
   assert.deepEqual(dateCellVariants, [
     'default',
@@ -128,7 +160,10 @@ test('dateCellVariants exposes the full approved variant matrix', () => {
     'selectedToday',
     'selectedTodaySpecial',
     'todaySpecial',
-    'todayPeriod'
+    'todayPeriod',
+    'todayPrediction',
+    'selectedTodayPrediction',
+    'selectedTodayPeriod'
   ]);
 });
 

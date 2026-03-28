@@ -160,6 +160,33 @@ const PRESENTATIONS = {
     shadowToken: null,
     shape: 'circle',
     usesSpecialMarker: false
+  },
+  todayPrediction: {
+    backgroundToken: 'accent.period.soft',
+    borderToken: 'border.today',
+    textToken: 'text.primary',
+    markerToken: null,
+    shadowToken: null,
+    shape: 'circle',
+    usesSpecialMarker: false
+  },
+  selectedTodayPrediction: {
+    backgroundToken: 'accent.period.soft',
+    borderToken: 'border.today',
+    textToken: 'text.primary',
+    markerToken: null,
+    shadowToken: 'shadow.selected',
+    shape: 'circle',
+    usesSpecialMarker: false
+  },
+  selectedTodayPeriod: {
+    backgroundToken: 'accent.period',
+    borderToken: 'border.today',
+    textToken: 'accent.period.contrast',
+    markerToken: null,
+    shadowToken: 'shadow.selected',
+    shape: 'circle',
+    usesSpecialMarker: false
   }
 };
 

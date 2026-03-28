@@ -47,6 +47,44 @@ test('predictionSpecial reuses the soft prediction surface with the shared eye m
   assert.equal(predictionSpecialViewModel.usesSpecialMarker, true);
 });
 
+test('todayPrediction keeps today stroke and circle geometry on top of prediction fill', () => {
+  const todayPredictionViewModel = getDateCellViewModel('todayPrediction');
+
+  assert.deepEqual(todayPredictionViewModel.rootClasses, [
+    'date-cell--circle',
+    'date-cell--bg-period-soft',
+    'date-cell--border-today',
+    'date-cell--stroke-today'
+  ]);
+  assert.deepEqual(todayPredictionViewModel.labelClasses, ['date-cell__label--primary']);
+  assert.equal(todayPredictionViewModel.usesSpecialMarker, false);
+});
+
+test('selectedToday aliases preserve today stroke and only add selected shadow', () => {
+  const selectedTodayPredictionViewModel = getDateCellViewModel('selectedTodayPrediction');
+  const selectedTodayPeriodViewModel = getDateCellViewModel('selectedTodayPeriod');
+
+  assert.deepEqual(selectedTodayPredictionViewModel.rootClasses, [
+    'date-cell--circle',
+    'date-cell--bg-period-soft',
+    'date-cell--border-today',
+    'date-cell--stroke-today',
+    'date-cell--selected'
+  ]);
+  assert.deepEqual(selectedTodayPredictionViewModel.labelClasses, ['date-cell__label--primary']);
+  assert.equal(selectedTodayPredictionViewModel.rootClasses.includes('date-cell--stroke-selected'), false);
+
+  assert.deepEqual(selectedTodayPeriodViewModel.rootClasses, [
+    'date-cell--circle',
+    'date-cell--bg-period',
+    'date-cell--border-today',
+    'date-cell--stroke-today',
+    'date-cell--selected'
+  ]);
+  assert.deepEqual(selectedTodayPeriodViewModel.labelClasses, ['date-cell__label--period-contrast']);
+  assert.equal(selectedTodayPeriodViewModel.rootClasses.includes('date-cell--stroke-selected'), false);
+});
+
 test('only today and selected families add visible stroke classes', () => {
   const specialViewModel = getDateCellViewModel('special');
   const periodViewModel = getDateCellViewModel('period');
