@@ -42,6 +42,78 @@ This spec does not define:
 - `today`-derived variants must be grouped separately from normal selected-derived variants.
 - non-`today` selected variants may use the selected surface language, but should not redefine the shared layout skeleton.
 
+## State Axes
+
+The long-term date-state model should be understood as a small number of composable axes rather than an open-ended list of named combinations.
+
+- business state:
+  - `none`
+  - `prediction`
+  - `period`
+- time emphasis:
+  - `today`
+- interaction emphasis:
+  - `selected`
+- marker emphasis:
+  - `special`
+- time-position modifier:
+  - `future muted`
+
+These axes should be the design source of truth even when implementation still exposes a small set of alias variants for convenience.
+
+## Forbidden Combinations
+
+- `date > today` is currently read-only.
+- future dates may use `prediction`, but should not use user-edited `period`.
+- future dates should not use `special`.
+- `prediction + special` should not be treated as a long-lived reusable product combination.
+- when a future date has no stronger business state, it falls back to `future muted`.
+
+## Overlay Priority Rules
+
+### Business Surface
+
+- business-state priority is `period > prediction > none`.
+- `period` keeps the strongest accent surface.
+- `prediction` keeps its lighter forecast surface.
+- `future muted` must not override an active `prediction` or `period` business surface.
+
+### Geometry
+
+- `today` owns outline geometry.
+- any state containing `today` keeps the circular outline shape.
+- `selected` must not turn a `today` outline back into a rounded rectangle.
+
+### Interaction Emphasis
+
+- `selected` is a transient interaction cue, not a durable business state.
+- `selected` should add its own shadow/lift cue when the user is actively choosing a date.
+- `selected` must not erase `today`, `prediction`, or `period` meaning.
+
+### Marker Emphasis
+
+- `special` uses the shared eye marker only.
+- `special` does not take over the surface from `prediction` or `period`.
+- on `period`, marker and text stay on the contrast foreground.
+- on non-`period` states, the `special` marker stays in `accent.period`.
+
+### Future Muting
+
+- `future muted` is a time-position modifier, not a peer business fact.
+- use muted text for future dates only when there is no stronger business state.
+- future prediction dates should remain recognizable as `prediction`, not collapse to a gray-only state.
+
+## High-Value Overlay Cases
+
+The following overlay cases deserve explicit Pencil and runtime review because they carry the highest risk of visual drift:
+
+- `today + prediction`
+- `selected + today + prediction`
+- `today + period`
+- `selected + today + period`
+- `today + special`
+- `selected + today + special`
+
 ## Color And Marker Rules
 
 - `period` is the only strong state that switches text and attached marker color to a contrast foreground.
