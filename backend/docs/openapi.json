@@ -243,6 +243,9 @@
           "200": {
             "description": "Note recorded"
           },
+          "400": {
+            "description": "Note too long"
+          },
           "404": {
             "description": "Day record not found"
           }
@@ -284,6 +287,9 @@
         "responses": {
           "200": {
             "description": "Settings updated"
+          },
+          "403": {
+            "description": "Module access denied"
           }
         }
       }

@@ -44,6 +44,22 @@ describe('phase5.service', () => {
     expect(prisma.dayRecord.update).toHaveBeenCalledWith(expect.objectContaining({ data: { note: 'short note' } }));
   });
 
+  it('rejects notes that exceed the allowed length', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({ id: 'module-1', profileId: 'profile-1', ownerUserId: 'user-1' });
+
+    await expect(
+      recordDayNote({
+        moduleInstanceId: 'module-1',
+        userId: 'user-1',
+        date: '2026-03-23',
+        note: 'a'.repeat(501),
+      }),
+    ).rejects.toMatchObject({
+      code: 'NOTE_TOO_LONG',
+      statusCode: 400,
+    });
+  });
+
   it('shares and revokes module access', async () => {
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({ id: 'module-1', ownerUserId: 'user-1', profileId: 'profile-1', sharingStatus: 'PRIVATE' });
     (prisma.moduleAccess.findFirst as jest.Mock).mockResolvedValue(null);

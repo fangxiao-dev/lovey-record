@@ -59,6 +59,9 @@ Example response:
 }
 ```
 
+Current runtime note:
+- `updateDefaultPeriodDuration` is owner-only in runtime.
+
 ### `POST /api/commands/recordPeriodDay`
 
 Request body:
@@ -189,7 +192,7 @@ Example response:
 
 Current validation note:
 - `docs/contracts` defines a `500` character maximum for `note`
-- explicit runtime negative examples for this limit are not yet documented by tests
+- runtime rejects notes longer than `500` characters with `NOTE_TOO_LONG`
 
 ### `POST /api/commands/updateDefaultPeriodDuration`
 
@@ -527,5 +530,6 @@ Example response:
 - Query examples above reflect the current runtime code, which is what the frontend should integrate against first.
 - `getModuleHomeView` currently returns `currentCycle` and `visibleWindow.kind = "cycle_window"`, not the newer contract wording.
 - `getModuleHomeView` also does not currently include `moduleSettings` in the response body.
-- `updateDefaultPeriodDuration` currently lacks the same owner/access guard shape used by the other module-maintenance commands.
+- `recordDayNote` rejects overlong notes with `NOTE_TOO_LONG`.
+- `updateDefaultPeriodDuration` is owner-only in runtime.
 - Some runtime field names still need a follow-up contract cleanup to fully match `docs/contracts`.

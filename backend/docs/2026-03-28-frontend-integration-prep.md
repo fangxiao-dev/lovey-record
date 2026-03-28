@@ -45,15 +45,12 @@
 - core cycle derivation and prediction recomputation at service level
 
 ## Best Next Test Additions
-- negative-edge coverage for `recordDayNote` length handling
-- more explicit permission-failure coverage on command/query endpoints
 - one or two integration examples for `recordDayDetails`, `getCalendarWindow`, and `getPredictionSummary`
-- permission coverage for `updateDefaultPeriodDuration`, because runtime access control is currently weaker there than on the rest of the command surface
 
 ## Known Runtime Gaps To Keep Visible
 - `getModuleHomeView` runtime field names still use `currentCycle` and `cycle_window`, while the newer contract language expects segment-oriented naming.
 - `getModuleHomeView` runtime response does not currently include `moduleSettings`.
-- `recordDayNote` contract says `note` max length is `500`, but explicit runtime validation coverage is still missing.
+- `recordDayNote` now rejects notes longer than `500` characters with `NOTE_TOO_LONG`.
 
 ## Real DB Placeholder
 - Real DB preparation is intentionally deferred.
