@@ -12,6 +12,12 @@ Use this directory to understand:
 
 Do not treat `docs/plans/` as the long-term design home. `plans/` is for change plans, implementation sequencing, and handoff material. Stable design knowledge should be organized here.
 
+## When To Read
+
+- Read this directory when the task affects visual language, module design, or interaction rules.
+- Open the relevant module directory or cross-module rule only when that design contract is actually needed.
+- If you are editing `.pen` files, start with `docs/design/pencil/README.md`.
+
 ## Structure
 
 ### Root-Level Design Docs
@@ -41,12 +47,7 @@ There is also one cross-module process/reference directory:
 
 - [pencil/](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil)
 
-Each module directory should contain:
-
-- `Design-Overview.md`
-  - the module's long-lived design contract
-- `function-*.md`
-  - key function-level design docs for the module
+Each module directory should keep its long-lived design contract in `Design-Overview.md` and add `function-*.md` files only for the specific interactions that need durable detail.
 
 ## Naming Rules
 
@@ -64,7 +65,7 @@ When working on design or UI implementation:
 3. Read this file.
 4. Read the relevant cross-module design rules in `docs/design/`.
 5. If the task edits `.pen` files, read [pencil/README.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/README.md).
-6. Read the target module's `Design-Overview.md`.
+6. Read the target module's `Design-Overview.md` only when the module-specific contract is needed.
 7. Read only the needed `function-*.md` files for that task.
 8. Read implementation plans under `docs/plans/` only when sequencing or migration detail is needed.
 
@@ -78,30 +79,13 @@ When working on design or UI implementation:
 
 ## Current Map
 
-### Navigation
+### Module Directories
 
-- [Design-Overview.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/navigation/Design-Overview.md)
-- [function-dashboard-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/navigation/function-dashboard-home.md)
-- [function-tab-structure.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/navigation/function-tab-structure.md)
-
-### Management
-
-- [Design-Overview.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/management/Design-Overview.md)
-- [function-module-management-page.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/management/function-module-management-page.md)
-- [function-sharing-expression.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/management/function-sharing-expression.md)
-
-### Menstrual
-
-- [Design-Overview.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/Design-Overview.md)
-- [date-state-spec.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/date-state-spec.md)
-- [token-component-mapping.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/token-component-mapping.md)
-- [function-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-home.md)
-- [function-recording-model.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-recording-model.md)
+- `navigation/` - navigation and dashboard design rules.
+- `management/` - module management and sharing design rules.
+- `menstrual/` - the first MVP module's long-lived design rules.
 
 ### Pencil Collaboration
 
-- [README.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/README.md)
-- [Pencil-Workflow.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/Pencil-Workflow.md)
-- [Pencil-Pitfalls-And-Recovery.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/Pencil-Pitfalls-And-Recovery.md)
-- [Pencil-Board-Conventions.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/Pencil-Board-Conventions.md)
+- `pencil/` - cross-module Pencil workflow, conventions, and recovery guidance.
 

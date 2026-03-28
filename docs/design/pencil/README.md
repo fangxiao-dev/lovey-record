@@ -13,13 +13,17 @@
 
 如果一条知识是“后续任何 agent 再改 `.pen` 都应该先知道”，它就应该落在这里，而不是只写进某个 plan。
 
-## 阅读顺序
+## 什么时候读
 
-1. [../2026-03-22-tokenize-collaboration-rule.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-22-tokenize-collaboration-rule.md)
-2. [../2026-03-23-ui-visual-language-guide.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-23-ui-visual-language-guide.md)
-3. [Pencil-Workflow.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/Pencil-Workflow.md)
-4. [Pencil-Board-Conventions.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/Pencil-Board-Conventions.md)
-5. [Pencil-Pitfalls-And-Recovery.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/Pencil-Pitfalls-And-Recovery.md)
+- 只要你要改 `.pen` 文件，就先读这里。
+- 如果任务涉及 token、视觉语言或 Pencil 恢复规则，再读对应的上游设计文档。
+- 如果任务只是看图、改稿或收尾，不要把整个 Pencil 目录当成必读清单。
+
+## 目录里有什么
+
+- `Pencil-Workflow.md` - `.pen` 协作顺序和常规工作方式。
+- `Pencil-Board-Conventions.md` - board 命名、职责和放置习惯。
+- `Pencil-Pitfalls-And-Recovery.md` - 常见故障与恢复顺序。
 
 ## 与全局 Skill 的关系
 
@@ -34,13 +38,4 @@
 
 - 全局 skill 负责触发、提醒、约束 agent 行为
 - 本目录负责当前仓库的具体文件、板块、命名、恢复细节
-
-## 当前适用范围
-
-当前优先服务 `design token` 场景，尤其是这两个 `.pen` 文件：
-
-- [../../design-drafts/2026-03-22-design-tokene.pen](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design-drafts/2026-03-22-design-tokene.pen)
-- [../../design-drafts/2026-03-22-module-space-and-period-home.pen](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design-drafts/2026-03-22-module-space-and-period-home.pen)
-
-后续若扩展到更多 Pencil 文件，也应沿用这里的协作方式。
 

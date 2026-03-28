@@ -22,15 +22,15 @@ Those belong under `docs/plans/`.
 
 ## Structure
 
-- `use-cases/`: stable, UI-agnostic descriptions of user goals and system responsibilities
+- `use-cases/`: UI-agnostic user goals and system responsibilities
 - `domain-models/`: domain objects, relationships, states, enums, and invariants
-- `application-contracts/`: command/query contracts and read models used to align backend implementation work
+- `application-contracts/`: command/query contracts and read models
 
-## Read Order
+## When To Read
 
-1. [use-cases/2026-03-23-menstrual-core-use-cases.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/contracts/use-cases/2026-03-23-menstrual-core-use-cases.md)
-2. [domain-models/2026-03-23-menstrual-domain-model.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/contracts/domain-models/2026-03-23-menstrual-domain-model.md)
-3. [application-contracts/2026-03-23-menstrual-application-contract-draft.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/contracts/application-contracts/2026-03-23-menstrual-application-contract-draft.md)
+- Read this directory when a task changes durable product behavior, domain meaning, or frontend-backend boundaries.
+- Open the relevant file inside this directory rather than scanning the whole tree.
+- If the task only changes rollout or sequencing, start with `docs/plans/` instead.
 
 ## Working Rule
 
