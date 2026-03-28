@@ -23,4 +23,8 @@ test('calendar grid acceptance page keeps legend and month data separate from se
 		page.samples.items.every((item) => item.caption && item.caption !== item.variant),
 		true
 	);
+	assert.deepEqual(
+		page.samples.items.map((item) => item.variant),
+		['todayPrediction', 'selectedTodayPrediction', 'todayPeriod', 'selectedTodayPeriod']
+	);
 });

@@ -77,10 +77,20 @@ const CALENDAR_GRID_ACCEPTANCE_PAGE = Object.freeze({
 		title: '状态补充查看',
 		copy: '只保留当前月卡片之外最容易混淆的组合态，避免验收页重新退回组件样例板。',
 		items: [
-			{ key: 'selected', label: '26', variant: 'selected', caption: '普通选中' },
-			{ key: 'selected-special', label: '26', variant: 'selectedSpecial', caption: '选中 + 特殊' },
-			{ key: 'selected-today', label: '26', variant: 'selectedTodaySpecial', caption: '选中 + 今天 + 特殊' },
-			{ key: 'selected-period', label: '26', variant: 'selectedPeriodSpecial', caption: '选中 + 经期 + 特殊' }
+			{ key: 'today-prediction', label: '26', variant: 'todayPrediction', caption: '今天 + 预测' },
+			{
+				key: 'selected-today-prediction',
+				label: '26',
+				variant: 'selectedTodayPrediction',
+				caption: '选中 + 今天 + 预测'
+			},
+			{ key: 'today-period', label: '26', variant: 'todayPeriod', caption: '今天 + 经期' },
+			{
+				key: 'selected-today-period',
+				label: '26',
+				variant: 'selectedTodayPeriod',
+				caption: '选中 + 今天 + 经期'
+			}
 		]
 	}
 });
