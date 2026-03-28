@@ -2,6 +2,16 @@
 
 **Purpose:** capture the smallest backend-side support work that helps the frontend start integrating before real DB work begins.
 
+## Seed Baseline
+- `npm run db:seed` loads a deterministic set of frontend-integration scenarios.
+- The seeded scenarios are:
+  - `emptyModule`
+  - `activePeriodHomeView`
+  - `predictedNextPeriod`
+  - `dayDetailDeviation`
+  - `sharedModuleAccess`
+- These are local-development and frontend-integration fixtures, not a migration/backfill tool.
+
 ## Recommended Mock Data Scenarios
 
 ### `emptyModule`
