@@ -1,0 +1,50 @@
+@import "@/styles/foundation/index.scss";
+
+/* uni-app compatibility aliases */
+$uni-color-primary: $action-primary-bg;
+$uni-color-success: $status-success;
+$uni-color-warning: $status-warning;
+$uni-color-error: $status-danger;
+
+$uni-text-color: $text-primary;
+$uni-text-color-inverse: $text-inverse;
+$uni-text-color-grey: $text-secondary;
+$uni-text-color-placeholder: $text-tertiary;
+$uni-text-color-disable: $text-tertiary;
+
+$uni-bg-color: $bg-card;
+$uni-bg-color-grey: $bg-subtle;
+$uni-bg-color-hover: $bg-interactive;
+$uni-bg-color-mask: $bg-mask;
+
+$uni-border-color: $border-subtle;
+
+$uni-font-size-sm: $font-size-footnote;
+$uni-font-size-base: $font-size-body;
+$uni-font-size-lg: $font-size-body-lg;
+
+$uni-img-size-sm: 40rpx;
+$uni-img-size-base: 52rpx;
+$uni-img-size-lg: 80rpx;
+
+$uni-border-radius-sm: $radius-xs;
+$uni-border-radius-base: $radius-sm;
+$uni-border-radius-lg: $radius-md;
+$uni-border-radius-circle: 50%;
+
+$uni-spacing-row-sm: $space-2;
+$uni-spacing-row-base: $space-4;
+$uni-spacing-row-lg: $space-6;
+
+$uni-spacing-col-sm: $space-1;
+$uni-spacing-col-base: $space-2;
+$uni-spacing-col-lg: $space-3;
+
+$uni-opacity-disabled: 0.4;
+
+$uni-color-title: $text-primary;
+$uni-font-size-title: $font-size-title-sm;
+$uni-color-subtitle: $text-secondary;
+$uni-font-size-subtitle: $font-size-body-lg;
+$uni-color-paragraph: $text-primary;
+$uni-font-size-paragraph: $font-size-body;

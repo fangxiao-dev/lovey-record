@@ -1,30 +1,34 @@
 <template>
 	<view class="date-cell-showcase u-page-shell">
-		<view class="date-cell-showcase__hero ui-card u-page-section">
-			<text class="date-cell-showcase__title u-text-title-lg">DateCell Showcase</text>
-			<text class="date-cell-showcase__copy u-text-body-secondary">
-				当前页只用于 runtime 视觉核验，直接把已批准的 DateCell 变体跑全，不引入业务数据和交互状态。
-			</text>
-		</view>
-
-		<view
-			v-for="section in sections"
-			:key="section.id"
-			class="date-cell-showcase__section ui-card u-page-section"
-		>
-			<view class="date-cell-showcase__section-header">
-				<text class="u-text-title-sm">{{ section.title }}</text>
-				<text class="u-text-caption">{{ section.caption }}</text>
-			</view>
-			<view class="date-cell-showcase__grid">
+		<view class="date-cell-showcase__board ui-card u-page-section">
+			<text class="date-cell-showcase__title u-text-title-lg">{{ board.title }}</text>
+			<text class="date-cell-showcase__copy u-text-body-secondary">{{ board.intro }}</text>
+			<view class="date-cell-showcase__group date-cell-showcase__group--base">
 				<view
-					v-for="item in section.items"
+					v-for="item in board.groups[0].items"
 					:key="item.variant"
-					class="date-cell-showcase__item"
+					class="date-cell-showcase__state-wrap"
 				>
-					<DateCell :label="item.day" :variant="item.variant" />
-					<text class="date-cell-showcase__item-label u-text-caption">{{ item.label }}</text>
-					<text class="date-cell-showcase__item-variant u-text-caption-muted">{{ item.variant }}</text>
+					<DateCell label="26" :variant="item.variant" />
+				</view>
+			</view>
+			<text class="date-cell-showcase__copy u-text-body-secondary">{{ board.selectedIntro }}</text>
+			<view class="date-cell-showcase__group date-cell-showcase__group--selected">
+				<view
+					v-for="item in board.groups[1].items"
+					:key="item.variant"
+					class="date-cell-showcase__state-wrap"
+				>
+					<DateCell label="26" :variant="item.variant" />
+				</view>
+			</view>
+			<view class="date-cell-showcase__group date-cell-showcase__group--today">
+				<view
+					v-for="item in board.groups[2].items"
+					:key="item.variant"
+					class="date-cell-showcase__state-wrap"
+				>
+					<DateCell label="26" :variant="item.variant" />
 				</view>
 			</view>
 		</view>
@@ -33,7 +37,7 @@
 
 <script>
 	import DateCell from '../../components/menstrual/DateCell.vue';
-	import { createDateCellShowcaseSections } from '../../components/menstrual/date-cell-showcase-data.js';
+	import { createDateCellShowcaseBoard } from '../../components/menstrual/date-cell-showcase-data.js';
 
 	export default {
 		name: 'DateCellShowcasePage',
@@ -42,7 +46,7 @@
 		},
 		data() {
 			return {
-				sections: createDateCellShowcaseSections()
+				board: createDateCellShowcaseBoard()
 			};
 		}
 	};
@@ -53,37 +57,39 @@
 		padding-bottom: $space-12;
 	}
 
+	.date-cell-showcase__board {
+		padding-bottom: $space-10;
+	}
+
 	.date-cell-showcase__copy {
 		display: block;
 		margin-top: $space-4;
 	}
 
-	.date-cell-showcase__section-header {
-		display: flex;
-		flex-direction: column;
-		gap: $space-2;
-	}
-
-	.date-cell-showcase__grid {
-		margin-top: $space-6;
+	.date-cell-showcase__group {
 		display: flex;
 		flex-wrap: wrap;
-		gap: $space-5;
+		column-gap: $space-7;
+		row-gap: $space-7;
+		margin-top: $space-7;
 	}
 
-	.date-cell-showcase__item {
+	.date-cell-showcase__group--base {
+		align-items: flex-start;
+	}
+
+	.date-cell-showcase__group--selected {
+		max-width: 780rpx;
+	}
+
+	.date-cell-showcase__group--today {
+		max-width: 320rpx;
+	}
+
+	.date-cell-showcase__state-wrap {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		width: calc((100% - #{$space-5} * 2) / 3);
-		gap: $space-2;
-		padding: $space-3;
-		border-radius: $radius-card;
-		background: $bg-subtle;
-	}
-
-	.date-cell-showcase__item-label,
-	.date-cell-showcase__item-variant {
-		text-align: center;
+		justify-content: center;
 	}
 </style>

@@ -1,0 +1,25 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const frontendRoot = path.resolve(__dirname, '..');
+
+test('frontend directory contains the minimum uni-app entry files', () => {
+  for (const relativePath of ['App.vue', 'pages.json', 'manifest.json', 'main.js', 'index.html', 'uni.scss']) {
+    assert.equal(
+      fs.existsSync(path.join(frontendRoot, relativePath)),
+      true,
+      `${relativePath} should exist in frontend/`
+    );
+  }
+});
+
+test('frontend main.js points at the local app entry and adaptor', () => {
+  const mainJs = fs.readFileSync(path.join(frontendRoot, 'main.js'), 'utf8');
+
+  assert.match(mainJs, /import App from '\.\/App'/);
+  assert.match(mainJs, /import '\.\/uni\.promisify\.adaptor'/);
+});

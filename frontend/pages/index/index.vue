@@ -57,6 +57,9 @@
 					<text class="info-action__text ui-button__text">改为共享</text>
 				</view>
 			</view>
+			<navigator class="showcase-entry" url="/pages/menstrual/date-cell-showcase">
+				<text class="showcase-entry__text u-text-caption">打开 DateCell Showcase</text>
+			</navigator>
 		</view>
 	</view>
 </template>
@@ -138,6 +141,16 @@
 		margin-top: $space-6;
 		gap: $space-4;
 		justify-content: flex-start;
+	}
+
+	.showcase-entry {
+		display: inline-flex;
+		margin-top: $space-4;
+		padding: $space-2 0;
+	}
+
+	.showcase-entry__text {
+		color: $text-secondary;
 	}
 
 	.info-action__text--primary {

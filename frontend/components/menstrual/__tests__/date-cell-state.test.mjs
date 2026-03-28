@@ -84,7 +84,7 @@ test('selectedPeriod switches both text and marker to period contrast', () => {
 test('selectedPrediction uses prediction fill with secondary text and selected shadow', () => {
   const presentation = getDateCellPresentation('selectedPrediction');
 
-  assert.equal(presentation.backgroundToken, 'accent.prediction');
+  assert.equal(presentation.backgroundToken, 'accent.period.soft');
   assert.equal(presentation.textToken, 'text.secondary');
   assert.equal(presentation.shadowToken, 'shadow.selected');
   assert.equal(presentation.usesSpecialMarker, false);
@@ -106,10 +106,17 @@ test('dateCellVariants exposes the full approved variant matrix', () => {
     'futureMuted',
     'today',
     'special',
+    'prediction',
+    'period',
+    'periodSpecial',
     'selected',
     'selectedPeriod',
     'selectedPrediction',
     'selectedSpecial',
+    'selectedPeriodSpecial',
+    'selectedPredictionSpecial',
+    'selectedToday',
+    'selectedTodaySpecial',
     'todaySpecial',
     'todayPeriod'
   ]);
