@@ -187,8 +187,17 @@ Must preserve:
 
 - `period`: the strongest accent state, still controlled
 - `prediction`: pale and quiet, currently expressed through a light mint surface
-- `today`: outline-first, not a filled legend block
+- `today`: outline-first, circular, and not a filled legend block
 - `special`: same-hue eye-icon cue by default; avoid large filled blocks
+
+### Date-state visual rules
+
+- `selected` variants use a weak drop shadow as the shared lifted-state cue.
+- `today` keeps the circular outline geometry even when combined with other states.
+- `period` is the only date state that switches text and attached marker color to a contrast foreground.
+- `special` markers on `period` use `color.accent.period.contrast`.
+- `special` markers on non-`period` states use `color.accent.period`.
+- small-eye markers use the `visibility` glyph from `Material Symbols Outlined` at weight `700`.
 
 ## Token Versus State Semantics
 

@@ -66,6 +66,11 @@ board 有展示职责，但展示不能漂移语义。
 - 普通日期不做多余强调
 - pale fill 上的数字不可默认白字
 - date state 必须和 marker 语义保持一致，不能一个板块一套说法
+- `Date States` 区应显式区分基础态、selected-derived、today-derived
+- `today` 系派生要单独成组，不与普通 selected 派生混层
+- `selected` 派生统一带弱 drop shadow
+- `CalendarGrid` 可带周分割线示例，但周分割线不属于 `DateState` primitive
+- 页面里手工画出的新状态，只有回收到 component-library 区后才算正式规则
 
 ## 命名与维护规则
 

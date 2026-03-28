@@ -35,6 +35,20 @@ The home page must cover:
 - special-mark state
 - future-date blocked state
 
+## Selected Date Panel
+
+- The three attribute editors use a horizontal shadow-palette summary row.
+- The summary row is collapsed by default.
+- Tapping a summary item expands the matching editor inline.
+- Tapping the same summary item again collapses it back.
+- Summary switching and inline expansion stay on the home page; they do not navigate away.
+
+## Calendar Grid Structure
+
+- `CalendarGrid` carries week-divider lines as part of the grid structure.
+- Week dividers support browsing rhythm only; they are not date-state markers.
+- Date cells in the grid should consume the component-library date-state source instead of page-local hand-drawn variants.
+
 ## Visual Direction
 
 The page should feel:
