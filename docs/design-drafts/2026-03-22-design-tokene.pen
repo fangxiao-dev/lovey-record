@@ -987,39 +987,6 @@
                     },
                     {
                       "type": "frame",
-                      "id": "DXno9",
-                      "name": "accent.prediction",
-                      "width": 110,
-                      "height": 68,
-                      "fill": "$color.accent.prediction",
-                      "cornerRadius": 12,
-                      "layout": "vertical",
-                      "gap": 4,
-                      "padding": 10,
-                      "justifyContent": "space_around",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "cYPBD",
-                          "fill": "$color.text.secondary",
-                          "content": "预测淡色",
-                          "fontFamily": "IBM Plex Sans",
-                          "fontSize": 13,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "1WCBe",
-                          "fill": "$color.text.muted",
-                          "content": "accent.prediction",
-                          "fontFamily": "IBM Plex Sans",
-                          "fontSize": 11,
-                          "fontWeight": "500"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
                       "id": "IlBOI",
                       "name": "accent.today",
                       "width": 110,
@@ -2317,10 +2284,6 @@
     "color.accent.period.contrast": {
       "type": "color",
       "value": "#FFFFFF"
-    },
-    "color.accent.prediction": {
-      "type": "color",
-      "value": "#EADFD6"
     },
     "color.accent.special": {
       "type": "color",

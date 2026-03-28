@@ -3,28 +3,29 @@ import assert from 'node:assert/strict';
 
 import { createCalendarGridAcceptancePage } from '../calendar-grid-acceptance-page-data.js';
 
-test('calendar grid acceptance page leads with a month card instead of showcase copy', () => {
+test('calendar grid acceptance page exposes the three-week home demo shell', () => {
 	const page = createCalendarGridAcceptancePage();
 
-	assert.equal(page.monthCard.title, '2026 年 3 月');
-	assert.equal(page.monthCard.subtitle, '记录中的这一个月');
-	assert.equal(page.monthCard.summary.length, 3);
-	assert.equal(page.samples.title, '状态补充查看');
-});
-
-test('calendar grid acceptance page keeps legend and month data separate from secondary samples', () => {
-	const page = createCalendarGridAcceptancePage();
-
-	assert.equal(page.monthCard.weeks.length, 5);
-	assert.equal(page.monthCard.weeks.every((week) => week.cells.length === 7), true);
-	assert.equal(page.monthCard.legend.length, 3);
-	assert.equal(page.samples.items.length, 4);
-	assert.equal(
-		page.samples.items.every((item) => item.caption && item.caption !== item.variant),
-		true
+	assert.equal(page.headerNav.monthLabel, '2026.03');
+	assert.deepEqual(
+		page.jumpTabs.items.map((item) => item.label),
+		['今天', '本次', '下次预测']
 	);
 	assert.deepEqual(
-		page.samples.items.map((item) => item.variant),
-		['todayPrediction', 'selectedTodayPrediction', 'todayPeriod', 'selectedTodayPeriod']
+		page.viewModeControl.options.map((item) => item.label),
+		['3 周', '月览']
 	);
+	assert.equal(page.viewModeControl.value, 'three-week');
+});
+
+test('calendar grid acceptance page keeps the three-week calendar, legend, and selected panel together', () => {
+	const page = createCalendarGridAcceptancePage();
+
+	assert.equal(page.calendarCard.weekdayLabels.length, 7);
+	assert.equal(page.calendarCard.weeks.length, 3);
+	assert.equal(page.calendarCard.weeks.every((week) => week.cells.length === 7), true);
+	assert.equal(page.legend.length, 3);
+	assert.equal(page.selectedDatePanel.title, '3 月 22 日');
+	assert.equal(page.selectedDatePanel.badge, '今日');
+	assert.deepEqual(page.selectedDatePanel.chips, ['经期', '特殊标记']);
 });

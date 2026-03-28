@@ -55,6 +55,16 @@ When a Pencil node shows a marker example, treat its size and color as the canon
 - use `accent.period` for the eye marker
 - use `accent.period.contrast` only where the surface itself needs contrast, such as period-filled states
 
+For DateCell internal layout:
+
+- reuse the existing `DateState` template before attempting manual redraw
+- when changing a DateCell baseline, update the named source board first and only then sync page instances
+- when resizing a DateCell, scale the existing numeral-marker layout proportionally
+- treat board dimensions like `45x45` as Pencil-only visual calibration, not frontend hardcoded CSS or fixed runtime sizing
+- keep numerals visually top-weighted, not vertically centered
+- keep markers off the frame bottom edge
+- use transparent placeholder markers to preserve baseline alignment when needed
+
 ## Collaboration Rules
 
 When giving a UI task to Codex, include:
@@ -78,6 +88,7 @@ Do not infer marker styling from existing code if it conflicts with this node.
 - assuming an earlier handoff is still valid
 - using runtime code as the first source of truth
 - turning a contract board into a convenience demo before the primitive is stable
+- changing a page-local comparison board without first updating the named source-of-truth board
 - widening a reusable component with board-only explanation text
 - keeping eye markers or state colors as ad hoc CSS after the design has already defined them
 

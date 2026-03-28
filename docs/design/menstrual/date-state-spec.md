@@ -35,6 +35,35 @@ This spec does not define:
 - date-number alignment must stay stable whether or not a special marker is present.
 - transparent placeholder markers are allowed when needed to keep the date-number baseline aligned.
 
+## DateCell Internal Layout Rules
+
+- DateCell layout should be locked by internal composition, not by ad hoc per-board nudging.
+- When a DateCell is resized, prefer reusing the existing `DateState` template and scaling its internal layout proportionally.
+- Do not rebuild the number-marker stack manually if the existing `DateState` template can be reused.
+- `aUI1Y` in the active component-library board is the DateCell source of truth for occupied box, geometry, and internal rhythm.
+- The current compact DateCell baseline is a `45x45` occupied box.
+- The `45x45` baseline is a Pencil-canvas reference for visual proportion only, not a frontend runtime contract.
+- Non-`today` DateCells use a square box on that `45x45` baseline.
+- `today` and `today`-derived DateCells keep a perfect circular outline, but still occupy the same `45x45` outer box as neighboring DateCells.
+- Frontend implementations must not hardcode `45x45` from the design board; they should preserve the same semantic geometry and content rhythm through layout tokens, responsive constraints, and state-driven styling.
+- Date numerals should stay visually top-weighted rather than vertically centered.
+- Treat the numeral as sitting around the upper `2/5` of the DateCell, with the marker living in the lower half.
+- The numeral-marker stack should be aligned by container rhythm first:
+  - tighten parent `padding-top`
+  - tighten parent `gap`
+  - only use transparent placeholder content to preserve baseline stability
+- Do not push marker glyphs to the frame bottom edge.
+- The marker should sit clearly above the lower border, remaining visually subordinate to the numeral.
+- If a state has no visible marker, keep the invisible placeholder marker so the numeral baseline matches marker-bearing states.
+- The same internal layout rhythm should apply across:
+  - `default`
+  - `special`
+  - `prediction`
+  - `period`
+  - `future muted`
+- `today` may keep its circular geometry, but its numeral and placeholder/marker rhythm should still align with the shared DateCell baseline.
+- Page instances and `CalendarGrid` consumers must inherit this `45x45` geometry baseline instead of keeping wider board-local proportions.
+
 ## Derived State Rules
 
 - `selected` variants use a weak drop shadow.

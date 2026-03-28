@@ -8,6 +8,7 @@ import { getDateCellViewModel } from '../date-cell-view-model.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dateCellPath = path.resolve(__dirname, '..', 'DateCell.vue');
+const semanticTokensPath = path.resolve(__dirname, '..', '..', '..', 'styles', 'tokens', 'semantic.scss');
 
 test('default and selected variants keep transparent surfaces in the view model', () => {
   const defaultViewModel = getDateCellViewModel('default');
@@ -29,6 +30,12 @@ test('selected variants retain the visible selected shadow in the view model', (
   assert.equal(selectedSpecialViewModel.rootClasses.includes('date-cell--selected'), true);
   assert.equal(selectedViewModel.rootClasses.includes('date-cell--stroke-selected'), true);
   assert.equal(selectedSpecialViewModel.rootClasses.includes('date-cell--stroke-selected'), true);
+});
+
+test('selected shadow token is strengthened for the three-week home demo', () => {
+  const semanticTokensSource = fs.readFileSync(semanticTokensPath, 'utf8');
+
+  assert.match(semanticTokensSource, /\$shadow-selected:\s*0 8rpx 24rpx \$color-black-alpha-12;/);
 });
 
 test('selectedPrediction uses the soft period surface instead of the old prediction chip color', () => {
