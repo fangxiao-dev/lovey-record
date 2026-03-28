@@ -13,6 +13,11 @@
 3. Read [docs/README.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\README.md) when the task depends on design references, checklists, migration notes, or document navigation, etc.
 4. Read [project-context.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\project-context.md) if you need background understanding.
 
+### Navigation
+- Frontend work: read [frontend/AGENTS.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\frontend\AGENTS.md).
+- Backend work: read [backend/AGENTS.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\backend\AGENTS.md).
+- Design and Pencil workflow: read [docs/design/pencil/README.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\design\pencil\README.md).
+
 ### Product And Contract Direction
 - Treat the menstrual module as the first fully realized MVP module inside a broader relationship-record product.
 - Keep durable product semantics in `docs/contracts/`, and treat `docs/plans/` as execution and rollout guidance.
