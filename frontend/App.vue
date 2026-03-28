@@ -13,5 +13,5 @@
 </script>
 
 <style lang="scss">
-	@import "./styles/foundation/index.scss";
+	@import "@/styles/foundation/index.scss";
 </style>

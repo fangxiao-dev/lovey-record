@@ -1,40 +1,48 @@
-const SHOWCASE_SECTIONS = Object.freeze([
-  {
-    id: 'base',
-    title: '基础态',
-    caption: '默认、未来弱化、特殊标记',
-    items: [
-      { variant: 'default', label: '默认', day: 8 },
-      { variant: 'futureMuted', label: '未来', day: 18 },
-      { variant: 'special', label: '特殊', day: 11 }
-    ]
-  },
-  {
-    id: 'selected',
-    title: '选中态',
-    caption: '普通选中、经期、预测与特殊',
-    items: [
-      { variant: 'selected', label: '选中', day: 12 },
-      { variant: 'selectedPeriod', label: '选中-经期', day: 13 },
-      { variant: 'selectedPrediction', label: '选中-预测', day: 14 },
-      { variant: 'selectedSpecial', label: '选中-特殊', day: 15 }
-    ]
-  },
-  {
-    id: 'today',
-    title: '今天态',
-    caption: 'today outline 与派生强状态',
-    items: [
-      { variant: 'today', label: '今天', day: 22 },
-      { variant: 'todayPeriod', label: '今天-经期', day: 23 },
-      { variant: 'todaySpecial', label: '今天-特殊', day: 24 }
-    ]
-  }
-]);
+const SHOWCASE_BOARD = Object.freeze({
+  title: 'Primitive/DateStates',
+  intro: '基础态在这里定义：依次为普通态、带 special 标签态、预测态、月经态、今天、未来态',
+  selectedIntro: '“被选中后”的变体在这里定义，比如“选中+月经”变体',
+  groups: [
+    {
+      id: 'base',
+      emphasis: 'base',
+      items: [
+        { variant: 'default', label: '普通态' },
+        { variant: 'special', label: '特殊态' },
+        { variant: 'prediction', label: '预测态' },
+        { variant: 'period', label: '月经态' },
+        { variant: 'today', label: '今天态' },
+        { variant: 'futureMuted', label: '未来态' }
+      ]
+    },
+    {
+      id: 'selected',
+      emphasis: 'selected',
+      items: [
+        { variant: 'selectedPeriodSpecial', label: '选中+月经+特殊' },
+        { variant: 'selectedPredictionSpecial', label: '选中+预测+特殊' },
+        { variant: 'selectedSpecial', label: '选中+特殊' },
+        { variant: 'selected', label: '选中态' },
+        { variant: 'selectedTodaySpecial', label: '选中+今天+特殊' }
+      ]
+    },
+    {
+      id: 'today',
+      emphasis: 'today',
+      items: [
+        { variant: 'todaySpecial', label: '今天+特殊' },
+        { variant: 'todayPeriod', label: '今天+月经' }
+      ]
+    }
+  ]
+});
 
-export function createDateCellShowcaseSections() {
-  return SHOWCASE_SECTIONS.map((section) => ({
-    ...section,
-    items: section.items.map((item) => ({ ...item }))
-  }));
+export function createDateCellShowcaseBoard() {
+  return {
+    ...SHOWCASE_BOARD,
+    groups: SHOWCASE_BOARD.groups.map((group) => ({
+      ...group,
+      items: group.items.map((item) => ({ ...item }))
+    }))
+  };
 }

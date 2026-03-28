@@ -35,6 +35,33 @@ const PRESENTATIONS = {
     shape: 'rounded',
     usesSpecialMarker: true
   },
+  prediction: {
+    backgroundToken: 'accent.period.soft',
+    borderToken: null,
+    textToken: 'text.primary',
+    markerToken: null,
+    shadowToken: null,
+    shape: 'rounded',
+    usesSpecialMarker: false
+  },
+  period: {
+    backgroundToken: 'accent.period',
+    borderToken: null,
+    textToken: 'accent.period.contrast',
+    markerToken: null,
+    shadowToken: null,
+    shape: 'rounded',
+    usesSpecialMarker: false
+  },
+  periodSpecial: {
+    backgroundToken: 'accent.period',
+    borderToken: null,
+    textToken: 'accent.period.contrast',
+    markerToken: 'accent.period.contrast',
+    shadowToken: null,
+    shape: 'rounded',
+    usesSpecialMarker: true
+  },
   selected: {
     backgroundToken: null,
     borderToken: null,
@@ -54,7 +81,7 @@ const PRESENTATIONS = {
     usesSpecialMarker: false
   },
   selectedPrediction: {
-    backgroundToken: 'accent.prediction',
+    backgroundToken: 'accent.period.soft',
     borderToken: null,
     textToken: 'text.secondary',
     markerToken: null,
@@ -69,6 +96,42 @@ const PRESENTATIONS = {
     markerToken: 'accent.period',
     shadowToken: 'shadow.selected',
     shape: 'rounded',
+    usesSpecialMarker: true
+  },
+  selectedPeriodSpecial: {
+    backgroundToken: 'accent.period',
+    borderToken: null,
+    textToken: 'accent.period.contrast',
+    markerToken: 'accent.period.contrast',
+    shadowToken: 'shadow.selected',
+    shape: 'rounded',
+    usesSpecialMarker: true
+  },
+  selectedPredictionSpecial: {
+    backgroundToken: 'accent.period.soft',
+    borderToken: null,
+    textToken: 'text.primary',
+    markerToken: 'accent.period',
+    shadowToken: 'shadow.selected',
+    shape: 'rounded',
+    usesSpecialMarker: true
+  },
+  selectedToday: {
+    backgroundToken: null,
+    borderToken: 'border.today',
+    textToken: 'text.primary',
+    markerToken: null,
+    shadowToken: 'shadow.selected',
+    shape: 'circle',
+    usesSpecialMarker: false
+  },
+  selectedTodaySpecial: {
+    backgroundToken: null,
+    borderToken: 'border.today',
+    textToken: 'text.primary',
+    markerToken: 'accent.period',
+    shadowToken: 'shadow.selected',
+    shape: 'circle',
     usesSpecialMarker: true
   },
   todaySpecial: {
