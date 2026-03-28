@@ -691,17 +691,6 @@
                       ]
                     }
                   ]
-                },
-                {
-                  "type": "text",
-                  "id": "VSwOk",
-                  "fill": "$color.text.secondary",
-                  "textGrowth": "fixed-width",
-                  "width": "fill_container",
-                  "content": "点击任一属性后，在原地上下滑动选择 5 档值。",
-                  "fontFamily": "IBM Plex Sans",
-                  "fontSize": "$font.size.caption",
-                  "fontWeight": "normal"
                 }
               ]
             },
@@ -730,6 +719,17 @@
           ]
         },
         {
+          "type": "text",
+          "id": "VSwOk",
+          "fill": "$color.text.secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "点击任一属性后，在原地上下滑动选择 5 档值。",
+          "fontFamily": "IBM Plex Sans",
+          "fontSize": "$font.size.caption",
+          "fontWeight": "normal"
+        },
+        {
           "type": "frame",
           "id": "QPWCu",
           "name": "Composite/BatchEditPanel",
@@ -749,17 +749,6 @@
               "fontFamily": "$font.family.base",
               "fontSize": "$font.size.body",
               "fontWeight": "600"
-            },
-            {
-              "type": "text",
-              "id": "xMFaM",
-              "fill": "$color.text.secondary",
-              "textGrowth": "fixed-width",
-              "width": "fill_container",
-              "content": "长按滑动选中后统一应用，不生成第二套编辑器。",
-              "fontFamily": "$font.family.base",
-              "fontSize": "$font.size.caption",
-              "fontWeight": "normal"
             },
             {
               "type": "frame",
@@ -865,6 +854,17 @@
               ]
             }
           ]
+        },
+        {
+          "type": "text",
+          "id": "xMFaM",
+          "fill": "$color.text.secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "长按滑动选中后统一应用，不生成第二套编辑器。",
+          "fontFamily": "$font.family.base",
+          "fontSize": "$font.size.caption",
+          "fontWeight": "normal"
         },
         {
           "type": "frame",
@@ -1087,18 +1087,6 @@
           "gap": 10,
           "alignItems": "center",
           "children": [
-            {
-              "type": "text",
-              "id": "XAmC1",
-              "name": "editorTip",
-              "fill": "$color.text.muted",
-              "textGrowth": "fixed-width",
-              "width": "fill_container",
-              "content": "点击摘要条后，在下方直接点选三个属性状态。",
-              "fontFamily": "IBM Plex Sans",
-              "fontSize": "$font.size.meta",
-              "fontWeight": "500"
-            },
             {
               "type": "frame",
               "id": "FkrRR",
@@ -1920,14 +1908,26 @@
                         }
                       ]
                     }
-                  ]
-                }
               ]
-            },
-            {
-              "type": "text",
-              "id": "M4awh",
-              "name": "editNote",
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "XAmC1",
+          "name": "editorTip",
+          "fill": "$color.text.muted",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "点击摘要条后，在下方直接点选三个属性状态。",
+          "fontFamily": "IBM Plex Sans",
+          "fontSize": "$font.size.meta",
+          "fontWeight": "500"
+        },
+        {
+          "type": "text",
+          "id": "M4awh",
+          "name": "editNote",
               "fill": "$color.text.muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
@@ -4767,13 +4767,10 @@
               "x": 16,
               "y": 93,
               "descendants": {
-                "XAmC1": {
-                  "width": "fill_container"
-                },
                 "FkrRR": {
                   "width": "fill_container",
                   "height": "fit_content",
-                  "y": 26
+                  "y": 0
                 },
                 "46UYV": {
                   "width": "fill_container",
@@ -5031,7 +5028,7 @@
               "width": "fit_content",
               "height": 37,
               "x": 16,
-              "y": 422,
+              "y": 396,
               "flipX": false,
               "flipY": false,
               "justifyContent": "center",
@@ -5067,16 +5064,11 @@
               "x": 16,
               "y": 16
             },
-            "xMFaM": {
-              "width": "fill_container",
-              "x": 16,
-              "y": 48
-            },
             "Iijtq": {
               "width": "fit_content",
               "height": "fit_content",
               "x": 16,
-              "y": 77
+              "y": 48
             },
             "GxrvB": {
               "width": "fit_content",
@@ -5099,7 +5091,7 @@
               "width": "fill_container",
               "height": "fit_content",
               "x": 16,
-              "y": 122
+              "y": 93
             },
             "6tcuD": {
               "width": "fill_container",
@@ -8519,13 +8511,10 @@
               "x": 16,
               "y": 93,
               "descendants": {
-                "XAmC1": {
-                  "width": "fill_container"
-                },
                 "FkrRR": {
                   "width": "fill_container",
                   "height": "fit_content",
-                  "y": 26
+                  "y": 0
                 },
                 "46UYV": {
                   "width": "fill_container",
@@ -8841,16 +8830,11 @@
               "x": 16,
               "y": 16
             },
-            "xMFaM": {
-              "width": "fill_container",
-              "x": 16,
-              "y": 48
-            },
             "Iijtq": {
               "width": "fit_content",
               "height": "fit_content",
               "x": 16,
-              "y": 77
+              "y": 48
             },
             "GxrvB": {
               "width": "fit_content",
@@ -8873,7 +8857,7 @@
               "width": "fill_container",
               "height": "fit_content",
               "x": 16,
-              "y": 122
+              "y": 93
             },
             "6tcuD": {
               "width": "fill_container",
