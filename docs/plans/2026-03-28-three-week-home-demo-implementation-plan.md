@@ -55,6 +55,24 @@
   - `AGEIj`
   - `AAMtX`
 
+## Session Continuation Notes
+
+- The current runtime still shows the older five-week acceptance page. Treat that as outdated baseline output, not the target design.
+- The current Pencil source has been manually adjusted again by the user, especially `u0LTO`; re-read the latest Pencil nodes before implementation instead of trusting earlier screenshots.
+- The intended top-of-card composition is:
+  - `Yzswn` / `4V3lh`
+  - `fydEy` / `u0LTO`
+  - `GEh6e`
+  - `mVNZO`
+  - `Y5mJI` / `AAMtX`
+  - `AGEIj`
+- `selected` shadow should be strengthened across all platforms, but `today` geometry must still remain circular when `today` is present.
+- Current working tree is intentionally dirty:
+  - modified: `docs/design-drafts/2026-03-22-module-space-and-period-home.pen`
+  - untracked: `artifacts/`
+- Do not revert the `.pen` changes. They contain the latest visual source-of-truth edits.
+- Before Task 1, verify the current live runtime and Pencil nodes again so implementation starts from the latest design, not from stale assumptions.
+
 ### Task 1: Freeze The New Demo Contract In Data
 
 **Files:**
