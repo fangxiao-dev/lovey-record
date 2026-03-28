@@ -1,4 +1,5 @@
 import { getDateCellPresentation } from './date-cell-state.js';
+import { getMarkerAssetSrc } from './marker-assets.js';
 
 const TOKEN_CLASS_MAP = {
   'accent.period': 'date-cell--bg-period',
@@ -46,8 +47,10 @@ export function getDateCellViewModel(variant) {
     markerClasses: presentation.usesSpecialMarker && presentation.markerToken
       ? [TOKEN_CLASS_MAP[`marker:${presentation.markerToken}`]].filter(Boolean)
       : [],
-    markerName: presentation.usesSpecialMarker ? 'visibility' : null,
-    markerSrc: null,
+    markerName: null,
+    markerSrc: presentation.usesSpecialMarker
+      ? getMarkerAssetSrc(presentation.markerToken)
+      : null,
     usesSpecialMarker: presentation.usesSpecialMarker
   };
 }

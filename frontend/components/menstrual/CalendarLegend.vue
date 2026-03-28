@@ -10,28 +10,12 @@
 				:class="markerClasses(item)"
 				aria-hidden="true"
 			>
-				<svg
+				<image
 					v-if="item.marker === 'eye'"
-					class="calendar-legend__marker-svg"
-					viewBox="0 0 24 24"
-				>
-					<path
-						d="M2 12C4.2 8.15 7.78 6 12 6s7.8 2.15 10 6c-2.2 3.85-5.78 6-10 6S4.2 15.85 2 12Z"
-						fill="none"
-						stroke="currentColor"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="1.9"
-					/>
-					<circle
-						cx="12"
-						cy="12"
-						r="3.1"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1.9"
-					/>
-				</svg>
+					class="calendar-legend__marker-image"
+					:src="markerSrc(item)"
+					mode="aspectFit"
+				/>
 			</view>
 			<text class="calendar-legend__label">{{ item.label }}</text>
 		</view>
@@ -40,6 +24,7 @@
 
 <script>
 	import { createCalendarLegendItems } from './calendar-legend-data.js';
+	import { getMarkerAssetSrc } from './marker-assets.js';
 
 	export default {
 		name: 'CalendarLegend',
@@ -62,6 +47,9 @@
 					`calendar-legend__marker--${item.tone}`,
 					`calendar-legend__marker--${item.marker}`
 				];
+			},
+			markerSrc(item) {
+				return item.marker === 'eye' ? getMarkerAssetSrc('accent.period') : null;
 			}
 		}
 	};
@@ -112,7 +100,7 @@
 		background: transparent;
 	}
 
-	.calendar-legend__marker-svg {
+	.calendar-legend__marker-image {
 		width: 100%;
 		height: 100%;
 		display: block;

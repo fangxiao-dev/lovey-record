@@ -44,6 +44,7 @@ test('predictionSpecial reuses the soft prediction surface with the shared eye m
   assert.deepEqual(predictionSpecialViewModel.rootClasses, ['date-cell--bg-period-soft']);
   assert.deepEqual(predictionSpecialViewModel.labelClasses, ['date-cell__label--primary']);
   assert.deepEqual(predictionSpecialViewModel.markerClasses, ['date-cell__marker-icon--period']);
+  assert.equal(predictionSpecialViewModel.markerSrc, '/static/menstrual/view-period.svg');
   assert.equal(predictionSpecialViewModel.usesSpecialMarker, true);
 });
 
@@ -107,15 +108,15 @@ test('special marker stays below the date label in DateCell template order', () 
   );
 });
 
-test('special marker uses a shared glyph contract instead of image assets', () => {
+test('special marker uses shared static assets instead of inline svg paths', () => {
   const source = fs.readFileSync(dateCellPath, 'utf8');
   const specialViewModel = getDateCellViewModel('special');
   const selectedPeriodSpecialViewModel = getDateCellViewModel('selectedPeriodSpecial');
 
-  assert.equal(specialViewModel.markerName, 'visibility');
-  assert.equal(selectedPeriodSpecialViewModel.markerName, 'visibility');
-  assert.equal(specialViewModel.markerSrc, null);
-  assert.equal(selectedPeriodSpecialViewModel.markerSrc, null);
-  assert.doesNotMatch(source, /date-cell__marker-image/);
-  assert.match(source, /date-cell__marker-icon/);
+  assert.equal(specialViewModel.markerSrc, '/static/menstrual/view-period.svg');
+  assert.equal(selectedPeriodSpecialViewModel.markerSrc, '/static/menstrual/view-contrast.svg');
+  assert.equal(specialViewModel.markerName, null);
+  assert.equal(selectedPeriodSpecialViewModel.markerName, null);
+  assert.match(source, /date-cell__marker-image/);
+  assert.doesNotMatch(source, /<svg class="date-cell__marker-svg"/);
 });

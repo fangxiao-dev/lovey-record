@@ -3,24 +3,7 @@
 		<text class="date-cell__label" :class="labelClasses">{{ label }}</text>
 		<view class="date-cell__marker-slot" aria-hidden="true">
 			<view v-if="usesSpecialMarker" class="date-cell__marker-icon" :class="markerClasses">
-				<svg class="date-cell__marker-svg" viewBox="0 0 24 24" aria-hidden="true">
-					<path
-						d="M2 12C4.2 8.15 7.78 6 12 6s7.8 2.15 10 6c-2.2 3.85-5.78 6-10 6S4.2 15.85 2 12Z"
-						fill="none"
-						stroke="currentColor"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="1.9"
-					/>
-					<circle
-						cx="12"
-						cy="12"
-						r="3.1"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1.9"
-					/>
-				</svg>
+				<image class="date-cell__marker-image" :src="markerSrc" mode="aspectFit" />
 			</view>
 			<view v-else class="date-cell__marker-placeholder"></view>
 		</view>
@@ -58,6 +41,9 @@
 			},
 			markerClasses() {
 				return this.viewModel.markerClasses;
+			},
+			markerSrc() {
+				return this.viewModel.markerSrc;
 			},
 			usesSpecialMarker() {
 				return this.viewModel.usesSpecialMarker;
@@ -136,7 +122,7 @@
 		opacity: 0;
 	}
 
-	.date-cell__marker-svg {
+	.date-cell__marker-image {
 		width: 100%;
 		height: 100%;
 		display: block;
