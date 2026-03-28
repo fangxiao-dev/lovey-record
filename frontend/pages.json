@@ -11,6 +11,12 @@
 			"style": {
 				"navigationBarTitleText": "DateCell Showcase"
 			}
+		},
+		{
+			"path": "pages/menstrual/calendar-grid-showcase",
+			"style": {
+				"navigationBarTitleText": "CalendarGrid Showcase"
+			}
 		}
 	],
 	"globalStyle": {

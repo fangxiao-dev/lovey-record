@@ -10,8 +10,8 @@ const TOKEN_CLASS_MAP = {
   'text.secondary': 'date-cell__label--secondary',
   'text.muted': 'date-cell__label--muted',
   'accent.period.contrast': 'date-cell__label--period-contrast',
-  'marker:accent.period': 'date-cell__marker-eye--period',
-  'marker:accent.period.contrast': 'date-cell__marker-eye--period-contrast'
+  'marker:accent.period': 'date-cell__marker-icon--period',
+  'marker:accent.period.contrast': 'date-cell__marker-icon--period-contrast'
 };
 
 export function getDateCellViewModel(variant) {
@@ -44,11 +44,10 @@ export function getDateCellViewModel(variant) {
     rootClasses: rootClasses.filter(Boolean),
     labelClasses: [TOKEN_CLASS_MAP[presentation.textToken]].filter(Boolean),
     markerClasses: presentation.usesSpecialMarker && presentation.markerToken
-      ? [
-          'date-cell__marker-eye--visible',
-          TOKEN_CLASS_MAP[`marker:${presentation.markerToken}`]
-        ].filter(Boolean)
-      : ['date-cell__marker-eye--placeholder'],
+      ? [TOKEN_CLASS_MAP[`marker:${presentation.markerToken}`]].filter(Boolean)
+      : [],
+    markerName: presentation.usesSpecialMarker ? 'visibility' : null,
+    markerSrc: null,
     usesSpecialMarker: presentation.usesSpecialMarker
   };
 }

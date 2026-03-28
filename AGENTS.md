@@ -17,6 +17,7 @@
 - **Frontend work: MUST read [Frontend-Specific Guidance](#frontend-specific-guidance)**.
 - **Backend work: MUST read [Backend Guidance](#backend-guidance)**.
 - General Design and Pencil workflow: read [docs/design/pencil/README.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\design\pencil\README.md).
+- UI collaboration lessons and Pencil-to-code verification rules: read [docs/design/2026-03-28-ui-collaboration-lessons.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\design\2026-03-28-ui-collaboration-lessons.md).
 
 ### Product And Contract Direction
 - Treat the menstrual module as the first fully realized MVP module inside a broader relationship-record product.
@@ -29,6 +30,7 @@
 - Update `docs/plans/` when rollout, sequencing, page structure, or implementation scope changes.
 - Update `project-context.md` when project role, milestone, or core repo constraints change.
 - Prefer making cross-layer alignment explicit in documents before implementation when the change would otherwise create ambiguity.
+- For frontend/UI work that needs web-end validation, do an initial pass with Playwright MCP yourself first, then ask the user to verify only after the initial runtime check is clean.
 - When finishing a task, include two short closing statements:
   - current mainline progress
   - next-step recommendation

@@ -9,7 +9,9 @@
 					:key="item.variant"
 					class="date-cell-showcase__state-wrap"
 				>
-					<DateCell label="26" :variant="item.variant" />
+					<view class="date-cell-showcase__state-body">
+						<DateCell label="26" :variant="item.variant" />
+					</view>
 				</view>
 			</view>
 			<text class="date-cell-showcase__copy u-text-body-secondary">{{ board.selectedIntro }}</text>
@@ -19,7 +21,9 @@
 					:key="item.variant"
 					class="date-cell-showcase__state-wrap"
 				>
-					<DateCell label="26" :variant="item.variant" />
+					<view class="date-cell-showcase__state-body">
+						<DateCell label="26" :variant="item.variant" />
+					</view>
 				</view>
 			</view>
 			<view class="date-cell-showcase__group date-cell-showcase__group--today">
@@ -28,7 +32,9 @@
 					:key="item.variant"
 					class="date-cell-showcase__state-wrap"
 				>
-					<DateCell label="26" :variant="item.variant" />
+					<view class="date-cell-showcase__state-body">
+						<DateCell label="26" :variant="item.variant" />
+					</view>
 				</view>
 			</view>
 		</view>
@@ -69,8 +75,8 @@
 	}
 
 	.date-cell-showcase__group {
-		display: flex;
-		flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(112rpx, 1fr));
 		column-gap: $space-7;
 		row-gap: $space-7;
 		margin-top: $space-7;
@@ -81,11 +87,11 @@
 	}
 
 	.date-cell-showcase__group--selected {
-		max-width: 780rpx;
+		max-width: none;
 	}
 
 	.date-cell-showcase__group--today {
-		max-width: 320rpx;
+		max-width: none;
 	}
 
 	.date-cell-showcase__state-wrap {
@@ -93,5 +99,18 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		overflow: visible;
+	}
+
+	.date-cell-showcase__state-body {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: visible;
+	}
+
+	.date-cell-showcase__state-body :deep(.date-cell) {
+		max-width: 116rpx;
 	}
 </style>

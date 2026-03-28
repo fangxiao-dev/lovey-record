@@ -59,3 +59,16 @@ test('special marker stays below the date label in DateCell template order', () 
     /<text class="date-cell__label"[\s\S]*?<\/text>\s*<view class="date-cell__marker-slot"/
   );
 });
+
+test('special marker uses a shared glyph contract instead of image assets', () => {
+  const source = fs.readFileSync(dateCellPath, 'utf8');
+  const specialViewModel = getDateCellViewModel('special');
+  const selectedPeriodSpecialViewModel = getDateCellViewModel('selectedPeriodSpecial');
+
+  assert.equal(specialViewModel.markerName, 'visibility');
+  assert.equal(selectedPeriodSpecialViewModel.markerName, 'visibility');
+  assert.equal(specialViewModel.markerSrc, null);
+  assert.equal(selectedPeriodSpecialViewModel.markerSrc, null);
+  assert.doesNotMatch(source, /date-cell__marker-image/);
+  assert.match(source, /date-cell__marker-icon/);
+});
