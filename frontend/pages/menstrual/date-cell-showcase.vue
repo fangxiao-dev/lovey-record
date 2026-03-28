@@ -55,10 +55,12 @@
 <style lang="scss">
 	.date-cell-showcase {
 		padding-bottom: $space-12;
+		background: $bg-card;
 	}
 
 	.date-cell-showcase__board {
 		padding-bottom: $space-10;
+		background: $bg-base;
 	}
 
 	.date-cell-showcase__copy {
