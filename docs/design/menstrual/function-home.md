@@ -37,11 +37,13 @@ The home page must cover:
 
 ## Selected Date Panel
 
-- The three attribute editors use a horizontal shadow-palette summary row.
-- The summary row is collapsed by default.
-- Tapping a summary item expands the matching editor inline.
-- Tapping the same summary item again collapses it back.
-- Summary switching and inline expansion stay on the home page; they do not navigate away.
+- The panel always shows two independent chips: `经期` (period toggle) and `+ 记录详情` (attribute grid toggle).
+- Period marking and attribute recording are independent actions.
+- The attribute summary bar only renders when at least one attribute is recorded.
+- The attribute grid is controlled by `+ 记录详情` / `↑ 收起`, not by tapping the summary bar.
+- Attribute changes are WYSIWYG (immediate persistence); there is no save button.
+- A `清空` button appears only when attributes are recorded, and only clears attributes (not period status).
+- The full interaction contract is defined in [function-day-recording.md](function-day-recording.md).
 
 ## Calendar Grid Structure
 

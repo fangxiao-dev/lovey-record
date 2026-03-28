@@ -18,6 +18,7 @@
 - **Backend work: MUST read [Backend Guidance](#backend-guidance)**.
 - General Design and Pencil workflow: read [docs/design/pencil/README.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\design\pencil\README.md).
 - UI collaboration lessons and Pencil-to-code verification rules: read [docs/design/2026-03-28-ui-collaboration-lessons.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\design\2026-03-28-ui-collaboration-lessons.md).
+- Feature-level interaction contracts: read the relevant `function-*.md` under `docs/design/<module>/`. These are authoritative UX contracts that take precedence over Pencil when they disagree.
 
 ### Product And Contract Direction
 - Treat the menstrual module as the first fully realized MVP module inside a broader relationship-record product.
@@ -28,6 +29,7 @@
 - Before substantial work, inspect repo state and read the relevant plan and contract docs first.
 - Update `docs/contracts/` when durable product behavior, domain meaning, or frontend-backend boundaries change.
 - Update `docs/plans/` when rollout, sequencing, page structure, or implementation scope changes.
+- Update `docs/design/<module>/function-*.md` when a feature-level interaction contract is created or changed. These are the authoritative UX source of truth for that feature.
 - Update `project-context.md` when project role, milestone, or core repo constraints change.
 - Prefer making cross-layer alignment explicit in documents before implementation when the change would otherwise create ambiguity.
 - For frontend/UI work that needs web-end validation, do an initial pass with Playwright MCP yourself first, then ask the user to verify only after the initial runtime check is clean.

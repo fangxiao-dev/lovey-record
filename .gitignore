@@ -19,6 +19,7 @@ backend/dist/
 frontend/dist/
 frontend/unpackage/
 frontend/node_modules/
+artifacts
 
 # IDE
 .vscode/

@@ -528,15 +528,16 @@ Status:
 
 ### Rules that stay in component spec
 
-- three summary attributes use a horizontal summary row
-- summary row is collapsed by default
-- tapping a summary item expands the matching editor inline
-- tapping it again collapses it back
+- summary bar only renders when at least one attribute is recorded
+- attribute grid is toggled by `+ 记录详情` / `↑ 收起` chip, not by tapping the summary bar
+- attribute changes are WYSIWYG; no save button
+- `清空` button replaces the former save button, only visible when attributes are recorded
+- full interaction contract: [function-day-recording.md](function-day-recording.md)
 
 ### Current token gaps or risks
 
 - summary row and expanded editor surfaces need a clearer semantic split
-- current collapse/expand behavior is a documented interaction rule, not yet a code-level state contract
+- current collapse/expand behavior is now a documented interaction rule in function-day-recording.md
 
 ## `BatchEditPanel`
 
