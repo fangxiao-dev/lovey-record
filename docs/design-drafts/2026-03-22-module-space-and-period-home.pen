@@ -352,6 +352,11 @@
               "id": "5Znng",
               "fill": "$color.bg.subtle",
               "cornerRadius": "$radius.pill",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "$color.accent.today"
+              },
               "padding": [
                 8,
                 10
@@ -371,7 +376,7 @@
             {
               "type": "frame",
               "id": "B1cCn",
-              "fill": "$color.accent.period.soft",
+              "fill": "$color.accent.period",
               "cornerRadius": "$radius.pill",
               "padding": [
                 8,
@@ -381,7 +386,7 @@
                 {
                   "type": "text",
                   "id": "6ePcO",
-                  "fill": "$color.text.primary",
+                  "fill": "$color.accent.period.contrast",
                   "content": "本次",
                   "fontFamily": "IBM Plex Sans",
                   "fontSize": "$font.size.meta",
@@ -392,7 +397,7 @@
             {
               "type": "frame",
               "id": "arLQ1",
-              "fill": "$color.bg.subtle",
+              "fill": "$color.accent.period.soft",
               "cornerRadius": "$radius.pill",
               "padding": [
                 8,
@@ -1943,7 +1948,7 @@
           "name": "Frame 7",
           "clip": true,
           "width": 403,
-          "height": 596,
+          "height": 456,
           "fill": "$color.bg.base",
           "layout": "vertical",
           "gap": 5,
@@ -4788,6 +4793,7 @@
           "height": "fit_content",
           "x": 16,
           "y": 759,
+          "width": "fit_content",
           "descendants": {
             "B3pLP": {
               "width": "fit_content",
@@ -7601,6 +7607,7 @@
           "height": "fit_content",
           "x": 16,
           "y": 699,
+          "width": "fit_content",
           "descendants": {
             "B3pLP": {
               "width": "fit_content",
@@ -8700,6 +8707,7 @@
           "height": "fit_content",
           "x": 16,
           "y": 699,
+          "width": "fit_content",
           "descendants": {
             "B3pLP": {
               "width": "fit_content",
