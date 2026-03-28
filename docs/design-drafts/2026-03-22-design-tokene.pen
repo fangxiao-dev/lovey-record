@@ -5,10 +5,10 @@
       "type": "frame",
       "id": "TokFd01",
       "x": 0,
-      "y": 0,
+      "y": -184,
       "name": "Token Foundations / Light",
       "width": 960,
-      "height": 1208,
+      "height": 1347,
       "fill": "$color.bg.base",
       "layout": "vertical",
       "gap": 20,
@@ -146,7 +146,7 @@
                                     {
                                       "type": "text",
                                       "id": "NpLhZ",
-                                      "fill": "#72685F",
+                                      "fill": "$color.text.inverse",
                                       "content": "100",
                                       "fontFamily": "IBM Plex Sans",
                                       "fontSize": 11,
@@ -188,7 +188,7 @@
                                     {
                                       "type": "text",
                                       "id": "SaBPH",
-                                      "fill": "#72685F",
+                                      "fill": "$color.text.inverse",
                                       "content": "500",
                                       "fontFamily": "IBM Plex Sans",
                                       "fontSize": 11,
@@ -209,7 +209,7 @@
                                     {
                                       "type": "text",
                                       "id": "IwIcc",
-                                      "fill": "#72685F",
+                                      "fill": "$color.text.inverse",
                                       "content": "700",
                                       "fontFamily": "IBM Plex Sans",
                                       "fontSize": 11,
@@ -236,7 +236,7 @@
                                     {
                                       "type": "text",
                                       "id": "setEf",
-                                      "fill": "#72685F",
+                                      "fill": "$color.text.inverse",
                                       "content": "900",
                                       "fontFamily": "IBM Plex Sans",
                                       "fontSize": 11,
@@ -486,7 +486,7 @@
                                     {
                                       "type": "text",
                                       "id": "dXa2z",
-                                      "fill": "#72685F",
+                                      "fill": "$color.text.inverse",
                                       "content": "500",
                                       "fontFamily": "IBM Plex Sans",
                                       "fontSize": 11,
@@ -507,7 +507,7 @@
                                     {
                                       "type": "text",
                                       "id": "sZNQt",
-                                      "fill": "#72685F",
+                                      "fill": "$color.text.inverse",
                                       "content": "700",
                                       "fontFamily": "IBM Plex Sans",
                                       "fontSize": 11,
@@ -534,7 +534,7 @@
                                     {
                                       "type": "text",
                                       "id": "2cjF3",
-                                      "fill": "#72685F",
+                                      "fill": "$color.text.inverse",
                                       "content": "900",
                                       "fontFamily": "IBM Plex Sans",
                                       "fontSize": 11,
@@ -630,7 +630,7 @@
                                     {
                                       "type": "text",
                                       "id": "V5Tej",
-                                      "fill": "#72685F",
+                                      "fill": "$color.text.inverse",
                                       "content": "500",
                                       "fontFamily": "IBM Plex Sans",
                                       "fontSize": 11,
@@ -651,7 +651,7 @@
                                     {
                                       "type": "text",
                                       "id": "MVJ5e",
-                                      "fill": "#72685F",
+                                      "fill": "$color.text.inverse",
                                       "content": "700",
                                       "fontFamily": "IBM Plex Sans",
                                       "fontSize": 11,
@@ -678,7 +678,7 @@
                                     {
                                       "type": "text",
                                       "id": "BqPEr",
-                                      "fill": "#72685F",
+                                      "fill": "$color.text.inverse",
                                       "content": "900",
                                       "fontFamily": "IBM Plex Sans",
                                       "fontSize": 11,
@@ -703,7 +703,7 @@
           "id": "TokS001",
           "name": "Color Tokens",
           "width": "fill_container",
-          "height": "fit_content(342)",
+          "height": "fit_content(564)",
           "layout": "none",
           "children": [
             {
@@ -882,6 +882,43 @@
                           "fontWeight": "500"
                         }
                       ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "BtTdY",
+                      "name": "border.today",
+                      "width": 114,
+                      "height": 69,
+                      "fill": "$color.bg.base",
+                      "cornerRadius": 12,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "$color.border.today"
+                      },
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BtTd1",
+                          "fill": "$color.text.secondary",
+                          "content": "今日描边",
+                          "fontFamily": "IBM Plex Sans",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "BtTd2",
+                          "fill": "$color.text.muted",
+                          "content": "border.today",
+                          "fontFamily": "IBM Plex Sans",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -909,8 +946,8 @@
                 {
                   "type": "frame",
                   "id": "rAtbZ",
-                  "width": 893,
-                  "height": 71,
+                  "width": 894,
+                  "height": 72,
                   "gap": 12,
                   "justifyContent": "space_between",
                   "alignItems": "center",
@@ -921,7 +958,7 @@
                       "name": "accent.period",
                       "width": 110,
                       "height": 68,
-                      "fill": "#d89a8dff",
+                      "fill": "$color.accent.period",
                       "cornerRadius": 12,
                       "layout": "vertical",
                       "gap": 4,
@@ -1063,7 +1100,7 @@
                         {
                           "type": "text",
                           "id": "5wx52",
-                          "fill": "#2F5E46",
+                          "fill": "$color.text.support",
                           "content": "成功/共享绿",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 13,
@@ -1072,7 +1109,7 @@
                         {
                           "type": "text",
                           "id": "TNN73",
-                          "fill": "#4F8D6A",
+                          "fill": "$color.text.support",
                           "content": "support.calm 底色",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
@@ -1096,7 +1133,7 @@
                         {
                           "type": "text",
                           "id": "OXeqr",
-                          "fill": "#355894",
+                          "fill": "$color.support.info",
                           "content": "信息蓝底色",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 13,
@@ -1105,8 +1142,82 @@
                         {
                           "type": "text",
                           "id": "T37qE",
-                          "fill": "#5F84C9",
+                          "fill": "$color.support.info",
                           "content": "support.info 底色",
+                          "fontFamily": "IBM Plex Sans",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ac2nd",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "AcPrS",
+                      "name": "accent.period.soft",
+                      "width": "fill_container",
+                      "height": 68,
+                      "fill": "$color.accent.period.soft",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 10,
+                      "justifyContent": "space_around",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AcPr1",
+                          "fill": "$color.text.secondary",
+                          "content": "经期淡色",
+                          "fontFamily": "IBM Plex Sans",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "AcPr2",
+                          "fill": "$color.text.muted",
+                          "content": "accent.period.soft",
+                          "fontFamily": "IBM Plex Sans",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "AcPrC",
+                      "name": "accent.period.contrast",
+                      "width": "fill_container",
+                      "height": 68,
+                      "fill": "$color.accent.period",
+                      "cornerRadius": 12,
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 10,
+                      "justifyContent": "space_around",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AcPc1",
+                          "fill": "$color.accent.period.contrast",
+                          "content": "经期反差前景",
+                          "fontFamily": "IBM Plex Sans",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "AcPc2",
+                          "fill": "$color.accent.period.contrast",
+                          "content": "accent.period.contrast",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
                           "fontWeight": "500"
@@ -1121,7 +1232,7 @@
               "type": "frame",
               "id": "eJsxX",
               "x": 0,
-              "y": 248,
+              "y": 328,
               "name": "textColorRow",
               "width": "fill_container(912)",
               "layout": "vertical",
@@ -1269,36 +1380,288 @@
                           "fontWeight": "500"
                         }
                       ]
-                    },
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "AtR001",
+              "x": 0,
+              "y": 436,
+              "name": "attributeColorRow",
+              "width": "fill_container(912)",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "AtR002",
+                  "fill": "$color.text.secondary",
+                  "content": "属性色 · Attribute",
+                  "fontFamily": "$font.family.base",
+                  "fontSize": 11,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "AtR003",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
                     {
                       "type": "frame",
-                      "id": "tjbEH",
-                      "name": "text.inverse",
+                      "id": "AtF001",
+                      "name": "attribute.flow family",
                       "width": "fill_container",
-                      "height": 72,
-                      "fill": "$color.text.primary",
+                      "height": 92,
+                      "fill": "$color.bg.card",
                       "cornerRadius": 12,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "$color.border.subtle"
+                      },
                       "layout": "vertical",
-                      "gap": 4,
+                      "gap": 8,
                       "padding": 10,
                       "children": [
                         {
                           "type": "text",
-                          "id": "1ebQg",
-                          "fill": "$color.text.inverse",
-                          "content": "反色文本",
-                          "fontFamily": "$font.family.base",
+                          "id": "AtF002",
+                          "fill": "$color.attribute.flow.icon",
+                          "content": "流量属性",
+                          "fontFamily": "IBM Plex Sans",
                           "fontSize": 13,
                           "fontWeight": "600"
                         },
                         {
                           "type": "text",
-                          "id": "Yibqo",
-                          "fill": "$color.text.inverse",
-                          "content": "text.inverse",
-                          "fontFamily": "$font.family.base",
+                          "id": "AtF003",
+                          "fill": "$color.text.muted",
+                          "content": "attribute.flow.*",
+                          "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
                           "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "AtF004",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "AtF005",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.flow.trace",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AtF006",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.flow.light",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AtF007",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.flow.medium",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AtF008",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.flow.heavy",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AtF009",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.flow.extreme",
+                              "cornerRadius": 999
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "AtP001",
+                      "name": "attribute.pain family",
+                      "width": "fill_container",
+                      "height": 92,
+                      "fill": "$color.bg.card",
+                      "cornerRadius": 12,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "$color.border.subtle"
+                      },
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AtP002",
+                          "fill": "$color.attribute.pain.icon",
+                          "content": "疼痛属性",
+                          "fontFamily": "IBM Plex Sans",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "AtP003",
+                          "fill": "$color.text.muted",
+                          "content": "attribute.pain.*",
+                          "fontFamily": "IBM Plex Sans",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "AtP004",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "AtP005",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.pain.none",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AtP006",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.pain.light",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AtP007",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.pain.medium",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AtP008",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.pain.strong",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AtP009",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.pain.extreme",
+                              "cornerRadius": 999
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "AtT001",
+                      "name": "attribute.tone family",
+                      "width": "fill_container",
+                      "height": 92,
+                      "fill": "$color.bg.card",
+                      "cornerRadius": 12,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "$color.border.subtle"
+                      },
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AtT002",
+                          "fill": "$color.attribute.tone.icon",
+                          "content": "颜色属性",
+                          "fontFamily": "IBM Plex Sans",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "AtT003",
+                          "fill": "$color.text.muted",
+                          "content": "attribute.tone.*",
+                          "fontFamily": "IBM Plex Sans",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "AtT004",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "AtT005",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.tone.veryLight",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AtT006",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.tone.light",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AtT007",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.tone.medium",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AtT008",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.tone.dark",
+                              "cornerRadius": 999
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AtT009",
+                              "width": "fill_container",
+                              "height": 24,
+                              "fill": "$color.attribute.tone.veryDark",
+                              "cornerRadius": 999
+                            }
+                          ]
                         }
                       ]
                     }
@@ -1483,7 +1846,7 @@
           "name": "Shape Tokens",
           "clip": true,
           "width": 901,
-          "height": 243,
+          "height": 219,
           "fill": "#FFFFFF",
           "layout": "vertical",
           "children": [
@@ -1520,7 +1883,7 @@
               "name": "Frame 2",
               "clip": true,
               "width": 881,
-              "height": 192,
+              "height": 171,
               "fill": "#FFFFFF",
               "gap": 20,
               "alignItems": "center",
@@ -1736,28 +2099,312 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "IVh6R",
+      "x": 1040,
+      "y": 0,
+      "name": "Flow Color Explorations",
+      "width": 460,
+      "fill": "$color.bg.base",
+      "layout": "vertical",
+      "gap": 12,
+      "padding": 16,
+      "children": [
+        {
+          "type": "text",
+          "id": "bYqes",
+          "name": "expTitle",
+          "fill": "$color.text.primary",
+          "content": "流量属性试色 / hardcoded exploration",
+          "fontFamily": "IBM Plex Sans",
+          "fontSize": 14,
+          "fontWeight": "700"
+        },
+        {
+          "type": "text",
+          "id": "93JiT",
+          "name": "expSub",
+          "fill": "$color.text.secondary",
+          "content": "保留 AtF001 结构，只测试黄系与蓝系对比。",
+          "fontFamily": "IBM Plex Sans",
+          "fontSize": 12,
+          "fontWeight": "500"
+        },
+        {
+          "type": "frame",
+          "id": "15sWi",
+          "name": "attribute.flow alt yellow",
+          "width": "fill_container",
+          "height": 92,
+          "fill": "$color.bg.card",
+          "cornerRadius": 12,
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "$color.border.subtle"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 10,
+          "children": [
+            {
+              "type": "text",
+              "id": "JO8ld",
+              "fill": "#D79E12",
+              "content": "流量属性 / 黄系",
+              "fontFamily": "IBM Plex Sans",
+              "fontSize": 13,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "zT72m",
+              "fill": "$color.text.muted",
+              "content": "hardcoded.yellow.flow",
+              "fontFamily": "IBM Plex Sans",
+              "fontSize": 11,
+              "fontWeight": "500"
+            },
+            {
+              "type": "frame",
+              "id": "29Rsf",
+              "width": "fill_container",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "khcXF",
+                  "width": "fill_container",
+                  "height": 24,
+                  "fill": "#FFF7D9",
+                  "cornerRadius": 999
+                },
+                {
+                  "type": "frame",
+                  "id": "vNDRI",
+                  "width": "fill_container",
+                  "height": 24,
+                  "fill": "#FFE996",
+                  "cornerRadius": 999
+                },
+                {
+                  "type": "frame",
+                  "id": "RrWCT",
+                  "width": "fill_container",
+                  "height": 24,
+                  "fill": "#FFD23F",
+                  "cornerRadius": 999
+                },
+                {
+                  "type": "frame",
+                  "id": "z1Qhf",
+                  "width": "fill_container",
+                  "height": 24,
+                  "fill": "#E3B726",
+                  "cornerRadius": 999
+                },
+                {
+                  "type": "frame",
+                  "id": "gSsyU",
+                  "width": "fill_container",
+                  "height": 24,
+                  "fill": "#B9870A",
+                  "cornerRadius": 999
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "XpqRY",
+          "name": "attribute.flow alt blue",
+          "width": "fill_container",
+          "height": 92,
+          "fill": "$color.bg.card",
+          "cornerRadius": 12,
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "$color.border.subtle"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 10,
+          "children": [
+            {
+              "type": "text",
+              "id": "ilwGr",
+              "fill": "#2E84D4",
+              "content": "流量属性 / 蓝系",
+              "fontFamily": "IBM Plex Sans",
+              "fontSize": 13,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "2vedy",
+              "fill": "$color.text.muted",
+              "content": "hardcoded.blue.flow",
+              "fontFamily": "IBM Plex Sans",
+              "fontSize": 11,
+              "fontWeight": "500"
+            },
+            {
+              "type": "frame",
+              "id": "QReXh",
+              "width": "fill_container",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "tDHsB",
+                  "width": "fill_container",
+                  "height": 24,
+                  "fill": "#EAF4FF",
+                  "cornerRadius": 999
+                },
+                {
+                  "type": "frame",
+                  "id": "eT36W",
+                  "width": "fill_container",
+                  "height": 24,
+                  "fill": "#B9D8F5",
+                  "cornerRadius": 999
+                },
+                {
+                  "type": "frame",
+                  "id": "wSKFq",
+                  "width": "fill_container",
+                  "height": 24,
+                  "fill": "#5AA5E7",
+                  "cornerRadius": 999
+                },
+                {
+                  "type": "frame",
+                  "id": "ucEFE",
+                  "width": "fill_container",
+                  "height": 24,
+                  "fill": "#2E84D4",
+                  "cornerRadius": 999
+                },
+                {
+                  "type": "frame",
+                  "id": "PA349",
+                  "width": "fill_container",
+                  "height": 24,
+                  "fill": "#1C5EA0",
+                  "cornerRadius": 999
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "variables": {
     "color.accent.period": {
       "type": "color",
-      "value": "#D89A8D"
+      "value": "#C9786A"
+    },
+    "color.accent.period.soft": {
+      "type": "color",
+      "value": "#F3D7D1"
+    },
+    "color.accent.period.contrast": {
+      "type": "color",
+      "value": "#FFFFFF"
     },
     "color.accent.prediction": {
       "type": "color",
-      "value": "#FFF4EF"
+      "value": "#EADFD6"
     },
     "color.accent.special": {
       "type": "color",
-      "value": "#D89A8D"
+      "value": "#C9786A"
     },
     "color.accent.today": {
       "type": "color",
       "value": "#8E7C6D"
     },
+    "color.attribute.flow.icon": {
+      "type": "color",
+      "value": "#1C47F3"
+    },
+    "color.attribute.flow.trace": {
+      "type": "color",
+      "value": "#FBF7F2"
+    },
+    "color.attribute.flow.light": {
+      "type": "color",
+      "value": "#F2E5D4"
+    },
+    "color.attribute.flow.medium": {
+      "type": "color",
+      "value": "#E2C8A6"
+    },
+    "color.attribute.flow.heavy": {
+      "type": "color",
+      "value": "#D0AA7E"
+    },
+    "color.attribute.flow.extreme": {
+      "type": "color",
+      "value": "#BC8A5F"
+    },
+    "color.attribute.pain.icon": {
+      "type": "color",
+      "value": "#9840A8"
+    },
+    "color.attribute.pain.none": {
+      "type": "color",
+      "value": "#FBF7F2"
+    },
+    "color.attribute.pain.light": {
+      "type": "color",
+      "value": "#F0E4F3"
+    },
+    "color.attribute.pain.medium": {
+      "type": "color",
+      "value": "#DEC7E5"
+    },
+    "color.attribute.pain.strong": {
+      "type": "color",
+      "value": "#C7A4D2"
+    },
+    "color.attribute.pain.extreme": {
+      "type": "color",
+      "value": "#A97DBA"
+    },
+    "color.attribute.tone.icon": {
+      "type": "color",
+      "value": "#D4361A"
+    },
+    "color.attribute.tone.veryLight": {
+      "type": "color",
+      "value": "#F7E7E4"
+    },
+    "color.attribute.tone.light": {
+      "type": "color",
+      "value": "#E8AAA0"
+    },
+    "color.attribute.tone.medium": {
+      "type": "color",
+      "value": "#C95B55"
+    },
+    "color.attribute.tone.dark": {
+      "type": "color",
+      "value": "#8F5149"
+    },
+    "color.attribute.tone.veryDark": {
+      "type": "color",
+      "value": "#654743"
+    },
     "color.bg.base": {
       "type": "color",
-      "value": "#FCF9F6"
+      "value": "#FAF7F2"
     },
     "color.bg.card": {
       "type": "color",
@@ -1765,15 +2412,19 @@
     },
     "color.bg.panel": {
       "type": "color",
-      "value": "#F8F4EF"
+      "value": "#F3EEE7"
     },
     "color.bg.subtle": {
       "type": "color",
-      "value": "#F5EFE8"
+      "value": "#F3EEE7"
     },
     "color.border.subtle": {
       "type": "color",
       "value": "#E6DED5"
+    },
+    "color.border.today": {
+      "type": "color",
+      "value": "#8E7C6D"
     },
     "color.support.calm": {
       "type": "color",

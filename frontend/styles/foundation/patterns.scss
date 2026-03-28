@@ -7,7 +7,7 @@
 
 .ui-card--soft {
 	@include surface-card();
-	background: $bg-surface-soft;
+	background: $bg-subtle;
 }
 
 .ui-card__header {
@@ -46,7 +46,7 @@
 	align-items: center;
 	min-height: 80rpx;
 	padding: $space-3 $space-4;
-	background: $bg-surface;
+	background: $bg-card;
 	border: 2rpx solid $border-subtle;
 	border-radius: $radius-field;
 	font-family: $font-family-body;
@@ -59,7 +59,7 @@
 	display: flex;
 	align-items: center;
 	padding: $space-4;
-	background: $bg-surface;
+	background: $bg-card;
 	border: 2rpx solid $border-subtle;
 	border-radius: $radius-card;
 }
@@ -76,7 +76,7 @@
 	justify-content: center;
 	padding: $chip-padding-y $chip-padding-x;
 	border-radius: $radius-chip;
-	background: $bg-surface-soft;
+	background: $bg-subtle;
 }
 
 .ui-badge__text {

@@ -5,6 +5,12 @@
 			"style": {
 				"navigationBarTitleText": "记录空间"
 			}
+		},
+		{
+			"path": "pages/menstrual/date-cell-showcase",
+			"style": {
+				"navigationBarTitleText": "DateCell Showcase"
+			}
 		}
 	],
 	"globalStyle": {

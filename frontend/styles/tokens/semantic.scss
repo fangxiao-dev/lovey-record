@@ -1,33 +1,40 @@
 @import "./primitives.scss";
 
 /* Semantic color tokens */
-$bg-page: $color-warm-050;
-$bg-page-muted: $color-warm-100;
-$bg-surface: $color-warm-000;
-$bg-surface-soft: $color-warm-100;
-$bg-surface-interactive: $color-warm-150;
+$bg-base: $color-warm-050;
+$bg-subtle: $color-warm-100;
+$bg-card: $color-warm-000;
+$bg-interactive: $color-warm-150;
+$bg-panel: $color-warm-100;
+$bg-neutral: $color-warm-100;
+$bg-sheet: $color-warm-050;
 $bg-mask: $color-black-alpha-16;
 
 $text-primary: $color-brown-900;
 $text-secondary: $color-brown-700;
 $text-tertiary: $color-brown-500;
+$text-muted: $color-brown-500;
 $text-inverse: $color-warm-000;
-$text-accent: $color-rose-700;
+$text-support: $color-support-calm;
 
 $border-subtle: $color-warm-200;
 $border-strong: $color-warm-300;
-$border-accent: $color-rose-500;
+$border-today: $color-brown-700;
 
 $fill-primary: $color-rose-700;
 $fill-primary-soft: $color-rose-300;
 $fill-secondary: $color-warm-100;
 $fill-disabled: $color-warm-150;
 
-$status-period: $color-rose-700;
-$status-period-soft: $color-rose-300;
-$status-prediction: $color-warm-150;
-$status-special: $color-gold-500;
-$status-today-ring: $color-brown-700;
+$accent-period: $color-rose-700;
+$accent-period-soft: $color-rose-300;
+$accent-period-contrast: $color-warm-000;
+$accent-prediction: $color-warm-150;
+$accent-today: $color-brown-700;
+$support-calm: $color-support-calm;
+$support-info: $color-support-info;
+
+/* Retained for uni.scss compatibility bridge, not part of menstrual Phase 1 semantic target set. */
 $status-success: $color-state-success;
 $status-warning: $color-state-warning;
 $status-danger: $color-state-danger;
@@ -77,6 +84,7 @@ $radius-button: $radius-pill;
 $shadow-card: $shadow-none;
 $shadow-floating: $shadow-soft-s;
 $shadow-overlay: $shadow-soft-m;
+$shadow-selected: 0 4rpx 12rpx $color-black-alpha-08;
 
 /* Semantic z-index tokens */
 $z-page-base: $z-index-base;
@@ -91,3 +99,6 @@ $motion-panel-duration: $motion-duration-base;
 $motion-overlay-duration: $motion-duration-slow;
 $motion-ease-default: $motion-ease-standard;
 $motion-ease-panel: $motion-ease-emphasized;
+
+/* Calendar semantic tokens */
+$calendar-week-divider: $color-warm-200;
