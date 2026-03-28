@@ -6,7 +6,7 @@
 - This repository is the active monorepo for a relationship record product whose first MVP module is menstrual tracking.
 - It contains the uni-app frontend, the backend service layer, and the shared design/product contracts used to keep both sides aligned.
 - Use `project-context.md`, `docs/plans/`, and `docs/contracts/` as the project background and contract baseline.
-
+- Legacy/reference repo: Only use `D:\CodeSpace\love-recorder` as a legacy/reference repo. Do not copy legacy implementation structure directly into this repo.
 ### Core Reading Order
 1. Read [docs/plans](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\plans) if you need the latest relevant plan.
 2. Read the latest relevant contract under [docs/contracts](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\contracts) when the task affects product rules, domain meaning, or frontend-backend alignment.
@@ -14,9 +14,9 @@
 4. Read [project-context.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\project-context.md) if you need background understanding.
 
 ### Navigation
-- Frontend work: read [frontend/AGENTS.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\frontend\AGENTS.md).
-- Backend work: read [backend/AGENTS.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\backend\AGENTS.md).
-- Design and Pencil workflow: read [docs/design/pencil/README.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\design\pencil\README.md).
+- **Frontend work: MUST read [Frontend-Specific Guidance](#frontend-specific-guidance)**.
+- **Backend work: MUST read [Backend Guidance](#backend-guidance)**.
+- General Design and Pencil workflow: read [docs/design/pencil/README.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\design\pencil\README.md).
 
 ### Product And Contract Direction
 - Treat the menstrual module as the first fully realized MVP module inside a broader relationship-record product.
@@ -36,57 +36,14 @@
   - `Current mainline progress: backend contract surface and backend docs are now aligned to the runtime baseline.`
   - `Next-step recommendation: continue with seed/mock data, starting from getModuleHomeView, getDayRecordDetail, and getModuleSettings.`
 
-### Legacy Reference Boundary
-- Only use `D:\CodeSpace\love-recorder` as the valid legacy/reference repo.
-- Do not copy legacy implementation structure directly into this repo.
-
 ---
 
 ## Frontend-Specific Guidance
 
-### Frontend Role
 - `frontend/` is the active uni-app Vue 3 client implementation.
+- Read [frontend/AGENTS.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\frontend\AGENTS.md) before changing frontend pages, components, styles, or verification flow.
 - The frontend should consume backend-aligned contracts without redefining domain semantics locally.
-
-### Frontend Reading Order
-1. Read the general section above first.
-2. Read [docs/design/2026-03-23-ui-visual-language-guide.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\design\2026-03-23-ui-visual-language-guide.md) before changing visual tone, color semantics, component styling, or token presentation.
-3. Read [docs/design/2026-03-22-tokenize-collaboration-rule.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\design\2026-03-22-tokenize-collaboration-rule.md) before changing tokens, component-library styling, or page-level visual composition.
-4. Read [docs/design/pencil/README.md](D:\CodeSpace\hbuilder-projects\lovey-record-backend\docs\design\pencil\README.md) before editing `.pen` files or using Pencil MCP tools.
-5. Read `tech-stack-investigate.md` only if you need technical details on the frontend stack or styling/runtime assumptions.
-
-### Frontend Architecture And Boundaries
-- Frontend is a uni-app Vue 3 app, not a standard Vue Router SPA.
-- All frontend pages must be registered in `frontend/pages.json`.
-- Use uni-app navigation and uni APIs where applicable.
-- Avoid browser-only APIs and direct DOM access unless clearly limited to H5.
-- Prefer reusable components and tokenized styling over page-local duplication.
-- Keep the visual pipeline one-way: design token -> component library -> business page composition.
-- Do not copy legacy page code directly into uni-app files.
-
-### Frontend Implementation Expectations
-- Prefer uni-app-compatible Vue 3 SFCs.
-- Prefer semantic tokens over hard-coded values.
-- Keep repeated UI blocks componentized.
-- Keep presentational components as dumb as practical.
-- Separate business logic and pure UI where practical.
-- Prefer mobile-friendly sizing and use `rpx` where appropriate for page-level UI.
-- Use conditional compilation only when necessary.
-
-### Frontend Testing And Verification Expectations
-- Verify that every new frontend page is registered in `frontend/pages.json`.
-- Verify that shared frontend code does not depend on obvious browser-only APIs.
-- Call out any H5 versus WeChat Mini Program caveats that remain unverified.
-- Treat manual runtime verification as required for navigation, layout, and platform-specific UI behavior.
-- Do not claim completion without stating what was verified and what remains unverified.
-
-### Frontend Definition Of Done
-- Code structure is consistent with uni-app Vue 3 conventions.
-- No obvious browser-only logic appears in shared code.
-- New frontend pages are registered in `frontend/pages.json`.
-- Styling uses tokenized values where possible.
-- Repeated UI patterns are componentized or intentionally prepared for extraction.
-- Any remaining platform caveats or verification gaps are stated explicitly.
+- Frontend-specific implementation, styling, and verification rules live in `frontend/AGENTS.md`.
 
 ---
 ## Backend Guidance
