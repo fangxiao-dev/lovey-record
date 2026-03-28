@@ -34,6 +34,7 @@ The module must prove:
 
 - [function-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-home.md)
 - [date-state-spec.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/date-state-spec.md)
+- [token-component-mapping.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/token-component-mapping.md)
 - [function-recording-model.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-recording-model.md)
 
 ## Upstream References

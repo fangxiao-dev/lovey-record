@@ -920,7 +920,7 @@
                   "clip": true,
                   "width": 30,
                   "height": 20,
-                  "fill": "$color.accent.period.soft",
+                  "fill": "#ede0d5",
                   "cornerRadius": 5,
                   "layout": "vertical",
                   "justifyContent": "space_around",
@@ -929,7 +929,7 @@
                     {
                       "type": "text",
                       "id": "dtyRw",
-                      "fill": "$color.accent.period",
+                      "fill": "$color.text.secondary",
                       "content": "正常",
                       "fontFamily": "IBM Plex Sans",
                       "fontSize": 11,
@@ -1162,7 +1162,7 @@
                       "clip": true,
                       "width": 30,
                       "height": 20,
-                      "fill": "$color.accent.period.soft",
+                      "fill": "#ede0d5",
                       "cornerRadius": 5,
                       "layout": "vertical",
                       "justifyContent": "space_around",
@@ -1171,7 +1171,7 @@
                         {
                           "type": "text",
                           "id": "oBLBt",
-                          "fill": "$color.accent.period",
+                          "fill": "$color.text.secondary",
                           "content": "极少",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
@@ -1356,12 +1356,12 @@
                           "height": 15,
                           "iconFontName": "water_drop",
                           "iconFontFamily": "Material Symbols Rounded",
-                          "fill": "$color.text.muted"
+                          "fill": "#1c47f3ff"
                         },
                         {
                           "type": "text",
                           "id": "CeOW8",
-                          "fill": "$color.text.secondary",
+                          "fill": "$color.text.primary",
                           "content": "流量",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
@@ -1555,12 +1555,12 @@
                           "height": 15,
                           "iconFontName": "favorite",
                           "iconFontFamily": "Material Symbols Rounded",
-                          "fill": "$color.text.muted"
+                          "fill": "#9840a8ff"
                         },
                         {
                           "type": "text",
                           "id": "5SjCc",
-                          "fill": "$color.text.secondary",
+                          "fill": "$color.text.primary",
                           "content": "疼痛",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
@@ -1754,12 +1754,12 @@
                           "height": 15,
                           "iconFontName": "palette",
                           "iconFontFamily": "Material Symbols Rounded",
-                          "fill": "$color.text.muted"
+                          "fill": "#d4361aff"
                         },
                         {
                           "type": "text",
                           "id": "zgQCf",
-                          "fill": "#72685F",
+                          "fill": "$color.text.primary",
                           "content": "颜色",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
@@ -1817,7 +1817,7 @@
                             {
                               "type": "text",
                               "id": "sshIA",
-                              "fill": "$color.accent.period",
+                              "fill": "$color.accent.period.contrast",
                               "content": "浅",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 11,
@@ -1930,7 +1930,7 @@
           "type": "text",
           "id": "v8mME",
           "name": "editNote",
-          "fill": "$color.text.secondary",
+          "fill": "$color.text.muted",
           "textGrowth": "fixed-width",
           "width": "fill_container",
           "content": "Spec: 用于单日编辑展开态。摘要条负责当前值回显，三行点击矩阵负责快速改值；该结构应可直接映射回正式 token / component 文件。",
