@@ -1,0 +1,595 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Lovey Record Backend API",
+    "version": "0.1.0",
+    "description": "Machine-readable backend API surface for frontend integration and contract tests."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Healthy"
+          }
+        }
+      }
+    },
+    "/api/commands/createModuleInstance": {
+      "post": {
+        "summary": "Create a module instance",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Module instance created"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "Module instance conflict"
+          }
+        }
+      }
+    },
+    "/api/commands/recordPeriodDay": {
+      "post": {
+        "summary": "Record a period day",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["moduleInstanceId", "date"],
+                "properties": {
+                  "moduleInstanceId": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "painLevel": {
+                    "type": "integer"
+                  },
+                  "flowLevel": {
+                    "type": "integer"
+                  },
+                  "colorLevel": {
+                    "type": "integer"
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Period day recorded"
+          }
+        }
+      }
+    },
+    "/api/commands/clearPeriodDay": {
+      "post": {
+        "summary": "Clear a period day",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["moduleInstanceId", "date"],
+                "properties": {
+                  "moduleInstanceId": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Period day cleared"
+          }
+        }
+      }
+    },
+    "/api/commands/recordDayDetails": {
+      "post": {
+        "summary": "Record day details",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["moduleInstanceId", "date", "painLevel", "flowLevel", "colorLevel"],
+                "properties": {
+                  "moduleInstanceId": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "painLevel": {
+                    "type": "integer"
+                  },
+                  "flowLevel": {
+                    "type": "integer"
+                  },
+                  "colorLevel": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Details recorded"
+          },
+          "404": {
+            "description": "Day record not found"
+          }
+        }
+      }
+    },
+    "/api/commands/recordDayNote": {
+      "post": {
+        "summary": "Record day note",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["moduleInstanceId", "date", "note"],
+                "properties": {
+                  "moduleInstanceId": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Note recorded"
+          },
+          "400": {
+            "description": "Note too long"
+          },
+          "404": {
+            "description": "Day record not found"
+          }
+        }
+      }
+    },
+    "/api/commands/updateDefaultPeriodDuration": {
+      "post": {
+        "summary": "Update default period duration",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["moduleInstanceId", "defaultPeriodDurationDays"],
+                "properties": {
+                  "moduleInstanceId": {
+                    "type": "string"
+                  },
+                  "defaultPeriodDurationDays": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Settings updated"
+          },
+          "403": {
+            "description": "Module access denied"
+          }
+        }
+      }
+    },
+    "/api/commands/shareModuleInstance": {
+      "post": {
+        "summary": "Share a module instance",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["moduleInstanceId", "partnerUserId"],
+                "properties": {
+                  "moduleInstanceId": {
+                    "type": "string"
+                  },
+                  "partnerUserId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Module instance shared"
+          }
+        }
+      }
+    },
+    "/api/commands/revokeModuleAccess": {
+      "post": {
+        "summary": "Revoke a module access grant",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["moduleInstanceId", "partnerUserId"],
+                "properties": {
+                  "moduleInstanceId": {
+                    "type": "string"
+                  },
+                  "partnerUserId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Module access revoked"
+          }
+        }
+      }
+    },
+    "/api/queries/getModuleHomeView": {
+      "get": {
+        "summary": "Get module home view",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "moduleInstanceId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Home view returned"
+          }
+        }
+      }
+    },
+    "/api/queries/getDayRecordDetail": {
+      "get": {
+        "summary": "Get a day record detail",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "moduleInstanceId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "profileId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Day record returned"
+          }
+        }
+      }
+    },
+    "/api/queries/getCalendarWindow": {
+      "get": {
+        "summary": "Get calendar window",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "moduleInstanceId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "profileId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Calendar window returned"
+          }
+        }
+      }
+    },
+    "/api/queries/getPredictionSummary": {
+      "get": {
+        "summary": "Get prediction summary",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "moduleInstanceId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "profileId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Prediction summary returned"
+          }
+        }
+      }
+    },
+    "/api/queries/getModuleAccessState": {
+      "get": {
+        "summary": "Get module access state",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "moduleInstanceId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Access state returned"
+          }
+        }
+      }
+    },
+    "/api/queries/getModuleSettings": {
+      "get": {
+        "summary": "Get module settings",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "moduleInstanceId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Module settings returned"
+          }
+        }
+      }
+    }
+  }
+}

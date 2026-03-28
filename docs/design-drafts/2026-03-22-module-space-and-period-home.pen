@@ -902,7 +902,7 @@
                   "height": 12,
                   "iconFontName": "water_drop",
                   "iconFontFamily": "Material Symbols Rounded",
-                  "fill": "$color.text.muted"
+                  "fill": "$color.attribute.flow.icon"
                 },
                 {
                   "type": "text",
@@ -920,7 +920,7 @@
                   "clip": true,
                   "width": 30,
                   "height": 20,
-                  "fill": "#ede0d5",
+                  "fill": "$color.attribute.flow.heavy",
                   "cornerRadius": 5,
                   "layout": "vertical",
                   "justifyContent": "space_around",
@@ -929,7 +929,7 @@
                     {
                       "type": "text",
                       "id": "dtyRw",
-                      "fill": "$color.text.secondary",
+                      "fill": "$color.attribute.flow.textContrast",
                       "content": "正常",
                       "fontFamily": "IBM Plex Sans",
                       "fontSize": 11,
@@ -966,7 +966,7 @@
                   "height": 12,
                   "iconFontName": "favorite",
                   "iconFontFamily": "Material Symbols Rounded",
-                  "fill": "$color.text.muted"
+                  "fill": "$color.attribute.pain.icon"
                 },
                 {
                   "type": "text",
@@ -984,7 +984,7 @@
                   "clip": true,
                   "width": 30,
                   "height": 20,
-                  "fill": "#e7dbea",
+                  "fill": "$color.attribute.pain.medium",
                   "cornerRadius": 5,
                   "layout": "vertical",
                   "justifyContent": "space_around",
@@ -993,7 +993,7 @@
                     {
                       "type": "text",
                       "id": "ywcWO",
-                      "fill": "#69625bff",
+                      "fill": "$color.attribute.pain.textContrast",
                       "content": "正常",
                       "fontFamily": "IBM Plex Sans",
                       "fontSize": 11,
@@ -1026,12 +1026,12 @@
                   "height": 12,
                   "iconFontName": "palette",
                   "iconFontFamily": "Material Symbols Rounded",
-                  "fill": "$color.text.muted"
+                  "fill": "$color.attribute.tone.icon"
                 },
                 {
                   "type": "text",
                   "id": "PqgzZ",
-                  "fill": "$color.accent.period",
+                  "fill": "$color.attribute.tone.icon",
                   "content": "颜色",
                   "fontFamily": "IBM Plex Sans",
                   "fontSize": 11,
@@ -1044,7 +1044,7 @@
                   "clip": true,
                   "width": 30,
                   "height": 20,
-                  "fill": "#c95b55",
+                  "fill": "$color.attribute.tone.medium",
                   "cornerRadius": 5,
                   "layout": "vertical",
                   "justifyContent": "space_around",
@@ -1053,7 +1053,7 @@
                     {
                       "type": "text",
                       "id": "l2Lf2",
-                      "fill": "$color.accent.period.soft",
+                      "fill": "$color.attribute.tone.textContrast",
                       "content": "正常",
                       "fontFamily": "IBM Plex Sans",
                       "fontSize": 11,
@@ -1144,7 +1144,7 @@
                       "height": 12,
                       "iconFontName": "water_drop",
                       "iconFontFamily": "Material Symbols Rounded",
-                      "fill": "$color.text.muted"
+                      "fill": "$color.attribute.flow.icon"
                     },
                     {
                       "type": "text",
@@ -1162,7 +1162,7 @@
                       "clip": true,
                       "width": 30,
                       "height": 20,
-                      "fill": "#ede0d5",
+                      "fill": "$color.attribute.flow.trace",
                       "cornerRadius": 5,
                       "layout": "vertical",
                       "justifyContent": "space_around",
@@ -1171,7 +1171,7 @@
                         {
                           "type": "text",
                           "id": "oBLBt",
-                          "fill": "$color.text.secondary",
+                          "fill": "$color.attribute.flow.textSoft",
                           "content": "极少",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
@@ -1208,7 +1208,7 @@
                       "height": 12,
                       "iconFontName": "favorite",
                       "iconFontFamily": "Material Symbols Rounded",
-                      "fill": "$color.text.muted"
+                      "fill": "$color.attribute.pain.icon"
                     },
                     {
                       "type": "text",
@@ -1226,7 +1226,7 @@
                       "clip": true,
                       "width": 30,
                       "height": 20,
-                      "fill": "#e7dbea",
+                      "fill": "$color.attribute.pain.light",
                       "cornerRadius": 5,
                       "layout": "vertical",
                       "justifyContent": "space_around",
@@ -1235,7 +1235,7 @@
                         {
                           "type": "text",
                           "id": "cH3xp",
-                          "fill": "#69625bff",
+                          "fill": "$color.attribute.pain.textSoft",
                           "content": "轻",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
@@ -1268,7 +1268,7 @@
                       "height": 12,
                       "iconFontName": "palette",
                       "iconFontFamily": "Material Symbols Rounded",
-                      "fill": "$color.text.muted"
+                      "fill": "$color.attribute.tone.icon"
                     },
                     {
                       "type": "text",
@@ -1286,7 +1286,7 @@
                       "clip": true,
                       "width": 30,
                       "height": 20,
-                      "fill": "#c95b55",
+                      "fill": "$color.attribute.tone.medium",
                       "cornerRadius": 5,
                       "layout": "vertical",
                       "justifyContent": "space_around",
@@ -1295,7 +1295,7 @@
                         {
                           "type": "text",
                           "id": "TteD3",
-                          "fill": "$color.accent.period.soft",
+                          "fill": "$color.attribute.tone.textContrast",
                           "content": "正常",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
@@ -1356,7 +1356,7 @@
                           "height": 15,
                           "iconFontName": "water_drop",
                           "iconFontFamily": "Material Symbols Rounded",
-                          "fill": "#1c47f3ff"
+                          "fill": "$color.attribute.flow.icon"
                         },
                         {
                           "type": "text",
@@ -1380,7 +1380,7 @@
                           "id": "whMFK",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#FBF7F2",
+                          "fill": "$color.attribute.flow.trace",
                           "cornerRadius": 12,
                           "stroke": {
                             "align": "inside",
@@ -1408,7 +1408,7 @@
                             {
                               "type": "text",
                               "id": "KeEXp",
-                              "fill": "$color.text.muted",
+                              "fill": "$color.attribute.flow.textSoft",
                               "content": "极少",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 10,
@@ -1421,7 +1421,7 @@
                           "id": "QJf87",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#F7F1EA",
+                          "fill": "$color.attribute.flow.light",
                           "cornerRadius": 12,
                           "layout": "vertical",
                           "padding": [
@@ -1434,7 +1434,7 @@
                             {
                               "type": "text",
                               "id": "iShOE",
-                              "fill": "$color.text.muted",
+                              "fill": "$color.attribute.flow.textSoft",
                               "content": "少",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 11,
@@ -1447,7 +1447,7 @@
                           "id": "IdZjQ",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#F1E6DC",
+                          "fill": "$color.attribute.flow.medium",
                           "cornerRadius": 12,
                           "stroke": {
                             "align": "inside",
@@ -1464,7 +1464,7 @@
                             {
                               "type": "text",
                               "id": "nEdHG",
-                              "fill": "$color.text.muted",
+                              "fill": "$color.attribute.flow.textContrast",
                               "content": "正常",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 12,
@@ -1477,7 +1477,7 @@
                           "id": "aFCIw",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#EDE0D5",
+                          "fill": "$color.attribute.flow.heavy",
                           "cornerRadius": 12,
                           "layout": "vertical",
                           "padding": [
@@ -1490,7 +1490,7 @@
                             {
                               "type": "text",
                               "id": "DvikY",
-                              "fill": "$color.text.muted",
+                              "fill": "$color.attribute.flow.textContrast",
                               "content": "多",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 11,
@@ -1503,7 +1503,7 @@
                           "id": "blPgd",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#E8D9CD",
+                          "fill": "$color.attribute.flow.extreme",
                           "cornerRadius": 12,
                           "layout": "vertical",
                           "padding": [
@@ -1516,7 +1516,7 @@
                             {
                               "type": "text",
                               "id": "eTeZw",
-                              "fill": "$color.text.muted",
+                              "fill": "$color.attribute.flow.textContrast",
                               "content": "极多",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 11,
@@ -1555,7 +1555,7 @@
                           "height": 15,
                           "iconFontName": "favorite",
                           "iconFontFamily": "Material Symbols Rounded",
-                          "fill": "#9840a8ff"
+                          "fill": "$color.attribute.pain.icon"
                         },
                         {
                           "type": "text",
@@ -1579,7 +1579,7 @@
                           "id": "W72Ht",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#FBF7F2",
+                          "fill": "$color.attribute.pain.none",
                           "cornerRadius": 12,
                           "layout": "vertical",
                           "padding": [
@@ -1592,7 +1592,7 @@
                             {
                               "type": "text",
                               "id": "T7cNR",
-                              "fill": "$color.text.muted",
+                              "fill": "$color.attribute.pain.textSoft",
                               "content": "无",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 10,
@@ -1605,7 +1605,7 @@
                           "id": "As8V1",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#F3EDF5",
+                          "fill": "$color.attribute.pain.light",
                           "cornerRadius": 12,
                           "stroke": {
                             "align": "inside",
@@ -1633,7 +1633,7 @@
                             {
                               "type": "text",
                               "id": "TCDRf",
-                              "fill": "$color.text.muted",
+                              "fill": "$color.attribute.pain.textSoft",
                               "content": "轻",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 10,
@@ -1646,7 +1646,7 @@
                           "id": "0lnsR",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#E7DBEA",
+                          "fill": "$color.attribute.pain.medium",
                           "cornerRadius": 12,
                           "stroke": {
                             "align": "inside",
@@ -1663,7 +1663,7 @@
                             {
                               "type": "text",
                               "id": "w4glM",
-                              "fill": "$color.text.muted",
+                              "fill": "$color.attribute.pain.textContrast",
                               "content": "正常",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 11,
@@ -1676,7 +1676,7 @@
                           "id": "8KK1b",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#DDD0E0",
+                          "fill": "$color.attribute.pain.strong",
                           "cornerRadius": 12,
                           "layout": "vertical",
                           "padding": [
@@ -1689,7 +1689,7 @@
                             {
                               "type": "text",
                               "id": "zCPBA",
-                              "fill": "$color.text.muted",
+                              "fill": "$color.attribute.pain.textContrast",
                               "content": "强",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 10,
@@ -1702,7 +1702,7 @@
                           "id": "yxbN3",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#D3C3D6",
+                          "fill": "$color.attribute.pain.extreme",
                           "cornerRadius": 12,
                           "layout": "vertical",
                           "padding": [
@@ -1715,7 +1715,7 @@
                             {
                               "type": "text",
                               "id": "NF5lp",
-                              "fill": "$color.text.muted",
+                              "fill": "$color.attribute.pain.textContrast",
                               "content": "极强",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 10,
@@ -1754,12 +1754,12 @@
                           "height": 15,
                           "iconFontName": "palette",
                           "iconFontFamily": "Material Symbols Rounded",
-                          "fill": "#d4361aff"
+                          "fill": "$color.attribute.tone.icon"
                         },
                         {
                           "type": "text",
                           "id": "zgQCf",
-                          "fill": "$color.text.primary",
+                          "fill": "$color.attribute.tone.icon",
                           "content": "颜色",
                           "fontFamily": "IBM Plex Sans",
                           "fontSize": 11,
@@ -1778,7 +1778,7 @@
                           "id": "p6qPR",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#F7E7E4",
+                          "fill": "$color.attribute.tone.veryLight",
                           "cornerRadius": 12,
                           "layout": "vertical",
                           "padding": [
@@ -1791,7 +1791,7 @@
                             {
                               "type": "text",
                               "id": "6Zeni",
-                              "fill": "$color.accent.period",
+                              "fill": "$color.attribute.tone.textSoft",
                               "content": "极浅",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 11,
@@ -1804,7 +1804,7 @@
                           "id": "rEk8V",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#E8AAA0",
+                          "fill": "$color.attribute.tone.light",
                           "cornerRadius": 12,
                           "layout": "vertical",
                           "padding": [
@@ -1817,7 +1817,7 @@
                             {
                               "type": "text",
                               "id": "sshIA",
-                              "fill": "$color.accent.period.contrast",
+                              "fill": "$color.attribute.tone.textContrast",
                               "content": "浅",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 11,
@@ -1830,7 +1830,7 @@
                           "id": "qHC6U",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#C95B55",
+                          "fill": "$color.attribute.tone.medium",
                           "cornerRadius": 12,
                           "stroke": {
                             "align": "inside",
@@ -1858,7 +1858,7 @@
                             {
                               "type": "text",
                               "id": "A7i2S",
-                              "fill": "$color.accent.period.soft",
+                              "fill": "$color.attribute.tone.textContrast",
                               "content": "正常",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 11,
@@ -1871,7 +1871,7 @@
                           "id": "1CNkd",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#8F5149",
+                          "fill": "$color.attribute.tone.dark",
                           "cornerRadius": 12,
                           "layout": "vertical",
                           "padding": [
@@ -1884,7 +1884,7 @@
                             {
                               "type": "text",
                               "id": "iAdLH",
-                              "fill": "$color.accent.period.soft",
+                              "fill": "$color.attribute.tone.textContrast",
                               "content": "深",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 11,
@@ -1897,7 +1897,7 @@
                           "id": "yzvfU",
                           "width": "fill_container",
                           "height": 46,
-                          "fill": "#654743",
+                          "fill": "$color.attribute.tone.veryDark",
                           "cornerRadius": 12,
                           "layout": "vertical",
                           "padding": [
@@ -1910,7 +1910,7 @@
                             {
                               "type": "text",
                               "id": "zEuNC",
-                              "fill": "$color.accent.period.soft",
+                              "fill": "$color.attribute.tone.textContrast",
                               "content": "极深",
                               "fontFamily": "IBM Plex Sans",
                               "fontSize": 11,
@@ -3611,7 +3611,7 @@
     {
       "type": "frame",
       "id": "NNUWu",
-      "x": 974,
+      "x": 1024,
       "y": 1588,
       "name": "月经模块首页 / 状态总览",
       "width": 390,
@@ -9152,6 +9152,102 @@
     "color.accent.period.contrast": {
       "type": "color",
       "value": "#FFFFFF"
+    },
+    "color.attribute.flow.extreme": {
+      "type": "color",
+      "value": "#BC8A5F"
+    },
+    "color.attribute.flow.heavy": {
+      "type": "color",
+      "value": "#D0AA7E"
+    },
+    "color.attribute.flow.icon": {
+      "type": "color",
+      "value": "#1C47F3"
+    },
+    "color.attribute.flow.light": {
+      "type": "color",
+      "value": "#F2E5D4"
+    },
+    "color.attribute.flow.medium": {
+      "type": "color",
+      "value": "#E2C8A6"
+    },
+    "color.attribute.flow.trace": {
+      "type": "color",
+      "value": "#FBF7F2"
+    },
+    "color.attribute.pain.extreme": {
+      "type": "color",
+      "value": "#A97DBA"
+    },
+    "color.attribute.pain.icon": {
+      "type": "color",
+      "value": "#9840A8"
+    },
+    "color.attribute.pain.light": {
+      "type": "color",
+      "value": "#F0E4F3"
+    },
+    "color.attribute.pain.medium": {
+      "type": "color",
+      "value": "#DEC7E5"
+    },
+    "color.attribute.pain.none": {
+      "type": "color",
+      "value": "#FBF7F2"
+    },
+    "color.attribute.pain.strong": {
+      "type": "color",
+      "value": "#C7A4D2"
+    },
+    "color.attribute.tone.dark": {
+      "type": "color",
+      "value": "#8F5149"
+    },
+    "color.attribute.tone.icon": {
+      "type": "color",
+      "value": "#D4361A"
+    },
+    "color.attribute.tone.light": {
+      "type": "color",
+      "value": "#E8AAA0"
+    },
+    "color.attribute.tone.medium": {
+      "type": "color",
+      "value": "#C95B55"
+    },
+    "color.attribute.tone.veryDark": {
+      "type": "color",
+      "value": "#654743"
+    },
+    "color.attribute.tone.veryLight": {
+      "type": "color",
+      "value": "#F7E7E4"
+    },
+    "color.attribute.flow.textContrast": {
+      "type": "color",
+      "value": "#FFF7E8"
+    },
+    "color.attribute.flow.textSoft": {
+      "type": "color",
+      "value": "#8B775F"
+    },
+    "color.attribute.pain.textContrast": {
+      "type": "color",
+      "value": "#FFF6FF"
+    },
+    "color.attribute.pain.textSoft": {
+      "type": "color",
+      "value": "#8B6E95"
+    },
+    "color.attribute.tone.textContrast": {
+      "type": "color",
+      "value": "#F7E7E4"
+    },
+    "color.attribute.tone.textSoft": {
+      "type": "color",
+      "value": "#C9786A"
     }
   }
 }

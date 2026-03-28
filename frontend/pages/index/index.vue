@@ -85,7 +85,7 @@
 		border: 2rpx solid $border-subtle;
 		border-radius: $radius-card;
 		padding: $card-padding;
-		background: $bg-surface-soft;
+		background: $bg-subtle;
 		min-height: 180rpx;
 		box-sizing: border-box;
 	}
@@ -109,7 +109,7 @@
 		width: 72rpx;
 		height: 72rpx;
 		border-radius: $radius-field;
-		background: $status-period-soft;
+		background: $accent-period-soft;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -120,7 +120,7 @@
 	.module-tile__icon-text {
 		font-size: $font-size-body-lg;
 		font-weight: $font-weight-title;
-		color: $text-accent;
+		color: $accent-period;
 	}
 
 	.module-tile__meta {

@@ -2,7 +2,7 @@
 @import "./mixins.scss";
 
 page {
-	background: $bg-page;
+	background: $bg-base;
 	color: $text-primary;
 	font-family: $font-family-body;
 }
@@ -15,7 +15,7 @@ text {
 .u-page-shell {
 	min-height: 100vh;
 	padding: $page-padding-y $page-padding-x;
-	background: $bg-page;
+	background: $bg-base;
 }
 
 .u-page-section + .u-page-section {
@@ -82,6 +82,6 @@ text {
 }
 
 .u-text-caption-muted {
-	@include text-caption($text-tertiary);
+	@include text-caption($text-muted);
 	display: block;
 }

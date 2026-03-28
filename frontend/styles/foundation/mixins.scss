@@ -25,7 +25,7 @@
 }
 
 @mixin surface-card($padding: $card-padding) {
-	background: $bg-surface;
+	background: $bg-card;
 	border-radius: $radius-card;
 	padding: $padding;
 	box-sizing: border-box;

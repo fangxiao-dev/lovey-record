@@ -4,6 +4,9 @@ import { ensureModuleSettings, getDefaultPeriodDurationDays, updateDefaultPeriod
 jest.mock('../../src/db/prisma', () => ({
   __esModule: true,
   default: {
+    moduleInstance: {
+      findFirst: jest.fn(),
+    },
     moduleSettings: {
       upsert: jest.fn(),
     },
@@ -35,12 +38,16 @@ describe('moduleSettings.service', () => {
   });
 
   it('updates the default period duration', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      ownerUserId: 'user-1',
+    });
     (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
       moduleInstanceId: 'module-1',
       defaultPeriodDurationDays: 7,
     });
 
-    const result = await updateDefaultPeriodDuration('module-1', 7);
+    const result = await updateDefaultPeriodDuration('module-1', 7, 'user-1');
 
     expect(result).toEqual({
       moduleInstanceId: 'module-1',
@@ -51,6 +58,15 @@ describe('moduleSettings.service', () => {
       where: { moduleInstanceId: 'module-1' },
       create: { moduleInstanceId: 'module-1', defaultPeriodDurationDays: 7 },
       update: { defaultPeriodDurationDays: 7 },
+    });
+  });
+
+  it('rejects non-owners when updating the default period duration', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue(null);
+
+    await expect(updateDefaultPeriodDuration('module-1', 7, 'user-2')).rejects.toMatchObject({
+      code: 'MODULE_ACCESS_DENIED',
+      statusCode: 403,
     });
   });
 });

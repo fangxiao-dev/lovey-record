@@ -18,6 +18,14 @@ function addDays(date: Date, days: number) {
   return next;
 }
 
+function createAccessError() {
+  return Object.assign(new Error('MODULE_ACCESS_DENIED'), { code: 'MODULE_ACCESS_DENIED', statusCode: 403 });
+}
+
+function createNoteTooLongError() {
+  return Object.assign(new Error('Note exceeds the allowed length.'), { code: 'NOTE_TOO_LONG', statusCode: 400 });
+}
+
 async function requireMaintenance(moduleInstanceId: string, userId: string) {
   const moduleInstance = await prisma.moduleInstance.findFirst({
     where: {
@@ -36,7 +44,7 @@ async function requireMaintenance(moduleInstanceId: string, userId: string) {
     },
   });
   if (!moduleInstance) {
-    throw Object.assign(new Error('MODULE_ACCESS_DENIED'), { code: 'MODULE_ACCESS_DENIED', statusCode: 403 });
+    throw createAccessError();
   }
   return moduleInstance;
 }
@@ -47,10 +55,7 @@ async function requireOwner(moduleInstanceId: string, userId: string) {
   });
 
   if (!moduleInstance) {
-    const error = new Error('MODULE_ACCESS_DENIED') as Error & { code?: string; statusCode?: number };
-    error.code = 'MODULE_ACCESS_DENIED';
-    error.statusCode = 403;
-    throw error;
+    throw createAccessError();
   }
 
   return moduleInstance;
@@ -75,7 +80,7 @@ async function requireAccess(moduleInstanceId: string, userId: string, profileId
     },
   });
   if (!moduleInstance) {
-    throw Object.assign(new Error('MODULE_ACCESS_DENIED'), { code: 'MODULE_ACCESS_DENIED', statusCode: 403 });
+    throw createAccessError();
   }
   return moduleInstance;
 }
@@ -108,6 +113,9 @@ export async function recordDayDetails(input: {
 
 export async function recordDayNote(input: { moduleInstanceId: string; userId: string; date: string; note: string }) {
   const moduleInstance = await requireMaintenance(input.moduleInstanceId, input.userId);
+  if (input.note.length > 500) {
+    throw createNoteTooLongError();
+  }
   const record = await prisma.dayRecord.findUnique({
     where: {
       moduleInstanceId_profileId_date: {
