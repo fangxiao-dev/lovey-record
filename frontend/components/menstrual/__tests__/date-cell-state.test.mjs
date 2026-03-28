@@ -63,6 +63,15 @@ test('special keeps plain surface but adds the eye marker in period accent', () 
   assert.equal(presentation.usesSpecialMarker, true);
 });
 
+test('predictionSpecial keeps prediction fill while adding the shared special marker', () => {
+  const presentation = getDateCellPresentation('predictionSpecial');
+
+  assert.equal(presentation.backgroundToken, 'accent.period.soft');
+  assert.equal(presentation.textToken, 'text.primary');
+  assert.equal(presentation.markerToken, 'accent.period');
+  assert.equal(presentation.usesSpecialMarker, true);
+});
+
 test('selected only adds the shared selected shadow', () => {
   const presentation = getDateCellPresentation('selected');
 
@@ -107,6 +116,7 @@ test('dateCellVariants exposes the full approved variant matrix', () => {
     'today',
     'special',
     'prediction',
+    'predictionSpecial',
     'period',
     'periodSpecial',
     'selected',

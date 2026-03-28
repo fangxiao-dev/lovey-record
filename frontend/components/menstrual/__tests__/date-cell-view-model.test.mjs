@@ -38,6 +38,15 @@ test('selectedPrediction uses the soft period surface instead of the old predict
   assert.equal(selectedPredictionViewModel.rootClasses.includes('date-cell--bg-prediction'), false);
 });
 
+test('predictionSpecial reuses the soft prediction surface with the shared eye marker', () => {
+  const predictionSpecialViewModel = getDateCellViewModel('predictionSpecial');
+
+  assert.deepEqual(predictionSpecialViewModel.rootClasses, ['date-cell--bg-period-soft']);
+  assert.deepEqual(predictionSpecialViewModel.labelClasses, ['date-cell__label--primary']);
+  assert.deepEqual(predictionSpecialViewModel.markerClasses, ['date-cell__marker-icon--period']);
+  assert.equal(predictionSpecialViewModel.usesSpecialMarker, true);
+});
+
 test('only today and selected families add visible stroke classes', () => {
   const specialViewModel = getDateCellViewModel('special');
   const periodViewModel = getDateCellViewModel('period');

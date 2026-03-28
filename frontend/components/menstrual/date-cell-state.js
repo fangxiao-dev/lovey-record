@@ -44,6 +44,15 @@ const PRESENTATIONS = {
     shape: 'rounded',
     usesSpecialMarker: false
   },
+  predictionSpecial: {
+    backgroundToken: 'accent.period.soft',
+    borderToken: null,
+    textToken: 'text.primary',
+    markerToken: 'accent.period',
+    shadowToken: null,
+    shape: 'rounded',
+    usesSpecialMarker: true
+  },
   period: {
     backgroundToken: 'accent.period',
     borderToken: null,
