@@ -65,6 +65,22 @@ For DateCell internal layout:
 - keep markers off the frame bottom edge
 - use transparent placeholder markers to preserve baseline alignment when needed
 
+## Attribute Option Rules
+
+For compact attribute option matrices such as `aRXKk`:
+
+- unselected option text uses size `10`
+- selected option text uses size `11`
+- only selected options keep the emphasis combo of inside stroke plus drop shadow
+- non-selected options should not inherit selected shadow or emphasis stroke by accident
+
+For compact attribute summary tags such as `ESVZm`, `WeHmZ`, and `CVHF4`:
+
+- use a `3:2` frame proportion
+- keep tag text at size `11`
+- use `color.text.primary` for the tag text
+- keep the small accompanying icon, when present, in the attribute accent color rather than recoloring it to primary
+
 ## Collaboration Rules
 
 When giving a UI task to Codex, include:

@@ -31,6 +31,8 @@
 - [styles/foundation/](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/frontend/styles/foundation) defines base, mixin, pattern, and utility layers.
 - Prefer semantic tokens over hard-coded values.
 - Prefer `rpx` for page-level mobile UI when it fits uni-app conventions.
+- Do not hardcode raw board dimensions from Pencil nodes into runtime code. Canvas sizes such as `45x45` are visual calibration references unless a contract explicitly promotes them into frontend tokens or layout rules.
+- When a Pencil board defines geometry rhythm, preserve the semantic relationship in code through tokens, responsive constraints, and state styling instead of copying the board pixel box verbatim.
 
 ## Skill Guidance
 - When designing or implementing frontend components, pages, or visual states, actively use the `frontend-design` skill to keep the output intentional and non-generic.
