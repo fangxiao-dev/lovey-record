@@ -42,15 +42,15 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		min-width: 52rpx;
-		min-height: 52rpx;
-		padding: 12rpx 16rpx;
-		border-radius: 24rpx;
+		min-width: 48rpx;
+		min-height: 48rpx;
+		padding: 8rpx 10rpx;
+		border-radius: 20rpx;
 		background: #f3eee7;
 	}
 
 	.header-nav__button-label {
-		font-size: 24rpx;
+		font-size: 22rpx;
 		line-height: 1;
 		color: #72685f;
 	}

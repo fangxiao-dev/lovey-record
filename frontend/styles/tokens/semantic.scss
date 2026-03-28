@@ -28,7 +28,7 @@ $fill-disabled: $color-warm-150;
 
 $accent-period: $color-rose-700;
 $accent-period-soft: $color-rose-300;
-$accent-period-contrast: $color-warm-000;
+$accent-period-contrast: #ffffff;
 $accent-prediction: $color-warm-150;
 $accent-today: $color-brown-700;
 $support-calm: $color-support-calm;
@@ -84,7 +84,7 @@ $radius-button: $radius-pill;
 $shadow-card: $shadow-none;
 $shadow-floating: $shadow-soft-s;
 $shadow-overlay: $shadow-soft-m;
-$shadow-selected: 0 8rpx 24rpx $color-black-alpha-12;
+$shadow-selected: 0 8rpx 8rpx $color-black-alpha-24;
 
 /* Semantic z-index tokens */
 $z-page-base: $z-index-base;
@@ -101,4 +101,4 @@ $motion-ease-default: $motion-ease-standard;
 $motion-ease-panel: $motion-ease-emphasized;
 
 /* Calendar semantic tokens */
-$calendar-week-divider: $color-warm-200;
+$calendar-week-divider: $color-warm-100;

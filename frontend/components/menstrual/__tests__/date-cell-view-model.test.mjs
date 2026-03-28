@@ -35,7 +35,7 @@ test('selected variants retain the visible selected shadow in the view model', (
 test('selected shadow token is strengthened for the three-week home demo', () => {
   const semanticTokensSource = fs.readFileSync(semanticTokensPath, 'utf8');
 
-  assert.match(semanticTokensSource, /\$shadow-selected:\s*0 8rpx 24rpx \$color-black-alpha-12;/);
+  assert.match(semanticTokensSource, /\$shadow-selected:\s*0 8rpx 8rpx \$color-black-alpha-24;/);
 });
 
 test('selectedPrediction uses the soft period surface instead of the old prediction chip color', () => {
@@ -93,6 +93,24 @@ test('selectedToday aliases preserve today stroke and only add selected shadow',
   assert.equal(selectedTodayPeriodViewModel.rootClasses.includes('date-cell--stroke-selected'), false);
 });
 
+test('selected non-today variants stay square while today remains circular', () => {
+  const selectedSpecialViewModel = getDateCellViewModel('selectedSpecial');
+  const todayViewModel = getDateCellViewModel('today');
+
+  assert.equal(selectedSpecialViewModel.rootClasses.includes('date-cell--circle'), false);
+  assert.equal(todayViewModel.rootClasses.includes('date-cell--circle'), true);
+});
+
+test('periodSpecial keeps contrast marker while selectedSpecial stays non-period', () => {
+  const periodSpecialViewModel = getDateCellViewModel('periodSpecial');
+  const selectedSpecialViewModel = getDateCellViewModel('selectedSpecial');
+
+  assert.deepEqual(periodSpecialViewModel.labelClasses, ['date-cell__label--period-contrast']);
+  assert.deepEqual(periodSpecialViewModel.markerClasses, ['date-cell__marker-icon--period-contrast']);
+  assert.deepEqual(selectedSpecialViewModel.labelClasses, ['date-cell__label--primary']);
+  assert.deepEqual(selectedSpecialViewModel.markerClasses, ['date-cell__marker-icon--period']);
+});
+
 test('only today and selected families add visible stroke classes', () => {
   const specialViewModel = getDateCellViewModel('special');
   const periodViewModel = getDateCellViewModel('period');
@@ -126,4 +144,11 @@ test('special marker uses shared static assets instead of inline svg paths', () 
   assert.equal(selectedPeriodSpecialViewModel.markerName, null);
   assert.match(source, /date-cell__marker-image/);
   assert.doesNotMatch(source, /<svg class="date-cell__marker-svg"/);
+});
+
+test('date cell source uses a compact square base size for the three-week grid', () => {
+  const source = fs.readFileSync(dateCellPath, 'utf8');
+
+  assert.match(source, /width:\s*90rpx;/);
+  assert.match(source, /height:\s*90rpx;/);
 });

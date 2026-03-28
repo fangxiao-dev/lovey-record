@@ -23,3 +23,10 @@ test('frontend main.js points at the local app entry and adaptor', () => {
   assert.match(mainJs, /import App from '\.\/App'/);
   assert.match(mainJs, /import '\.\/uni\.promisify\.adaptor'/);
 });
+
+test('frontend typography tokens prefer IBM Plex Sans', () => {
+  const primitives = fs.readFileSync(path.join(frontendRoot, 'styles', 'tokens', 'primitives.scss'), 'utf8');
+
+  assert.match(primitives, /\$font-family-base:\s*"IBM Plex Sans"/);
+  assert.match(primitives, /\$font-family-emphasis:\s*"IBM Plex Sans"/);
+});

@@ -13,4 +13,8 @@ test('calendar legend renders special marker through the shared static asset pat
   assert.match(source, /calendar-legend__marker-image/);
   assert.match(source, /getMarkerAssetSrc/);
   assert.doesNotMatch(source, /<svg[\s\S]*calendar-legend__marker-svg/);
+  assert.match(source, /font-size:\s*22rpx;/);
+  assert.match(source, /line-height:\s*22rpx;/);
+  assert.match(source, /calendar-legend__marker--fill[\s\S]*width:\s*20rpx;[\s\S]*height:\s*20rpx;/);
+  assert.match(source, /calendar-legend__marker--eye[\s\S]*width:\s*24rpx;[\s\S]*height:\s*24rpx;/);
 });

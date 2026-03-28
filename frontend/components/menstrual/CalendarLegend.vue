@@ -60,19 +60,17 @@
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		column-gap: $space-5;
-		row-gap: $space-3;
+		column-gap: 24rpx;
+		row-gap: 8rpx;
 	}
 
 	.calendar-legend__item {
 		display: inline-flex;
 		align-items: center;
-		gap: $space-2;
+		gap: 8rpx;
 	}
 
 	.calendar-legend__marker {
-		width: 24rpx;
-		height: 24rpx;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -81,6 +79,8 @@
 	}
 
 	.calendar-legend__marker--fill {
+		width: 20rpx;
+		height: 20rpx;
 		background: currentColor;
 	}
 
@@ -97,6 +97,8 @@
 	}
 
 	.calendar-legend__marker--eye {
+		width: 24rpx;
+		height: 24rpx;
 		background: transparent;
 	}
 
@@ -109,7 +111,7 @@
 	.calendar-legend__label {
 		font-family: $font-family-body;
 		font-size: 22rpx;
-		line-height: 1;
+		line-height: 22rpx;
 		font-weight: $font-weight-medium;
 		color: $text-secondary;
 	}

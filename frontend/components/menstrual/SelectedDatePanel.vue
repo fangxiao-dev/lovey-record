@@ -21,9 +21,53 @@
 				v-for="item in summaryItems"
 				:key="item.key"
 				class="selected-date-panel__summary-item"
+				:class="`selected-date-panel__summary-item--${item.tone}`"
+				@tap="toggleEditor"
 			>
+				<image class="selected-date-panel__summary-icon" :src="summaryIcon(item.icon)" mode="aspectFit" />
 				<text class="selected-date-panel__summary-label">{{ item.label }}</text>
-				<text class="selected-date-panel__summary-value">{{ item.value }}</text>
+				<view
+					class="selected-date-panel__summary-badge"
+					:class="`selected-date-panel__summary-badge--${item.tone}`"
+				>
+					<text
+						class="selected-date-panel__summary-badge-label"
+						:class="`selected-date-panel__summary-badge-label--${item.tone}`"
+					>
+						{{ item.value }}
+					</text>
+				</view>
+			</view>
+		</view>
+
+		<view v-if="attributeRows.length && isEditorOpen" class="selected-date-panel__editor">
+			<view
+				v-for="row in attributeRows"
+				:key="row.key"
+				class="selected-date-panel__editor-row"
+			>
+				<view class="selected-date-panel__editor-label">
+					<image class="selected-date-panel__editor-icon" :src="summaryIcon(row.icon)" mode="aspectFit" />
+					<text class="selected-date-panel__editor-label-text">{{ row.label }}</text>
+				</view>
+				<view class="selected-date-panel__editor-options">
+					<view
+						v-for="option in row.options"
+						:key="option.key"
+						class="selected-date-panel__editor-option"
+						:class="[
+							`selected-date-panel__editor-option--${option.tone}`,
+							{ 'selected-date-panel__editor-option--selected': option.selected }
+						]"
+					>
+						<text
+							class="selected-date-panel__editor-option-label"
+							:class="`selected-date-panel__editor-option-label--${option.tone}`"
+						>
+							{{ option.label }}
+						</text>
+					</view>
+				</view>
 			</view>
 		</view>
 
@@ -34,6 +78,10 @@
 </template>
 
 <script>
+	import flowIcon from '../../static/menstrual/flow.svg';
+	import painIcon from '../../static/menstrual/summary-pain.svg';
+	import colorIcon from '../../static/menstrual/summary-color.svg';
+
 	export default {
 		name: 'SelectedDatePanel',
 		props: {
@@ -57,9 +105,31 @@
 					return [];
 				}
 			},
+			attributeRows: {
+				type: Array,
+				default() {
+					return [];
+				}
+			},
 			actionLabel: {
 				type: String,
 				required: true
+			}
+		},
+		data() {
+			return {
+				isEditorOpen: false
+			};
+		},
+		methods: {
+			toggleEditor() {
+				this.isEditorOpen = !this.isEditorOpen;
+			},
+			summaryIcon(icon) {
+				if (icon === 'water_drop') return flowIcon;
+				if (icon === 'favorite') return painIcon;
+				if (icon === 'palette') return colorIcon;
+				return flowIcon;
 			}
 		}
 	};
@@ -69,11 +139,10 @@
 	.selected-date-panel {
 		display: flex;
 		flex-direction: column;
-		gap: 24rpx;
+		gap: 12rpx;
 		padding: 32rpx;
 		border-radius: 32rpx;
 		background: #ffffff;
-		box-shadow: 0 20rpx 44rpx rgba(47, 42, 38, 0.08);
 	}
 
 	.selected-date-panel__head {
@@ -124,37 +193,247 @@
 	}
 
 	.selected-date-panel__summary-row {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 16rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12rpx;
+		padding: 12rpx;
+		border-radius: 32rpx;
+		background: #faf3eb;
 	}
 
 	.selected-date-panel__summary-item {
+		flex: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8rpx;
+		min-height: 60rpx;
+		padding: 14rpx 16rpx;
+		border-radius: 999rpx;
+		background: #faf7f2;
+		min-width: 0;
+	}
+
+	.selected-date-panel__editor {
 		display: flex;
 		flex-direction: column;
+		justify-content: space-around;
+		gap: 6rpx;
+		padding: 4rpx 6rpx;
+		border-radius: 32rpx;
+		background: #faf7f2;
+		box-shadow: 0 8rpx 8rpx rgba(47, 42, 38, 0.16);
+	}
+
+	.selected-date-panel__editor-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 20rpx;
+		min-height: 104rpx;
+		padding: 18rpx 24rpx;
+		border-radius: 32rpx;
+		background: #ffffff;
+	}
+
+	.selected-date-panel__editor-label {
+		width: 52rpx;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 4rpx;
+		flex-shrink: 0;
+	}
+
+	.selected-date-panel__editor-icon {
+		width: 24rpx;
+		height: 24rpx;
+		display: block;
+	}
+
+	.selected-date-panel__editor-label-text {
+		font-size: 20rpx;
+		line-height: 1;
+		font-weight: $font-weight-medium;
+		color: $text-primary;
+	}
+
+	.selected-date-panel__editor-options {
+		flex: 1;
+		display: flex;
 		gap: 12rpx;
-		padding: 24rpx;
-		border-radius: 28rpx;
-		background: #f3eee7;
+		min-width: 0;
+	}
+
+	.selected-date-panel__editor-option {
+		flex: 1;
+		min-width: 0;
+		min-height: 82rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 8rpx 6rpx;
+		border: 2rpx solid transparent;
+		border-radius: 24rpx;
+	}
+
+	.selected-date-panel__editor-option--selected {
+		border-color: #8e7c6d;
+		box-shadow: 0 8rpx 8rpx rgba(47, 42, 38, 0.24);
+	}
+
+	.selected-date-panel__editor-option--flow-spotting,
+	.selected-date-panel__editor-option--pain-none {
+		background: #fbf7f2;
+	}
+
+	.selected-date-panel__editor-option--flow-light {
+		background: #f2e5d4;
+	}
+
+	.selected-date-panel__editor-option--flow-normal {
+		background: #e2c8a6;
+	}
+
+	.selected-date-panel__editor-option--flow-heavy {
+		background: #d0aa7e;
+	}
+
+	.selected-date-panel__editor-option--flow-very-heavy {
+		background: #bc8a5f;
+	}
+
+	.selected-date-panel__editor-option--pain-light {
+		background: #f0e4f3;
+	}
+
+	.selected-date-panel__editor-option--pain-normal {
+		background: #dec7e5;
+	}
+
+	.selected-date-panel__editor-option--pain-strong {
+		background: #c7a4d2;
+	}
+
+	.selected-date-panel__editor-option--pain-very-strong {
+		background: #a97dba;
+	}
+
+	.selected-date-panel__editor-option--color-very-light {
+		background: #f7e7e4;
+	}
+
+	.selected-date-panel__editor-option--color-light {
+		background: #e8aaa0;
+	}
+
+	.selected-date-panel__editor-option--color-normal {
+		background: #c95b55;
+	}
+
+	.selected-date-panel__editor-option--color-deep {
+		background: #8f5149;
+	}
+
+	.selected-date-panel__editor-option--color-very-deep {
+		background: #654743;
+	}
+
+	.selected-date-panel__editor-option-label {
+		font-size: 20rpx;
+		line-height: 1;
+		font-weight: $font-weight-medium;
+		color: $text-secondary;
+		white-space: nowrap;
+	}
+
+	.selected-date-panel__editor-option-label--flow-spotting,
+	.selected-date-panel__editor-option-label--flow-light {
+		color: #a29488;
+	}
+
+	.selected-date-panel__editor-option-label--flow-normal,
+	.selected-date-panel__editor-option-label--flow-heavy,
+	.selected-date-panel__editor-option-label--flow-very-heavy,
+	.selected-date-panel__editor-option-label--pain-normal,
+	.selected-date-panel__editor-option-label--pain-strong,
+	.selected-date-panel__editor-option-label--pain-very-strong,
+	.selected-date-panel__editor-option-label--color-normal,
+	.selected-date-panel__editor-option-label--color-deep,
+	.selected-date-panel__editor-option-label--color-very-deep {
+		color: #fff7e8;
+	}
+
+	.selected-date-panel__editor-option-label--pain-none,
+	.selected-date-panel__editor-option-label--pain-light {
+		color: #8b6e95;
+	}
+
+	.selected-date-panel__editor-option-label--color-very-light,
+	.selected-date-panel__editor-option-label--color-light {
+		color: #d97f6c;
+	}
+
+	.selected-date-panel__summary-icon {
+		width: 20rpx;
+		height: 20rpx;
+		display: block;
 	}
 
 	.selected-date-panel__summary-label {
 		font-size: 20rpx;
-		line-height: 1.2;
-		color: #8e7c6d;
-	}
-
-	.selected-date-panel__summary-value {
-		font-size: 22rpx;
-		line-height: 1.3;
+		line-height: 1;
 		font-weight: $font-weight-strong;
 		color: $text-primary;
+		flex-shrink: 0;
+	}
+
+	.selected-date-panel__summary-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 34rpx;
+		padding: 0 8rpx;
+		border-radius: 8rpx;
+	}
+
+	.selected-date-panel__summary-badge--flow {
+		background: #d0aa7e;
+	}
+
+	.selected-date-panel__summary-badge--pain {
+		background: #dec7e5;
+	}
+
+	.selected-date-panel__summary-badge--color {
+		background: #c95b55;
+	}
+
+	.selected-date-panel__summary-badge-label {
+		font-size: 18rpx;
+		line-height: 1;
+		font-weight: $font-weight-medium;
+	}
+
+	.selected-date-panel__summary-badge-label--flow {
+		color: #fff7e8;
+	}
+
+	.selected-date-panel__summary-badge-label--pain {
+		color: #fff6ff;
+	}
+
+	.selected-date-panel__summary-badge-label--color {
+		color: #f7e7e4;
 	}
 
 	.selected-date-panel__action {
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		align-self: flex-start;
 		min-height: 72rpx;
 		padding: 16rpx 24rpx;
 		border-radius: 24rpx;

@@ -54,17 +54,17 @@
 
 <style lang="scss">
 	.date-cell {
-		width: 100%;
-		height: 112rpx;
-		padding: 24rpx 0 0;
+		width: 90rpx;
+		height: 90rpx;
+		padding: 16rpx 0 0;
 		border: 2rpx solid transparent;
-		border-radius: 26rpx;
+		border-radius: 20rpx;
 		background: transparent;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: flex-start;
-		gap: 10rpx;
+		gap: 6rpx;
 		box-sizing: border-box;
 		min-width: 0;
 	}
@@ -94,7 +94,7 @@
 	}
 
 	.date-cell--stroke-selected {
-		border-color: $border-strong;
+		border-color: #8e7c6d;
 	}
 
 	.date-cell--stroke-today {
@@ -103,7 +103,7 @@
 
 	.date-cell__marker-slot {
 		width: 100%;
-		min-height: 24rpx;
+		min-height: 20rpx;
 		display: flex;
 		align-items: center;
 		justify-content: center;
