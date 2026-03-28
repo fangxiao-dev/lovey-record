@@ -24,6 +24,12 @@
 - Update `docs/plans/` when rollout, sequencing, page structure, or implementation scope changes.
 - Update `project-context.md` when project role, milestone, or core repo constraints change.
 - Prefer making cross-layer alignment explicit in documents before implementation when the change would otherwise create ambiguity.
+- When finishing a task, include two short closing statements:
+  - current mainline progress
+  - next-step recommendation
+- Example:
+  - `Current mainline progress: backend contract surface and backend docs are now aligned to the runtime baseline.`
+  - `Next-step recommendation: continue with seed/mock data, starting from getModuleHomeView, getDayRecordDetail, and getModuleSettings.`
 
 ### Legacy Reference Boundary
 - Only use `D:\CodeSpace\love-recorder` as the valid legacy/reference repo.
