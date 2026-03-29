@@ -12,7 +12,7 @@
 
 ## Scope
 
-- Update active contract docs to describe `isPeriod`, `source`, anchored period segments, `ModuleSettings`, and `hasDeviation`.
+- Update active contract docs to describe `isPeriod`, `source`, anchored period segments, `ModuleSettings`, and `isDetailRecorded`.
 - Update root docs so the repo context and doc index point at the backend repo and the current contract surface.
 - Keep frontend/UI documentation unchanged in this pass.
 - Do not touch backend runtime code in this pass.

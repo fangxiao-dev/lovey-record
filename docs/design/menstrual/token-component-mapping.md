@@ -216,7 +216,7 @@ Status:
 
 - `$status-today-ring`
   - split into `accent.today` and `border.today`
-- `$status-special`
+- `$status-detail`
   - remove or redefine so it no longer describes a separate hue family
 - `$text-accent`
   - remove from the token layer in Phase 1
@@ -239,8 +239,8 @@ Status:
 
 - `today` is circular and outline-first
 - `selected` variants use a weak drop shadow
-- `period` is the only state that switches text and attached special markers to a contrast foreground
-- non-`period` special markers use the warm `period` accent
+- `period` is the only state that switches text and attached detail markers to a contrast foreground
+- non-`period` detail markers use the warm `period` accent
 - week dividers belong to `CalendarGrid`, not to `DateCell`
 - the three summary attributes in `SelectedDatePanel` are collapsed by default and expand inline
 
@@ -248,12 +248,12 @@ Status:
 
 - no explicit documented semantic token contract yet for `calendar.week-divider`
 - no stable documented semantic token contract yet for `shadow.selected`
-- current frontend tokens still reflect older meanings such as `status-special`
+- current frontend tokens still reflect older meanings such as `status-detail`
 - current frontend tokens still use broader names like `status-period`, `status-prediction`, and `status-today-ring` instead of the approved `accent.*` and `border.today` pattern
 
 ### Clear semantic mismatches
 
-- existing frontend `status-special` still implies an independent hue family, which conflicts with the approved rule that `special` shares the `period` family and differentiates by eye-marker form
+- existing frontend `status-detail` still implies an independent hue family, which conflicts with the approved rule that `detail-recorded` shares the `period` family and differentiates by eye-marker form
 - existing frontend `status-today-ring` is only color-oriented, while the approved rule is a broader `today` state semantic with stable circular outline geometry
 
 ## Variable Inventory Diff
@@ -270,10 +270,10 @@ The current token draft and the current component/page baseline already expose c
   - token draft: `#FFF4EF`
   - component/page baseline: `#EADFD6`
   - status: semantic meaning is the same, but the current page expression is darker and more material
-- `color.accent.special`
+- `color.accent.detail`
   - token draft: `#D89A8D`
   - component/page baseline: `#B08D57`
-  - status: semantic conflict, because the approved visual contract says `special` should not keep an independent hue family
+- status: semantic conflict, because the approved visual contract says `detail-recorded` should not keep an independent hue family
 - `color.bg.base`
   - token draft: `#FCF9F6`
   - component/page baseline: `#FAF7F2`
@@ -401,7 +401,7 @@ Status:
 
 - `accent.period` should follow the current component/page baseline, then be backfilled into the token source.
 - `accent.period.soft` and `accent.period.contrast` are no longer optional local variables; they belong in the shared semantic token layer.
-- `accent.special` should not survive as an independent hue semantic. It should be removed, aliased, or redefined so that `special` continues to share the warm `period` family and differ by marker form.
+- `accent.detail` should not survive as an independent hue semantic. It should be removed, aliased, or redefined so that `detail-recorded` continues to share the warm `period` family and differ by marker form.
 - support families are the clearest token-to-component forward-update opportunity in the current system.
 - the purple attribute family is the clearest component-to-token reverse-update opportunity in the current system.
 
@@ -449,7 +449,7 @@ Status:
 - `today` uses a circular outline
 - `selected` keeps a weak drop shadow
 - `today`-derived variants keep the same circular geometry and stroke
-- `special` uses the small eye marker
+- `detail` uses the small eye marker
 - transparent placeholders may be used to stabilize the date-number baseline
 
 ### State families that must map through props, not hardcoded examples
@@ -458,14 +458,14 @@ Status:
   - `default`
   - `futureMuted`
   - `today`
-  - `special`
+- `detail`
 - selected-derived states
   - `selected`
   - `selectedPeriod`
   - `selectedPrediction`
-  - `selectedSpecial`
+- `selectedDetail`
 - today-derived states
-  - `todaySpecial`
+- `todayDetail`
   - `todayPeriod`
 
 ### Current token gaps or risks
@@ -485,7 +485,7 @@ Status:
 
 ### Rules that stay in component spec
 
-- special legend markers use the same eye-marker language as `DateCell`
+- detail legend markers use the same eye-marker language as `DateCell`
 - legend item composition and label order
 
 ### Current token gaps or risks
@@ -566,13 +566,13 @@ These current frontend names likely need alignment before component implementati
 - `$status-period` -> semantic `accent.period`
 - `$status-period-soft` -> semantic `accent.period.soft`
 - `$status-prediction` -> semantic `accent.prediction`
-- `$status-special` -> remove or redefine so it no longer implies a separate hue family
+- `$status-detail` -> remove or redefine so it no longer implies a separate hue family
 - `$status-today-ring` -> split into semantic `accent.today` and `border.today`
 - `$text-accent` -> remove and point remaining consumers directly at explicit semantics such as `accent.period`
 - `$border-accent` -> remove from the current menstrual scope; no active consumer found
 - `$status-success` / `$status-warning` / `$status-danger` -> keep temporarily because `uni.scss` still maps them into uni compatibility colors
 - `bg-page` / `bg-page-muted` / `bg-surface` / `bg-surface-interactive` alias retention is no longer needed once `uni.scss` consumes semantic names directly
-- `status-period` / `status-period-soft` / `status-prediction` / `status-special` / `status-today-ring` alias retention is no longer needed once no code consumer remains
+- `status-period` / `status-period-soft` / `status-prediction` / `status-detail` / `status-today-ring` alias retention is no longer needed once no code consumer remains
 
 ## Completion Criteria For Phase 1
 

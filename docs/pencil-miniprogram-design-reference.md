@@ -43,11 +43,11 @@
 
 ### 状态表达
 
-- `period / prediction / today / special` 必须一眼可分
+- `period / prediction / today / detail-recorded` 必须一眼可分
 - `period` 是最强主状态
 - `prediction` 低于 `period`
 - `today` 用轻提示表达
-- `special` 是附加层，不升级为主背景状态
+- `detail-recorded` 是附加层，不升级为主背景状态
 
 ### 交互表达
 

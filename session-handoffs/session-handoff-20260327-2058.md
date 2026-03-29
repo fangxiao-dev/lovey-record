@@ -13,7 +13,7 @@
     - `recordPeriodRange`
     - `clearPeriodDay`
     - `updateDefaultPeriodDuration`
-  - Query and phase5 read models now expose `isPeriod`, `source`, `hasDeviation`, and `period_start` marks.
+- Query and phase5 read models now expose `isPeriod`, `source`, `isDetailRecorded`, and `period_start` marks.
   - Active partners can maintain the same record set as owners for day-maintenance actions.
   - Full backend verification passed:
     - `npm test -- --runInBand`
@@ -33,7 +33,7 @@
 - Updated query and detail endpoints to the new read model:
   - `isPeriod`
   - `source`
-  - `hasDeviation`
+- `isDetailRecorded`
   - `period_start`
 - Added and updated tests for:
   - module settings creation/update

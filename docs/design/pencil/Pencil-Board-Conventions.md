@@ -50,7 +50,7 @@ board 有展示职责，但展示不能漂移语义。
 
 要求：
 
-- `special` 与 `period` 可以同色，但必须靠 icon/form 区分
+- `detail-recorded` 与 `period` 可以同色，但必须靠 icon/form 区分
 - `today` 不能误做成和强状态一样的填充块
 - `prediction` 若是同语义弱态，应通过浅色或弱表达呈现
 

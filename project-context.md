@@ -119,7 +119,7 @@
 - The repo already has a token layer and foundation styling structure.
 - `D:\CodeSpace\love-recorder` is the only valid legacy/reference repo.
 - Long-lived use cases, domain models, and application contracts now belong under `docs/contracts/`, while phase-specific rollout documents belong under `docs/plans/`.
-- The backend period model now uses `isPeriod`, `source`, anchored period segments, `ModuleSettings`, and derived `hasDeviation` labels.
+- The backend period model now uses `isPeriod`, `source`, anchored period segments, `ModuleSettings`, and derived `isDetailRecorded` labels.
 
 ## Reasonable Inferences
 - The next implementation slices should continue to build shared UI foundations before adding many page-local variants.

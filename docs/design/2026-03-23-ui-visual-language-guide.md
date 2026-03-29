@@ -47,7 +47,7 @@ The active direction is:
 - warm white and pale warm neutrals as the base
 - low-noise warm gray text and structure colors
 - `#D89A8D` coral-pink as the primary emotional accent
-- the same warm accent family for `period` and `special`, with `special` differentiated by eye-icon form rather than a separate hue
+- the same warm accent family for `period` and `detail-recorded`, with `detail-recorded` differentiated by eye-icon form rather than a separate hue
 - calm green and pale blue as extension-tag support families
 - very light surfaces with careful spacing and radius
 - weak shadow, strong whitespace discipline
@@ -73,12 +73,12 @@ But the product must still keep its own warmth and privacy.
 - The coral hue is correct, but its presentation must stay light.
 - Prefer small-area emphasis, labels, icons, and local highlights over large solid blocks.
 
-### Special accent
+### Detail-recorded accent
 
-- `special` no longer uses the previous muddy amber / gold direction.
-- `special` now stays in the same warm accent family as `period`.
+- `detail-recorded` no longer uses the previous muddy amber / gold direction.
+- `detail-recorded` now stays in the same warm accent family as `period`.
 - The distinction should come from the eye-icon form and marker treatment, not from introducing a second loud hue.
-- `special` should usually appear as a filled eye marker, not a large filled area.
+- `detail-recorded` should usually appear as a filled eye marker, not a large filled area.
 
 ### Support tones
 
@@ -181,36 +181,36 @@ Must preserve:
 - single-day editing remains on the home page
 - long-press drag remains the primary batch-edit model
 - month view is for browsing and locating, not for a second editor
-- `period / prediction / today / special` must be distinguishable, but the hierarchy must remain restrained
+- `period / prediction / today / detail-recorded` must be distinguishable, but the hierarchy must remain restrained
 
 ### Current period semantics
 
 - `period`: the strongest accent state, still controlled
 - `prediction`: pale and quiet, currently expressed through a light mint surface
 - `today`: outline-first, circular, and not a filled legend block
-- `special`: same-hue eye-icon cue by default; avoid large filled blocks
+- `detail-recorded`: same-hue eye-icon cue by default; avoid large filled blocks
 
 ### Date-state visual rules
 
 - `selected` variants use a weak drop shadow as the shared lifted-state cue.
 - `today` keeps the circular outline geometry even when combined with other states.
 - `period` is the only date state that switches text and attached marker color to a contrast foreground.
-- `special` markers on `period` use `color.accent.period.contrast`.
-- `special` markers on non-`period` states use `color.accent.period`.
+- `detail` markers on `period` use `color.accent.period.contrast`.
+- `detail` markers on non-`period` states use `color.accent.period`.
 - small-eye markers use the `visibility` glyph from `Material Symbols Outlined` at weight `700`.
 
 ## Token Versus State Semantics
 
 Do not confuse token resources with business-state expression.
 
-- `accent-special` is a token resource
-  - it defines the color family available for `special`
-- `special` is a business-state semantic
+- `accent-detail` is a token resource
+  - it defines the color family available for `detail-recorded`
+- `detail-recorded` is a business-state semantic
   - it defines how the state should appear in the UI
 
 For the current direction:
-- `accent-special` and `accent-period` share one warm accent family
-- `special` usually consumes that resource through a small filled eye icon, not through a large color fill
+- `accent-detail` and `accent-period` share one warm accent family
+- `detail-recorded` usually consumes that resource through a small filled eye icon, not through a large color fill
 
 ## Things To Avoid
 
@@ -226,9 +226,9 @@ For the current direction:
 ## Current Approved Conclusions
 
 - `#D89A8D` is the main accent direction for `period`.
-- `special` no longer needs an independent hue; it shares the same warm accent family and differentiates by icon form.
+- `detail-recorded` no longer needs an independent hue; it shares the same warm accent family and differentiates by icon form.
 - `support.calm` and `support.info` are the approved extension-tag families.
-- `special` should prefer a small filled eye icon expression.
+- `detail-recorded` should prefer a small filled eye icon expression.
 - The system should move away from creamy heaviness and toward cleaner, lighter luxury.
 - The board and future pages should feel like a high-quality tool product, not a generic light UI kit.
 

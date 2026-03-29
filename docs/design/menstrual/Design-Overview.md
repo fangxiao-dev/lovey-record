@@ -33,6 +33,7 @@ The module must prove:
 ## Related Function Docs
 
 - [function-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-home.md)
+- [function-calendar.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-calendar.md)
 - [function-day-recording.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-day-recording.md)
 - [date-state-spec.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/date-state-spec.md)
 - [token-component-mapping.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/token-component-mapping.md)

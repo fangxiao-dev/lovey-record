@@ -153,6 +153,18 @@ Request body:
 }
 ```
 
+To clear all recorded attributes while keeping period status unchanged:
+
+```json
+{
+  "moduleInstanceId": "module-1",
+  "date": "2026-03-23",
+  "painLevel": null,
+  "flowLevel": null,
+  "colorLevel": null
+}
+```
+
 Example response:
 
 ```json
@@ -160,7 +172,7 @@ Example response:
   "ok": true,
   "data": {
     "detailChanged": true,
-    "hasDeviation": true
+        "isDetailRecorded": true
   },
   "error": null
 }
@@ -351,7 +363,7 @@ Example response with explicit record:
       "note": "note",
       "source": "manual",
       "isExplicit": true,
-      "hasDeviation": true
+      "isDetailRecorded": true
     }
   },
   "error": null
@@ -375,7 +387,7 @@ Example response with no explicit record:
       "note": null,
       "source": null,
       "isExplicit": false,
-      "hasDeviation": false
+      "isDetailRecorded": false
     }
   },
   "error": null
@@ -412,21 +424,21 @@ Example response shape:
         "isPeriod": true,
         "source": "manual",
         "isExplicit": true,
-        "hasDeviation": false
+      "isDetailRecorded": false
       },
       {
         "date": "2026-03-21",
         "isPeriod": false,
         "source": null,
         "isExplicit": false,
-        "hasDeviation": false
+      "isDetailRecorded": false
       },
       {
         "date": "2026-03-22",
         "isPeriod": false,
         "source": "manual",
         "isExplicit": true,
-        "hasDeviation": false
+      "isDetailRecorded": false
       }
     ],
     "marks": [

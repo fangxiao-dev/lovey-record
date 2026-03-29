@@ -39,8 +39,8 @@
 - The design system contracts were upgraded to reflect the current menstrual-home decisions:
   - `selected` states use weak drop shadow
   - `today` is circular and outline-first
-  - `period` uses contrast foreground for text and attached special markers
-  - special uses `visibility` / `Material Symbols Outlined` / weight `700`
+- `period` uses contrast foreground for text and attached detail markers
+- detail marker uses `visibility` / `Material Symbols Outlined` / weight `700`
   - `SelectedDatePanel` uses a horizontal summary row and inline collapse/expand behavior
   - `CalendarGrid` owns week-divider lines structurally
 - The token-component mapping document now contains:

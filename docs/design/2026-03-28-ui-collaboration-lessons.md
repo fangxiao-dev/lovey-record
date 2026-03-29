@@ -35,8 +35,8 @@ For menstrual date-state work, keep these rules fixed:
 
 - `DateCell` states are contract states, not decorative variants
 - `today` uses a circular outline
-- `special` uses a small eye marker
-- `special` marker color is `accent.period`
+- `detail-recorded` uses a small eye marker
+- `detail-recorded` marker color is `accent.period`
 - `period` foreground contrast uses `accent.period.contrast`
 - `period` is a contrast-bearing state, not a separate marker family
 - `future` is calendar-relative, not a sample-grid placeholder

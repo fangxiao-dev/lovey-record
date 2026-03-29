@@ -37,7 +37,7 @@
 - explicit period day
 - non-default detail levels
 - `note` present
-- `hasDeviation = true`
+- `isDetailRecorded = true`
 
 ### `sharedModuleAccess`
 - shared module instance

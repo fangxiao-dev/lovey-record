@@ -102,7 +102,7 @@ Notes:
 - `source` distinguishes manual input from auto-filled input
 - user-visible period meaning does not depend on whether a day was manual or auto-filled
 - attached attributes and note live on the same record
-- `hasDeviation` is derived from the attached detail values, not stored here
+- `isDetailRecorded` is derived from whether any attached attribute value exists, not stored here
 
 ### AnchoredPeriodSegment
 
@@ -213,8 +213,8 @@ Rule:
 
 - this is a derived interpretation layer, not the primary period layer
 - when detail fields stay on the default pattern, the day is considered expected
-- when one or more detail fields deviate from the default pattern, the day may be labeled as deviation in read models or UI
-- `hasDeviation` is the boolean read-model form of this derived label
+- when one or more detail fields are recorded, the day may surface an eye-marker in read models or UI
+- `isDetailRecorded` is the boolean read-model form of this derived marker state
 
 ### Prediction freshness
 
@@ -298,6 +298,7 @@ Default:
 - this tail-truncation rule still applies even when later dates were previously manually extended as part of the same segment interpretation.
 - a single-day segment is a valid derived result.
 - `pain_level`, `flow_level`, and `color_level` are attached attributes on `day_record`, not independent entities.
+- attached attributes and `note` may exist on an explicit non-period `day_record`; they do not require `is_period = true`.
 - the default level for each attached attribute is the middle level.
 - changing detail fields does not by itself turn a non-period day into a period day.
 - a deviation label is derived from detail variation, not chosen as a competing primary state.

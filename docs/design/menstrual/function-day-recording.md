@@ -82,17 +82,19 @@ Each row has 5 options. Selection behavior:
 
 The summary bar shows a compact horizontal strip with recorded attribute values.
 
-Visibility rules:
+The summary bar is **always visible** (permanent fixture in the panel). It does not appear or disappear based on recording state.
 
-| State | Summary bar |
+| State | Summary bar content |
 |---|---|
-| No attributes recorded | Not rendered |
-| 1+ attribute recorded | Rendered, showing only recorded attributes |
-| All 3 attributes recorded | Rendered, showing all three |
+| No attributes recorded | Empty frame with hint text: "选择属性后将显示在这里" |
+| 1+ attribute recorded | Showing only recorded attribute chips |
+| All 3 attributes recorded | Showing all three chips |
 
-When an attribute is deselected (returns to empty), its slot disappears from the summary bar. If the last attribute is deselected, the entire summary bar disappears.
+When an attribute is deselected (returns to empty), its chip disappears from the summary bar. If the last attribute is deselected, the bar returns to the empty hint state.
 
-The summary bar uses the existing `Primitive/ThreeAttrStateSummary` visual language from the component library, but only renders slots that have recorded values.
+The summary bar chip fill color matches the corresponding option cell in the attribute grid exactly (same tone, no stroke). This gives users a direct visual connection between what they selected and what the summary shows.
+
+**Rationale**: a permanent summary bar reduces cognitive load — users always know where to look for their selections, and there is no layout shift when attributes are added or removed.
 
 **Critical rule**: empty value is NOT represented by "正常". Empty means "not recorded". "正常" (level 3) is a meaningful recorded value. Confusing these would pollute data semantics and break future trend analysis.
 
@@ -133,12 +135,14 @@ The panel has 4 orthogonal state axes:
 ```
 3 月 26 日                           点击记录
 [ 经期 ]   [ + 记录详情 ]
+选择属性后将显示在这里               ← summary bar, empty hint
 ```
 
 **Period marked only (collapsed)**:
 ```
 3 月 26 日                           已记录
 [ 经期 ✓ ]   [ + 记录详情 ]
+选择属性后将显示在这里               ← summary bar, empty hint
 ```
 
 **Attributes recorded, grid collapsed**:
@@ -183,8 +187,9 @@ SelectedDatePanel
 ├── ChipRow
 │   ├── PeriodChip          ← toggle, accent when active
 │   └── RecordDetailChip    ← "+ 记录详情" / "↑ 收起"
-├── SummaryBar              ← conditional: only when attributes.length > 0
-│   └── SummarySlot × N     ← one per recorded attribute
+├── SummaryBar              ← always rendered
+│   ├── EmptyHint           ← shown when attributes.length === 0
+│   └── SummarySlot × N     ← one per recorded attribute, hidden when none
 ├── AttributeGrid           ← conditional: only when grid is expanded
 │   ├── FlowRow
 │   ├── PainRow
@@ -209,8 +214,8 @@ The following existing Pencil primitives should be consumed, not recreated:
 ### Elements To Remove Or Replace
 
 - **`保存当天记录` button** (node `YayuR` in Pencil, `action` slot in Vue): replaced by WYSIWYG behavior + `清空` button.
-- **`特殊标记` chip**: this is NOT part of the day recording panel. Special marks are expressed as eye markers on `DateCell` and belong to the calendar grid layer, not the recording panel. Remove from `SelectedDatePanel` chip row.
-- **Always-visible summary row**: the current Vue component renders `summaryItems` unconditionally. This must become conditional on recorded attribute count > 0.
+- **`特殊标记` chip**: this is NOT part of the day recording panel. Recorded attribute marks are expressed as eye markers on `DateCell` and belong to the calendar grid layer, not the recording panel. Remove from `SelectedDatePanel` chip row.
+- **Summary bar**: always rendered. When no attributes are recorded, shows hint text "选择属性后将显示在这里" instead of chips. The previous design had conditional rendering; this is now permanent.
 
 ## Diff From Current Design
 
@@ -229,7 +234,7 @@ The following existing Pencil primitives should be consumed, not recreated:
 | Aspect | Current Vue | New Design |
 |---|---|---|
 | `chips` prop | `['经期', '特殊标记']` | `经期` is a toggle chip; `+ 记录详情` is a stateful expand/collapse chip |
-| `summaryItems` | Always rendered | Conditional on recorded attributes > 0 |
+| `summaryItems` | Always rendered | Always rendered; empty state shows hint text |
 | `isEditorOpen` | Toggled by tapping summary row | Toggled by tapping RecordDetailChip |
 | `actionLabel` | `'保存当天记录'` (always visible) | `'清空'` (visible only when attributes recorded) |
 | Attribute selection | No deselect behavior | Re-tap selected option = deselect |
@@ -240,7 +245,7 @@ The domain model already supports this design with no changes needed:
 
 - `is_period` is independent of `pain_level` / `flow_level` / `color_level` — matches the two-chip independence.
 - Attributes have a default of `3` in the domain model, but this is a **persistence default**, not a UI default. The UI should treat "no selection" as "not recorded" and only write the default when the user explicitly taps level 3.
-- `hasDeviation` is derived from attributes deviating from the default pattern. If no attributes are recorded, no deviation can be derived. This is consistent.
+- `isDetailRecorded` is derived from whether one or more attributes are recorded. If no attributes are recorded, no eye marker should appear. This is consistent.
 
 ## Related Documents
 

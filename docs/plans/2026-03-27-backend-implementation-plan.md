@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Document the aligned backend period model so the active contract surface stays centered on `isPeriod`, `source`, anchored period segments, `ModuleSettings`, and derived `hasDeviation` labels.
+**Goal:** Document the aligned backend period model so the active contract surface stays centered on `isPeriod`, `source`, anchored period segments, `ModuleSettings`, and derived `isDetailRecorded` labels.
 
 **Architecture:** Keep `day_record` as persisted truth, derive anchored period segments from first-day anchors plus automatic fill, and recompute predictions from segment starts. Module settings hold the default duration used for future auto-fill, while detail fields remain attached metadata that can produce a derived deviation label.
 
@@ -32,7 +32,7 @@
 
 - anchored period segments
 - prediction windows
-- `hasDeviation`
+- `isDetailRecorded`
 - calendar and home read models
 
 ### Active Commands
@@ -63,7 +63,7 @@
 - Auto-fill follows `defaultPeriodDurationDays`.
 - Clearing a day inside the tail truncates that day and later tail days in the same segment.
 - Detail edits do not change period membership by themselves.
-- `hasDeviation` is derived from detail values relative to the default pattern.
+- `isDetailRecorded` is derived from whether any detail attribute has been recorded.
 - Private and shared entry points resolve to the same module instance.
 
 ## Verification Notes

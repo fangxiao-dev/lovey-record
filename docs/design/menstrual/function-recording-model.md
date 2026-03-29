@@ -23,7 +23,7 @@ For the full data-model contract, also read [menstrual-domain-model.md](/D:/Code
 
 - missing day is interpreted as implicit `none`
 - consecutive `isPeriod` days derive an anchored segment block
-- `special` stays an attached event layer
+- `detail-recorded` stays an attached event layer
 - future dates are not recordable
 
 ## View Rules

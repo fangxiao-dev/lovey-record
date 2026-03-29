@@ -204,9 +204,9 @@ Month View 只作为辅助浏览和兼容旧习惯的入口，不承担主录入
 - `period`：主状态
 - `prediction`：次级预测态
 - `today`：轻提示
-- `special`：附加事件层
+- `detail-recorded`：附加事件层
 
-其中 `special` 不应升级为与 `period` 同级的主背景状态，而应始终作为附加信息存在。
+其中 `detail-recorded` 不应升级为与 `period` 同级的主背景状态，而应始终作为附加信息存在。
 
 ## v1 必须冻结的规则
 

@@ -34,7 +34,7 @@
 - 状态卡: 模块首页顶部的核心状态展示卡片，用于呈现当前状态与主次信息。
 - 周期窗: 模块首页中的主要日历上下文区域，用于展示当前周期窗口。
 - 月视图: 用于浏览和定位日期的辅助视图，不替代首页编辑器。
-- 图例: 日历状态说明区，用于解释 `period / prediction / today / special` 的视觉含义。
+- 图例: 日历状态说明区，用于解释 `period / prediction / today / detail-recorded` 的视觉含义。
 - SelectedDatePanel: 选中日期后的原地编辑面板组件名。
 - BatchEditPanel: 批量补录模式下的编辑面板组件名。
 - ModuleCard: 跨页面复用的模块卡片组件名。

@@ -31,8 +31,8 @@ This spec does not define:
 - `default` should not add unnecessary background emphasis.
 - `future muted` is expressed through muted text, not a dedicated fill block.
 - `today` uses a circular outline shape.
-- `special` is expressed through a small eye marker, not a large filled area.
-- date-number alignment must stay stable whether or not a special marker is present.
+- `detail recorded` is expressed through a small eye marker, not a large filled area.
+- date-number alignment must stay stable whether or not the eye marker is present.
 - transparent placeholder markers are allowed when needed to keep the date-number baseline aligned.
 
 ## DateCell Internal Layout Rules
@@ -57,7 +57,7 @@ This spec does not define:
 - If a state has no visible marker, keep the invisible placeholder marker so the numeral baseline matches marker-bearing states.
 - The same internal layout rhythm should apply across:
   - `default`
-  - `special`
+  - `detail`
   - `prediction`
   - `period`
   - `future muted`
@@ -84,7 +84,7 @@ The long-term date-state model should be understood as a small number of composa
 - interaction emphasis:
   - `selected`
 - marker emphasis:
-  - `special`
+  - `detail recorded`
 - time-position modifier:
   - `future muted`
 
@@ -94,8 +94,8 @@ These axes should be the design source of truth even when implementation still e
 
 - `date > today` is currently read-only.
 - future dates may use `prediction`, but should not use user-edited `period`.
-- future dates should not use `special`.
-- `prediction + special` should not be treated as a long-lived reusable product combination.
+- future dates should not use the detail-recorded eye marker.
+- `prediction + detail recorded` should not be treated as a long-lived reusable product combination.
 - when a future date has no stronger business state, it falls back to `future muted`.
 
 ## Overlay Priority Rules
@@ -121,10 +121,10 @@ These axes should be the design source of truth even when implementation still e
 
 ### Marker Emphasis
 
-- `special` uses the shared eye marker only.
-- `special` does not take over the surface from `prediction` or `period`.
+- `detail recorded` uses the shared eye marker only.
+- `detail recorded` does not take over the surface from `prediction` or `period`.
 - on `period`, marker and text stay on the contrast foreground.
-- on non-`period` states, the `special` marker stays in `accent.period`.
+- on non-`period` states, the eye marker stays in `accent.period`.
 
 ### Future Muting
 
@@ -140,15 +140,15 @@ The following overlay cases deserve explicit Pencil and runtime review because t
 - `selected + today + prediction`
 - `today + period`
 - `selected + today + period`
-- `today + special`
-- `selected + today + special`
+- `today + detail`
+- `selected + today + detail`
 
 ## Color And Marker Rules
 
 - `period` is the only strong state that switches text and attached marker color to a contrast foreground.
 - `period` text and markers use `color.accent.period.contrast`.
-- non-`period` special markers use `color.accent.period`.
-- `special` does not introduce a separate hue family from `period`; it differentiates by marker form.
+- non-`period` detail markers use `color.accent.period`.
+- `detail recorded` does not introduce a separate hue family from `period`; it differentiates by marker form.
 - the small-eye marker standard is:
   - glyph: `visibility`
   - icon family: `Material Symbols Outlined`
@@ -156,7 +156,7 @@ The following overlay cases deserve explicit Pencil and runtime review because t
 
 ## CalendarLegend Rules
 
-- `CalendarLegend` special markers must use the same eye-marker language as date states.
+- `CalendarLegend` detail markers must use the same eye-marker language as date states.
 - legend examples should reflect the current component-library source instead of older page-local experiments.
 
 ## CalendarGrid Rules

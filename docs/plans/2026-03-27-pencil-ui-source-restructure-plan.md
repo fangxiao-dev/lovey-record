@@ -50,7 +50,7 @@ This plan does not include backend changes.
   - token foundations board
   - component-library/date-state area
   - at least one updated menstrual page example
-- Verify `period`, `prediction`, `today`, and `special` remain visually distinguishable and still follow the approved warm restrained direction.
+- Verify `period`, `prediction`, `today`, and `detail-recorded` remain visually distinguishable and still follow the approved warm restrained direction.
 
 ## Assumptions
 

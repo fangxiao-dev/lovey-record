@@ -6,8 +6,8 @@
 
 ## Completion Status
 - Completed:
-  - Added `CalendarLegend` and converted its special marker to the shared static SVG assets under `frontend/static/menstrual/`.
-  - Converted `DateCell` special markers to the same shared static SVG assets and added `marker-assets.js`.
+- Added `CalendarLegend` and converted its detail marker to the shared static SVG assets under `frontend/static/menstrual/`.
+- Converted `DateCell` detail markers to the same shared static SVG assets and added `marker-assets.js`.
   - Added the high-value date-state aliases:
     - `todayPrediction`
     - `selectedTodayPrediction`
@@ -44,8 +44,8 @@
 
 ## What Changed
 - UI contracts and shared rendering:
-  - `DateCell` and `CalendarLegend` now share one special-marker asset source instead of separate inline SVG implementations.
-  - The special eye marker now resolves from `frontend/components/menstrual/marker-assets.js` and uses:
+- `DateCell` and `CalendarLegend` now share one detail-marker asset source instead of separate inline SVG implementations.
+- The detail eye marker now resolves from `frontend/components/menstrual/marker-assets.js` and uses:
     - `/static/menstrual/view-period.svg`
     - `/static/menstrual/view-contrast.svg`
 - Date-state surface:
@@ -55,7 +55,7 @@
     - `selectedTodayPeriod`
   - Kept the larger date-state system aligned to the “small number of axes + overlay priority” model recorded in the design spec.
 - Demo data:
-  - The secondary sample strip on `calendar-grid-showcase` was updated to show the approved high-value combinations rather than the older special-heavy examples.
+- The secondary sample strip on `calendar-grid-showcase` was updated to show the approved high-value combinations rather than the older detail-heavy examples.
 - Design and planning:
   - A new implementation plan was written to shift the mainline away from the five-week month-card acceptance page and toward the Pencil three-week home demo.
   - The plan explicitly names the current Pencil contract nodes:
@@ -67,9 +67,9 @@
     - `AGEIj`
 
 ## Pitfalls And Resolutions
-- `predictionSpecial` runtime failure appeared during MCP verification.
+- `predictionDetail` runtime failure appeared during MCP verification.
   - Root cause: `DateCell` state table did not include that variant although demo/runtime data referenced it.
-  - Resolution: added `predictionSpecial` handling and test coverage.
+- Resolution: added `predictionDetail` handling and test coverage.
   - Status: fixed and verified.
 - Playwright MCP initially failed due to browser/profile issues and then due to the local dev server being down.
   - Root cause: first an MCP browser-profile conflict, later `localhost:5173` was not running.

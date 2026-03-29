@@ -22,7 +22,7 @@ The core structure remains:
 - single-day editing stays inline on the home page
 - long-press drag is the primary batch-edit path
 - month view is browse-only support, not a second editor
-- `period / prediction / today / special` remain distinguishable with restrained hierarchy
+- `period / prediction / today / detail-recorded` remain distinguishable with restrained hierarchy
 
 ## States
 
@@ -32,7 +32,7 @@ The home page must cover:
 - recorded state
 - single-day edit state
 - batch-edit state
-- special-mark state
+- detail-recorded marker state
 - future-date blocked state
 
 ## Selected Date Panel

@@ -116,7 +116,7 @@ Rules:
   "note": "short note",
   "source": "auto_filled",
   "isExplicit": true,
-  "hasDeviation": false
+  "isDetailRecorded": true
 }
 ```
 
@@ -134,12 +134,12 @@ Rules:
   "note": null,
   "source": null,
   "isExplicit": false,
-  "hasDeviation": false
+  "isDetailRecorded": false
 }
 ```
 
 - `source` is an internal behavior explanation field; user-visible semantics treat `manual` and `auto_filled` as equally valid period days
-- `hasDeviation` represents whether the day's details deviate from the default pattern
+- `isDetailRecorded` represents whether any of `painLevel`, `flowLevel`, or `colorLevel` is recorded for the day
 
 ### `AnchoredPeriodSegmentReadModel`
 
@@ -310,9 +310,16 @@ Suggested input:
 }
 ```
 
+Clearing behavior:
+
+- `painLevel`, `flowLevel`, and `colorLevel` may each be `null`
+- when all three are `null`, the command clears recorded attribute details for that day
+- this does NOT change period status for the day
+
 Effects:
 
 - update an existing `day_record`
+- if no `day_record` exists yet for that date, create an explicit non-period `day_record` with `isPeriod: false`
 - do not create a new period day implicitly through detail changes alone
 - if the new detail values differ from the default pattern, read models may surface a deviation label
 
@@ -323,7 +330,7 @@ Suggested response data:
   "moduleInstanceId": "mi_123",
   "date": "2026-03-23",
   "detailChanged": true,
-  "hasDeviation": true
+  "isDetailRecorded": true
 }
 ```
 
@@ -347,6 +354,7 @@ Suggested input:
 Effects:
 
 - save note if within length limit
+- if no `day_record` exists yet for that date, create an explicit non-period `day_record` with `isPeriod: false`
 - reject invalid note lengths
 
 Limit:
@@ -548,7 +556,7 @@ Suggested response shape:
     "note": "short note",
     "source": "manual",
     "isExplicit": true,
-    "hasDeviation": true
+    "isDetailRecorded": true
   }
 }
 ```
