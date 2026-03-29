@@ -2285,7 +2285,7 @@
       "type": "color",
       "value": "#FFFFFF"
     },
-    "color.accent.special": {
+    "color.accent.detail": {
       "type": "color",
       "value": "#C9786A"
     },
@@ -2463,7 +2463,7 @@
     },
     "space.page": {
       "type": "number",
-      "value": 24
+      "value": 16
     },
     "space.section": {
       "type": "number",
@@ -2484,6 +2484,30 @@
     "color.text.inverse": {
       "type": "color",
       "value": "#FFFFFF"
+    },
+    "color.attribute.flow.textContrast": {
+      "type": "color",
+      "value": "#FFF7E8"
+    },
+    "color.attribute.flow.textSoft": {
+      "type": "color",
+      "value": "#8B775F"
+    },
+    "color.attribute.pain.textContrast": {
+      "type": "color",
+      "value": "#FFF6FF"
+    },
+    "color.attribute.pain.textSoft": {
+      "type": "color",
+      "value": "#8B6E95"
+    },
+    "color.attribute.tone.textContrast": {
+      "type": "color",
+      "value": "#F7E7E4"
+    },
+    "color.attribute.tone.textSoft": {
+      "type": "color",
+      "value": "#C9786A"
     }
   }
 }
