@@ -85,8 +85,9 @@ function requestJson({ url, data, headers }) {
 }
 
 async function queryEnvelope({ apiBaseUrl, openid, path, data }) {
+	const cacheBustedUrl = `${apiBaseUrl}${path}${path.includes('?') ? '&' : '?'}_ts=${Date.now()}`;
 	const response = await requestJson({
-		url: `${apiBaseUrl}${path}`,
+		url: cacheBustedUrl,
 		data,
 		headers: {
 			'x-wx-openid': openid
@@ -102,7 +103,7 @@ async function queryEnvelope({ apiBaseUrl, openid, path, data }) {
 
 export async function loadMenstrualHomePageModel(context = {}) {
 	const resolved = { ...DEFAULT_MENSTRUAL_HOME_CONTEXT, ...context };
-	const fallbackOnError = resolved.fallbackOnError !== false;
+	const fallbackOnError = resolved.fallbackOnError === true;
 	const viewMode = resolved.viewMode || 'three-week';
 
 	try {

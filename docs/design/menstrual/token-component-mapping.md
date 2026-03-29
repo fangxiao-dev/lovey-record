@@ -539,25 +539,26 @@ Status:
 - summary row and expanded editor surfaces need a clearer semantic split
 - current collapse/expand behavior is now a documented interaction rule in function-day-recording.md
 
-## `BatchEditPanel`
+## `BatchActionButtons`
 
 ### Semantic tokens it should consume
 
-- `bg.card`
-- `text.primary`
 - `text.secondary`
-- `border.subtle`
-- `accent.period` for active action emphasis only where needed
+- `bg.subtle`
+- `accent.period`
+- `accent.period.contrast`
+- `radius.control`
 
 ### Rules that stay in component spec
 
 - long-press batch-edit remains the primary multi-day interaction model
-- panel visibility and mode switching are local interaction state, not token rules
+- buttons appear inline on the right side of the jump-tabs row only during batch mode
+- button visibility and mode switching are local interaction state, not token rules
 
 ### Current token gaps or risks
 
-- active and inactive batch-edit action emphasis may need an explicit semantic action token split later
-- the first implementation should keep this panel static-first and avoid inventing page-local styling
+- save and cancel rely on shared control tokens, so future destructive or disabled variants still need separate semantic action tokens
+- the current button pair should stay small and inline rather than expanding into a card-like secondary surface
 
 ## Current Frontend Token Rename Pressure
 

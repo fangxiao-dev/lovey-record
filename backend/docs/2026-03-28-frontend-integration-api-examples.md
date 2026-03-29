@@ -69,11 +69,7 @@ Request body:
 ```json
 {
   "moduleInstanceId": "module-1",
-  "date": "2026-03-23",
-  "painLevel": 3,
-  "flowLevel": 3,
-  "colorLevel": 3,
-  "note": "optional note"
+  "date": "2026-03-23"
 }
 ```
 
@@ -87,9 +83,9 @@ Example response shape currently exposed by runtime:
       "id": "day-1",
       "isPeriod": true,
       "source": "MANUAL",
-      "painLevel": 3,
-      "flowLevel": 3,
-      "colorLevel": 3
+      "painLevel": null,
+      "flowLevel": null,
+      "colorLevel": null
     },
     "autoFilledDates": [
       "2026-03-24",
@@ -106,6 +102,7 @@ Example response shape currently exposed by runtime:
 
 Current runtime notes:
 - use this endpoint to mark a day as period and trigger auto-fill/recomputation
+- period-only marking does not imply detail recording
 - `source` is currently returned in raw runtime enum casing here
 
 ### `POST /api/commands/clearPeriodDay`

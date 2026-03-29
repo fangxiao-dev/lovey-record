@@ -1,5 +1,5 @@
 import prisma from '../../src/db/prisma';
-import { clearPeriodDay, recordPeriodDay } from '../../src/services/dayRecord.service';
+import { clearPeriodDay, clearPeriodRange, recordPeriodDay, recordPeriodRange } from '../../src/services/dayRecord.service';
 
 jest.mock('../../src/db/prisma', () => ({
   __esModule: true,
@@ -9,6 +9,7 @@ jest.mock('../../src/db/prisma', () => ({
       upsert: jest.fn(),
       deleteMany: jest.fn(),
       findMany: jest.fn(),
+      updateMany: jest.fn(),
     },
     moduleInstance: {
       findFirst: jest.fn(),
@@ -31,7 +32,7 @@ describe('dayRecord.service', () => {
     jest.clearAllMocks();
   });
 
-  it('records a period day with default detail levels', async () => {
+  it('records a period-only day without default detail levels', async () => {
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
       id: 'module-1',
       profileId: 'profile-1',
@@ -42,9 +43,9 @@ describe('dayRecord.service', () => {
       id: 'day-1',
       isPeriod: true,
       source: 'MANUAL',
-      painLevel: 3,
-      flowLevel: 3,
-      colorLevel: 3,
+      painLevel: null,
+      flowLevel: null,
+      colorLevel: null,
     });
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([{ date: new Date('2026-03-23'), isPeriod: true, source: 'MANUAL' }]);
 
@@ -54,10 +55,17 @@ describe('dayRecord.service', () => {
       date: '2026-03-23',
     });
 
-    expect(result.dayRecord.painLevel).toBe(3);
+    expect(result.dayRecord.painLevel).toBeNull();
     expect(prisma.dayRecord.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         create: expect.objectContaining({
+          isPeriod: true,
+          source: 'MANUAL',
+          painLevel: null,
+          flowLevel: null,
+          colorLevel: null,
+        }),
+        update: expect.objectContaining({
           isPeriod: true,
           source: 'MANUAL',
         }),
@@ -337,5 +345,77 @@ describe('dayRecord.service', () => {
         },
       ],
     });
+  });
+
+  it('records a manual period range without adding attribute markers to newly created days', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.dayRecord.findMany as jest.Mock)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        { date: new Date('2026-03-18'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-19'), isPeriod: true, source: 'MANUAL' },
+      ]);
+    (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
+
+    const result = await recordPeriodRange({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      startDate: '2026-03-18',
+      endDate: '2026-03-19',
+    });
+
+    expect(result.recordedDates).toEqual(['2026-03-18', '2026-03-19']);
+    expect(prisma.dayRecord.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          isPeriod: true,
+          painLevel: null,
+          flowLevel: null,
+          colorLevel: null,
+          note: null,
+          source: 'MANUAL',
+        }),
+        update: expect.objectContaining({
+          isPeriod: true,
+          source: 'MANUAL',
+        }),
+      }),
+    );
+  });
+
+  it('clears only period membership across a range and preserves explicit rows', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.dayRecord.findMany as jest.Mock).mockReset();
+    (prisma.dayRecord.findMany as jest.Mock)
+      .mockResolvedValueOnce([
+        { date: new Date('2026-03-18'), isPeriod: true, source: 'MANUAL' },
+      ])
+      .mockResolvedValueOnce([]);
+    (prisma.dayRecord.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+
+    const result = await clearPeriodRange({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      startDate: '2026-03-18',
+      endDate: '2026-03-20',
+    });
+
+    expect(result.clearedDates).toEqual(['2026-03-18']);
+    expect(prisma.dayRecord.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          isPeriod: false,
+          source: 'MANUAL',
+        }),
+      }),
+    );
   });
 });

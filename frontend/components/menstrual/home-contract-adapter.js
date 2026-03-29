@@ -204,7 +204,8 @@ function composeCalendarVariant({ date, today, isPeriod, isPrediction, isDetailR
 			default: 'detail',
 			period: 'periodDetail',
 			prediction: 'predictionDetail',
-			today: 'todayDetail'
+			today: 'todayDetail',
+			todayPrediction: 'todayPredictionDetail'
 		};
 		variant = detailVariantMap[variant] || variant;
 	}
@@ -220,7 +221,8 @@ function composeCalendarVariant({ date, today, isPeriod, isPrediction, isDetailR
 			today: 'selectedToday',
 			todayDetail: 'selectedTodayDetail',
 			todayPeriod: 'selectedTodayPeriod',
-			todayPrediction: 'selectedTodayPrediction'
+			todayPrediction: 'selectedTodayPrediction',
+			todayPredictionDetail: 'selectedTodayPredictionDetail'
 		};
 		variant = selectedVariantMap[variant] || variant;
 	}
@@ -282,13 +284,14 @@ function buildCalendarCard(homeView, dayDetail, selectedDate, today) {
 		weeks.push({
 			key: `week-${weekIndex + 1}`,
 			cells: weekDays.map((date) => {
+				const isSelected = date === selectedDate;
 				const variant = composeCalendarVariant({
 					date,
 					today,
-					isPeriod: periodDates.has(date),
+					isPeriod: isSelected ? Boolean(dayDetail?.dayRecord?.isPeriod) : periodDates.has(date),
 					isPrediction: predictionDates.has(date),
-					isDetailRecorded: date === selectedDate ? isDetailRecordedDay(dayDetail?.dayRecord) : false,
-					isSelected: date === selectedDate
+					isDetailRecorded: isSelected ? isDetailRecordedDay(dayDetail?.dayRecord) : false,
+					isSelected
 				});
 				const displayDate = toDateOnly(date);
 				return {
@@ -383,6 +386,7 @@ function createSelectedDatePanel(dayDetail, today) {
 		|| dayRecord.painLevel !== null
 		|| dayRecord.flowLevel !== null
 		|| dayRecord.colorLevel !== null
+		|| Boolean(dayRecord.note)
 	));
 	const date = dayRecord?.date || today;
 
@@ -391,6 +395,7 @@ function createSelectedDatePanel(dayDetail, today) {
 		badge: date === today ? '今日' : (hasAnyRecord ? '已记录' : '点击记录'),
 		initialPeriodMarked: Boolean(dayRecord?.isPeriod),
 		initialEditorOpen: false,
+		note: dayRecord?.note || '',
 		summaryItems,
 		attributeRows: createOptionRows(dayRecord)
 	};
@@ -441,6 +446,7 @@ function clonePageModel(pageModel) {
 		legend: pageModel.legend.map((item) => ({ ...item })),
 		selectedDatePanel: {
 			...pageModel.selectedDatePanel,
+			note: pageModel.selectedDatePanel.note,
 			summaryItems: pageModel.selectedDatePanel.summaryItems.map((item) => ({ ...item })),
 			attributeRows: pageModel.selectedDatePanel.attributeRows.map((row) => ({
 				...row,
@@ -546,7 +552,22 @@ export function applyTogglePeriodToPageModel(pageModel, isPeriodMarked) {
 	const next = clonePageModel(pageModel);
 	next.selectedDatePanel.initialPeriodMarked = isPeriodMarked;
 	if (next.selectedDatePanel.badge !== '今日') {
-		next.selectedDatePanel.badge = (isPeriodMarked || next.selectedDatePanel.summaryItems.length > 0)
+		next.selectedDatePanel.badge = (isPeriodMarked || next.selectedDatePanel.summaryItems.length > 0 || Boolean(next.selectedDatePanel.note))
+			? '已记录'
+			: '点击记录';
+	}
+	return next;
+}
+
+export function applySelectedDateNoteToPageModel(pageModel, note) {
+	const next = clonePageModel(pageModel);
+	next.selectedDatePanel.note = note;
+	if (next.selectedDatePanel.badge !== '今日') {
+		next.selectedDatePanel.badge = (
+			next.selectedDatePanel.initialPeriodMarked
+			|| next.selectedDatePanel.summaryItems.length > 0
+			|| Boolean(note)
+		)
 			? '已记录'
 			: '点击记录';
 	}

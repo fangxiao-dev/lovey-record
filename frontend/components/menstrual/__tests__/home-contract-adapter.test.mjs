@@ -109,8 +109,134 @@ test('home contract adapter supports implicit non-period day detail without leak
 	assert.equal(model.selectedDatePanel.badge, '点击记录');
 	assert.equal(model.selectedDatePanel.initialPeriodMarked, false);
 	assert.deepEqual(model.selectedDatePanel.summaryItems, []);
+	assert.equal(model.selectedDatePanel.note, '');
 	assert.equal(
 		model.selectedDatePanel.attributeRows.every((row) => row.options.every((option) => option.selected === false)),
+		true
+	);
+});
+
+test('home contract adapter keeps note-only days recorded without adding an eye marker', () => {
+	const { homeView } = createSeededHomeContracts();
+	const noteOnlyDayDetail = {
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		dayRecord: {
+			date: '2026-04-02',
+			isPeriod: false,
+			painLevel: null,
+			flowLevel: null,
+			colorLevel: null,
+			note: 'late sleep',
+			source: 'manual',
+			isExplicit: true,
+			isDetailRecorded: false
+		}
+	};
+
+	const model = createMenstrualHomePageModel({
+		homeView,
+		dayDetail: noteOnlyDayDetail,
+		today: '2026-03-29'
+	});
+
+	assert.equal(model.selectedDatePanel.badge, '已记录');
+	assert.equal(model.selectedDatePanel.note, 'late sleep');
+	assert.deepEqual(model.selectedDatePanel.summaryItems, []);
+	assert.equal(
+		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-04-02' && cell.variant.includes('Detail')),
+		false
+	);
+});
+
+test('home contract adapter keeps period-only days recorded without adding an eye marker', () => {
+	const { homeView } = createSeededHomeContracts();
+	const periodOnlyDayDetail = {
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		dayRecord: {
+			date: '2026-04-03',
+			isPeriod: true,
+			painLevel: null,
+			flowLevel: null,
+			colorLevel: null,
+			note: null,
+			source: 'manual',
+			isExplicit: true,
+			isDetailRecorded: false
+		}
+	};
+
+	const model = createMenstrualHomePageModel({
+		homeView,
+		dayDetail: periodOnlyDayDetail,
+		today: '2026-03-29'
+	});
+
+	assert.equal(model.selectedDatePanel.badge, '已记录');
+	assert.equal(model.selectedDatePanel.initialPeriodMarked, true);
+	assert.deepEqual(model.selectedDatePanel.summaryItems, []);
+	assert.equal(
+		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-04-03' && cell.variant.includes('Detail')),
+		false
+	);
+	assert.equal(
+		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-04-03' && cell.variant === 'selectedPeriod'),
+		true
+	);
+});
+
+test('home contract adapter keeps the eye marker when today is also inside the prediction window', () => {
+	const { homeView } = createSeededHomeContracts();
+	const todayPredictionDetail = {
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		dayRecord: {
+			date: '2026-03-29',
+			isPeriod: false,
+			painLevel: 2,
+			flowLevel: null,
+			colorLevel: null,
+			note: null,
+			source: 'manual',
+			isExplicit: true,
+			isDetailRecorded: true
+		}
+	};
+	const calendarWindow = {
+		moduleInstanceId: 'seed-home-module',
+		window: {
+			startDate: '2026-03-16',
+			endDate: '2026-04-05'
+		},
+		days: [
+			{ date: '2026-03-29', isPeriod: false, source: 'manual', isExplicit: true, isDetailRecorded: true }
+		],
+		marks: [
+			{ date: '2026-03-29', kind: 'today' },
+			{ date: '2026-03-31', kind: 'prediction_start' }
+		]
+	};
+
+	const model = createMenstrualHomePageModel({
+		homeView: {
+			...homeView,
+			predictionSummary: {
+				predictedStartDate: '2026-03-31',
+				predictionWindowStart: '2026-03-29',
+				predictionWindowEnd: '2026-04-02',
+				basedOnCycleCount: 2
+			}
+		},
+		dayDetail: todayPredictionDetail,
+		calendarWindow,
+		today: '2026-03-29',
+		focusDate: '2026-03-29',
+		viewMode: 'three-week'
+	});
+
+	assert.equal(
+		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-03-29' && cell.variant === 'selectedTodayPredictionDetail'),
 		true
 	);
 });

@@ -33,12 +33,27 @@
 - Update `project-context.md` when project role, milestone, or core repo constraints change.
 - Prefer making cross-layer alignment explicit in documents before implementation when the change would otherwise create ambiguity.
 - For frontend/UI work that needs web-end validation, do an initial pass with Playwright MCP yourself first, then ask the user to verify only after the initial runtime check is clean.
+- Once the goal is clear, continue execution without stopping after each small batch to ask for confirmation.
+- The default execution loop is:
+  1. investigate by reading docs/code and using tools when needed to verify facts
+  2. create and maintain a temporary working plan that includes goal, detailed steps, acceptance criteria, and current step status
+  3. implement code changes
+  4. add tests and run verification
+  5. update the temporary working plan
+  6. continue to the next gap until a stop condition is reached
+- Do not pause for user confirmation between these steps unless a real stop condition is hit.
+- Stop and ask the user only in these cases:
+  - a product semantic or tradeoff decision requires user judgment
+  - an unblockable issue remains, such as environment limits, permission limits, external dependency failure, or conflicting requirements
 - When finishing a task, include two short closing statements:
   - current mainline progress
   - next-step recommendation
+- `Current mainline progress` must describe the higher-level mainline objective and what stage it has reached, not just the most recent subtask that was completed.
+- Prefer framing `Current mainline progress` around the active product or delivery line, such as frontend-backend integration, contract alignment, runtime acceptance readiness, or rollout stage.
+- Use `Next-step recommendation` for the next concrete subtask, cleanup item, semantic decision, or rollout action that should follow from the current mainline stage.
 - Example:
-  - `Current mainline progress: backend contract surface and backend docs are now aligned to the runtime baseline.`
-  - `Next-step recommendation: continue with seed/mock data, starting from getModuleHomeView, getDayRecordDetail, and getModuleSettings.`
+  - `Current mainline progress: menstrual/home 的前后端联调主链已经打通，正式页所需的单日读写、note、batch edit、live-first 加载与页面级 live 验收都已进入可闭环状态。`
+  - `Next-step recommendation: 收口 clear-record 的最终产品语义，并把本轮 live-only 验收沉淀成固定回归清单或脚本。`
 
 ---
 

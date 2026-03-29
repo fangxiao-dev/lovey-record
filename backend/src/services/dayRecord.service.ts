@@ -5,16 +5,19 @@ type RecordPeriodDayInput = {
   moduleInstanceId: string;
   userId: string;
   date: string;
-  painLevel?: number;
-  flowLevel?: number;
-  colorLevel?: number;
-  note?: string | null;
 };
 
 type ClearPeriodDayInput = {
   moduleInstanceId: string;
   userId: string;
   date: string;
+};
+
+type PeriodRangeInput = {
+  moduleInstanceId: string;
+  userId: string;
+  startDate: string;
+  endDate: string;
 };
 
 function toDateOnly(value: string) {
@@ -29,6 +32,23 @@ function addDays(date: Date, days: number) {
   const next = new Date(date);
   next.setUTCDate(next.getUTCDate() + days);
   return next;
+}
+
+function normalizeDateRange(startDate: string, endDate: string) {
+  const start = toDateOnly(startDate);
+  const end = toDateOnly(endDate);
+  return start <= end ? { start, end } : { start: end, end: start };
+}
+
+function listDateRange(startDate: string, endDate: string) {
+  const { start, end } = normalizeDateRange(startDate, endDate);
+  const dates: string[] = [];
+
+  for (let cursor = start; cursor <= end; cursor = addDays(cursor, 1)) {
+    dates.push(formatDate(cursor));
+  }
+
+  return dates;
 }
 
 function deriveCycles(periodDates: Date[]) {
@@ -195,9 +215,6 @@ async function getDefaultDuration(moduleInstanceId: string) {
 export async function recordPeriodDay(input: RecordPeriodDayInput) {
   const moduleInstance = await assertAccess(input.moduleInstanceId, input.userId);
   const profileId = moduleInstance.profileId;
-  const painLevel = input.painLevel ?? 3;
-  const flowLevel = input.flowLevel ?? 3;
-  const colorLevel = input.colorLevel ?? 3;
   const date = toDateOnly(input.date);
   const defaultDurationDays = await getDefaultDuration(input.moduleInstanceId);
 
@@ -215,18 +232,14 @@ export async function recordPeriodDay(input: RecordPeriodDayInput) {
       date,
       isPeriod: true,
       source: 'MANUAL',
-      painLevel,
-      flowLevel,
-      colorLevel,
-      note: input.note ?? null,
+      painLevel: null,
+      flowLevel: null,
+      colorLevel: null,
+      note: null,
     },
     update: {
       isPeriod: true,
       source: 'MANUAL',
-      painLevel,
-      flowLevel,
-      colorLevel,
-      note: input.note ?? null,
     },
   });
 
@@ -248,18 +261,14 @@ export async function recordPeriodDay(input: RecordPeriodDayInput) {
         date: nextDate,
         isPeriod: true,
         source: 'AUTO_FILLED',
-        painLevel: 3,
-        flowLevel: 3,
-        colorLevel: 3,
+        painLevel: null,
+        flowLevel: null,
+        colorLevel: null,
         note: null,
       },
       update: {
         isPeriod: true,
         source: 'AUTO_FILLED',
-        painLevel: 3,
-        flowLevel: 3,
-        colorLevel: 3,
-        note: null,
       },
     });
   }
@@ -293,4 +302,74 @@ export async function clearPeriodDay(input: ClearPeriodDayInput) {
   await recompute(input.moduleInstanceId, profileId);
 
   return { removedDates };
+}
+
+export async function recordPeriodRange(input: PeriodRangeInput) {
+  const moduleInstance = await assertAccess(input.moduleInstanceId, input.userId);
+  const profileId = moduleInstance.profileId;
+  const recordedDates = listDateRange(input.startDate, input.endDate);
+
+  for (const isoDate of recordedDates) {
+    const date = toDateOnly(isoDate);
+    await prisma.dayRecord.upsert({
+      where: {
+        moduleInstanceId_profileId_date: {
+          moduleInstanceId: input.moduleInstanceId,
+          profileId,
+          date,
+        },
+      },
+      create: {
+        moduleInstanceId: input.moduleInstanceId,
+        profileId,
+        date,
+        isPeriod: true,
+        source: 'MANUAL',
+        painLevel: null,
+        flowLevel: null,
+        colorLevel: null,
+        note: null,
+      },
+      update: {
+        isPeriod: true,
+        source: 'MANUAL',
+      },
+    });
+  }
+
+  await recompute(input.moduleInstanceId, profileId);
+
+  return { recordedDates };
+}
+
+export async function clearPeriodRange(input: PeriodRangeInput) {
+  const moduleInstance = await assertAccess(input.moduleInstanceId, input.userId);
+  const profileId = moduleInstance.profileId;
+  const { start, end } = normalizeDateRange(input.startDate, input.endDate);
+  const existingRecords = await prisma.dayRecord.findMany({
+    where: {
+      moduleInstanceId: input.moduleInstanceId,
+      profileId,
+      date: { gte: start, lte: end },
+      isPeriod: true,
+    },
+    orderBy: { date: 'asc' },
+  });
+
+  await prisma.dayRecord.updateMany({
+    where: {
+      moduleInstanceId: input.moduleInstanceId,
+      profileId,
+      date: { gte: start, lte: end },
+      isPeriod: true,
+    },
+    data: {
+      isPeriod: false,
+      source: 'MANUAL',
+    },
+  });
+
+  await recompute(input.moduleInstanceId, profileId);
+
+  return { clearedDates: existingRecords.map((record) => formatDate(record.date)) };
 }

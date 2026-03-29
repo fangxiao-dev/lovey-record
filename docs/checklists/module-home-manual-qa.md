@@ -4,9 +4,15 @@
 
 - [ ] Tap a day in Cycle Window and confirm the inline panel shows single-day state actions.
 - [ ] Long press a day in Cycle Window and confirm range mode starts from that day.
-- [ ] Extend the selection to a later day and confirm the selected range highlights continuously.
-- [ ] Save the selection and confirm all selected days render as one derived `period` block.
-- [ ] Cancel range mode and confirm the calendar returns to normal selection state.
+- [ ] In batch mode, confirm `保存` and `取消` appear in the jump-tab row instead of a bottom panel.
+- [ ] Extend the selection to a later day and confirm cells toggle on along the drag path.
+- [ ] Drag out and back over the same cells (for example `25 -> 27 -> 25`) and confirm the revisited cells toggle back off.
+- [ ] Drag across today into future dates and confirm future cells are not added to the selected set.
+- [ ] Switch to `月览` and confirm range mode cannot be entered there.
+- [ ] Start from one selected day, then batch from another day and confirm the single-day selection context follows the latest drag position.
+- [ ] Cancel range mode and confirm the calendar returns to the latest single-day context reached during the batch gesture with no persisted changes.
+- [ ] Save batch selection and confirm all selected days render as explicit `period` days without detail markers.
+- [ ] After save, confirm batch mode closes and the page returns to the latest dragged day's single-day panel.
 
 ## Day-State Editing
 

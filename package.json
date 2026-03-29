@@ -1,0 +1,10 @@
+{
+  "name": "lovey-record-workspace",
+  "private": true,
+  "scripts": {
+    "test:menstrual:live": "playwright test ./frontend/scripts/menstrual-home-batch-live-regression.spec.mjs --reporter=line"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}

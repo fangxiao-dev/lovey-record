@@ -72,6 +72,8 @@ The contract is expressed in application-service terms:
 - `createModuleInstance`
 - `recordPeriodDay`
 - `clearPeriodDay`
+- `recordPeriodRange`
+- `clearPeriodRange`
 - `recordDayDetails`
 - `recordDayNote`
 - `updateDefaultPeriodDuration`
@@ -224,6 +226,8 @@ Effects:
 - if the previous day is not period, create a new anchor
 - create or confirm the selected day as period
 - auto-fill the tail of the segment according to the configured default duration
+- do not write default detail values or note content just because period was toggled
+- if detail values or note already exist on an explicit day, period toggling should preserve them
 - trigger segment and prediction recomputation
 
 Suggested response data:
@@ -262,6 +266,85 @@ Suggested input:
   "moduleInstanceId": "mi_123",
   "profileId": "profile_123",
   "date": "2026-03-25"
+}
+```
+
+### `recordPeriodRange`
+
+Purpose:
+
+- mark a contiguous date range as period through one explicit batch action
+- support the home-page long-press batch edit flow without implying attribute recording
+
+Suggested input:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "startDate": "2026-03-23",
+  "endDate": "2026-03-27"
+}
+```
+
+Effects:
+
+- create or update explicit `day_record` rows for each selected date
+- set `isPeriod = true` for all selected dates
+- do not auto-fill outside the selected range
+- do not modify `painLevel`, `flowLevel`, `colorLevel`, or `note` on existing explicit rows
+- newly created rows should keep detail fields and note empty so batch period marking alone does not create detail markers
+- recompute derived outputs after the range is applied
+
+Suggested response data:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "recordedDates": [
+    "2026-03-23",
+    "2026-03-24",
+    "2026-03-25",
+    "2026-03-26",
+    "2026-03-27"
+  ]
+}
+```
+
+### `clearPeriodRange`
+
+Purpose:
+
+- clear period membership across one contiguous date range through one explicit batch action
+
+Suggested input:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "startDate": "2026-03-23",
+  "endDate": "2026-03-27"
+}
+```
+
+Effects:
+
+- set `isPeriod = false` for every selected explicit period day
+- do not modify `painLevel`, `flowLevel`, `colorLevel`, or `note`
+- leave explicit rows in place when other recorded data remains
+- recompute derived outputs after the range is cleared
+
+Suggested response data:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "clearedDates": [
+    "2026-03-23",
+    "2026-03-24",
+    "2026-03-25",
+    "2026-03-26",
+    "2026-03-27"
+  ]
 }
 ```
 

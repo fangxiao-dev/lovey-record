@@ -78,27 +78,15 @@
               "schema": {
                 "type": "object",
                 "required": ["moduleInstanceId", "date"],
-                "properties": {
-                  "moduleInstanceId": {
-                    "type": "string"
-                  },
-                  "date": {
-                    "type": "string",
-                    "format": "date"
-                  },
-                  "painLevel": {
-                    "type": "integer"
-                  },
-                  "flowLevel": {
-                    "type": "integer"
-                  },
-                  "colorLevel": {
-                    "type": "integer"
-                  },
-                  "note": {
-                    "type": "string"
+                  "properties": {
+                    "moduleInstanceId": {
+                      "type": "string"
+                    },
+                    "date": {
+                      "type": "string",
+                      "format": "date"
+                    }
                   }
-                }
               }
             }
           }
@@ -146,6 +134,94 @@
         "responses": {
           "200": {
             "description": "Period day cleared"
+          }
+        }
+      }
+    },
+    "/api/commands/recordPeriodRange": {
+      "post": {
+        "summary": "Record a period range",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["moduleInstanceId", "startDate", "endDate"],
+                "properties": {
+                  "moduleInstanceId": {
+                    "type": "string"
+                  },
+                  "startDate": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "endDate": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Period range recorded"
+          }
+        }
+      }
+    },
+    "/api/commands/clearPeriodRange": {
+      "post": {
+        "summary": "Clear period membership across a range",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["moduleInstanceId", "startDate", "endDate"],
+                "properties": {
+                  "moduleInstanceId": {
+                    "type": "string"
+                  },
+                  "startDate": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "endDate": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Period range cleared"
           }
         }
       }

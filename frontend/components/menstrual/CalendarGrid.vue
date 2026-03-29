@@ -72,6 +72,12 @@
 		components: {
 			DateCell
 		},
+		mounted() {
+			this.bindDesktopLongPressEvents();
+		},
+		beforeUnmount() {
+			this.unbindDesktopLongPressEvents();
+		},
 		props: {
 			weeks: {
 				type: Array,
@@ -105,9 +111,16 @@
 			return {
 				batchMode: false,
 				longPressTimer: null,
+				longPressStartedAt: 0,
 				touchStartX: 0,
 				touchStartY: 0,
-				cellRects: null
+				cellRects: null,
+				suppressTapUntil: 0,
+				desktopRootEl: null,
+				_boundMouseDown: null,
+				_boundMouseMove: null,
+				_boundMouseUp: null,
+				_boundMouseLeave: null
 			};
 		},
 		computed: {
@@ -138,31 +151,97 @@
 			onCellTap(cell) {
 				if (!this.interactive) return;
 				if (cell.selectable === false) return;
+				if (Date.now() < this.suppressTapUntil) return;
 				if (this.batchMode) return;
 				this.$emit('cell-tap', cell);
+			},
+
+			bindDesktopLongPressEvents() {
+				const root = this.$el;
+				if (!root || typeof root.addEventListener !== 'function') return;
+				this.desktopRootEl = root;
+				this._boundMouseDown = this.onMouseDown.bind(this);
+				this._boundMouseMove = this.onMouseMove.bind(this);
+				this._boundMouseUp = this.onMouseUp.bind(this);
+				this._boundMouseLeave = this.onMouseLeave.bind(this);
+				root.addEventListener('mousedown', this._boundMouseDown);
+				root.addEventListener('mousemove', this._boundMouseMove);
+				root.addEventListener('mouseup', this._boundMouseUp);
+				root.addEventListener('mouseleave', this._boundMouseLeave);
+			},
+
+			unbindDesktopLongPressEvents() {
+				const root = this.desktopRootEl;
+				if (!root || typeof root.removeEventListener !== 'function') return;
+				root.removeEventListener('mousedown', this._boundMouseDown);
+				root.removeEventListener('mousemove', this._boundMouseMove);
+				root.removeEventListener('mouseup', this._boundMouseUp);
+				root.removeEventListener('mouseleave', this._boundMouseLeave);
+				this.desktopRootEl = null;
+				this._boundMouseDown = null;
+				this._boundMouseMove = null;
+				this._boundMouseUp = null;
+				this._boundMouseLeave = null;
+			},
+
+			onMouseDown(e) {
+				if (!this.interactive) return;
+				if (e.button !== 0) return;
+				this.beginLongPress(e.clientX, e.clientY);
+			},
+
+			onMouseMove(e) {
+				if (!this.interactive) return;
+				this.handlePointerMove(e.clientX, e.clientY, e);
+			},
+
+			onMouseUp() {
+				this.finishLongPress();
+			},
+
+			onMouseLeave() {
+				this.finishLongPress();
 			},
 
 			onTouchStart(e) {
 				if (!this.interactive) return;
 				const touch = e.touches[0];
-				this.touchStartX = touch.clientX;
-				this.touchStartY = touch.clientY;
-				this.cellRects = null;
+				this.beginLongPress(touch.clientX, touch.clientY);
+			},
 
+			onTouchMove(e) {
+				if (!this.interactive) return;
+				const touch = e.touches[0];
+				this.handlePointerMove(touch.clientX, touch.clientY, e);
+			},
+
+			onTouchEnd() {
+				this.finishLongPress();
+			},
+
+			onTouchCancel() {
+				this.finishLongPress();
+			},
+
+			beginLongPress(clientX, clientY) {
+				this.touchStartX = clientX;
+				this.touchStartY = clientY;
+				this.longPressStartedAt = Date.now();
+				this.cellRects = null;
+				if (this.longPressTimer) {
+					clearTimeout(this.longPressTimer);
+				}
 				this.longPressTimer = setTimeout(() => {
 					this.longPressTimer = null;
 					this.startBatchMode(this.touchStartX, this.touchStartY);
 				}, LONG_PRESS_DELAY);
 			},
 
-			onTouchMove(e) {
-				if (!this.interactive) return;
-				const touch = e.touches[0];
-				const dx = touch.clientX - this.touchStartX;
-				const dy = touch.clientY - this.touchStartY;
+			handlePointerMove(clientX, clientY, e) {
+				const dx = clientX - this.touchStartX;
+				const dy = clientY - this.touchStartY;
 
 				if (this.longPressTimer) {
-					// Cancel long press if user has moved significantly
 					if (Math.abs(dx) > MOVE_CANCEL_THRESHOLD || Math.abs(dy) > MOVE_CANCEL_THRESHOLD) {
 						clearTimeout(this.longPressTimer);
 						this.longPressTimer = null;
@@ -171,12 +250,10 @@
 				}
 
 				if (this.batchMode) {
-					// Prevent page scroll during batch drag
-					// Note: in mini-program environment this may require catchTouchMove instead
-					if (typeof e.preventDefault === 'function') {
+					if (typeof e?.preventDefault === 'function') {
 						e.preventDefault();
 					}
-					const idx = this.hitTestCell(touch.clientX, touch.clientY);
+					const idx = this.hitTestCell(clientX, clientY);
 					if (idx !== -1) {
 						const cell = this.allCells[idx];
 						if (cell.selectable !== false) {
@@ -186,29 +263,56 @@
 				}
 			},
 
-			onTouchEnd() {
+			finishLongPress() {
+				const holdElapsed = this.longPressStartedAt ? Date.now() - this.longPressStartedAt : 0;
 				if (this.longPressTimer) {
 					clearTimeout(this.longPressTimer);
 					this.longPressTimer = null;
+					if (holdElapsed >= LONG_PRESS_DELAY) {
+						this.startBatchMode(this.touchStartX, this.touchStartY);
+						return;
+					}
 				}
 				if (this.batchMode) {
 					this.batchMode = false;
 					this.$emit('batch-end');
 				}
+				this.longPressStartedAt = 0;
 			},
 
-			onTouchCancel() {
-				if (this.longPressTimer) {
-					clearTimeout(this.longPressTimer);
-					this.longPressTimer = null;
+			captureCellRectsFromDom() {
+				if (!this.desktopRootEl || typeof this.desktopRootEl.querySelectorAll !== 'function') {
+					return [];
 				}
-				if (this.batchMode) {
-					this.batchMode = false;
-					this.$emit('batch-end');
-				}
+
+				return [...this.desktopRootEl.querySelectorAll('.calendar-grid__cell')].map((node) => {
+					const rect = node.getBoundingClientRect();
+					return {
+						left: rect.left,
+						right: rect.right,
+						top: rect.top,
+						bottom: rect.bottom
+					};
+				});
 			},
 
 			startBatchMode(x, y) {
+				const fallbackRects = this.captureCellRectsFromDom();
+				if (fallbackRects.length > 0) {
+					this.cellRects = fallbackRects;
+					const idx = this.hitTestCell(x, y);
+					if (idx !== -1) {
+						const cell = this.allCells[idx];
+						if (cell.selectable !== false) {
+							this.batchMode = true;
+							this.suppressTapUntil = Date.now() + 500;
+							this.longPressStartedAt = 0;
+							this.$emit('batch-start', cell);
+							return;
+						}
+					}
+				}
+
 				// Query all cell bounding rects for hit testing
 				const query = uni.createSelectorQuery().in(this);
 				query.selectAll('.calendar-grid__cell').boundingClientRect((rects) => {
@@ -219,6 +323,8 @@
 					const cell = this.allCells[idx];
 					if (cell.selectable === false) return;
 					this.batchMode = true;
+					this.suppressTapUntil = Date.now() + 500;
+					this.longPressStartedAt = 0;
 					this.$emit('batch-start', cell);
 				});
 				query.exec();

@@ -6,7 +6,7 @@ This document defines the complete interaction model for the calendar panel on t
 
 It covers view switching, navigation, jump shortcuts, batch editing, and the date state interaction rules specific to the calendar surface.
 
-This is the authoritative UX contract for `CalendarGrid`, `BatchEditPanel`, and all supporting calendar primitives.
+This is the authoritative UX contract for `CalendarGrid` and all supporting calendar primitives on the menstrual home page.
 
 ## Component Structure
 
@@ -97,6 +97,7 @@ Forbidden combinations from `date-state-spec.md`:
 - **Long-press + drag** is the primary batch-edit entry path.
 - Long-press a past date cell, then drag to extend the selection range.
 - The selection range is always a contiguous sequence of dates.
+- Dragging to an earlier date is allowed; the range should normalize to the earlier start and later end.
 
 ### Selectable Range
 
@@ -106,31 +107,32 @@ Forbidden combinations from `date-state-spec.md`:
 ### During Selection
 
 - Selected date cells display the `selected` overlay state (drop shadow, stroke cue).
-- The `BatchEditPanel` appears at the bottom of the page, replacing `SelectedDatePanel`.
-- The panel title shows the selected range (e.g. `批量补录 03/18 - 03/22`).
+- Batch mode does not open a separate bottom panel.
+- Instead, two compact action buttons appear on the right side of the jump-tab row:
+  - `保存` uses the `period` accent treatment
+  - `取消` uses a neutral, non-accent treatment
 - The `CalendarGrid` remains visible and fully interactive during selection.
+- The underlying single-day selection context should follow the latest drag position, so the final drag endpoint becomes the selected day after save.
 
-### BatchEditPanel Structure
+### Batch Action Buttons
 
 ```
-BatchEditPanel
-├── Title              ← "批量补录 MM/DD - MM/DD" (date range)
-├── ActionChips
-│   ├── 设为经期       ← fill: accent.period.soft; marks all selected days as period
-│   └── 清除记录       ← fill: bg.subtle; clears period status for all selected days
-└── Buttons
-    ├── 取消           ← cancel; deselects all, returns to normal mode
-    └── 应用到区间     ← confirm; applies the active chip action to all selected dates
+JumpTabs Row
+├── JumpTabs           ← 今天 / 本次 / 下次预测
+└── Batch Actions      ← visible only in batch mode
+    ├── 保存           ← period-accent small button
+    └── 取消           ← neutral small button
 ```
 
-### Batch Action Rules
+### Batch Toggle Rules
 
-- Only one chip can be active at a time: `设为经期` or `清除记录`.
-- `设为经期` marks `is_period = true` for all dates in the selected range.
-- `清除记录` clears `is_period` only. Attribute values (`pain_level`, `flow_level`, `color_level`) are not affected.
-- `应用到区间` commits the action. Changes are persisted immediately after confirmation.
-- `取消` discards the pending action and exits batch mode. No changes are made.
-- After applying, the panel closes and the calendar returns to normal single-day edit mode.
+- Batch selection follows path-based toggle semantics instead of a simple start/end range.
+- Entering a date cell toggles that cell's selected state.
+- Re-entering a previously selected cell toggles it back off.
+- This means a path like `25 -> 27 -> 25` should leave `25` unselected again.
+- `保存` persists the currently selected dates as period days.
+- `取消` discards the pending selection and exits batch mode. No changes are made.
+- Batch selection still does not modify attribute values or note content.
 
 ### Batch Selection Does Not Affect Attributes
 
@@ -158,11 +160,12 @@ The calendar panel operates in two mutually exclusive modes:
 | Mode | Trigger | Bottom Panel | Date Cell Interaction |
 |---|---|---|---|
 | Single-day edit | Tap a date | `SelectedDatePanel` | Tap switches date |
-| Batch edit | Long-press + drag | `BatchEditPanel` | Drag extends selection |
+| Batch edit | Long-press + drag | Jump row save/cancel buttons | Drag toggles selection along the path |
 
 Switching between modes:
 - Entering batch mode (long-press drag) collapses `SelectedDatePanel`.
-- Exiting batch mode (`取消` or `应用到区间`) returns to single-day edit mode (no date pre-selected).
+- `取消` exits batch mode without persistence and returns to the latest single-day context reached during the batch gesture.
+- `保存` commits the current selected dates, then returns to single-day edit mode focused on the latest dragged day.
 
 ## Related Documents
 

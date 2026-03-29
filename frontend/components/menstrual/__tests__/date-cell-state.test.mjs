@@ -47,6 +47,16 @@ test('todayPrediction keeps the today circle while showing prediction fill', () 
   assert.equal(presentation.usesDetailMarker, false);
 });
 
+test('todayPredictionDetail keeps prediction fill and today stroke while restoring the detail marker', () => {
+  const presentation = getDateCellPresentation('todayPredictionDetail');
+
+  assert.equal(presentation.backgroundToken, 'accent.period.soft');
+  assert.equal(presentation.borderToken, 'border.today');
+  assert.equal(presentation.markerToken, 'accent.period');
+  assert.equal(presentation.shape, 'circle');
+  assert.equal(presentation.usesDetailMarker, true);
+});
+
 test('selectedDetail uses selected shadow and period-colored marker', () => {
   const presentation = getDateCellPresentation('selectedDetail');
 
@@ -130,6 +140,17 @@ test('selectedTodayPrediction keeps the today circle while layering selected sha
   assert.equal(presentation.usesDetailMarker, false);
 });
 
+test('selectedTodayPredictionDetail keeps prediction fill, today stroke, and selected shadow with a detail marker', () => {
+  const presentation = getDateCellPresentation('selectedTodayPredictionDetail');
+
+  assert.equal(presentation.backgroundToken, 'accent.period.soft');
+  assert.equal(presentation.borderToken, 'border.today');
+  assert.equal(presentation.shadowToken, 'shadow.selected');
+  assert.equal(presentation.markerToken, 'accent.period');
+  assert.equal(presentation.shape, 'circle');
+  assert.equal(presentation.usesDetailMarker, true);
+});
+
 test('selectedTodayPeriod keeps period contrast while adding selected shadow over today geometry', () => {
   const presentation = getDateCellPresentation('selectedTodayPeriod');
 
@@ -162,7 +183,9 @@ test('dateCellVariants exposes the full approved variant matrix', () => {
     'todayDetail',
     'todayPeriod',
     'todayPrediction',
+    'todayPredictionDetail',
     'selectedTodayPrediction',
+    'selectedTodayPredictionDetail',
     'selectedTodayPeriod'
   ]);
 });

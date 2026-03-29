@@ -14,6 +14,7 @@ This is the authoritative UX contract for the `SelectedDatePanel` and its child 
 - Recording should feel lightweight, not like filling a medical form.
 - Attributes are subjective relative values, not clinical absolutes. Their primary long-term value is intra-user trend comparison across cycles.
 - The system should not force users to record attributes just because they marked a period day.
+- Notes are lightweight context, not a competing state axis; they can exist on period or non-period explicit days.
 - When attributes are recorded, they may enable future trend insights (e.g. "your pain has been increasing over the past 3 cycles"), but this is a forward capability, not a current commitment.
 
 ## Value Hierarchy Of Recorded Attributes
@@ -108,6 +109,21 @@ Rules:
 - No confirmation dialog or undo toast. The data is minimal (3 attributes) and trivially re-enterable.
 - After clearing, the summary bar disappears and the grid resets to no selections.
 
+### Note Input
+
+A lightweight note input sits at the bottom of `SelectedDatePanel`.
+
+Rules:
+- The input is always available for the selected day.
+- Note editing is independent of both `经期` and recorded attributes.
+- Blurring the field writes the current note immediately; no separate save button is used.
+- Empty note means "no note". Clearing the field and blurring should remove note content for that explicit day.
+- `note-only` is a valid state:
+  - it keeps the badge at `已记录`
+  - it does not create the eye marker
+  - it does not imply `isPeriod = true`
+- Maximum length remains `500` characters.
+
 ### Badge (Top-Right Corner)
 
 The badge in the panel header reflects recording state:
@@ -127,7 +143,8 @@ The panel has 4 orthogonal state axes:
 1. **Period status**: `unmarked` | `marked`
 2. **Attributes**: `empty` | `partial` | `full` (0, 1-2, or 3 attributes recorded)
 3. **Grid visibility**: `collapsed` | `expanded`
-4. **Date context**: `past` | `today` | `future` (future dates are read-only)
+4. **Note presence**: `empty` | `recorded`
+5. **Date context**: `past` | `today` | `future` (future dates are read-only)
 
 ### Composite States And Their Rendering
 
@@ -195,6 +212,7 @@ SelectedDatePanel
 │   ├── PainRow
 │   └── ColorRow
 └── ClearButton             ← conditional: only when attributes.length > 0
+└── NoteInput               ← always rendered, blur-to-save
 ```
 
 ### Reusable Primitives From Component Library

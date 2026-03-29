@@ -14,7 +14,7 @@ The core structure remains:
 - `CalendarGrid`
 - `CalendarLegend`
 - `SelectedDatePanel`
-- `BatchEditPanel`
+- batch-mode action buttons in the jump row
 
 ## Must Preserve
 

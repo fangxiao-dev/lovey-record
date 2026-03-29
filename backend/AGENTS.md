@@ -104,3 +104,4 @@
 - Tests cover the changed behavior at the appropriate level.
 - `npm run build` passes for backend code changes.
 - Any unverified real-DB or environment-specific behavior is called out explicitly.
+- When writing closing statements for backend work, follow the root `AGENTS.md` rule: `Current mainline progress` must summarize the higher-level mainline stage, while `Next-step recommendation` should name the next concrete backend or cross-layer action.

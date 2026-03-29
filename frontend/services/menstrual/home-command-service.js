@@ -61,6 +61,19 @@ export async function persistSelectedDateDetails({ context, activeDate, pageMode
 	});
 }
 
+export async function persistSelectedDateNote({ context, activeDate, note }) {
+	return commandEnvelope({
+		apiBaseUrl: context.apiBaseUrl,
+		openid: context.openid,
+		path: '/commands/recordDayNote',
+		data: {
+			moduleInstanceId: context.moduleInstanceId,
+			date: activeDate,
+			note
+		}
+	});
+}
+
 export async function persistSelectedDatePeriodState({ context, activeDate, pageModel, isPeriodMarked }) {
 	if (!isPeriodMarked) {
 		return commandEnvelope({
@@ -74,18 +87,30 @@ export async function persistSelectedDatePeriodState({ context, activeDate, page
 		});
 	}
 
-	const levels = extractSelectedDetailLevels(pageModel);
-
 	return commandEnvelope({
 		apiBaseUrl: context.apiBaseUrl,
 		openid: context.openid,
 		path: '/commands/recordPeriodDay',
 		data: {
 			moduleInstanceId: context.moduleInstanceId,
-			date: activeDate,
-			painLevel: levels.painLevel ?? undefined,
-			flowLevel: levels.flowLevel ?? undefined,
-			colorLevel: levels.colorLevel ?? undefined
+			date: activeDate
+		}
+	});
+}
+
+export async function persistBatchPeriodRange({ context, action, startDate, endDate }) {
+	const path = action === 'clear-record'
+		? '/commands/clearPeriodRange'
+		: '/commands/recordPeriodRange';
+
+	return commandEnvelope({
+		apiBaseUrl: context.apiBaseUrl,
+		openid: context.openid,
+		path,
+		data: {
+			moduleInstanceId: context.moduleInstanceId,
+			startDate,
+			endDate
 		}
 	});
 }

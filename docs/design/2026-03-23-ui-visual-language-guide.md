@@ -177,7 +177,7 @@ The menstrual home and module-space flows impose strict visual constraints.
 Must preserve:
 - `shared/private` points to the same module instance
 - home answers the current status first
-- menstrual home keeps `StatusHeroCard + CalendarGrid + CalendarLegend + SelectedDatePanel + BatchEditPanel`
+- menstrual home keeps `StatusHeroCard + CalendarGrid + CalendarLegend + SelectedDatePanel + BatchActionButtons`
 - single-day editing remains on the home page
 - long-press drag remains the primary batch-edit model
 - month view is for browsing and locating, not for a second editor

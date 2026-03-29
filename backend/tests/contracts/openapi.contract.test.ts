@@ -15,6 +15,8 @@ describe('openapi contract', () => {
     expect(spec.paths['/api/commands/createModuleInstance'].post).toBeTruthy();
     expect(spec.paths['/api/commands/recordPeriodDay'].post).toBeTruthy();
     expect(spec.paths['/api/commands/clearPeriodDay'].post).toBeTruthy();
+    expect(spec.paths['/api/commands/recordPeriodRange'].post).toBeTruthy();
+    expect(spec.paths['/api/commands/clearPeriodRange'].post).toBeTruthy();
     expect(spec.paths['/api/commands/recordDayDetails'].post).toBeTruthy();
     expect(spec.paths['/api/commands/recordDayNote'].post).toBeTruthy();
     expect(spec.paths['/api/commands/updateDefaultPeriodDuration'].post).toBeTruthy();
@@ -31,8 +33,15 @@ describe('openapi contract', () => {
 
   it('documents the key frontend integration request shapes', () => {
     const spec = loadSpec();
+    const recordPeriodDaySchema = spec.paths['/api/commands/recordPeriodDay'].post.requestBody.content['application/json'].schema;
 
-    expect(spec.paths['/api/commands/recordPeriodDay'].post.requestBody.content['application/json'].schema.required).toEqual(['moduleInstanceId', 'date']);
+    expect(recordPeriodDaySchema.required).toEqual(['moduleInstanceId', 'date']);
+    expect(recordPeriodDaySchema.properties.painLevel).toBeUndefined();
+    expect(recordPeriodDaySchema.properties.flowLevel).toBeUndefined();
+    expect(recordPeriodDaySchema.properties.colorLevel).toBeUndefined();
+    expect(recordPeriodDaySchema.properties.note).toBeUndefined();
+    expect(spec.paths['/api/commands/recordPeriodRange'].post.requestBody.content['application/json'].schema.required).toEqual(['moduleInstanceId', 'startDate', 'endDate']);
+    expect(spec.paths['/api/commands/clearPeriodRange'].post.requestBody.content['application/json'].schema.required).toEqual(['moduleInstanceId', 'startDate', 'endDate']);
     expect(spec.paths['/api/commands/recordDayDetails'].post.requestBody.content['application/json'].schema.properties.painLevel.nullable).toBe(true);
     expect(spec.paths['/api/commands/recordDayDetails'].post.requestBody.content['application/json'].schema.properties.flowLevel.nullable).toBe(true);
     expect(spec.paths['/api/commands/recordDayDetails'].post.requestBody.content['application/json'].schema.properties.colorLevel.nullable).toBe(true);

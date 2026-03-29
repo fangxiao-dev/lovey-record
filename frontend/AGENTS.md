@@ -53,3 +53,4 @@
 - Call out H5 versus WeChat Mini Program caveats explicitly when still unverified.
 - For Pencil-derived UI work, read [../docs/design/2026-03-28-ui-collaboration-lessons.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-28-ui-collaboration-lessons.md) and use the named Pencil node as the source of truth before touching code.
 - For Pencil-driven pages, verify that the current runtime page is still the correct acceptance surface before changing code. If the latest named Pencil nodes imply a different page structure or demo baseline, re-read those nodes first and treat the old runtime output as stale until revalidated.
+- When writing closing statements for frontend work, follow the root `AGENTS.md` rule: `Current mainline progress` must stay at the higher-level delivery-line stage, while `Next-step recommendation` should carry the next concrete frontend action.

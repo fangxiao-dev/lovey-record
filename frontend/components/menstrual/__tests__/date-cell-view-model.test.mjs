@@ -68,6 +68,19 @@ test('todayPrediction keeps today stroke and circle geometry on top of predictio
   assert.equal(todayPredictionViewModel.usesDetailMarker, false);
 });
 
+test('todayPredictionDetail adds the shared eye marker without losing the today prediction surface', () => {
+  const todayPredictionDetailViewModel = getDateCellViewModel('todayPredictionDetail');
+
+  assert.deepEqual(todayPredictionDetailViewModel.rootClasses, [
+    'date-cell--circle',
+    'date-cell--bg-period-soft',
+    'date-cell--border-today',
+    'date-cell--stroke-today'
+  ]);
+  assert.deepEqual(todayPredictionDetailViewModel.markerClasses, ['date-cell__marker-icon--period']);
+  assert.equal(todayPredictionDetailViewModel.usesDetailMarker, true);
+});
+
 test('selectedToday aliases preserve today stroke and only add selected shadow', () => {
   const selectedTodayPredictionViewModel = getDateCellViewModel('selectedTodayPrediction');
   const selectedTodayPeriodViewModel = getDateCellViewModel('selectedTodayPeriod');
@@ -91,6 +104,20 @@ test('selectedToday aliases preserve today stroke and only add selected shadow',
   ]);
   assert.deepEqual(selectedTodayPeriodViewModel.labelClasses, ['date-cell__label--period-contrast']);
   assert.equal(selectedTodayPeriodViewModel.rootClasses.includes('date-cell--stroke-selected'), false);
+});
+
+test('selectedTodayPredictionDetail preserves today prediction geometry while showing the detail marker', () => {
+  const selectedTodayPredictionDetailViewModel = getDateCellViewModel('selectedTodayPredictionDetail');
+
+  assert.deepEqual(selectedTodayPredictionDetailViewModel.rootClasses, [
+    'date-cell--circle',
+    'date-cell--bg-period-soft',
+    'date-cell--border-today',
+    'date-cell--stroke-today',
+    'date-cell--selected'
+  ]);
+  assert.deepEqual(selectedTodayPredictionDetailViewModel.markerClasses, ['date-cell__marker-icon--period']);
+  assert.equal(selectedTodayPredictionDetailViewModel.usesDetailMarker, true);
 });
 
 test('selected non-today variants stay square while today remains circular', () => {

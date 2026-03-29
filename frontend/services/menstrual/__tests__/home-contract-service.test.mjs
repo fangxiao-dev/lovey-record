@@ -46,10 +46,11 @@ test('loadMenstrualHomePageModel requests getCalendarWindow using the resolved f
 		requests.push({
 			url: options.url,
 			method: options.method,
-			data: options.data
+			data: options.data,
+			header: options.header
 		});
 
-		if (options.url.endsWith('/queries/getModuleHomeView')) {
+		if (options.url.includes('/queries/getModuleHomeView')) {
 			options.success({
 				statusCode: 200,
 				data: {
@@ -82,7 +83,7 @@ test('loadMenstrualHomePageModel requests getCalendarWindow using the resolved f
 			return;
 		}
 
-		if (options.url.endsWith('/queries/getCalendarWindow')) {
+		if (options.url.includes('/queries/getCalendarWindow')) {
 			options.success({
 				statusCode: 200,
 				data: {
@@ -102,7 +103,7 @@ test('loadMenstrualHomePageModel requests getCalendarWindow using the resolved f
 			return;
 		}
 
-		if (options.url.endsWith('/queries/getDayRecordDetail')) {
+		if (options.url.includes('/queries/getDayRecordDetail')) {
 			options.success({
 				statusCode: 200,
 				data: {
@@ -139,11 +140,40 @@ test('loadMenstrualHomePageModel requests getCalendarWindow using the resolved f
 		viewMode: 'month'
 	});
 
-	assert.equal(requests[1].url, 'http://localhost:3000/api/queries/getCalendarWindow');
+	assert.match(requests[0].url, /\/queries\/getModuleHomeView\?_ts=\d+$/);
+	assert.match(requests[1].url, /\/queries\/getCalendarWindow\?_ts=\d+$/);
+	assert.match(requests[2].url, /\/queries\/getDayRecordDetail\?_ts=\d+$/);
 	assert.deepEqual(requests[1].data, {
 		moduleInstanceId: 'seed-home-module',
 		profileId: 'seed-home-profile',
 		startDate: '2026-02-23',
 		endDate: '2026-04-05'
 	});
+	assert.equal(requests[1].header['x-wx-openid'], 'seed-home-openid');
+});
+
+test('loadMenstrualHomePageModel throws by default when live queries fail', async () => {
+	installUniRequestMock((options) => {
+		options.success({
+			statusCode: 500,
+			data: {
+				ok: false,
+				data: null,
+				error: {
+					message: 'boom'
+				}
+			}
+		});
+	});
+
+	await assert.rejects(
+		loadMenstrualHomePageModel({
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-home-openid',
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			today: '2026-03-29'
+		}),
+		/boom/
+	);
 });

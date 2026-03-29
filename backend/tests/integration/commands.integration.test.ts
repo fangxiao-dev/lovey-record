@@ -1,11 +1,13 @@
 import request from 'supertest';
 import app from '../../src/app';
+import { clearPeriodRange, recordPeriodRange } from '../../src/services/dayRecord.service';
 import { createModuleInstance } from '../../src/services/moduleInstance.service';
 import { findOrCreateUser } from '../../src/services/auth.service';
 import { updateDefaultPeriodDuration } from '../../src/services/moduleSettings.service';
 import { recordDayDetails, recordDayNote } from '../../src/services/phase5.service';
 
 jest.mock('../../src/services/auth.service');
+jest.mock('../../src/services/dayRecord.service');
 jest.mock('../../src/services/moduleInstance.service');
 jest.mock('../../src/services/moduleSettings.service');
 jest.mock('../../src/services/phase5.service');
@@ -135,6 +137,70 @@ describe('Commands Integration', () => {
         noteChanged: true,
       },
       error: null,
+    });
+  });
+
+  it('forwards recordPeriodRange through the command endpoint', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+    (recordPeriodRange as jest.Mock).mockResolvedValue({
+      recordedDates: ['2026-03-16', '2026-03-17'],
+    });
+
+    const response = await request(app)
+      .post('/api/commands/recordPeriodRange')
+      .set('x-wx-openid', 'openid-1')
+      .send({ moduleInstanceId: 'module-1', startDate: '2026-03-16', endDate: '2026-03-17' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        recordedDates: ['2026-03-16', '2026-03-17'],
+      },
+      error: null,
+    });
+  });
+
+  it('forwards clearPeriodRange through the command endpoint', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+    (clearPeriodRange as jest.Mock).mockResolvedValue({
+      clearedDates: ['2026-03-16'],
+    });
+
+    const response = await request(app)
+      .post('/api/commands/clearPeriodRange')
+      .set('x-wx-openid', 'openid-1')
+      .send({ moduleInstanceId: 'module-1', startDate: '2026-03-16', endDate: '2026-03-17' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        clearedDates: ['2026-03-16'],
+      },
+      error: null,
+    });
+  });
+
+  it('returns MODULE_ACCESS_DENIED when recordPeriodRange rejects', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+    (recordPeriodRange as jest.Mock).mockRejectedValue(
+      Object.assign(new Error('MODULE_ACCESS_DENIED'), { code: 'MODULE_ACCESS_DENIED', statusCode: 403 }),
+    );
+
+    const response = await request(app)
+      .post('/api/commands/recordPeriodRange')
+      .set('x-wx-openid', 'openid-1')
+      .send({ moduleInstanceId: 'module-1', startDate: '2026-03-16', endDate: '2026-03-17' });
+
+    expect(response.status).toBe(403);
+    expect(response.body).toEqual({
+      ok: false,
+      data: null,
+      error: {
+        code: 'MODULE_ACCESS_DENIED',
+        message: 'MODULE_ACCESS_DENIED',
+      },
     });
   });
 

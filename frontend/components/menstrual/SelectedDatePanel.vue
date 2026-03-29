@@ -80,6 +80,22 @@
 		<view v-if="summaryItems.length > 0 && isEditorOpen" class="selected-date-panel__clear-button" @tap="clearAttributes">
 			<text class="selected-date-panel__clear-button-label">清空</text>
 		</view>
+
+		<view class="selected-date-panel__note-block">
+			<view class="selected-date-panel__note-head">
+				<text class="selected-date-panel__note-title">当天备注</text>
+				<text class="selected-date-panel__note-count">{{ noteDraft.length }}/500</text>
+			</view>
+			<textarea
+				class="selected-date-panel__note-input"
+				:value="noteDraft"
+				:maxlength="500"
+				placeholder="写一句今天的状态、事件或提醒"
+				placeholder-class="selected-date-panel__note-placeholder"
+				@input="handleNoteInput"
+				@blur="commitNote"
+			/>
+		</view>
 	</view>
 </template>
 
@@ -111,6 +127,10 @@
 					return [];
 				}
 			},
+			note: {
+				type: String,
+				default: ''
+			},
 			initialPeriodMarked: {
 				type: Boolean,
 				default: false
@@ -123,10 +143,14 @@
 		data() {
 			return {
 				isEditorOpen: this.initialEditorOpen,
-				isPeriodMarked: this.initialPeriodMarked
+				isPeriodMarked: this.initialPeriodMarked,
+				noteDraft: this.note
 			};
 		},
 		watch: {
+			note(nextValue) {
+				this.noteDraft = nextValue;
+			},
 			initialEditorOpen(nextValue) {
 				this.isEditorOpen = nextValue;
 			},
@@ -148,6 +172,15 @@
 			},
 			clearAttributes() {
 				this.$emit('clear-attributes');
+			},
+			handleNoteInput(event) {
+				this.noteDraft = event?.detail?.value || '';
+			},
+			commitNote(event) {
+				const nextValue = event?.detail?.value ?? this.noteDraft;
+				this.noteDraft = nextValue;
+				if (nextValue === this.note) return;
+				this.$emit('note-change', nextValue);
 			},
 			summaryIcon(icon) {
 				if (icon === 'water_drop') return flowIcon;
@@ -526,6 +559,41 @@
 		font-weight: $font-weight-strong;
 		color: $text-secondary;
 		cursor: pointer;
+	}
+
+	.selected-date-panel__note-block {
+		display: flex;
+		flex-direction: column;
+		gap: 10rpx;
+		padding: 18rpx 20rpx;
+		border-radius: 28rpx;
+		background: #faf7f2;
+	}
+
+	.selected-date-panel__note-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16rpx;
+	}
+
+	.selected-date-panel__note-title,
+	.selected-date-panel__note-count {
+		font-size: 20rpx;
+		line-height: 1;
+		color: $text-muted;
+	}
+
+	.selected-date-panel__note-input {
+		width: 100%;
+		min-height: 128rpx;
+		font-size: 24rpx;
+		line-height: 1.6;
+		color: $text-primary;
+	}
+
+	.selected-date-panel__note-placeholder {
+		color: $text-muted;
 	}
 
 </style>
