@@ -207,6 +207,10 @@ export async function shareModuleInstance(input: { moduleInstanceId: string; use
     create: { moduleInstanceId: input.moduleInstanceId, userId: input.partnerUserId, role: 'PARTNER', accessStatus: 'ACTIVE' },
     update: { accessStatus: 'ACTIVE', revokedAt: null, role: 'PARTNER' },
   });
+  await prisma.moduleInstance.update({
+    where: { id: moduleInstance.id },
+    data: { sharingStatus: 'SHARED' },
+  });
   return { moduleInstanceId: moduleInstance.id, sharingStatus: 'shared', partnerUserId: input.partnerUserId, accessStatus: 'active' };
 }
 
@@ -215,6 +219,10 @@ export async function revokeModuleAccess(input: { moduleInstanceId: string; user
   await prisma.moduleAccess.update({
     where: { moduleInstanceId_userId: { moduleInstanceId: input.moduleInstanceId, userId: input.partnerUserId } },
     data: { accessStatus: 'REVOKED', revokedAt: new Date() },
+  });
+  await prisma.moduleInstance.update({
+    where: { id: moduleInstance.id },
+    data: { sharingStatus: 'PRIVATE' },
   });
   return { moduleInstanceId: moduleInstance.id, sharingStatus: 'private', partnerUserId: input.partnerUserId, accessStatus: 'revoked' };
 }

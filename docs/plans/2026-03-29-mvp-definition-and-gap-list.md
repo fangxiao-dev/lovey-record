@@ -58,9 +58,9 @@ If any one of these is still missing, the repo is not yet at "first MVP complete
 ### What is only partially complete
 
 - The menstrual home interaction model is close to complete, but still in interaction-hardening mode rather than release-ready stability.
-- The module-space shell exists, but is still a static shell instead of a real module-management flow.
-- Sharing and settings exist at the backend contract/runtime layer, but are not yet closed through the real frontend flow.
-- Page-level live regression now exists, but coverage is still focused on the menstrual home rather than the full MVP path.
+- The module-space shell now reads live module access/settings data and supports a real shell-to-home entry flow, but it still needs final acceptance against the broader MVP release bar.
+- Sharing and settings are now closed through the frontend shell for the owner path, but their acceptance still depends on broader release coverage and remaining product hardening.
+- Page-level live regression now covers shell entry, owner share/revoke, owner settings update, and menstrual-home hotspot loops, but the release checklist is still not explicit enough.
 
 ## Gap List
 
@@ -99,19 +99,18 @@ This area is in the final hardening phase, not in the feature-discovery phase.
 ### Current state
 
 - The shell page exists at `frontend/pages/index/index.vue`.
-- It is still explicitly a static shell:
-  - static private/shared zone copy
-  - static module info panel
-  - direct showcase-style navigation into menstrual home
+- It now reads:
+  - `getModuleAccessState`
+  - `getModuleSettings`
+- It now supports:
+  - real private/shared placement for one module instance
+  - real shell summary based on live data
+  - real product-path navigation into menstrual home
 
 ### MVP gap
 
-The MVP is not complete until the module shell supports a real closed entry loop:
-
-- real module instance presence
-- real entry affordance
-- real shared/private presentation
-- no placeholder-only information panel
+The basic shell closure is now in place.
+What remains is release-level confidence rather than first-pass shell wiring.
 
 ### Required completion bar
 
@@ -125,16 +124,16 @@ The MVP is not complete until the module shell supports a real closed entry loop
 
 - Backend sharing commands and access-state queries exist.
 - Product direction is already explicit: private/shared must point to the same module instance.
-- The current frontend shell still does not provide a real share/revoke flow.
+- The frontend shell now provides a real owner share/revoke flow.
+- Live regression now verifies:
+  - owner share from shell
+  - owner revoke from shell
+  - partner read access on the same module instance after sharing
 
 ### MVP gap
 
-The MVP is not complete until the owner can:
-
-- share the existing module instance
-- see shared state reflected in the shell
-- revoke partner access
-- verify that data continuity is preserved
+The first share/revoke closure is now present.
+What remains is broader acceptance and future polish, not first-pass flow absence.
 
 ### Required completion bar
 
@@ -147,11 +146,13 @@ The MVP is not complete until the owner can:
 ### Current state
 
 - Backend support for `updateDefaultPeriodDuration` and `getModuleSettings` exists.
-- The formal menstrual home does not yet expose a user-facing settings flow for this module-level behavior.
+- The frontend shell now exposes a user-facing settings strip for default period duration.
+- The current default value is visible and can be changed from the real frontend flow.
 
 ### MVP gap
 
-The MVP is not complete until the default period duration is accessible and understandable through the actual frontend flow.
+The first settings closure is now present.
+What remains is full acceptance proof that the next first-day period record reflects the changed setting under release-style verification.
 
 ### Required completion bar
 
@@ -166,11 +167,16 @@ The MVP is not complete until the default period duration is accessible and unde
 
 - Contract-level and service-level backend tests exist.
 - Frontend unit tests exist around home services and batch interaction logic.
-- A root-level Playwright entry now exists for menstrual-home live regression.
+- A root-level Playwright entry now covers:
+  - shell-to-home entry
+  - shared/private shell presentation
+  - owner share/revoke
+  - owner settings update
+  - menstrual-home batch hotspot loops
 
 ### MVP gap
 
-The MVP is not complete until the regression baseline covers the actual release path, not only the current hotspot.
+The MVP is not complete until the regression baseline is paired with an explicit repeatable release checklist, plus the remaining manual platform checks.
 
 ### Required completion bar
 
@@ -207,10 +213,9 @@ These should not block calling the first MVP complete unless product scope chang
 ## Suggested Completion Order
 
 1. Finish menstrual home interaction hardening and acceptance.
-2. Replace the static module-space shell with a real entry flow.
-3. Close one real sharing path end-to-end.
-4. Close one real settings path end-to-end.
-5. Expand the regression and release gate from "home only" to "MVP path".
+2. Press the remaining same-instance share/settings acceptance details, especially the settings-to-next-record proof.
+3. Expand the regression and release gate from feature-path coverage into a reusable MVP checklist.
+4. Confirm WeChat Mini Program behavior for shell, share/settings, and batch interaction semantics.
 
 ## Decision Summary
 
@@ -218,8 +223,7 @@ If we use this document as the bar, the repo is not waiting on broad new feature
 It is waiting on:
 
 - home hardening
-- shell closure
-- share/settings closure
+- release-proof share/settings acceptance
 - release-grade verification
 
 That is the remaining surface between "strong menstrual-home prototype" and "first MVP complete".

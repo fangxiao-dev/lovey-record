@@ -135,7 +135,7 @@ describe('query.service', () => {
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
       id: 'module-1',
       ownerUserId: 'user-owner',
-      sharingStatus: 'SHARED',
+      sharingStatus: 'PRIVATE',
     });
     (prisma.moduleAccess.findMany as jest.Mock).mockResolvedValue([
       { userId: 'user-partner', role: 'PARTNER', accessStatus: 'ACTIVE' },
@@ -154,6 +154,30 @@ describe('query.service', () => {
       activePartners: [
         { userId: 'user-partner', role: 'partner', accessStatus: 'active' },
       ],
+    });
+  });
+
+  it('returns private access state when no active partner remains even if stored sharingStatus is stale shared', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      ownerUserId: 'user-owner',
+      sharingStatus: 'SHARED',
+    });
+    (prisma.moduleAccess.findMany as jest.Mock).mockResolvedValue([
+      { userId: 'user-owner', role: 'OWNER', accessStatus: 'ACTIVE' },
+      { userId: 'user-partner', role: 'PARTNER', accessStatus: 'REVOKED' },
+    ]);
+
+    const result = await getModuleAccessState({
+      moduleInstanceId: 'module-1',
+      userId: 'user-owner',
+    });
+
+    expect(result).toEqual({
+      moduleInstanceId: 'module-1',
+      sharingStatus: 'private',
+      ownerUserId: 'user-owner',
+      activePartners: [],
     });
   });
 

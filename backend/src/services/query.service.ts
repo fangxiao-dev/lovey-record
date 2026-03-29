@@ -124,18 +124,19 @@ export async function getModuleAccessState(input: AccessInput) {
       accessStatus: 'ACTIVE',
     },
   });
+  const activePartners = accesses
+    .filter((access) => access.role === 'PARTNER' && access.accessStatus === 'ACTIVE')
+    .map((access) => ({
+      userId: access.userId,
+      role: lower(access.role),
+      accessStatus: lower(access.accessStatus),
+    }));
 
   return {
     moduleInstanceId: moduleInstance.id,
-    sharingStatus: lower(moduleInstance.sharingStatus),
+    sharingStatus: activePartners.length ? 'shared' : 'private',
     ownerUserId: moduleInstance.ownerUserId,
-    activePartners: accesses
-      .filter((access) => access.role === 'PARTNER')
-      .map((access) => ({
-        userId: access.userId,
-        role: lower(access.role),
-        accessStatus: lower(access.accessStatus),
-      })),
+    activePartners,
   };
 }
 

@@ -109,7 +109,7 @@
 - Create: `frontend/components/menstrual/CalendarGrid.vue`
 - Create: `frontend/components/menstrual/SelectedDatePanel.vue`
 - Create: `frontend/components/menstrual/StatusHeroCard.vue`
-- Create: `frontend/components/menstrual/BatchEditPanel.vue`
+- Create: `frontend/components/menstrual/JumpTabs.vue`
 
 **Must lock**
 

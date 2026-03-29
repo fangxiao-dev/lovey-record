@@ -78,7 +78,7 @@
    - `CalendarLegend`
    - `CalendarGrid`
    - `SelectedDatePanel`
-   - `BatchEditPanel`
+   - `JumpTabs`
 2. For each component, record the stable visual semantics it actually uses today.
 3. For each component, separate:
    - material choices that should become tokens

@@ -11,7 +11,7 @@ import {
 jest.mock('../../src/db/prisma', () => ({
   __esModule: true,
   default: {
-    moduleInstance: { findFirst: jest.fn() },
+    moduleInstance: { findFirst: jest.fn(), update: jest.fn() },
     dayRecord: { findUnique: jest.fn(), update: jest.fn(), findMany: jest.fn(), upsert: jest.fn() },
     moduleAccess: { findFirst: jest.fn(), upsert: jest.fn(), update: jest.fn(), findMany: jest.fn() },
     derivedCycle: { findMany: jest.fn() },
@@ -98,12 +98,21 @@ describe('phase5.service', () => {
     (prisma.moduleAccess.findFirst as jest.Mock).mockResolvedValue(null);
     (prisma.moduleAccess.upsert as jest.Mock).mockResolvedValue({});
     (prisma.moduleAccess.update as jest.Mock).mockResolvedValue({});
+    (prisma.moduleInstance.update as jest.Mock).mockResolvedValue({});
 
     const shared = await shareModuleInstance({ moduleInstanceId: 'module-1', userId: 'user-1', partnerUserId: 'user-2' });
     const revoked = await revokeModuleAccess({ moduleInstanceId: 'module-1', userId: 'user-1', partnerUserId: 'user-2' });
 
     expect(shared.sharingStatus).toBe('shared');
     expect(revoked.sharingStatus).toBe('private');
+    expect(prisma.moduleInstance.update).toHaveBeenNthCalledWith(1, {
+      where: { id: 'module-1' },
+      data: { sharingStatus: 'SHARED' },
+    });
+    expect(prisma.moduleInstance.update).toHaveBeenNthCalledWith(2, {
+      where: { id: 'module-1' },
+      data: { sharingStatus: 'PRIVATE' },
+    });
   });
 
   it('returns calendar window days with implicit none and marks', async () => {
