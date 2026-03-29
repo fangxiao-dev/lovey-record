@@ -1,7 +1,8 @@
 const SELECTED_DATE_PANEL = Object.freeze({
 	title: '3 月 22 日',
 	badge: '今日',
-	chips: ['经期', '特殊标记'],
+	initialPeriodMarked: true,
+	initialEditorOpen: false,
 	summaryItems: [
 		{ key: 'flow', label: '流量', value: '中', icon: 'water_drop', tone: 'flow' },
 		{ key: 'pain', label: '疼痛', value: '轻微', icon: 'favorite', tone: 'pain' },
@@ -44,14 +45,12 @@ const SELECTED_DATE_PANEL = Object.freeze({
 				{ key: 'veryDeep', label: '极深', tone: 'color-very-deep' }
 			]
 		}
-	],
-	actionLabel: '保存当天记录'
+	]
 });
 
 export function createSelectedDatePanelData() {
 	return {
 		...SELECTED_DATE_PANEL,
-		chips: [...SELECTED_DATE_PANEL.chips],
 		summaryItems: SELECTED_DATE_PANEL.summaryItems.map((item) => ({ ...item })),
 		attributeRows: SELECTED_DATE_PANEL.attributeRows.map((row) => ({
 			...row,

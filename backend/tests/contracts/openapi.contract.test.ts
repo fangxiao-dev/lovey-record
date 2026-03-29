@@ -33,6 +33,9 @@ describe('openapi contract', () => {
     const spec = loadSpec();
 
     expect(spec.paths['/api/commands/recordPeriodDay'].post.requestBody.content['application/json'].schema.required).toEqual(['moduleInstanceId', 'date']);
+    expect(spec.paths['/api/commands/recordDayDetails'].post.requestBody.content['application/json'].schema.properties.painLevel.nullable).toBe(true);
+    expect(spec.paths['/api/commands/recordDayDetails'].post.requestBody.content['application/json'].schema.properties.flowLevel.nullable).toBe(true);
+    expect(spec.paths['/api/commands/recordDayDetails'].post.requestBody.content['application/json'].schema.properties.colorLevel.nullable).toBe(true);
     expect(spec.paths['/api/commands/recordDayNote'].post.requestBody.content['application/json'].schema.properties.note.maxLength).toBe(500);
     expect(Object.keys(spec.paths['/api/commands/recordDayNote'].post.responses)).toEqual(expect.arrayContaining(['200', '400', '404']));
     expect(Object.keys(spec.paths['/api/commands/updateDefaultPeriodDuration'].post.responses)).toEqual(expect.arrayContaining(['200', '403']));

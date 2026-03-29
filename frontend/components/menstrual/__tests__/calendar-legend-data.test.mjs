@@ -8,18 +8,18 @@ test('calendar legend uses the locked Chinese product copy in the approved order
 
 	assert.deepEqual(
 		items.map((item) => item.label),
-		['本次经期', '经期预测', '特殊标记']
+		['本次经期', '经期预测', '属性已记录']
 	);
 });
 
 test('calendar legend keeps marker semantics aligned to the date-state contract', () => {
 	const items = createCalendarLegendItems();
-	const [periodItem, predictionItem, specialItem] = items;
+	const [periodItem, predictionItem, detailItem] = items;
 
 	assert.equal(periodItem.tone, 'period');
 	assert.equal(periodItem.marker, 'fill');
 	assert.equal(predictionItem.tone, 'prediction');
 	assert.equal(predictionItem.marker, 'fill');
-	assert.equal(specialItem.tone, 'special');
-	assert.equal(specialItem.marker, 'eye');
+	assert.equal(detailItem.tone, 'detail');
+	assert.equal(detailItem.marker, 'eye');
 });

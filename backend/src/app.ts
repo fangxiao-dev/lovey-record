@@ -6,6 +6,25 @@ import queryRoutes from './routes/queries';
 
 const app = express();
 
+const allowedOrigins = new Set(['http://localhost:5173']);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (origin && allowedOrigins.has(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, x-wx-openid');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  }
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  next();
+});
+
 app.use(express.json());
 
 // Health check (public, no auth required)

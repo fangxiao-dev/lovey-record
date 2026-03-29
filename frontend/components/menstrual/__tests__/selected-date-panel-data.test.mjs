@@ -8,7 +8,7 @@ test('selected date panel data exposes the approved home-panel content structure
 
 	assert.equal(panel.title, '3 月 22 日');
 	assert.equal(panel.badge, '今日');
-	assert.deepEqual(panel.chips, ['经期', '特殊标记']);
+	assert.equal('chips' in panel, false);
 	assert.equal(panel.summaryItems.length, 3);
 	assert.equal(
 		panel.summaryItems.every((item) => item.key && item.label && item.value && item.icon && item.tone),
@@ -35,5 +35,7 @@ test('selected date panel data exposes the approved home-panel content structure
 		panel.attributeRows.map((row) => row.options.find((option) => option.selected)?.label),
 		['正常', '轻', '深']
 	);
-	assert.equal(panel.actionLabel, '保存当天记录');
+	assert.equal(panel.initialPeriodMarked, true);
+	assert.equal(panel.initialEditorOpen, false);
+	assert.equal('actionLabel' in panel, false);
 });

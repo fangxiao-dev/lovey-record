@@ -5,24 +5,29 @@
 			<text v-if="badge" class="selected-date-panel__badge">{{ badge }}</text>
 		</view>
 
-		<view v-if="chips.length" class="selected-date-panel__chip-row">
+		<view class="selected-date-panel__chip-row">
 			<view
-				v-for="chip in chips"
-				:key="chip"
 				class="selected-date-panel__chip"
-				:class="{ 'selected-date-panel__chip--accent': chip === '经期' }"
+				:class="{ 'selected-date-panel__chip--accent': isPeriodMarked }"
+				@tap="togglePeriod"
 			>
-				<text class="selected-date-panel__chip-label">{{ chip }}</text>
+				<text class="selected-date-panel__chip-label">经期</text>
+			</view>
+			<view
+				class="selected-date-panel__chip"
+				@tap="toggleEditor"
+			>
+				<text class="selected-date-panel__chip-label">{{ isEditorOpen ? '↑ 收起' : '+ 记录详情' }}</text>
 			</view>
 		</view>
 
 		<view class="selected-date-panel__summary-row">
+			<text v-if="summaryItems.length === 0" class="selected-date-panel__summary-empty">选择属性后将显示在这里</text>
 			<view
 				v-for="item in summaryItems"
 				:key="item.key"
 				class="selected-date-panel__summary-item"
 				:class="`selected-date-panel__summary-item--${item.tone}`"
-				@tap="toggleEditor"
 			>
 				<image class="selected-date-panel__summary-icon" :src="summaryIcon(item.icon)" mode="aspectFit" />
 				<text class="selected-date-panel__summary-label">{{ item.label }}</text>
@@ -59,6 +64,7 @@
 							`selected-date-panel__editor-option--${option.tone}`,
 							{ 'selected-date-panel__editor-option--selected': option.selected }
 						]"
+						@tap="toggleAttributeOption(row.key, option.key)"
 					>
 						<text
 							class="selected-date-panel__editor-option-label"
@@ -71,8 +77,8 @@
 			</view>
 		</view>
 
-		<view class="selected-date-panel__action">
-			<text class="selected-date-panel__action-label">{{ actionLabel }}</text>
+		<view v-if="summaryItems.length > 0 && isEditorOpen" class="selected-date-panel__clear-button" @tap="clearAttributes">
+			<text class="selected-date-panel__clear-button-label">清空</text>
 		</view>
 	</view>
 </template>
@@ -93,12 +99,6 @@
 				type: String,
 				default: ''
 			},
-			chips: {
-				type: Array,
-				default() {
-					return [];
-				}
-			},
 			summaryItems: {
 				type: Array,
 				default() {
@@ -111,19 +111,43 @@
 					return [];
 				}
 			},
-			actionLabel: {
-				type: String,
-				required: true
+			initialPeriodMarked: {
+				type: Boolean,
+				default: false
+			},
+			initialEditorOpen: {
+				type: Boolean,
+				default: false
 			}
 		},
 		data() {
 			return {
-				isEditorOpen: false
+				isEditorOpen: this.initialEditorOpen,
+				isPeriodMarked: this.initialPeriodMarked
 			};
+		},
+		watch: {
+			initialEditorOpen(nextValue) {
+				this.isEditorOpen = nextValue;
+			},
+			initialPeriodMarked(nextValue) {
+				this.isPeriodMarked = nextValue;
+			}
 		},
 		methods: {
 			toggleEditor() {
 				this.isEditorOpen = !this.isEditorOpen;
+				this.$emit('toggle-editor', this.isEditorOpen);
+			},
+			togglePeriod() {
+				this.isPeriodMarked = !this.isPeriodMarked;
+				this.$emit('toggle-period', this.isPeriodMarked);
+			},
+			toggleAttributeOption(rowKey, optionKey) {
+				this.$emit('toggle-attribute-option', { rowKey, optionKey });
+			},
+			clearAttributes() {
+				this.$emit('clear-attributes');
 			},
 			summaryIcon(icon) {
 				if (icon === 'water_drop') return flowIcon;
@@ -179,6 +203,7 @@
 		padding: 12rpx 20rpx;
 		border-radius: 999rpx;
 		background: #f3eee7;
+		cursor: pointer;
 	}
 
 	.selected-date-panel__chip--accent {
@@ -200,6 +225,15 @@
 		padding: 12rpx;
 		border-radius: 32rpx;
 		background: #faf3eb;
+	}
+
+	.selected-date-panel__summary-empty {
+		font-size: 20rpx;
+		line-height: 1;
+		color: $text-muted;
+		flex: 1;
+		text-align: center;
+		padding: 14rpx 0;
 	}
 
 	.selected-date-panel__summary-item {
@@ -277,6 +311,7 @@
 		padding: 8rpx 6rpx;
 		border: 2rpx solid transparent;
 		border-radius: 24rpx;
+		cursor: pointer;
 	}
 
 	.selected-date-panel__editor-option--selected {
@@ -399,16 +434,49 @@
 		border-radius: 8rpx;
 	}
 
-	.selected-date-panel__summary-badge--flow {
+	// Badge backgrounds — mirror editor option backgrounds exactly
+	.selected-date-panel__summary-badge--flow-spotting,
+	.selected-date-panel__summary-badge--pain-none {
+		background: #fbf7f2;
+	}
+	.selected-date-panel__summary-badge--flow-light {
+		background: #f2e5d4;
+	}
+	.selected-date-panel__summary-badge--flow-normal {
+		background: #e2c8a6;
+	}
+	.selected-date-panel__summary-badge--flow-heavy {
 		background: #d0aa7e;
 	}
-
-	.selected-date-panel__summary-badge--pain {
+	.selected-date-panel__summary-badge--flow-very-heavy {
+		background: #bc8a5f;
+	}
+	.selected-date-panel__summary-badge--pain-light {
+		background: #f0e4f3;
+	}
+	.selected-date-panel__summary-badge--pain-normal {
 		background: #dec7e5;
 	}
-
-	.selected-date-panel__summary-badge--color {
+	.selected-date-panel__summary-badge--pain-strong {
+		background: #c7a4d2;
+	}
+	.selected-date-panel__summary-badge--pain-very-strong {
+		background: #a97dba;
+	}
+	.selected-date-panel__summary-badge--color-very-light {
+		background: #f7e7e4;
+	}
+	.selected-date-panel__summary-badge--color-light {
+		background: #e8aaa0;
+	}
+	.selected-date-panel__summary-badge--color-normal {
 		background: #c95b55;
+	}
+	.selected-date-panel__summary-badge--color-deep {
+		background: #8f5149;
+	}
+	.selected-date-panel__summary-badge--color-very-deep {
+		background: #654743;
 	}
 
 	.selected-date-panel__summary-badge-label {
@@ -417,33 +485,47 @@
 		font-weight: $font-weight-medium;
 	}
 
-	.selected-date-panel__summary-badge-label--flow {
+	// Badge label colors — mirror editor option label colors exactly
+	.selected-date-panel__summary-badge-label--flow-spotting,
+	.selected-date-panel__summary-badge-label--flow-light {
+		color: #a29488;
+	}
+	.selected-date-panel__summary-badge-label--flow-normal,
+	.selected-date-panel__summary-badge-label--flow-heavy,
+	.selected-date-panel__summary-badge-label--flow-very-heavy,
+	.selected-date-panel__summary-badge-label--pain-normal,
+	.selected-date-panel__summary-badge-label--pain-strong,
+	.selected-date-panel__summary-badge-label--pain-very-strong,
+	.selected-date-panel__summary-badge-label--color-normal,
+	.selected-date-panel__summary-badge-label--color-deep,
+	.selected-date-panel__summary-badge-label--color-very-deep {
 		color: #fff7e8;
 	}
-
-	.selected-date-panel__summary-badge-label--pain {
-		color: #fff6ff;
+	.selected-date-panel__summary-badge-label--pain-none,
+	.selected-date-panel__summary-badge-label--pain-light {
+		color: #8b6e95;
+	}
+	.selected-date-panel__summary-badge-label--color-very-light,
+	.selected-date-panel__summary-badge-label--color-light {
+		color: #d97f6c;
 	}
 
-	.selected-date-panel__summary-badge-label--color {
-		color: #f7e7e4;
-	}
-
-	.selected-date-panel__action {
+	.selected-date-panel__clear-button {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		align-self: flex-start;
 		min-height: 72rpx;
 		padding: 16rpx 24rpx;
 		border-radius: 24rpx;
-		background: $accent-period;
+		background: $bg-subtle;
 	}
 
-	.selected-date-panel__action-label {
+	.selected-date-panel__clear-button-label {
 		font-size: 28rpx;
 		line-height: 1;
 		font-weight: $font-weight-strong;
-		color: #ffffff;
+		color: $text-secondary;
+		cursor: pointer;
 	}
+
 </style>

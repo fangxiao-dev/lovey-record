@@ -63,7 +63,43 @@ describe('query.service', () => {
       note: 'note',
       source: 'manual',
       isExplicit: true,
-      hasDeviation: true,
+      isDetailRecorded: true,
+    });
+  });
+
+  it('does not treat note-only records as detail-recorded', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.dayRecord.findUnique as jest.Mock).mockResolvedValue({
+      date: new Date('2026-03-24T00:00:00.000Z'),
+      isPeriod: false,
+      source: 'MANUAL',
+      painLevel: null,
+      flowLevel: null,
+      colorLevel: null,
+      note: 'late sleep',
+    });
+
+    const result = await getDayRecordDetail({
+      moduleInstanceId: 'module-1',
+      profileId: 'profile-1',
+      date: '2026-03-24',
+      userId: 'user-1',
+    });
+
+    expect(result.dayRecord).toEqual({
+      date: '2026-03-24',
+      isPeriod: false,
+      painLevel: null,
+      flowLevel: null,
+      colorLevel: null,
+      note: 'late sleep',
+      source: 'manual',
+      isExplicit: true,
+      isDetailRecorded: false,
     });
   });
 
@@ -91,7 +127,7 @@ describe('query.service', () => {
       note: null,
       source: null,
       isExplicit: false,
-      hasDeviation: false,
+      isDetailRecorded: false,
     });
   });
 
@@ -207,6 +243,52 @@ describe('query.service', () => {
       startDate: '2026-03-20',
       endDate: '2026-04-14',
     });
+    jest.useRealTimers();
+  });
+
+  it('suppresses sentinel prediction rows when no usable prediction exists', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-03-23T00:00:00.000Z'));
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+      sharingStatus: 'PRIVATE',
+    });
+    (prisma.derivedCycle.findMany as jest.Mock).mockResolvedValue([
+      {
+        startDate: new Date('2026-03-20T00:00:00.000Z'),
+        endDate: new Date('2026-03-24T00:00:00.000Z'),
+        durationDays: 5,
+        derivedFromDates: JSON.stringify([
+          '2026-03-20',
+          '2026-03-21',
+          '2026-03-22',
+          '2026-03-23',
+          '2026-03-24',
+        ]),
+      },
+    ]);
+    (prisma.prediction.findUnique as jest.Mock).mockResolvedValue({
+      predictedStartDate: new Date('1970-01-01T00:00:00.000Z'),
+      predictionWindowStart: new Date('1970-01-01T00:00:00.000Z'),
+      predictionWindowEnd: new Date('1970-01-01T00:00:00.000Z'),
+      basedOnCycleCount: 0,
+    });
+
+    const result = await getModuleHomeView({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+    });
+
+    expect(result.visibleWindow).toEqual({
+      kind: 'cycle_window',
+      startDate: '2026-03-20',
+      endDate: '2026-03-24',
+    });
+    expect(result.calendarMarks).not.toEqual(
+      expect.arrayContaining([{ date: '1970-01-01', kind: 'prediction_start' }]),
+    );
+    expect(result.predictionSummary).toBeNull();
     jest.useRealTimers();
   });
 

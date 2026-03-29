@@ -24,6 +24,17 @@ test('frontend main.js points at the local app entry and adaptor', () => {
   assert.match(mainJs, /import '\.\/uni\.promisify\.adaptor'/);
 });
 
+test('frontend registers a formal menstrual home route instead of relying only on showcase pages', () => {
+  const pagesJson = fs.readFileSync(path.join(frontendRoot, 'pages.json'), 'utf8');
+
+  assert.equal(
+    fs.existsSync(path.join(frontendRoot, 'pages', 'menstrual', 'home.vue')),
+    true,
+    'pages/menstrual/home.vue should exist'
+  );
+  assert.match(pagesJson, /"path":\s*"pages\/menstrual\/home"/);
+});
+
 test('frontend typography tokens prefer IBM Plex Sans', () => {
   const primitives = fs.readFileSync(path.join(frontendRoot, 'styles', 'tokens', 'primitives.scss'), 'utf8');
 

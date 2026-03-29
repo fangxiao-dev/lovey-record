@@ -1,5 +1,12 @@
 <template>
-	<view class="calendar-grid" :class="rootClasses">
+	<view
+		class="calendar-grid"
+		:class="rootClasses"
+		@touchstart="onTouchStart"
+		@touchmove="onTouchMove"
+		@touchend="onTouchEnd"
+		@touchcancel="onTouchCancel"
+	>
 		<view class="calendar-grid__weekday-row" aria-hidden="true">
 			<text
 				v-for="label in resolvedWeekdayLabels"
@@ -14,7 +21,6 @@
 			v-for="(week, weekIndex) in resolvedWeeks"
 			:key="week.key || weekIndex"
 			class="calendar-grid__week"
-			:class="{ 'calendar-grid__week--divider': weekIndex > 0 }"
 		>
 			<view v-if="weekIndex > 0" class="calendar-grid__divider" aria-hidden="true"></view>
 			<view class="calendar-grid__cells">
@@ -22,8 +28,10 @@
 					v-for="cell in week.cells"
 					:key="cell.key || cell.label"
 					class="calendar-grid__cell"
+					:class="{ 'calendar-grid__cell--tappable': interactive && cell.selectable !== false }"
+					@tap.stop="onCellTap(cell)"
 				>
-					<DateCell :label="cell.label" :variant="cell.variant" />
+					<DateCell :label="cell.label" :variant="effectiveVariant(cell)" />
 					<text v-if="cell.caption" class="calendar-grid__cell-caption">
 						{{ cell.caption }}
 					</text>
@@ -37,6 +45,27 @@
 	import DateCell from './DateCell.vue';
 
 	const DEFAULT_WEEKDAY_LABELS = Object.freeze(['一', '二', '三', '四', '五', '六', '日']);
+
+	/**
+	 * Maps a base variant to its selected counterpart.
+	 * selected = transient overlay; must not erase period/today/prediction meaning.
+	 */
+	const SELECT_VARIANT_MAP = Object.freeze({
+		default: 'selected',
+		futureMuted: 'futureMuted',
+		today: 'selectedToday',
+		detail: 'selectedDetail',
+		prediction: 'selectedPrediction',
+		predictionDetail: 'selectedPredictionDetail',
+		period: 'selectedPeriod',
+		periodDetail: 'selectedPeriodDetail',
+		todayDetail: 'selectedTodayDetail',
+		todayPeriod: 'selectedTodayPeriod',
+		todayPrediction: 'selectedTodayPrediction'
+	});
+
+	const LONG_PRESS_DELAY = 400; // ms
+	const MOVE_CANCEL_THRESHOLD = 10; // px
 
 	export default {
 		name: 'CalendarGrid',
@@ -57,7 +86,29 @@
 			compact: {
 				type: Boolean,
 				default: false
+			},
+			/** Disable all tap and drag interactions (e.g. month-view browse mode) */
+			interactive: {
+				type: Boolean,
+				default: true
+			},
+			/** Keys of cells currently in the batch selection range */
+			selectedKeys: {
+				type: Array,
+				default() {
+					return [];
+				}
 			}
+		},
+		emits: ['cell-tap', 'batch-start', 'batch-extend', 'batch-end'],
+		data() {
+			return {
+				batchMode: false,
+				longPressTimer: null,
+				touchStartX: 0,
+				touchStartY: 0,
+				cellRects: null
+			};
 		},
 		computed: {
 			resolvedWeeks() {
@@ -70,7 +121,118 @@
 				return this.weekdayLabels.length ? this.weekdayLabels : DEFAULT_WEEKDAY_LABELS;
 			},
 			rootClasses() {
-				return [];
+				return this.batchMode ? ['calendar-grid--batch-mode'] : [];
+			},
+			allCells() {
+				return this.resolvedWeeks.flatMap((w) => w.cells);
+			}
+		},
+		methods: {
+			effectiveVariant(cell) {
+				if (this.selectedKeys.includes(cell.key)) {
+					return SELECT_VARIANT_MAP[cell.variant] || cell.variant;
+				}
+				return cell.variant;
+			},
+
+			onCellTap(cell) {
+				if (!this.interactive) return;
+				if (cell.selectable === false) return;
+				if (this.batchMode) return;
+				this.$emit('cell-tap', cell);
+			},
+
+			onTouchStart(e) {
+				if (!this.interactive) return;
+				const touch = e.touches[0];
+				this.touchStartX = touch.clientX;
+				this.touchStartY = touch.clientY;
+				this.cellRects = null;
+
+				this.longPressTimer = setTimeout(() => {
+					this.longPressTimer = null;
+					this.startBatchMode(this.touchStartX, this.touchStartY);
+				}, LONG_PRESS_DELAY);
+			},
+
+			onTouchMove(e) {
+				if (!this.interactive) return;
+				const touch = e.touches[0];
+				const dx = touch.clientX - this.touchStartX;
+				const dy = touch.clientY - this.touchStartY;
+
+				if (this.longPressTimer) {
+					// Cancel long press if user has moved significantly
+					if (Math.abs(dx) > MOVE_CANCEL_THRESHOLD || Math.abs(dy) > MOVE_CANCEL_THRESHOLD) {
+						clearTimeout(this.longPressTimer);
+						this.longPressTimer = null;
+					}
+					return;
+				}
+
+				if (this.batchMode) {
+					// Prevent page scroll during batch drag
+					// Note: in mini-program environment this may require catchTouchMove instead
+					if (typeof e.preventDefault === 'function') {
+						e.preventDefault();
+					}
+					const idx = this.hitTestCell(touch.clientX, touch.clientY);
+					if (idx !== -1) {
+						const cell = this.allCells[idx];
+						if (cell.selectable !== false) {
+							this.$emit('batch-extend', cell);
+						}
+					}
+				}
+			},
+
+			onTouchEnd() {
+				if (this.longPressTimer) {
+					clearTimeout(this.longPressTimer);
+					this.longPressTimer = null;
+				}
+				if (this.batchMode) {
+					this.batchMode = false;
+					this.$emit('batch-end');
+				}
+			},
+
+			onTouchCancel() {
+				if (this.longPressTimer) {
+					clearTimeout(this.longPressTimer);
+					this.longPressTimer = null;
+				}
+				if (this.batchMode) {
+					this.batchMode = false;
+					this.$emit('batch-end');
+				}
+			},
+
+			startBatchMode(x, y) {
+				// Query all cell bounding rects for hit testing
+				const query = uni.createSelectorQuery().in(this);
+				query.selectAll('.calendar-grid__cell').boundingClientRect((rects) => {
+					if (!rects || rects.length === 0) return;
+					this.cellRects = rects;
+					const idx = this.hitTestCell(x, y);
+					if (idx === -1) return;
+					const cell = this.allCells[idx];
+					if (cell.selectable === false) return;
+					this.batchMode = true;
+					this.$emit('batch-start', cell);
+				});
+				query.exec();
+			},
+
+			hitTestCell(x, y) {
+				if (!this.cellRects) return -1;
+				for (let i = 0; i < this.cellRects.length; i++) {
+					const r = this.cellRects[i];
+					if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+						return i;
+					}
+				}
+				return -1;
 			}
 		}
 	};
@@ -131,6 +293,10 @@
 		min-height: 90rpx;
 		min-width: 0;
 		overflow: visible;
+	}
+
+	.calendar-grid__cell--tappable {
+		cursor: pointer;
 	}
 
 	.calendar-grid__cell-caption {

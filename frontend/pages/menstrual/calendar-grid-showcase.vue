@@ -42,10 +42,10 @@
 			<SelectedDatePanel
 				:title="page.selectedDatePanel.title"
 				:badge="page.selectedDatePanel.badge"
-				:chips="page.selectedDatePanel.chips"
 				:summary-items="page.selectedDatePanel.summaryItems"
 				:attribute-rows="page.selectedDatePanel.attributeRows"
-				:action-label="page.selectedDatePanel.actionLabel"
+				:initial-period-marked="page.selectedDatePanel.initialPeriodMarked"
+				:initial-editor-open="page.selectedDatePanel.initialEditorOpen"
 			/>
 		</view>
 	</view>

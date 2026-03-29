@@ -6,11 +6,11 @@ const CALENDAR_GRID_SHOWCASE = Object.freeze({
 			key: 'week-1',
 			cells: [
 				{ key: 'w1-1', label: '22', variant: 'default' },
-				{ key: 'w1-2', label: '23', variant: 'special' },
+				{ key: 'w1-2', label: '23', variant: 'detail' },
 				{ key: 'w1-3', label: '24', variant: 'prediction' },
 				{ key: 'w1-4', label: '25', variant: 'period' },
 				{ key: 'w1-5', label: '26', variant: 'default' },
-				{ key: 'w1-6', label: '27', variant: 'special' },
+				{ key: 'w1-6', label: '27', variant: 'detail' },
 				{ key: 'w1-7', label: '28', variant: 'today' }
 			]
 		},

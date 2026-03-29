@@ -7,9 +7,9 @@ const CALENDAR_GRID_ACCEPTANCE_PAGE = Object.freeze({
 		statusLabel: '共享'
 	},
 	heroCard: {
-		eyebrow: '',
+		eyebrow: '当前状态',
 		title: '经期第 2 天',
-		copy: '',
+		copy: '先看当前状态，再在下方 3 周视图里定位和记录。',
 		currentRange: { label: '本次经期', value: '03/20' },
 		predictionRange: { label: '下次预测', value: '04/16' }
 	},
@@ -44,7 +44,7 @@ const CALENDAR_GRID_ACCEPTANCE_PAGE = Object.freeze({
 					{ key: 'w1-3', label: '19', variant: 'period' },
 					{ key: 'w1-4', label: '20', variant: 'period' },
 					{ key: 'w1-5', label: '21', variant: 'period' },
-					{ key: 'w1-6', label: '22', variant: 'periodSpecial' },
+					{ key: 'w1-6', label: '22', variant: 'periodDetail' },
 					{ key: 'w1-7', label: '23', variant: 'prediction' }
 				]
 			},
@@ -53,7 +53,7 @@ const CALENDAR_GRID_ACCEPTANCE_PAGE = Object.freeze({
 				cells: [
 					{ key: 'w2-1', label: '24', variant: 'prediction' },
 					{ key: 'w2-2', label: '25', variant: 'prediction' },
-					{ key: 'w2-3', label: '26', variant: 'selectedSpecial' },
+					{ key: 'w2-3', label: '26', variant: 'selectedDetail' },
 					{ key: 'w2-4', label: '27', variant: 'default' },
 					{ key: 'w2-5', label: '28', variant: 'default' },
 					{ key: 'w2-6', label: '29', variant: 'default' },

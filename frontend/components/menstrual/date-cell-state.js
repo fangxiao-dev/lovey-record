@@ -6,7 +6,7 @@ const PRESENTATIONS = {
     markerToken: null,
     shadowToken: null,
     shape: 'rounded',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   },
   futureMuted: {
     backgroundToken: null,
@@ -15,7 +15,7 @@ const PRESENTATIONS = {
     markerToken: null,
     shadowToken: null,
     shape: 'rounded',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   },
   today: {
     backgroundToken: null,
@@ -24,16 +24,16 @@ const PRESENTATIONS = {
     markerToken: null,
     shadowToken: null,
     shape: 'circle',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   },
-  special: {
+  detail: {
     backgroundToken: null,
     borderToken: null,
     textToken: 'text.primary',
     markerToken: 'accent.period',
     shadowToken: null,
     shape: 'rounded',
-    usesSpecialMarker: true
+    usesDetailMarker: true
   },
   prediction: {
     backgroundToken: 'accent.period.soft',
@@ -42,16 +42,16 @@ const PRESENTATIONS = {
     markerToken: null,
     shadowToken: null,
     shape: 'rounded',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   },
-  predictionSpecial: {
+  predictionDetail: {
     backgroundToken: 'accent.period.soft',
     borderToken: null,
     textToken: 'text.primary',
     markerToken: 'accent.period',
     shadowToken: null,
     shape: 'rounded',
-    usesSpecialMarker: true
+    usesDetailMarker: true
   },
   period: {
     backgroundToken: 'accent.period',
@@ -60,16 +60,16 @@ const PRESENTATIONS = {
     markerToken: null,
     shadowToken: null,
     shape: 'rounded',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   },
-  periodSpecial: {
+  periodDetail: {
     backgroundToken: 'accent.period',
     borderToken: null,
     textToken: 'accent.period.contrast',
     markerToken: 'accent.period.contrast',
     shadowToken: null,
     shape: 'rounded',
-    usesSpecialMarker: true
+    usesDetailMarker: true
   },
   selected: {
     backgroundToken: null,
@@ -78,7 +78,7 @@ const PRESENTATIONS = {
     markerToken: null,
     shadowToken: 'shadow.selected',
     shape: 'rounded',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   },
   selectedPeriod: {
     backgroundToken: 'accent.period',
@@ -87,7 +87,7 @@ const PRESENTATIONS = {
     markerToken: 'accent.period.contrast',
     shadowToken: 'shadow.selected',
     shape: 'rounded',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   },
   selectedPrediction: {
     backgroundToken: 'accent.period.soft',
@@ -96,34 +96,34 @@ const PRESENTATIONS = {
     markerToken: null,
     shadowToken: 'shadow.selected',
     shape: 'rounded',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   },
-  selectedSpecial: {
+  selectedDetail: {
     backgroundToken: null,
     borderToken: null,
     textToken: 'text.primary',
     markerToken: 'accent.period',
     shadowToken: 'shadow.selected',
     shape: 'rounded',
-    usesSpecialMarker: true
+    usesDetailMarker: true
   },
-  selectedPeriodSpecial: {
+  selectedPeriodDetail: {
     backgroundToken: 'accent.period',
     borderToken: null,
     textToken: 'accent.period.contrast',
     markerToken: 'accent.period.contrast',
     shadowToken: 'shadow.selected',
     shape: 'rounded',
-    usesSpecialMarker: true
+    usesDetailMarker: true
   },
-  selectedPredictionSpecial: {
+  selectedPredictionDetail: {
     backgroundToken: 'accent.period.soft',
     borderToken: null,
     textToken: 'text.primary',
     markerToken: 'accent.period',
     shadowToken: 'shadow.selected',
     shape: 'rounded',
-    usesSpecialMarker: true
+    usesDetailMarker: true
   },
   selectedToday: {
     backgroundToken: null,
@@ -132,25 +132,25 @@ const PRESENTATIONS = {
     markerToken: null,
     shadowToken: 'shadow.selected',
     shape: 'circle',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   },
-  selectedTodaySpecial: {
+  selectedTodayDetail: {
     backgroundToken: null,
     borderToken: 'border.today',
     textToken: 'text.primary',
     markerToken: 'accent.period',
     shadowToken: 'shadow.selected',
     shape: 'circle',
-    usesSpecialMarker: true
+    usesDetailMarker: true
   },
-  todaySpecial: {
+  todayDetail: {
     backgroundToken: null,
     borderToken: 'border.today',
     textToken: 'text.primary',
     markerToken: 'accent.period',
     shadowToken: null,
     shape: 'circle',
-    usesSpecialMarker: true
+    usesDetailMarker: true
   },
   todayPeriod: {
     backgroundToken: 'accent.period',
@@ -159,7 +159,7 @@ const PRESENTATIONS = {
     markerToken: 'accent.period.contrast',
     shadowToken: null,
     shape: 'circle',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   },
   todayPrediction: {
     backgroundToken: 'accent.period.soft',
@@ -168,7 +168,7 @@ const PRESENTATIONS = {
     markerToken: null,
     shadowToken: null,
     shape: 'circle',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   },
   selectedTodayPrediction: {
     backgroundToken: 'accent.period.soft',
@@ -177,7 +177,7 @@ const PRESENTATIONS = {
     markerToken: null,
     shadowToken: 'shadow.selected',
     shape: 'circle',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   },
   selectedTodayPeriod: {
     backgroundToken: 'accent.period',
@@ -186,7 +186,7 @@ const PRESENTATIONS = {
     markerToken: null,
     shadowToken: 'shadow.selected',
     shape: 'circle',
-    usesSpecialMarker: false
+    usesDetailMarker: false
   }
 };
 

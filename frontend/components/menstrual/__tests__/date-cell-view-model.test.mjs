@@ -24,12 +24,12 @@ test('default and selected variants keep transparent surfaces in the view model'
 
 test('selected variants retain the visible selected shadow in the view model', () => {
   const selectedViewModel = getDateCellViewModel('selected');
-  const selectedSpecialViewModel = getDateCellViewModel('selectedSpecial');
+  const selectedDetailViewModel = getDateCellViewModel('selectedDetail');
 
   assert.equal(selectedViewModel.rootClasses.includes('date-cell--selected'), true);
-  assert.equal(selectedSpecialViewModel.rootClasses.includes('date-cell--selected'), true);
+  assert.equal(selectedDetailViewModel.rootClasses.includes('date-cell--selected'), true);
   assert.equal(selectedViewModel.rootClasses.includes('date-cell--stroke-selected'), true);
-  assert.equal(selectedSpecialViewModel.rootClasses.includes('date-cell--stroke-selected'), true);
+  assert.equal(selectedDetailViewModel.rootClasses.includes('date-cell--stroke-selected'), true);
 });
 
 test('selected shadow token is strengthened for the three-week home demo', () => {
@@ -45,14 +45,14 @@ test('selectedPrediction uses the soft period surface instead of the old predict
   assert.equal(selectedPredictionViewModel.rootClasses.includes('date-cell--bg-prediction'), false);
 });
 
-test('predictionSpecial reuses the soft prediction surface with the shared eye marker', () => {
-  const predictionSpecialViewModel = getDateCellViewModel('predictionSpecial');
+test('predictionDetail reuses the soft prediction surface with the shared eye marker', () => {
+  const predictionDetailViewModel = getDateCellViewModel('predictionDetail');
 
-  assert.deepEqual(predictionSpecialViewModel.rootClasses, ['date-cell--bg-period-soft']);
-  assert.deepEqual(predictionSpecialViewModel.labelClasses, ['date-cell__label--primary']);
-  assert.deepEqual(predictionSpecialViewModel.markerClasses, ['date-cell__marker-icon--period']);
-  assert.equal(predictionSpecialViewModel.markerSrc, '/static/menstrual/view-period.svg');
-  assert.equal(predictionSpecialViewModel.usesSpecialMarker, true);
+  assert.deepEqual(predictionDetailViewModel.rootClasses, ['date-cell--bg-period-soft']);
+  assert.deepEqual(predictionDetailViewModel.labelClasses, ['date-cell__label--primary']);
+  assert.deepEqual(predictionDetailViewModel.markerClasses, ['date-cell__marker-icon--period']);
+  assert.equal(predictionDetailViewModel.markerSrc, '/static/menstrual/view-period.svg');
+  assert.equal(predictionDetailViewModel.usesDetailMarker, true);
 });
 
 test('todayPrediction keeps today stroke and circle geometry on top of prediction fill', () => {
@@ -65,7 +65,7 @@ test('todayPrediction keeps today stroke and circle geometry on top of predictio
     'date-cell--stroke-today'
   ]);
   assert.deepEqual(todayPredictionViewModel.labelClasses, ['date-cell__label--primary']);
-  assert.equal(todayPredictionViewModel.usesSpecialMarker, false);
+  assert.equal(todayPredictionViewModel.usesDetailMarker, false);
 });
 
 test('selectedToday aliases preserve today stroke and only add selected shadow', () => {
@@ -94,37 +94,37 @@ test('selectedToday aliases preserve today stroke and only add selected shadow',
 });
 
 test('selected non-today variants stay square while today remains circular', () => {
-  const selectedSpecialViewModel = getDateCellViewModel('selectedSpecial');
+  const selectedDetailViewModel = getDateCellViewModel('selectedDetail');
   const todayViewModel = getDateCellViewModel('today');
 
-  assert.equal(selectedSpecialViewModel.rootClasses.includes('date-cell--circle'), false);
+  assert.equal(selectedDetailViewModel.rootClasses.includes('date-cell--circle'), false);
   assert.equal(todayViewModel.rootClasses.includes('date-cell--circle'), true);
 });
 
-test('periodSpecial keeps contrast marker while selectedSpecial stays non-period', () => {
-  const periodSpecialViewModel = getDateCellViewModel('periodSpecial');
-  const selectedSpecialViewModel = getDateCellViewModel('selectedSpecial');
+test('periodDetail keeps contrast marker while selectedDetail stays non-period', () => {
+  const periodDetailViewModel = getDateCellViewModel('periodDetail');
+  const selectedDetailViewModel = getDateCellViewModel('selectedDetail');
 
-  assert.deepEqual(periodSpecialViewModel.labelClasses, ['date-cell__label--period-contrast']);
-  assert.deepEqual(periodSpecialViewModel.markerClasses, ['date-cell__marker-icon--period-contrast']);
-  assert.deepEqual(selectedSpecialViewModel.labelClasses, ['date-cell__label--primary']);
-  assert.deepEqual(selectedSpecialViewModel.markerClasses, ['date-cell__marker-icon--period']);
+  assert.deepEqual(periodDetailViewModel.labelClasses, ['date-cell__label--period-contrast']);
+  assert.deepEqual(periodDetailViewModel.markerClasses, ['date-cell__marker-icon--period-contrast']);
+  assert.deepEqual(selectedDetailViewModel.labelClasses, ['date-cell__label--primary']);
+  assert.deepEqual(selectedDetailViewModel.markerClasses, ['date-cell__marker-icon--period']);
 });
 
 test('only today and selected families add visible stroke classes', () => {
-  const specialViewModel = getDateCellViewModel('special');
+  const detailViewModel = getDateCellViewModel('detail');
   const periodViewModel = getDateCellViewModel('period');
   const todayViewModel = getDateCellViewModel('today');
-  const selectedTodaySpecialViewModel = getDateCellViewModel('selectedTodaySpecial');
+  const selectedTodayDetailViewModel = getDateCellViewModel('selectedTodayDetail');
 
-  assert.equal(specialViewModel.rootClasses.includes('date-cell--stroke-selected'), false);
+  assert.equal(detailViewModel.rootClasses.includes('date-cell--stroke-selected'), false);
   assert.equal(periodViewModel.rootClasses.includes('date-cell--stroke-selected'), false);
   assert.equal(periodViewModel.rootClasses.includes('date-cell--stroke-today'), false);
   assert.equal(todayViewModel.rootClasses.includes('date-cell--stroke-today'), true);
-  assert.equal(selectedTodaySpecialViewModel.rootClasses.includes('date-cell--stroke-today'), true);
+  assert.equal(selectedTodayDetailViewModel.rootClasses.includes('date-cell--stroke-today'), true);
 });
 
-test('special marker stays below the date label in DateCell template order', () => {
+test('detail marker stays below the date label in DateCell template order', () => {
   const source = fs.readFileSync(dateCellPath, 'utf8');
 
   assert.match(
@@ -133,15 +133,15 @@ test('special marker stays below the date label in DateCell template order', () 
   );
 });
 
-test('special marker uses shared static assets instead of inline svg paths', () => {
+test('detail marker uses shared static assets instead of inline svg paths', () => {
   const source = fs.readFileSync(dateCellPath, 'utf8');
-  const specialViewModel = getDateCellViewModel('special');
-  const selectedPeriodSpecialViewModel = getDateCellViewModel('selectedPeriodSpecial');
+  const detailViewModel = getDateCellViewModel('detail');
+  const selectedPeriodDetailViewModel = getDateCellViewModel('selectedPeriodDetail');
 
-  assert.equal(specialViewModel.markerSrc, '/static/menstrual/view-period.svg');
-  assert.equal(selectedPeriodSpecialViewModel.markerSrc, '/static/menstrual/view-contrast.svg');
-  assert.equal(specialViewModel.markerName, null);
-  assert.equal(selectedPeriodSpecialViewModel.markerName, null);
+  assert.equal(detailViewModel.markerSrc, '/static/menstrual/view-period.svg');
+  assert.equal(selectedPeriodDetailViewModel.markerSrc, '/static/menstrual/view-contrast.svg');
+  assert.equal(detailViewModel.markerName, null);
+  assert.equal(selectedPeriodDetailViewModel.markerName, null);
   assert.match(source, /date-cell__marker-image/);
   assert.doesNotMatch(source, /<svg class="date-cell__marker-svg"/);
 });

@@ -57,8 +57,8 @@
 					<text class="info-action__text ui-button__text">改为共享</text>
 				</view>
 			</view>
-			<navigator class="showcase-entry" url="/pages/menstrual/date-cell-showcase">
-				<text class="showcase-entry__text u-text-caption">打开 DateCell Showcase</text>
+			<navigator class="showcase-entry" url="/pages/menstrual/home">
+				<text class="showcase-entry__text u-text-caption">打开月经首页</text>
 			</navigator>
 		</view>
 	</view>

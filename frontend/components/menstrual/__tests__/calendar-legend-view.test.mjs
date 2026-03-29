@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const calendarLegendPath = path.resolve(__dirname, '..', 'CalendarLegend.vue');
 
-test('calendar legend renders special marker through the shared static asset path', () => {
+test('calendar legend renders detail marker through the shared static asset path', () => {
   const source = fs.readFileSync(calendarLegendPath, 'utf8');
 
   assert.match(source, /calendar-legend__marker-image/);

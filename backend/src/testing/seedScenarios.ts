@@ -68,7 +68,7 @@ export interface SeedPrediction {
 }
 
 export interface SeedScenario {
-  name: 'emptyModule' | 'activePeriodHomeView' | 'predictedNextPeriod' | 'dayDetailDeviation' | 'sharedModuleAccess';
+  name: 'emptyModule' | 'activePeriodHomeView' | 'predictedNextPeriod' | 'dayDetailRecorded' | 'sharedModuleAccess';
   ownerUser: SeedUser;
   partnerUsers: SeedUser[];
   profile: SeedProfile;
@@ -344,7 +344,7 @@ export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
       }),
     },
     {
-      name: 'dayDetailDeviation',
+      name: 'dayDetailRecorded',
       ownerUser: {
         id: 'seed-detail-owner',
         openid: 'seed-detail-openid',
@@ -353,7 +353,7 @@ export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
       profile: {
         id: 'seed-detail-profile',
         ownerUserId: 'seed-detail-owner',
-        displayName: 'Detail Deviation Owner',
+        displayName: 'Detail Recorded Owner',
       },
       moduleInstance: {
         id: 'seed-detail-module',

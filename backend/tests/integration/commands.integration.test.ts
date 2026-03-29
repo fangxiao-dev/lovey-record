@@ -3,7 +3,7 @@ import app from '../../src/app';
 import { createModuleInstance } from '../../src/services/moduleInstance.service';
 import { findOrCreateUser } from '../../src/services/auth.service';
 import { updateDefaultPeriodDuration } from '../../src/services/moduleSettings.service';
-import { recordDayNote } from '../../src/services/phase5.service';
+import { recordDayDetails, recordDayNote } from '../../src/services/phase5.service';
 
 jest.mock('../../src/services/auth.service');
 jest.mock('../../src/services/moduleInstance.service');
@@ -91,6 +91,50 @@ describe('Commands Integration', () => {
         code: 'NOTE_TOO_LONG',
         message: 'Note exceeds the allowed length.',
       },
+    });
+  });
+
+  it('forwards recordDayDetails through the command endpoint', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+    (recordDayDetails as jest.Mock).mockResolvedValue({
+      detailChanged: true,
+      hasDeviation: true,
+    });
+
+    const response = await request(app)
+      .post('/api/commands/recordDayDetails')
+      .set('x-wx-openid', 'openid-1')
+      .send({ moduleInstanceId: 'module-1', date: '2026-03-16', painLevel: 2, flowLevel: null, colorLevel: null });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        detailChanged: true,
+        hasDeviation: true,
+      },
+      error: null,
+    });
+  });
+
+  it('forwards recordDayNote through the command endpoint', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+    (recordDayNote as jest.Mock).mockResolvedValue({
+      noteChanged: true,
+    });
+
+    const response = await request(app)
+      .post('/api/commands/recordDayNote')
+      .set('x-wx-openid', 'openid-1')
+      .send({ moduleInstanceId: 'module-1', date: '2026-03-16', note: 'late sleep' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        noteChanged: true,
+      },
+      error: null,
     });
   });
 

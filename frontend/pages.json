@@ -13,9 +13,21 @@
 			}
 		},
 		{
+			"path": "pages/menstrual/home",
+			"style": {
+				"navigationBarTitleText": "月经记录"
+			}
+		},
+		{
 			"path": "pages/menstrual/calendar-grid-showcase",
 			"style": {
 				"navigationBarTitleText": "CalendarGrid Showcase"
+			}
+		},
+		{
+			"path": "pages/menstrual/selected-date-panel-showcase",
+			"style": {
+				"navigationBarTitleText": "SelectedDatePanel Showcase"
 			}
 		}
 	],

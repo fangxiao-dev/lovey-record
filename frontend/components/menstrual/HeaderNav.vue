@@ -1,10 +1,10 @@
 <template>
 	<view class="header-nav">
-		<view class="header-nav__button" aria-hidden="true">
+		<view class="header-nav__button" @tap="$emit('prev')">
 			<text class="header-nav__button-label">{{ leadingLabel }}</text>
 		</view>
 		<text class="header-nav__month">{{ monthLabel }}</text>
-		<view class="header-nav__button" aria-hidden="true">
+		<view class="header-nav__button" @tap="$emit('next')">
 			<text class="header-nav__button-label">{{ trailingLabel }}</text>
 		</view>
 	</view>
@@ -20,13 +20,14 @@
 			},
 			leadingLabel: {
 				type: String,
-				default: '<'
+				default: '‹'
 			},
 			trailingLabel: {
 				type: String,
-				default: '>'
+				default: '›'
 			}
-		}
+		},
+		emits: ['prev', 'next']
 	};
 </script>
 

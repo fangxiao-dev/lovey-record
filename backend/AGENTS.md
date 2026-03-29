@@ -7,7 +7,7 @@
 
 ## Backend Mission
 - Build and maintain the backend service layer for the menstrual MVP inside the broader relationship-record product.
-- Keep the backend aligned to the active period model: `isPeriod`, `source`, anchored period segments, `ModuleSettings`, and derived `hasDeviation`.
+- Keep the backend aligned to the active period model: `isPeriod`, `source`, anchored period segments, `ModuleSettings`, and derived `isDetailRecorded`.
 - Provide a stable command/query surface for the uni-app frontend without letting transport or persistence details redefine product semantics.
 
 ## Required Reading Order
@@ -40,7 +40,7 @@
 
 ## Backend Domain Boundaries
 - `DayRecord` is the primary persisted truth for daily recording.
-- Anchored period segments, prediction windows, home views, and `hasDeviation` are derived models.
+- Anchored period segments, prediction windows, home views, and `isDetailRecorded` are derived models.
 - `ModuleSettings.defaultPeriodDurationDays` is part of the active model and influences future auto-fill behavior.
 - Sharing always means access to the same `ModuleInstance`; do not model sharing as copied data.
 - Product semantics live in `docs/contracts/`, not inside Prisma naming or ad hoc controller logic.

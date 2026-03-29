@@ -8,9 +8,9 @@ test('calendar grid acceptance page exposes the three-week home demo shell', () 
 
 	assert.equal(page.topBar.title, '月经记录');
 	assert.equal(page.topBar.statusLabel, '共享');
-	assert.equal(page.heroCard.eyebrow, '');
+	assert.equal(page.heroCard.eyebrow, '当前状态');
 	assert.equal(page.heroCard.title, '经期第 2 天');
-	assert.equal(page.heroCard.copy, '');
+	assert.equal(page.heroCard.copy, '先看当前状态，再在下方 3 周视图里定位和记录。');
 	assert.equal(page.headerNav.monthLabel, '2026.03');
 	assert.deepEqual(
 		page.jumpTabs.items.map((item) => item.label),
@@ -30,14 +30,16 @@ test('calendar grid acceptance page keeps the three-week calendar, legend, and s
 	assert.equal(page.calendarCard.weeks.length, 3);
 	assert.equal(page.calendarCard.weeks.every((week) => week.cells.length === 7), true);
 	assert.deepEqual(page.calendarCard.weeks.map((week) => week.cells.map((cell) => cell.variant)), [
-		['default', 'period', 'period', 'period', 'period', 'periodSpecial', 'prediction'],
-		['prediction', 'prediction', 'selectedSpecial', 'default', 'default', 'default', 'default'],
+		['default', 'period', 'period', 'period', 'period', 'periodDetail', 'prediction'],
+		['prediction', 'prediction', 'selectedDetail', 'default', 'default', 'default', 'default'],
 		['today', 'futureMuted', 'futureMuted', 'futureMuted', 'prediction', 'prediction', 'prediction']
 	]);
 	assert.equal(page.legend.length, 3);
 	assert.equal(page.selectedDatePanel.title, '3 月 22 日');
 	assert.equal(page.selectedDatePanel.badge, '今日');
-	assert.deepEqual(page.selectedDatePanel.chips, ['经期', '特殊标记']);
+	assert.equal(page.selectedDatePanel.initialPeriodMarked, true);
+	assert.equal(page.selectedDatePanel.initialEditorOpen, false);
+	assert.equal('chips' in page.selectedDatePanel, false);
 	assert.deepEqual(
 		page.selectedDatePanel.summaryItems.map((item) => [item.key, item.label, item.value]),
 		[
@@ -46,4 +48,5 @@ test('calendar grid acceptance page keeps the three-week calendar, legend, and s
 			['color', '颜色', '标准']
 		]
 	);
+	assert.equal('actionLabel' in page.selectedDatePanel, false);
 });

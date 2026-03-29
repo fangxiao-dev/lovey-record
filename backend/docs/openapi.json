@@ -179,13 +179,16 @@
                     "format": "date"
                   },
                   "painLevel": {
-                    "type": "integer"
+                    "type": "integer",
+                    "nullable": true
                   },
                   "flowLevel": {
-                    "type": "integer"
+                    "type": "integer",
+                    "nullable": true
                   },
                   "colorLevel": {
-                    "type": "integer"
+                    "type": "integer",
+                    "nullable": true
                   }
                 }
               }

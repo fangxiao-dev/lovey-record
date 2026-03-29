@@ -92,7 +92,7 @@
 		color: $accent-prediction;
 	}
 
-	.calendar-legend__marker--special {
+	.calendar-legend__marker--detail {
 		color: $accent-period;
 	}
 

@@ -44,13 +44,13 @@ export function getDateCellViewModel(variant) {
   return {
     rootClasses: rootClasses.filter(Boolean),
     labelClasses: [TOKEN_CLASS_MAP[presentation.textToken]].filter(Boolean),
-    markerClasses: presentation.usesSpecialMarker && presentation.markerToken
+    markerClasses: presentation.usesDetailMarker && presentation.markerToken
       ? [TOKEN_CLASS_MAP[`marker:${presentation.markerToken}`]].filter(Boolean)
       : [],
     markerName: null,
-    markerSrc: presentation.usesSpecialMarker
+    markerSrc: presentation.usesDetailMarker
       ? getMarkerAssetSrc(presentation.markerToken)
       : null,
-    usesSpecialMarker: presentation.usesSpecialMarker
+    usesDetailMarker: presentation.usesDetailMarker
   };
 }

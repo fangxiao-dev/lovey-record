@@ -25,8 +25,17 @@ function lower(value: string | null | undefined) {
   return value ? value.toLowerCase() : value;
 }
 
-function hasDeviation(record: { painLevel: number | null; flowLevel: number | null; colorLevel: number | null }) {
-  return [record.painLevel, record.flowLevel, record.colorLevel].some((value) => value !== null && value !== 3);
+function hasUsablePrediction(prediction: {
+  predictedStartDate: Date;
+  predictionWindowStart: Date;
+  predictionWindowEnd: Date;
+  basedOnCycleCount: number;
+} | null) {
+  return Boolean(prediction && prediction.basedOnCycleCount > 0);
+}
+
+function isDetailRecorded(record: { painLevel: number | null; flowLevel: number | null; colorLevel: number | null }) {
+  return [record.painLevel, record.flowLevel, record.colorLevel].some((value) => value !== null);
 }
 
 async function requireAccess(moduleInstanceId: string, userId: string, profileId?: string) {
@@ -84,7 +93,7 @@ export async function getDayRecordDetail(input: DayDetailInput) {
         note: null,
         source: null,
         isExplicit: false,
-        hasDeviation: false,
+        isDetailRecorded: false,
       },
     };
   }
@@ -101,7 +110,7 @@ export async function getDayRecordDetail(input: DayDetailInput) {
       note: record.note ?? null,
       source: lower(record.source),
       isExplicit: true,
-      hasDeviation: hasDeviation(record),
+      isDetailRecorded: isDetailRecorded(record),
     },
   };
 }
@@ -139,6 +148,7 @@ export async function getModuleHomeView(input: AccessInput) {
   const prediction = await prisma.prediction.findUnique({
     where: { moduleInstanceId: input.moduleInstanceId },
   });
+  const usablePrediction = hasUsablePrediction(prediction) ? prediction : null;
 
   const lastCycle = cycles.length > 0 ? cycles[cycles.length - 1] : null;
   const today = new Date();
@@ -167,9 +177,9 @@ export async function getModuleHomeView(input: AccessInput) {
     }
   }
   calendarMarks.push({ date: todayStr, kind: 'today' });
-  if (prediction) {
+  if (usablePrediction) {
     calendarMarks.push({
-      date: formatDate(prediction.predictedStartDate),
+      date: formatDate(usablePrediction.predictedStartDate),
       kind: 'prediction_start',
     });
   }
@@ -180,19 +190,19 @@ export async function getModuleHomeView(input: AccessInput) {
         startDate: formatDate(lastCycle.startDate),
         endDate: formatDate(lastCycle.endDate),
       }
-    : prediction
+    : usablePrediction
       ? {
           kind: 'cycle_window',
-          startDate: formatDate(prediction.predictionWindowStart),
-          endDate: formatDate(prediction.predictionWindowEnd),
+          startDate: formatDate(usablePrediction.predictionWindowStart),
+          endDate: formatDate(usablePrediction.predictionWindowEnd),
         }
       : null;
 
-  if (visibleWindow && prediction) {
+  if (visibleWindow && usablePrediction) {
     const start = new Date(visibleWindow.startDate);
     const end = new Date(visibleWindow.endDate);
-    const predStart = prediction.predictionWindowStart;
-    const predEnd = prediction.predictionWindowEnd;
+    const predStart = usablePrediction.predictionWindowStart;
+    const predEnd = usablePrediction.predictionWindowEnd;
     const minStart = start < predStart ? start : predStart;
     const maxEnd = end > predEnd ? end : predEnd;
     visibleWindow.startDate = formatDate(minStart);
@@ -206,12 +216,12 @@ export async function getModuleHomeView(input: AccessInput) {
     visibleWindow,
     calendarMarks,
     selectedDay: null,
-    predictionSummary: prediction
+    predictionSummary: usablePrediction
       ? {
-          predictedStartDate: formatDate(prediction.predictedStartDate),
-          predictionWindowStart: formatDate(prediction.predictionWindowStart),
-          predictionWindowEnd: formatDate(prediction.predictionWindowEnd),
-          basedOnCycleCount: prediction.basedOnCycleCount,
+          predictedStartDate: formatDate(usablePrediction.predictedStartDate),
+          predictionWindowStart: formatDate(usablePrediction.predictionWindowStart),
+          predictionWindowEnd: formatDate(usablePrediction.predictionWindowEnd),
+          basedOnCycleCount: usablePrediction.basedOnCycleCount,
         }
       : null,
   };

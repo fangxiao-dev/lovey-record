@@ -5,6 +5,7 @@
 			:key="item.key"
 			class="jump-tabs__item"
 			:class="itemClasses(item)"
+			@tap="onTap(item)"
 		>
 			<text class="jump-tabs__label" :class="labelClasses(item)">{{ item.label }}</text>
 		</view>
@@ -24,17 +25,24 @@
 				default: ''
 			}
 		},
+		emits: ['jump'],
 		methods: {
+			onTap(item) {
+				if (item.disabled) return;
+				this.$emit('jump', item.key);
+			},
 			itemClasses(item) {
 				return [
 					`jump-tabs__item--${item.tone || 'outlined'}`,
-					item.key === this.value ? 'jump-tabs__item--active' : ''
+					item.key === this.value ? 'jump-tabs__item--active' : '',
+					item.disabled ? 'jump-tabs__item--disabled' : ''
 				];
 			},
 			labelClasses(item) {
 				return [
 					`jump-tabs__label--${item.tone || 'outlined'}`,
-					item.key === this.value ? 'jump-tabs__label--active' : ''
+					item.key === this.value ? 'jump-tabs__label--active' : '',
+					item.disabled ? 'jump-tabs__label--disabled' : ''
 				];
 			}
 		}
@@ -82,5 +90,9 @@
 	.jump-tabs__label--accent,
 	.jump-tabs__label--active.jump-tabs__label--accent {
 		color: #ffffff;
+	}
+
+	.jump-tabs__item--disabled {
+		opacity: 0.38;
 	}
 </style>

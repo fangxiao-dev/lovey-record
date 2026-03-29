@@ -12,6 +12,19 @@ function lower(value: string | null | undefined) {
   return value ? value.toLowerCase() : value;
 }
 
+function isDetailRecorded(record: { painLevel: number | null; flowLevel: number | null; colorLevel: number | null }) {
+  return [record.painLevel, record.flowLevel, record.colorLevel].some((value) => value !== null);
+}
+
+function hasUsablePrediction(prediction: {
+  predictedStartDate: Date;
+  predictionWindowStart: Date;
+  predictionWindowEnd: Date;
+  basedOnCycleCount: number;
+} | null) {
+  return Boolean(prediction && prediction.basedOnCycleCount > 0);
+}
+
 function addDays(date: Date, days: number) {
   const next = new Date(date);
   next.setUTCDate(next.getUTCDate() + days);
@@ -89,26 +102,57 @@ export async function recordDayDetails(input: {
   moduleInstanceId: string;
   userId: string;
   date: string;
-  painLevel: number;
-  flowLevel: number;
-  colorLevel: number;
+  painLevel: number | null;
+  flowLevel: number | null;
+  colorLevel: number | null;
 }) {
   const moduleInstance = await requireMaintenance(input.moduleInstanceId, input.userId);
+  const date = toDateOnly(input.date);
   const record = await prisma.dayRecord.findUnique({
     where: {
       moduleInstanceId_profileId_date: {
         moduleInstanceId: input.moduleInstanceId,
         profileId: moduleInstance.profileId,
-        date: toDateOnly(input.date),
+        date,
       },
     },
   });
-  if (!record) throw Object.assign(new Error('DAY_RECORD_NOT_FOUND'), { code: 'DAY_RECORD_NOT_FOUND', statusCode: 404 });
-  await prisma.dayRecord.update({
-    where: { id: record.id },
-    data: { painLevel: input.painLevel, flowLevel: input.flowLevel, colorLevel: input.colorLevel },
-  });
-  return { detailChanged: true, hasDeviation: input.painLevel !== 3 || input.flowLevel !== 3 || input.colorLevel !== 3 };
+  if (!record) {
+    await prisma.dayRecord.upsert({
+      where: {
+        moduleInstanceId_profileId_date: {
+          moduleInstanceId: input.moduleInstanceId,
+          profileId: moduleInstance.profileId,
+          date,
+        },
+      },
+      create: {
+        moduleInstanceId: input.moduleInstanceId,
+        profileId: moduleInstance.profileId,
+        date,
+        isPeriod: false,
+        painLevel: input.painLevel,
+        flowLevel: input.flowLevel,
+        colorLevel: input.colorLevel,
+        note: null,
+        source: 'MANUAL',
+      },
+      update: {
+        painLevel: input.painLevel,
+        flowLevel: input.flowLevel,
+        colorLevel: input.colorLevel,
+      },
+    });
+  } else {
+    await prisma.dayRecord.update({
+      where: { id: record.id },
+      data: { painLevel: input.painLevel, flowLevel: input.flowLevel, colorLevel: input.colorLevel },
+    });
+  }
+  return {
+    detailChanged: true,
+    isDetailRecorded: [input.painLevel, input.flowLevel, input.colorLevel].some((value) => value !== null),
+  };
 }
 
 export async function recordDayNote(input: { moduleInstanceId: string; userId: string; date: string; note: string }) {
@@ -116,17 +160,43 @@ export async function recordDayNote(input: { moduleInstanceId: string; userId: s
   if (input.note.length > 500) {
     throw createNoteTooLongError();
   }
+  const date = toDateOnly(input.date);
   const record = await prisma.dayRecord.findUnique({
     where: {
       moduleInstanceId_profileId_date: {
         moduleInstanceId: input.moduleInstanceId,
         profileId: moduleInstance.profileId,
-        date: toDateOnly(input.date),
+        date,
       },
     },
   });
-  if (!record) throw Object.assign(new Error('DAY_RECORD_NOT_FOUND'), { code: 'DAY_RECORD_NOT_FOUND', statusCode: 404 });
-  await prisma.dayRecord.update({ where: { id: record.id }, data: { note: input.note } });
+  if (!record) {
+    await prisma.dayRecord.upsert({
+      where: {
+        moduleInstanceId_profileId_date: {
+          moduleInstanceId: input.moduleInstanceId,
+          profileId: moduleInstance.profileId,
+          date,
+        },
+      },
+      create: {
+        moduleInstanceId: input.moduleInstanceId,
+        profileId: moduleInstance.profileId,
+        date,
+        isPeriod: false,
+        painLevel: null,
+        flowLevel: null,
+        colorLevel: null,
+        note: input.note,
+        source: 'MANUAL',
+      },
+      update: {
+        note: input.note,
+      },
+    });
+  } else {
+    await prisma.dayRecord.update({ where: { id: record.id }, data: { note: input.note } });
+  }
   return { noteChanged: true };
 }
 
@@ -173,9 +243,9 @@ export async function getCalendarWindow(input: {
     const date = formatDate(current);
     const record = recordByDate.get(date);
     if (record) {
-      days.push({ date, isPeriod: record.isPeriod, source: lower(record.source), isExplicit: true, hasDeviation: [record.painLevel, record.flowLevel, record.colorLevel].some((value) => value !== null && value !== 3) });
+      days.push({ date, isPeriod: record.isPeriod, source: lower(record.source), isExplicit: true, isDetailRecorded: isDetailRecorded(record) });
     } else {
-      days.push({ date, isPeriod: false, source: null, isExplicit: false, hasDeviation: false });
+      days.push({ date, isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false });
     }
   }
 
@@ -197,8 +267,9 @@ export async function getCalendarWindow(input: {
     }
   }
   const prediction = await prisma.prediction.findUnique({ where: { moduleInstanceId: input.moduleInstanceId } });
-  if (prediction) {
-    const predictionDate = formatDate(prediction.predictedStartDate);
+  const usablePrediction = hasUsablePrediction(prediction) ? prediction : null;
+  if (usablePrediction) {
+    const predictionDate = formatDate(usablePrediction.predictedStartDate);
     if (predictionDate >= input.startDate && predictionDate <= input.endDate) {
       marks.push({ date: predictionDate, kind: 'prediction_start' });
     }
@@ -218,14 +289,15 @@ export async function getCalendarWindow(input: {
 export async function getPredictionSummary(input: { moduleInstanceId: string; userId: string; profileId: string }) {
   await requireAccess(input.moduleInstanceId, input.userId, input.profileId);
   const prediction = await prisma.prediction.findUnique({ where: { moduleInstanceId: input.moduleInstanceId } });
+  const usablePrediction = hasUsablePrediction(prediction) ? prediction : null;
   return {
     moduleInstanceId: input.moduleInstanceId,
-    prediction: prediction
+    prediction: usablePrediction
       ? {
-          predictedStartDate: formatDate(prediction.predictedStartDate),
-          predictionWindowStart: formatDate(prediction.predictionWindowStart),
-          predictionWindowEnd: formatDate(prediction.predictionWindowEnd),
-          basedOnCycleCount: prediction.basedOnCycleCount,
+          predictedStartDate: formatDate(usablePrediction.predictedStartDate),
+          predictionWindowStart: formatDate(usablePrediction.predictionWindowStart),
+          predictionWindowEnd: formatDate(usablePrediction.predictionWindowEnd),
+          basedOnCycleCount: usablePrediction.basedOnCycleCount,
         }
       : null,
   };

@@ -5,6 +5,7 @@
 			:key="option.key"
 			class="segmented-control__option"
 			:class="{ 'segmented-control__option--active': option.key === value }"
+			@tap="$emit('change', option.key)"
 		>
 			<text
 				class="segmented-control__label"
@@ -28,7 +29,8 @@
 				type: String,
 				default: ''
 			}
-		}
+		},
+		emits: ['change']
 	};
 </script>
 

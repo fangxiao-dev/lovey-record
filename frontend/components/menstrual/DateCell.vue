@@ -2,7 +2,7 @@
 	<view class="date-cell" :class="rootClasses">
 		<text class="date-cell__label" :class="labelClasses">{{ label }}</text>
 		<view class="date-cell__marker-slot" aria-hidden="true">
-			<view v-if="usesSpecialMarker" class="date-cell__marker-icon" :class="markerClasses">
+			<view v-if="usesDetailMarker" class="date-cell__marker-icon" :class="markerClasses">
 				<image class="date-cell__marker-image" :src="markerSrc" mode="aspectFit" />
 			</view>
 			<view v-else class="date-cell__marker-placeholder"></view>
@@ -45,8 +45,8 @@
 			markerSrc() {
 				return this.viewModel.markerSrc;
 			},
-			usesSpecialMarker() {
-				return this.viewModel.usesSpecialMarker;
+			usesDetailMarker() {
+				return this.viewModel.usesDetailMarker;
 			}
 		}
 	};

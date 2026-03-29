@@ -14,15 +14,15 @@ test('showcase board exposes the base and derived state groups in the approved o
   assert.deepEqual(
     board.groups.map((group) => group.items.map((item) => item.variant)),
     [
-      ['default', 'special', 'prediction', 'period', 'today', 'futureMuted'],
+      ['default', 'detail', 'prediction', 'period', 'today', 'futureMuted'],
       [
-        'selectedPeriodSpecial',
-        'selectedPredictionSpecial',
-        'selectedSpecial',
+        'selectedPeriodDetail',
+        'selectedPredictionDetail',
+        'selectedDetail',
         'selected',
-        'selectedTodaySpecial'
+        'selectedTodayDetail'
       ],
-      ['todaySpecial', 'todayPeriod']
+      ['todayDetail', 'todayPeriod']
     ]
   );
 });
@@ -36,7 +36,7 @@ test('showcase board keeps the selected and today derivative groups visually foc
   assert.equal(todayGroup.emphasis, 'today');
   assert.deepEqual(
     selectedGroup.items.map((item) => item.variant),
-    ['selectedPeriodSpecial', 'selectedPredictionSpecial', 'selectedSpecial', 'selected', 'selectedTodaySpecial']
+    ['selectedPeriodDetail', 'selectedPredictionDetail', 'selectedDetail', 'selected', 'selectedTodayDetail']
   );
 });
 
@@ -49,6 +49,6 @@ test('showcase labels stay aligned with the current approved state names', () =>
   assert.equal(labels.default, '普通态');
   assert.equal(labels.prediction, '预测态');
   assert.equal(labels.period, '月经态');
-  assert.equal(labels.selectedTodaySpecial, '选中+今天+特殊');
+  assert.equal(labels.selectedTodayDetail, '选中+今天+详情');
   assert.equal(labels.todayPeriod, '今天+月经');
 });
