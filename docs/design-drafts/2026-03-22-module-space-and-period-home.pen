@@ -30,7 +30,7 @@
           "fill": "$color.text.secondary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "当前正式组件源位于业务文件。这里维护页面实际复用的 primitives、composites、date states 与单日编辑模式。",
+          "content": "当前正式组件源位于业务文件。这里维护页面实际复用的 primitives、composites、date states 与 batch 右上角操作模式。",
           "fontFamily": "$font.family.base",
           "fontSize": "$font.size.caption",
           "fontWeight": "normal"
@@ -412,6 +412,60 @@
                   "fontFamily": "IBM Plex Sans",
                   "fontSize": "$font.size.meta",
                   "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "6mmnw",
+          "name": "Primitive/BatchActionButtons",
+          "reusable": true,
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "SL3of",
+              "name": "save",
+              "fill": "$color.accent.period",
+              "cornerRadius": "$radius.control",
+              "padding": [
+                8,
+                12
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "1QhzC",
+                  "fill": "$color.accent.period.contrast",
+                  "content": "保存",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": "$font.size.meta",
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "10G2P",
+              "name": "cancel",
+              "fill": "$color.bg.subtle",
+              "cornerRadius": "$radius.control",
+              "padding": [
+                8,
+                12
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "hVTrI",
+                  "fill": "$color.text.secondary",
+                  "content": "取消",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": "$font.size.meta",
+                  "fontWeight": "600"
                 }
               ]
             }
@@ -5417,68 +5471,6 @@
           "fontFamily": "IBM Plex Sans",
           "fontSize": "$font.size.meta",
           "fontWeight": "600"
-        },
-        {
-          "id": "7qQic",
-          "type": "ref",
-          "ref": "QPWCu",
-          "name": "batchPanelCopy",
-          "height": "fit_content",
-          "x": 16,
-          "y": 2243,
-          "fill": "$color.bg.card",
-          "descendants": {
-            "ODFQb": {
-              "x": 16,
-              "y": 16
-            },
-            "Iijtq": {
-              "width": "fit_content",
-              "height": "fit_content",
-              "x": 16,
-              "y": 48
-            },
-            "GxrvB": {
-              "width": "fit_content",
-              "height": "fit_content"
-            },
-            "nmdBA": {
-              "x": 10,
-              "y": 8
-            },
-            "7axcz": {
-              "width": "fit_content",
-              "height": "fit_content",
-              "x": 77
-            },
-            "5El3n": {
-              "x": 10,
-              "y": 8
-            },
-            "bPKRY": {
-              "width": "fill_container",
-              "height": "fit_content",
-              "x": 16,
-              "y": 93
-            },
-            "6tcuD": {
-              "width": "fill_container",
-              "height": "fit_content"
-            },
-            "LFdGa": {
-              "x": 65.5,
-              "y": 12
-            },
-            "cP2ox": {
-              "width": "fill_container",
-              "height": "fit_content",
-              "x": 167
-            },
-            "tSh4l": {
-              "x": 44.5,
-              "y": 12
-            }
-          }
         },
         {
           "type": "text",
