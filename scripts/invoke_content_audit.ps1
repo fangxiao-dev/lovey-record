@@ -1,0 +1,70 @@
+<#
+.SYNOPSIS
+    Content Correctness Audit - Codex Agent Launcher
+.DESCRIPTION
+    Called by Windows Task Scheduler at 09:15 daily.
+    Prepares context data, then invokes Codex with the audit prompt.
+
+    Windows Task Scheduler setup:
+      Trigger:   Daily at 09:15
+      Action:    powershell.exe -ExecutionPolicy Bypass -File "scripts\invoke_content_audit.ps1"
+      Start in:  D:\CodeSpace\hbuilder-projects\lovey-record-backend
+#>
+
+param(
+    [string]$RepoRoot = "D:\CodeSpace\hbuilder-projects\lovey-record-backend"
+)
+
+Set-Location $RepoRoot
+
+# ── Step 1: Run Document Audit ────────────────────────────────────────────────
+Write-Host "[1/3] Running Document Audit..."
+python scripts\run_doc_audit.py --mode daily
+if ($LASTEXITCODE -ne 0) {
+    Write-Warning "Document Audit failed (exit $LASTEXITCODE). Continuing anyway."
+}
+
+# ── Step 2: Collect document metadata ─────────────────────────────────────────
+Write-Host "[2/3] Collecting document metadata..."
+python scripts\content_audit\data_collector.py `
+    --repo-root . `
+    --output docs\generated\content-audit\metadata.json
+if ($LASTEXITCODE -ne 0) {
+    Write-Warning "Metadata collection failed (exit $LASTEXITCODE). Continuing anyway."
+}
+
+# ── Step 3: Invoke Codex agent ────────────────────────────────────────────────
+Write-Host "[3/3] Invoking Codex content audit agent..."
+
+$Prompt = @"
+You are the Content Correctness Auditor defined in scripts/content_audit/AGENTS.md.
+
+Read that file first for your full instructions.
+
+Then execute the audit:
+1. Read docs/generated/doc-audit/latest-report.md (Document Audit structural findings)
+2. Read docs/generated/content-audit/metadata.json (plan/governance/design metadata)
+3. Selectively read actual document content as needed (plans, governance, design)
+4. Analyze: rules completeness, terminology consistency, plan status
+5. Write the final report to: docs/generated/content-audit/latest-recommendations.md
+
+Do not modify any other files.
+"@
+
+codex --approval-mode full-auto $Prompt
+
+$ExitCode = $LASTEXITCODE
+
+# ── Notify ────────────────────────────────────────────────────────────────────
+if ($ExitCode -eq 0) {
+    Write-Host "Done. Report: docs\generated\content-audit\latest-recommendations.md"
+    New-BurntToastNotification `
+        -Text "Codex任务完成", "内容审核报告已生成" `
+        -ErrorAction SilentlyContinue
+} else {
+    Write-Warning "Codex agent failed (exit $ExitCode)."
+    New-BurntToastNotification `
+        -Text "Codex任务失败", "内容审核未完成，请检查日志" `
+        -ErrorAction SilentlyContinue
+    exit 1
+}
