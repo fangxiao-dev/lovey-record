@@ -7,6 +7,7 @@ Usage:
 """
 import argparse
 import sys
+from datetime import date
 from pathlib import Path
 
 # Ensure repo root is on the import path when run as a script.
@@ -24,7 +25,14 @@ from scripts.doc_audit.verification import (
     verify_unit_test_commands,
 )
 
-OUTPUT_DIR = _REPO_ROOT / "docs" / "generated" / "doc-audit"
+_AUDIT_BASE = _REPO_ROOT / "docs" / "generated" / "doc-audit"
+
+
+def _output_dir() -> Path:
+    today = date.today().isoformat()  # e.g. 2026-03-30
+    d = _AUDIT_BASE / today
+    d.mkdir(parents=True, exist_ok=True)
+    return d
 
 
 def _collect_candidate_issues(
@@ -102,9 +110,10 @@ def main() -> None:
     candidate_issues = _collect_candidate_issues(repo_root, reachable, scope, args.mode)
     findings = classify_findings(AuditInput(candidate_issues=candidate_issues))
 
+    output_dir = _output_dir()
     entrypoint_labels = [str(p.relative_to(repo_root)) for p in entrypoints]
-    write_report(OUTPUT_DIR, findings, entrypoint_labels, mode=args.mode, reachable_count=len(reachable))
-    write_patch(OUTPUT_DIR, findings)
+    write_report(output_dir, findings, entrypoint_labels, mode=args.mode, reachable_count=len(reachable))
+    write_patch(output_dir, findings)
 
     stale = sum(1 for f in findings if f.kind == "stale")
     orphan = sum(1 for f in findings if f.kind == "orphan")
@@ -115,8 +124,8 @@ def main() -> None:
         f"scope={len(scope)}  stale={stale}  orphan={orphan}  "
         f"misplaced={misplaced}  debt={debt}"
     )
-    print(f"[doc-audit] report → {OUTPUT_DIR / 'latest-report.md'}")
-    print(f"[doc-audit] patch  → {OUTPUT_DIR / 'latest.patch'}")
+    print(f"[doc-audit] report → {output_dir / 'latest-report.md'}")
+    print(f"[doc-audit] patch  → {output_dir / 'latest.patch'}")
 
 
 if __name__ == "__main__":

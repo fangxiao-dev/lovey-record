@@ -1,5 +1,6 @@
 import subprocess
 import unittest
+from datetime import date
 from pathlib import Path
 
 
@@ -16,7 +17,8 @@ class InitModeTests(unittest.TestCase):
         )
         cls.returncode = result.returncode
         cls.stdout = result.stdout
-        cls.report_path = repo_root / "docs" / "generated" / "doc-audit" / "latest-report.md"
+        today = date.today().isoformat()
+        cls.report_path = repo_root / "docs" / "generated" / "doc-audit" / today / "latest-report.md"
 
     def test_init_mode_exits_zero(self) -> None:
         self.assertEqual(self.returncode, 0, self.stdout)

@@ -48,8 +48,10 @@ You have access to all standard tools plus:
   - Compare documented design decisions to the actual current state of the design file
 
 **Documentation structure:**
-- Read `docs/generated/doc-audit/latest-report.md` for structural findings already computed
-- Read `docs/generated/content-audit/metadata.json` for plan status signals
+- The caller passes today's audit directory in the prompt (e.g. `docs/generated/doc-audit/2026-03-30`)
+- Read `{audit_dir}/latest-report.md` for structural findings already computed
+- Read `{audit_dir}/metadata.json` for plan status signals
+- Write your output to `{audit_dir}/latest-recommendations.md`
 
 ---
 
@@ -83,7 +85,7 @@ For each plan (prioritize last 60 days):
 
 ## Output
 
-Write to: `docs/generated/content-audit/latest-recommendations.md`
+Write to: `{audit_dir}/latest-recommendations.md`  (audit_dir is given in the prompt)
 
 ```markdown
 # Content Audit — Recommendations
