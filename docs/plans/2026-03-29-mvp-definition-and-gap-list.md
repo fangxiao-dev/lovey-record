@@ -151,15 +151,17 @@ What remains is broader acceptance and future polish, not first-pass flow absenc
 
 ### MVP gap
 
-The first settings closure is now present.
-What remains is full acceptance proof that the next first-day period record reflects the changed setting under release-style verification.
+**Closed as of 2026-03-30.** The end-to-end acceptance chain is now proven by a live regression test:
+- Shell settings strip updates `defaultPeriodDurationDays` via real API.
+- Next first-day single-tap period record on the home page auto-fills exactly the new duration's worth of days.
+- The API-level result and the page-level calendar cells are both verified.
 
 ### Required completion bar
 
-- A user-facing settings entry exists.
-- The current default period duration is visible.
-- The user can update it.
-- The next first-day period record reflects the changed setting.
+- A user-facing settings entry exists. ✓
+- The current default period duration is visible. ✓
+- The user can update it. ✓
+- The next first-day period record reflects the changed setting. ✓
 
 ## 5. Regression And Acceptance
 
@@ -176,17 +178,19 @@ What remains is full acceptance proof that the next first-day period record refl
 
 ### MVP gap
 
-The MVP is not complete until the regression baseline is paired with an explicit repeatable release checklist, plus the remaining manual platform checks.
+**Materially closed as of 2026-03-30.** The release checklist and regression suite are now explicit and repeatable.
+Remaining gap: WeChat Mini Program manual checks (M1–M9 in the release checklist) still need to be run.
 
 ### Required completion bar
 
 - Stable page-level live regression for:
-  - single-day write loop
-  - batch loop
-  - refresh consistency
-  - at least one shell-to-home entry path
-- Explicit manual checklist for remaining platform-specific checks
-- A small release gate that can be rerun before accepting a new mainline milestone
+  - single-day write loop ✓
+  - batch loop ✓
+  - refresh consistency ✓
+  - at least one shell-to-home entry path ✓
+  - settings → first-day auto-fill ✓
+- Explicit manual checklist for remaining platform-specific checks ✓ (see `docs/plans/2026-03-30-mvp-release-checklist.md`)
+- A small release gate that can be rerun before accepting a new mainline milestone ✓
 
 ## 6. Release-Blocking Must-Haves
 

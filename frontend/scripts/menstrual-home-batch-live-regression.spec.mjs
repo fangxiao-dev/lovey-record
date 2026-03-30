@@ -10,6 +10,7 @@ const MODULE_INSTANCE_ID = process.env.MENSTRUAL_MODULE_INSTANCE_ID || 'seed-hom
 const CHROME_PATH = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const PARTNER_USER_ID = process.env.MENSTRUAL_PARTNER_USER_ID || 'seed-shared-partner';
 const PARTNER_OPENID = process.env.MENSTRUAL_PARTNER_OPENID || 'seed-shared-partner-openid';
+const PROFILE_ID = process.env.MENSTRUAL_PROFILE_ID || 'seed-home-profile';
 
 function buildFrontendUrl(route, params = {}) {
 	const query = new URLSearchParams(params);
@@ -74,6 +75,22 @@ async function getAccessState(openid = OPENID) {
 		headers: {
 			'x-wx-openid': openid
 		}
+	});
+	const envelope = await response.json();
+	expect(response.ok).toBeTruthy();
+	expect(envelope.ok).toBeTruthy();
+	return envelope.data;
+}
+
+async function getCalendarWindow(startDate, endDate, openid = OPENID) {
+	const params = new URLSearchParams({
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		profileId: PROFILE_ID,
+		startDate,
+		endDate
+	});
+	const response = await fetch(`${API_BASE_URL}/queries/getCalendarWindow?${params}`, {
+		headers: { 'x-wx-openid': openid }
 	});
 	const envelope = await response.json();
 	expect(response.ok).toBeTruthy();
@@ -272,6 +289,73 @@ test('owner shell can update the default period duration from the live settings 
 		await expect(page.locator('.summary-item').filter({ hasText: '默认经期时长' })).toContainText('5 天');
 		await expect(page.locator('.settings-chip--selected')).toContainText('5 天');
 	} finally {
+		await ensureDefaultPeriodDuration(6);
+	}
+});
+
+test('changing defaultPeriodDurationDays is reflected in the next first-day single-tap period auto-fill length', async ({ page }) => {
+	// Use March 20 as the fresh first day: it is within the default 3-week window (March 16 – April 5),
+	// is selectable (< today = '2026-03-29'), and has no seeded period record (seeded period is March 26-31).
+	// With defaultPeriodDurationDays = 4 the backend should fill March 20-23 and leave March 24 clear.
+	const TEST_FIRST_DAY = '2026-03-20';
+	const TEST_WINDOW_END = '2026-03-25';
+	const TEST_DURATION = 4;
+	const EXPECTED_LAST_DAY = '2026-03-23';
+	const EXPECTED_CLEAR_DAY = '2026-03-24';
+
+	await postJson('/commands/clearPeriodRange', {
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		startDate: TEST_FIRST_DAY,
+		endDate: TEST_WINDOW_END
+	});
+	await ensureDefaultPeriodDuration(TEST_DURATION);
+
+	try {
+		await page.goto(FRONTEND_URL);
+		await page.waitForTimeout(1200);
+
+		// Click March 20 to open its panel.
+		await page.locator('.date-cell__label').filter({ hasText: '20' }).first().click();
+		await page.waitForTimeout(800);
+
+		// Panel must show March 20 with no period yet.
+		await expect(page.locator('.selected-date-panel__title')).toHaveText('3 月 20 日');
+		await expect(
+			page.locator('.selected-date-panel__chip').filter({ hasText: '经期' })
+		).not.toHaveClass(/selected-date-panel__chip--accent/);
+
+		// Toggle period on — this calls recordPeriodDay for March 20.
+		await page.locator('.selected-date-panel__chip').filter({ hasText: '经期' }).click();
+		await page.waitForTimeout(1600);
+
+		// Chip must be marked accent after optimistic update + live refresh.
+		await expect(
+			page.locator('.selected-date-panel__chip').filter({ hasText: '经期' })
+		).toHaveClass(/selected-date-panel__chip--accent/);
+
+		// Verify via API: exactly TEST_DURATION consecutive period days, no more.
+		const calWindow = await getCalendarWindow('2026-03-19', '2026-03-25');
+		const windowDays = calWindow.days.filter((d) => d.date >= TEST_FIRST_DAY && d.date <= TEST_WINDOW_END);
+		const periodDays = windowDays.filter((d) => d.isPeriod);
+		expect(periodDays.length).toBe(TEST_DURATION);
+		expect(periodDays.map((d) => d.date)).toEqual([
+			'2026-03-20', '2026-03-21', '2026-03-22', EXPECTED_LAST_DAY
+		]);
+		const clearDay = calWindow.days.find((d) => d.date === EXPECTED_CLEAR_DAY);
+		expect(clearDay.isPeriod).toBe(false);
+
+		// Verify calendar cells: 21-23 carry bg-period, 24 does not.
+		const classes = await getCellClasses(page, ['21', '22', '23', '24']);
+		expect(classes.find((c) => c.day === '21').className).toContain('date-cell--bg-period');
+		expect(classes.find((c) => c.day === '22').className).toContain('date-cell--bg-period');
+		expect(classes.find((c) => c.day === '23').className).toContain('date-cell--bg-period');
+		expect(classes.find((c) => c.day === '24').className).not.toContain('date-cell--bg-period');
+	} finally {
+		await postJson('/commands/clearPeriodRange', {
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			startDate: TEST_FIRST_DAY,
+			endDate: TEST_WINDOW_END
+		});
 		await ensureDefaultPeriodDuration(6);
 	}
 });

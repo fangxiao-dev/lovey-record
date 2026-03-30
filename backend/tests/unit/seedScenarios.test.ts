@@ -10,7 +10,7 @@ describe('seedScenarios', () => {
       'emptyModule',
       'activePeriodHomeView',
       'predictedNextPeriod',
-      'dayDetailDeviation',
+      'dayDetailRecorded',
       'sharedModuleAccess',
     ]);
   });
@@ -32,8 +32,8 @@ describe('seedScenarios', () => {
     expect(byName.predictedNextPeriod.derivedCycles).toHaveLength(2);
     expect(byName.predictedNextPeriod.prediction?.predictedStartDate).toBe('2026-03-28');
 
-    expect(byName.dayDetailDeviation.dayRecords).toHaveLength(1);
-    expect(byName.dayDetailDeviation.dayRecords[0].note).toBe('rough day with cramps');
+    expect(byName.dayDetailRecorded.dayRecords).toHaveLength(1);
+    expect(byName.dayDetailRecorded.dayRecords[0].note).toBe('rough day with cramps');
 
     expect(byName.sharedModuleAccess.partnerUsers).toHaveLength(1);
     expect(byName.sharedModuleAccess.moduleAccesses).toHaveLength(2);

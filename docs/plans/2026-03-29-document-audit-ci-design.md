@@ -463,9 +463,8 @@ This design is considered satisfied when:
 
 ## Recommended Next Step
 
-Write an implementation plan that turns this design into:
+The implementation plan exists at `docs/plans/2026-03-29-document-audit-ci-implementation-plan.md`.
 
-- a scan script or audit command
-- a governance baseline under `docs/governance/`
-- a generated-output directory under `docs/generated/`
-- a first initialization pass against the current repository
+The governance baseline is at `docs/governance/doc-audit-policy.md` (entrypoints, finding types, evidence kinds, verification scope).
+
+The release gate rules live at `docs/governance/release-gate.md` and are part of the audit scan scope.
