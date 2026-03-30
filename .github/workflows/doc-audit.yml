@@ -19,7 +19,7 @@ jobs:
           python-version: '3.11'
 
       - name: Run doc-audit unit tests
-        run: python -m unittest discover -s tests/doc_audit -p 'test_*.py' -v
+        run: python -m unittest tests.doc_audit.test_entrypoints tests.doc_audit.test_graph tests.doc_audit.test_classifier tests.doc_audit.test_reporting tests.doc_audit.test_init_mode -v
 
       - name: Run document audit (daily mode)
         run: python scripts/run_doc_audit.py --mode daily
