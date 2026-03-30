@@ -28,7 +28,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "[2/3] Collecting document metadata..."
 python scripts\content_audit\data_collector.py `
     --repo-root . `
-    --output docs\generated\metadata.json
+    --output docs\generated\content-audit\metadata.json
 if ($LASTEXITCODE -ne 0) {
     Write-Warning "Metadata collection failed (exit $LASTEXITCODE). Continuing anyway."
 }
@@ -40,10 +40,10 @@ $Prompt = @"
 Read scripts/content_audit/AGENTS.md for your full role and instructions.
 
 Then execute the audit:
-1. Read docs/generated/latest-report.md and docs/generated/metadata.json as starting context
-2. For each governance/design/plan doc: find the corresponding code and compare
-3. Document diffs between what docs claim and what code actually does
-4. Write findings to: docs/generated/latest-recommendations.md
+1. Read docs/generated/doc-audit/latest-report.md and docs/generated/content-audit/metadata.json as starting context
+2. For each governance/design/plan doc: verify claims against real current status using all available tools
+3. Document diffs between what docs claim and what reality actually is
+4. Write findings to: docs/generated/content-audit/latest-recommendations.md
 
 Do not modify any files other than the output report.
 "@
@@ -54,7 +54,7 @@ $ExitCode = $LASTEXITCODE
 
 # ── Notify ────────────────────────────────────────────────────────────────────
 if ($ExitCode -eq 0) {
-    Write-Host "Done. Report: docs\generated\latest-recommendations.md"
+    Write-Host "Done. Report: docs\generated\content-audit\latest-recommendations.md"
     New-BurntToastNotification `
         -Text "Codex任务完成", "内容审核报告已生成" `
         -ErrorAction SilentlyContinue

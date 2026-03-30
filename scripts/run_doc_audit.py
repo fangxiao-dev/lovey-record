@@ -24,7 +24,7 @@ from scripts.doc_audit.verification import (
     verify_unit_test_commands,
 )
 
-OUTPUT_DIR = _REPO_ROOT / "docs" / "generated"
+OUTPUT_DIR = _REPO_ROOT / "docs" / "generated" / "doc-audit"
 
 
 def _collect_candidate_issues(

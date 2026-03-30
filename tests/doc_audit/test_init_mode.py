@@ -16,7 +16,7 @@ class InitModeTests(unittest.TestCase):
         )
         cls.returncode = result.returncode
         cls.stdout = result.stdout
-        cls.report_path = repo_root / "docs" / "generated" / "latest-report.md"
+        cls.report_path = repo_root / "docs" / "generated" / "doc-audit" / "latest-report.md"
 
     def test_init_mode_exits_zero(self) -> None:
         self.assertEqual(self.returncode, 0, self.stdout)
