@@ -1,9 +1,11 @@
 <#
 .SYNOPSIS
-    Content Correctness Audit - Codex Agent Launcher
+    Document Defect Audit — Codex Agent Launcher
 .DESCRIPTION
     Called by Windows Task Scheduler at 09:15 daily.
-    Prepares context data, then invokes Codex with the audit prompt.
+    Launches the Codex agent which handles both audit layers internally:
+      Layer 1 (structural): runs python scripts/run_doc_audit.py
+      Layer 2 (content):    verifies doc claims using code/Playwright/Pencil/tools
 
     Windows Task Scheduler setup:
       Trigger:   Daily at 09:15
@@ -17,57 +19,36 @@ param(
 
 Set-Location $RepoRoot
 
-# ── Step 1: Run Document Audit ────────────────────────────────────────────────
-Write-Host "[1/3] Running Document Audit..."
-python scripts\run_doc_audit.py --mode daily
-if ($LASTEXITCODE -ne 0) {
-    Write-Warning "Document Audit failed (exit $LASTEXITCODE). Continuing anyway."
-}
+$Today     = Get-Date -Format "yyyy-MM-dd"
+$AuditDir  = "docs\generated\doc-audit\$Today"
+$ReportOut = "$AuditDir\full-audit-report.md"
 
-# ── Step 2: Collect document metadata ─────────────────────────────────────────
-Write-Host "[2/3] Collecting document metadata..."
-$Today = Get-Date -Format "yyyy-MM-dd"
-$AuditDir = "docs\generated\doc-audit\$Today"
+Write-Host "[$Today] Starting document defect audit..."
 New-Item -ItemType Directory -Force -Path $AuditDir | Out-Null
-
-python scripts\content_audit\data_collector.py `
-    --repo-root . `
-    --output "$AuditDir\metadata.json"
-if ($LASTEXITCODE -ne 0) {
-    Write-Warning "Metadata collection failed (exit $LASTEXITCODE). Continuing anyway."
-}
-
-# ── Step 3: Invoke Codex agent ────────────────────────────────────────────────
-Write-Host "[3/3] Invoking Codex content audit agent..."
 
 $Prompt = @"
 Read scripts/content_audit/AGENTS.md for your full role and instructions.
 
+Today's date is $Today.
 Today's audit directory is: $AuditDir
 
-Then execute the audit:
-1. Read $AuditDir\latest-report.md and $AuditDir\metadata.json as starting context
-2. For each governance/design/plan doc: verify claims against real current status using all available tools
-3. Document diffs between what docs claim and what reality actually is
-4. Write findings to: $AuditDir\latest-recommendations.md
-
-Do not modify any files other than the output report.
+Execute the full two-layer document defect audit and write the report to:
+$ReportOut
 "@
 
 codex $Prompt
 
 $ExitCode = $LASTEXITCODE
 
-# ── Notify ────────────────────────────────────────────────────────────────────
 if ($ExitCode -eq 0) {
-    Write-Host "Done. Report: $AuditDir\latest-recommendations.md"
+    Write-Host "Done. Report: $ReportOut"
     New-BurntToastNotification `
-        -Text "Codex任务完成", "内容审核报告已生成" `
+        -Text "文档审核完成", "查看: $ReportOut" `
         -ErrorAction SilentlyContinue
 } else {
     Write-Warning "Codex agent failed (exit $ExitCode)."
     New-BurntToastNotification `
-        -Text "Codex任务失败", "内容审核未完成，请检查日志" `
+        -Text "文档审核失败", "请检查日志" `
         -ErrorAction SilentlyContinue
     exit 1
 }
