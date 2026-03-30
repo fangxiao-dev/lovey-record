@@ -1,33 +1,33 @@
-name: Document Audit
+name: Code Tests
 
 on:
-  schedule:
-    - cron: '0 2 * * *'   # 02:00 UTC daily (北京时间 10:00)
+  push:
+    branches:
+      - master
+  pull_request:
   workflow_dispatch:
 
 jobs:
-  audit:
+  backend:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
+          node-version: '20'
+      - name: Install backend deps
+        run: npm ci
+        working-directory: backend
+      - name: Run backend tests
+        run: npm test
+        working-directory: backend
 
-      - name: Run doc-audit unit tests
-        run: python -m unittest tests.doc_audit.test_entrypoints tests.doc_audit.test_graph tests.doc_audit.test_classifier tests.doc_audit.test_reporting tests.doc_audit.test_init_mode -v
-
-      - name: Run document audit (daily mode)
-        run: python scripts/run_doc_audit.py --mode daily
-
-      - name: Upload audit artifacts
-        uses: actions/upload-artifact@v4
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          name: doc-audit-report
-          path: docs/generated/doc-audit/
-          retention-days: 30
-          if-no-files-found: warn
+          node-version: '20'
+      - name: Run frontend unit tests
+        run: node --test 'frontend/services/**/__tests__/*.test.mjs' 'frontend/components/**/__tests__/*.test.mjs'
