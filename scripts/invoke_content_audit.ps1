@@ -28,7 +28,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "[2/3] Collecting document metadata..."
 python scripts\content_audit\data_collector.py `
     --repo-root . `
-    --output docs\generated\content-audit\metadata.json
+    --output docs\generated\metadata.json
 if ($LASTEXITCODE -ne 0) {
     Write-Warning "Metadata collection failed (exit $LASTEXITCODE). Continuing anyway."
 }
@@ -37,27 +37,24 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "[3/3] Invoking Codex content audit agent..."
 
 $Prompt = @"
-You are the Content Correctness Auditor defined in scripts/content_audit/AGENTS.md.
-
-Read that file first for your full instructions.
+Read scripts/content_audit/AGENTS.md for your full role and instructions.
 
 Then execute the audit:
-1. Read docs/generated/doc-audit/latest-report.md (Document Audit structural findings)
-2. Read docs/generated/content-audit/metadata.json (plan/governance/design metadata)
-3. Selectively read actual document content as needed (plans, governance, design)
-4. Analyze: rules completeness, terminology consistency, plan status
-5. Write the final report to: docs/generated/content-audit/latest-recommendations.md
+1. Read docs/generated/latest-report.md and docs/generated/metadata.json as starting context
+2. For each governance/design/plan doc: find the corresponding code and compare
+3. Document diffs between what docs claim and what code actually does
+4. Write findings to: docs/generated/latest-recommendations.md
 
-Do not modify any other files.
+Do not modify any files other than the output report.
 "@
 
-codex --approval-mode full-auto $Prompt
+codex $Prompt
 
 $ExitCode = $LASTEXITCODE
 
 # ── Notify ────────────────────────────────────────────────────────────────────
 if ($ExitCode -eq 0) {
-    Write-Host "Done. Report: docs\generated\content-audit\latest-recommendations.md"
+    Write-Host "Done. Report: docs\generated\latest-recommendations.md"
     New-BurntToastNotification `
         -Text "Codex任务完成", "内容审核报告已生成" `
         -ErrorAction SilentlyContinue
