@@ -84,7 +84,7 @@ Combine Layer 1 (structural) and Layer 2 (content) into one report.
 > or are in the wrong location.
 
 ### Orphan Documents
-[list from run_doc_audit output — file path + why it's unreachable]
+[list of file paths from run_doc_audit output]
 
 ### Misplaced Documents
 [list from run_doc_audit output — file path + recommended target location]
@@ -97,6 +97,8 @@ Combine Layer 1 (structural) and Layer 2 (content) into one report.
 ## Layer 2 — Content Defects
 
 > Reachable documents whose content no longer matches current reality.
+>
+> **Note:** Claims that cannot be verified with available tools are noted with `[unverifiable]` and deprioritized.
 
 ### [C1] <short title>
 - **Document:** `path/to/doc.md` line N
@@ -121,14 +123,14 @@ Combine Layer 1 (structural) and Layer 2 (content) into one report.
 ## Notes
 - Layer 1 data source: `docs/generated/doc-audit/{TODAY}/latest-report.md`
 - Content findings are capped at 10 per run; prioritize by recency and impact
-- Unverifiable claims are omitted or noted with lower priority
+- Claims marked `[unverifiable]` are included with lower priority for human context
 ```
 
 ---
 
 ## Quality Rules
 
-- Every Layer 2 finding must cite exact evidence (file:line, Playwright observation, Pencil node ID, or command output)
+- Every Layer 2 finding must cite evidence or note `[unverifiable]` if tools cannot access the claim
 - Do not infer — actually run the verification for each finding
 - Orphan documents do not need content checking (they are already flagged in Layer 1)
 - Max 10 content findings per run — pick the highest-impact ones
