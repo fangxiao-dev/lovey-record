@@ -32,7 +32,26 @@ From the structural report, extract the **reachable** document set (everything N
 
 For each reachable document in `docs/governance/`, `docs/contracts/`, `docs/design/`, and `docs/plans/` (last 60 days priority), check whether its content matches current reality.
 
-### Step 3 — Verify content against reality
+### Step 3 — Check directory content compliance
+
+For every reachable document, check whether it belongs in its current directory according to `docs/governance/doc-audit-policy.md` **Directory Content Rules**.
+
+Ask: "Does this file's actual content match what this directory is supposed to hold?"
+
+| Directory | Expected type |
+|-----------|---------------|
+| `docs/plans/` | Execution plans — step-by-step tasks with done criteria |
+| `docs/design/` | Design/architecture specs |
+| `docs/governance/` | Durable rules, policies, product scope |
+| `docs/contracts/` | Product/domain/API contracts |
+| `docs/references/` | Status snapshots, historical notes, reference material |
+| `docs/generated/` | Machine output only |
+
+If the content type doesn't match the directory: emit a `misplaced-by-content` finding with the recommended target directory.
+
+This check requires reading the file — a title alone is not enough. Look at the document's purpose and structure.
+
+### Step 4 — Verify content against reality
 
 For each claim in a reachable document, find the authoritative real-world evidence.
 
@@ -70,6 +89,7 @@ Combine Layer 1 (structural) and Layer 2 (content) into one report.
 | Structure | orphan | N |
 | Structure | misplaced | N |
 | Structure | stale-link | N |
+| Content | misplaced-by-content | N |
 | Content | doc-vs-code | N |
 | Content | doc-vs-ui | N |
 | Content | doc-vs-design | N |

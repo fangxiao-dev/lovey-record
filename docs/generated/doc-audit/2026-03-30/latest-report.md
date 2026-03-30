@@ -8,7 +8,7 @@
 
 - reachable docs: 15
 - stale findings: 0
-- orphan findings: 40
+- orphan findings: 42
 - misplaced findings: 0
 - debt findings: 0
 
@@ -91,7 +91,16 @@ documentation graph. Use them to guide migration toward the target structure def
 - **file:** `docs/design/pencil/Pencil-Workflow.md`
   - evidence: `observed`
   - detail: not reachable from any entrypoint
+- **file:** `docs/design/system/2026-03-29-document-audit-ci-design.md`
+  - evidence: `observed`
+  - detail: not reachable from any entrypoint
+- **file:** `docs/generated/doc-audit/2026-03-30/full-audit-report.md`
+  - evidence: `observed`
+  - detail: not reachable from any entrypoint
 - **file:** `docs/generated/doc-audit/2026-03-30/latest-report.md`
+  - evidence: `observed`
+  - detail: not reachable from any entrypoint
+- **file:** `docs/governance/2026-03-29-mvp-definition-and-gap-list.md`
   - evidence: `observed`
   - detail: not reachable from any entrypoint
 - **file:** `docs/pencil-miniprogram-design-reference.md`
@@ -121,19 +130,16 @@ documentation graph. Use them to guide migration toward the target structure def
 - **file:** `docs/plans/2026-03-28-token-component-alignment-plan.md`
   - evidence: `observed`
   - detail: not reachable from any entrypoint
-- **file:** `docs/plans/2026-03-29-document-audit-ci-design.md`
-  - evidence: `observed`
-  - detail: not reachable from any entrypoint
 - **file:** `docs/plans/2026-03-29-document-audit-ci-implementation-plan.md`
-  - evidence: `observed`
-  - detail: not reachable from any entrypoint
-- **file:** `docs/plans/2026-03-29-mvp-definition-and-gap-list.md`
   - evidence: `observed`
   - detail: not reachable from any entrypoint
 - **file:** `docs/plans/2026-03-29-selected-date-panel-pencil-update-plan.md`
   - evidence: `observed`
   - detail: not reachable from any entrypoint
-- **file:** `docs/plans/2026-03-30-batch-interaction-hardening-status.md`
+- **file:** `docs/references/2026-03-30-batch-interaction-hardening-status.md`
+  - evidence: `observed`
+  - detail: not reachable from any entrypoint
+- **file:** `docs/references/2026-03-30-document-audit-implementation-status.md`
   - evidence: `observed`
   - detail: not reachable from any entrypoint
 - **file:** `docs/references/tech-stack-investigate.md`

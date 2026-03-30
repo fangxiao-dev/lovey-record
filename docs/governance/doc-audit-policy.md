@@ -48,6 +48,21 @@ The following checks are explicitly out of scope for daily CI:
 - live Playwright regression (requires dev server)
 - WeChat Mini Program manual checks (M1–M9 in `release-gate.md`)
 
+## Directory Content Rules
+
+Each directory has an expected content type. A file is **misplaced by content** when its actual nature does not match the directory definition — even if its path is otherwise valid.
+
+| Directory | Expected content type | NOT allowed here |
+|---|---|---|
+| `docs/plans/` | Execution plans — step-by-step tasks with explicit done criteria, written to be executed by an agent or human | Design specs, status snapshots, product definitions, reference material |
+| `docs/design/` | Design specs — UX, interaction, visual contracts, architecture decisions | Execution plans, status reports |
+| `docs/governance/` | Durable rules — policies, gates, product scope definitions, classification rules that remain valid across many sessions | Dated execution plans, status snapshots |
+| `docs/contracts/` | Product/domain/API contracts — stable agreements between layers | Plans, design explorations |
+| `docs/references/` | Low-authority reference material — status snapshots, historical records, investigation notes, implementation summaries | Durable rules, active contracts |
+| `docs/generated/` | Machine-produced outputs only — audit reports, patches, metadata | Any human-authored document |
+
+This rule is enforced by Layer 2 content audit (Codex agent), not by the Python structure scanner.
+
 ## Scan Scope
 
 Phase-one scan scope:
