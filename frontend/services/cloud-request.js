@@ -12,6 +12,8 @@ import { CLOUD_CONFIG } from '../config/api.js';
  */
 export async function cloudRequest({ path, method = 'GET', data, headers }) {
   const useCloudApi = process.env.NODE_ENV === 'production';
+  console.log('[cloudRequest]', useCloudApi ? 'prod→callContainer' : 'dev→uni.request', path,
+    useCloudApi ? { envId: CLOUD_CONFIG.envId, svc: CLOUD_CONFIG.serviceName } : '');
 
   if (useCloudApi) {
     // Production: use wx.cloud.callContainer (WeChat official secure method)
@@ -74,7 +76,7 @@ async function callUniRequest({ path, method, data, headers }) {
       data,
       header: headers,
       success: (response) => resolve(response),
-      fail: (error) => reject(error),
+      fail: (error) => reject(new Error(error?.errMsg || error?.message || 'uni.request failed')),
     });
   });
 }

@@ -2,7 +2,7 @@ import { cloudRequest } from '../cloud-request.js';
 
 async function commandEnvelope({ apiBaseUrl, openid, path, data }) {
 	const response = await cloudRequest({
-		path: `/api${path}`,
+		path,
 		method: 'POST',
 		data,
 		headers: {
