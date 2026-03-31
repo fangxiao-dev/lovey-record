@@ -150,13 +150,14 @@
 			}
 		},
 		onLoad(options) {
+			const d = v => v ? decodeURIComponent(v) : v;
 			this.contractContext = {
 				...DEFAULT_MENSTRUAL_HOME_CONTEXT,
-				apiBaseUrl: options.apiBaseUrl || DEFAULT_MENSTRUAL_HOME_CONTEXT.apiBaseUrl,
-				openid: options.openid || DEFAULT_MENSTRUAL_HOME_CONTEXT.openid,
-				moduleInstanceId: options.moduleInstanceId || DEFAULT_MENSTRUAL_HOME_CONTEXT.moduleInstanceId,
-				profileId: options.profileId || DEFAULT_MENSTRUAL_HOME_CONTEXT.profileId,
-				today: options.today || DEFAULT_MENSTRUAL_HOME_CONTEXT.today
+				apiBaseUrl: d(options.apiBaseUrl) || DEFAULT_MENSTRUAL_HOME_CONTEXT.apiBaseUrl,
+				openid: d(options.openid) || DEFAULT_MENSTRUAL_HOME_CONTEXT.openid,
+				moduleInstanceId: d(options.moduleInstanceId) || DEFAULT_MENSTRUAL_HOME_CONTEXT.moduleInstanceId,
+				profileId: d(options.profileId) || DEFAULT_MENSTRUAL_HOME_CONTEXT.profileId,
+				today: d(options.today) || DEFAULT_MENSTRUAL_HOME_CONTEXT.today
 			};
 			this.retryInitialLoad();
 		},

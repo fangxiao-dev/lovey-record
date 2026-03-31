@@ -129,6 +129,16 @@
 				<text class="ui-button__text info-action__text--primary">重新加载</text>
 			</view>
 		</view>
+
+		<view v-if="isDev" class="dev-toolbar u-page-section">
+			<view
+				class="dev-reset-btn"
+				:class="{ 'dev-reset-btn--busy': isResetting }"
+				@tap="handleDevReset"
+			>
+				<text class="dev-reset-btn__text">{{ isResetting ? '重置中…' : devResetLabel }}</text>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -149,6 +159,9 @@
 				page: null,
 				loadError: '',
 				isMutating: false,
+				isResetting: false,
+				devResetLabel: '🛠 Reset to seed',
+				isDev: process.env.NODE_ENV !== 'production',
 				context: { ...DEFAULT_MODULE_SHELL_CONTEXT }
 			};
 		},
@@ -189,6 +202,27 @@
 					this.loadError = error instanceof Error ? error.message : '共享状态更新失败';
 				} finally {
 					this.isMutating = false;
+				}
+			},
+			async handleDevReset() {
+				if (this.isResetting) return;
+				this.isResetting = true;
+				this.devResetLabel = '🛠 Reset to seed';
+				try {
+					await new Promise((resolve, reject) => {
+						uni.request({
+							url: this.context.apiBaseUrl + '/dev/reset',
+							method: 'POST',
+							success: res => res.data?.ok ? resolve() : reject(new Error('reset failed')),
+							fail: reject
+						});
+					});
+					this.devResetLabel = '✓ Done';
+					await this.retryInitialLoad();
+				} catch {
+					this.devResetLabel = '✗ Failed';
+				} finally {
+					this.isResetting = false;
 				}
 			},
 			async handleSettingsOptionSelect(days) {
@@ -399,5 +433,28 @@
 
 	.shell-state-card__action {
 		align-self: flex-start;
+	}
+
+	.dev-toolbar {
+		display: flex;
+		justify-content: center;
+		padding-top: $space-6;
+		padding-bottom: $space-6;
+		opacity: 0.5;
+	}
+
+	.dev-reset-btn {
+		padding: $space-3 $space-5;
+		border-radius: $radius-field;
+		border: 2rpx dashed $border-subtle;
+	}
+
+	.dev-reset-btn--busy {
+		opacity: 0.5;
+	}
+
+	.dev-reset-btn__text {
+		font-size: $font-size-caption;
+		color: $text-muted;
 	}
 </style>
