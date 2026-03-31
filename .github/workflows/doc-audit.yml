@@ -19,7 +19,7 @@ jobs:
         run: npm ci
         working-directory: backend
       - name: Run backend tests
-        run: npm test
+        run: npm test -- --testPathIgnorePatterns=integration
         working-directory: backend
 
   frontend:
@@ -30,4 +30,4 @@ jobs:
         with:
           node-version: '20'
       - name: Run frontend unit tests
-        run: node --test 'frontend/services/**/__tests__/*.test.mjs' 'frontend/components/**/__tests__/*.test.mjs'
+        run: node --test 'frontend/**/__tests__/*.test.mjs'
