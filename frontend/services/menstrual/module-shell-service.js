@@ -65,15 +65,13 @@ function getZoneModule({
 
 export function createMenstrualHomeEntryUrl(context = {}) {
 	const resolved = { ...DEFAULT_MODULE_SHELL_CONTEXT, ...context };
-	const query = new URLSearchParams({
-		apiBaseUrl: resolved.apiBaseUrl,
-		openid: resolved.openid,
-		moduleInstanceId: resolved.moduleInstanceId,
-		profileId: resolved.profileId,
-		today: resolved.today
-	});
+	const query = 'apiBaseUrl=' + encodeURIComponent(resolved.apiBaseUrl || '')
+		+ '&openid=' + encodeURIComponent(resolved.openid || '')
+		+ '&moduleInstanceId=' + encodeURIComponent(resolved.moduleInstanceId || '')
+		+ '&profileId=' + encodeURIComponent(resolved.profileId || '')
+		+ '&today=' + encodeURIComponent(resolved.today || '');
 
-	return `/pages/menstrual/home?${query.toString()}`;
+	return `/pages/menstrual/home?${query}`;
 }
 
 export function createModuleShellPageModel({

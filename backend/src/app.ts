@@ -3,6 +3,7 @@ import { authMiddleware } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 import commandRoutes from './routes/commands';
 import queryRoutes from './routes/queries';
+import devRoutes from './routes/dev';
 
 const app = express();
 
@@ -31,6 +32,11 @@ app.use(express.json());
 app.get('/health', (_req, res) => {
   res.json({ ok: true, status: 'healthy' });
 });
+
+// Dev-only routes (public, no auth required, unavailable in production)
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/dev', devRoutes);
+}
 
 // Auth middleware — attach user from x-wx-openid header for all routes below
 app.use(authMiddleware);
