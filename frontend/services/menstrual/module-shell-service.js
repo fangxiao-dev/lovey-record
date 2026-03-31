@@ -1,3 +1,4 @@
+import { cloudRequest } from '../cloud-request.js';
 import { API_BASE_URL } from '../../config/api.js';
 
 export const DEFAULT_MODULE_SHELL_CONTEXT = Object.freeze({
@@ -9,26 +10,16 @@ export const DEFAULT_MODULE_SHELL_CONTEXT = Object.freeze({
 	today: '2026-03-29'
 });
 
-function requestJson({ url, data, headers }) {
-	return new Promise((resolve, reject) => {
-		uni.request({
-			url,
-			method: 'GET',
-			data,
-			header: headers,
-			success: (response) => resolve(response),
-			fail: (error) => reject(error)
-		});
-	});
-}
-
 async function queryEnvelope({ apiBaseUrl, openid, path, data }) {
-	const cacheBustedUrl = `${apiBaseUrl}${path}${path.includes('?') ? '&' : '?'}_ts=${Date.now()}`;
-	const response = await requestJson({
-		url: cacheBustedUrl,
+	// Cache busting with timestamp
+	const cacheBustedPath = path + (path.includes('?') ? '&' : '?') + '_ts=' + Date.now();
+
+	const response = await cloudRequest({
+		path: cacheBustedPath,
+		method: 'GET',
 		data,
 		headers: {
-			'x-wx-openid': openid
+			'x-wx-openid': openid,
 		}
 	});
 
