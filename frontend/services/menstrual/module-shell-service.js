@@ -146,7 +146,7 @@ export async function loadMenstrualModuleShellPageModel(context = {}) {
 	const accessState = await queryEnvelope({
 		apiBaseUrl: resolved.apiBaseUrl,
 		openid: resolved.openid,
-		path: '/queries/getModuleAccessState',
+		path: '/api/queries/getModuleAccessState',
 		data: {
 			moduleInstanceId: resolved.moduleInstanceId
 		}
@@ -154,7 +154,7 @@ export async function loadMenstrualModuleShellPageModel(context = {}) {
 	const settings = await queryEnvelope({
 		apiBaseUrl: resolved.apiBaseUrl,
 		openid: resolved.openid,
-		path: '/queries/getModuleSettings',
+		path: '/api/queries/getModuleSettings',
 		data: {
 			moduleInstanceId: resolved.moduleInstanceId
 		}

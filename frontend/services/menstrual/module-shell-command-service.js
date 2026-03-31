@@ -19,8 +19,8 @@ async function commandEnvelope({ apiBaseUrl, openid, path, data }) {
 
 export async function persistModuleSharingState({ context, action }) {
 	const path = action === 'revoke'
-		? '/commands/revokeModuleAccess'
-		: '/commands/shareModuleInstance';
+		? '/api/commands/revokeModuleAccess'
+		: '/api/commands/shareModuleInstance';
 
 	return commandEnvelope({
 		apiBaseUrl: context.apiBaseUrl,
@@ -37,7 +37,7 @@ export async function persistModuleSettings({ context, defaultPeriodDurationDays
 	return commandEnvelope({
 		apiBaseUrl: context.apiBaseUrl,
 		openid: context.openid,
-		path: '/commands/updateDefaultPeriodDuration',
+		path: '/api/commands/updateDefaultPeriodDuration',
 		data: {
 			moduleInstanceId: context.moduleInstanceId,
 			defaultPeriodDurationDays

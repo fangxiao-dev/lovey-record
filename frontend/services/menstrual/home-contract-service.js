@@ -101,7 +101,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 		const homeView = await queryEnvelope({
 			apiBaseUrl: resolved.apiBaseUrl,
 			openid: resolved.openid,
-			path: '/queries/getModuleHomeView',
+			path: '/api/queries/getModuleHomeView',
 			data: {
 				moduleInstanceId: resolved.moduleInstanceId
 			}
@@ -125,7 +125,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 		const calendarWindow = await queryEnvelope({
 			apiBaseUrl: resolved.apiBaseUrl,
 			openid: resolved.openid,
-			path: '/queries/getCalendarWindow',
+			path: '/api/queries/getCalendarWindow',
 			data: {
 				moduleInstanceId: resolved.moduleInstanceId,
 				profileId: resolved.profileId,
@@ -137,7 +137,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 		const dayDetail = await queryEnvelope({
 			apiBaseUrl: resolved.apiBaseUrl,
 			openid: resolved.openid,
-			path: '/queries/getDayRecordDetail',
+			path: '/api/queries/getDayRecordDetail',
 			data: {
 				moduleInstanceId: resolved.moduleInstanceId,
 				profileId: resolved.profileId,

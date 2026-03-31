@@ -39,7 +39,7 @@ export async function persistSelectedDateDetails({ context, activeDate, pageMode
 	return commandEnvelope({
 		apiBaseUrl: context.apiBaseUrl,
 		openid: context.openid,
-		path: '/commands/recordDayDetails',
+			path: '/api/commands/recordDayDetails',
 		data: {
 			moduleInstanceId: context.moduleInstanceId,
 			date: activeDate,
@@ -54,7 +54,7 @@ export async function persistSelectedDateNote({ context, activeDate, note }) {
 	return commandEnvelope({
 		apiBaseUrl: context.apiBaseUrl,
 		openid: context.openid,
-		path: '/commands/recordDayNote',
+			path: '/api/commands/recordDayNote',
 		data: {
 			moduleInstanceId: context.moduleInstanceId,
 			date: activeDate,
@@ -68,7 +68,7 @@ export async function persistSelectedDatePeriodState({ context, activeDate, page
 		return commandEnvelope({
 			apiBaseUrl: context.apiBaseUrl,
 			openid: context.openid,
-			path: '/commands/clearPeriodDay',
+			path: '/api/commands/clearPeriodDay',
 			data: {
 				moduleInstanceId: context.moduleInstanceId,
 				date: activeDate
@@ -79,7 +79,7 @@ export async function persistSelectedDatePeriodState({ context, activeDate, page
 	return commandEnvelope({
 		apiBaseUrl: context.apiBaseUrl,
 		openid: context.openid,
-		path: '/commands/recordPeriodDay',
+			path: '/api/commands/recordPeriodDay',
 		data: {
 			moduleInstanceId: context.moduleInstanceId,
 			date: activeDate
@@ -89,8 +89,8 @@ export async function persistSelectedDatePeriodState({ context, activeDate, page
 
 export async function persistBatchPeriodRange({ context, action, startDate, endDate }) {
 	const path = action === 'clear-record'
-		? '/commands/clearPeriodRange'
-		: '/commands/recordPeriodRange';
+		? '/api/commands/clearPeriodRange'
+		: '/api/commands/recordPeriodRange';
 
 	return commandEnvelope({
 		apiBaseUrl: context.apiBaseUrl,
