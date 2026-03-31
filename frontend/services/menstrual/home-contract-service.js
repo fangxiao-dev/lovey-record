@@ -2,9 +2,10 @@ import {
 	createMenstrualHomePageModel,
 	createSeededHomeContracts
 } from '../../components/menstrual/home-contract-adapter.js';
+import { API_BASE_URL } from '../../config/api.js';
 
 export const DEFAULT_MENSTRUAL_HOME_CONTEXT = Object.freeze({
-	apiBaseUrl: 'http://localhost:3000/api',
+	apiBaseUrl: API_BASE_URL,
 	openid: 'seed-home-openid',
 	moduleInstanceId: 'seed-home-module',
 	profileId: 'seed-home-profile',
