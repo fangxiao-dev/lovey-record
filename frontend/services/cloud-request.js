@@ -64,7 +64,7 @@ async function callCloudContainer({ path, method, data, headers }) {
  * Used for local testing against dev server
  */
 async function callUniRequest({ path, method, data, headers }) {
-  const baseUrl = 'http://localhost:3000';
+  const baseUrl = 'http://localhost:3000/api';
   const url = baseUrl + path;
 
   return new Promise((resolve, reject) => {
