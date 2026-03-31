@@ -7,7 +7,8 @@ import devRoutes from './routes/dev';
 
 const app = express();
 
-const allowedOrigins = new Set(['http://localhost:5173']);
+const rawOrigins = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
+const allowedOrigins = new Set(rawOrigins.split(',').map(s => s.trim()));
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
