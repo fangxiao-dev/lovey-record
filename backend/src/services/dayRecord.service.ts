@@ -109,7 +109,13 @@ function derivePrediction(cycleStarts: Date[]) {
     intervals.push(Math.round((curr - prev) / 86400000));
   }
 
-  const average = Math.round(intervals.reduce((sum, value) => sum + value, 0) / intervals.length) || 28;
+  // Filter out unreasonable intervals (< 15 days) to avoid using fragments from the same menstrual period
+  const validIntervals = intervals.filter(i => i >= 15);
+  if (validIntervals.length === 0) {
+    return null;
+  }
+
+  const average = Math.round(validIntervals.reduce((sum, value) => sum + value, 0) / validIntervals.length) || 28;
   const last = cycleStarts[cycleStarts.length - 1];
   const predicted = addDays(last, average);
   return {

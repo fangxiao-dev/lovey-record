@@ -44,5 +44,8 @@ const average = Math.round(validIntervals.reduce(...) / validIntervals.length) |
 
 ## 当前状态
 
-- [ ] 后端 `dayRecord.service.ts` 待修复
-- [ ] 修复后需回归：batch 标记、单日标记、清除标记后的预测结果
+- [x] 后端 `dayRecord.service.ts` 已修复（2026-03-31）
+  - 在 `derivePrediction` 中添加 interval 过滤，排除 < 15 天的周期
+- [x] 修复后回归完成
+  - backend unit/integration tests: 67/69 通过
+  - Playwright 前后端集成测试：7/7 通过
