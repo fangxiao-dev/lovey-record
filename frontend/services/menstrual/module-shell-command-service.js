@@ -1,23 +1,12 @@
-function requestJson({ url, method, data, headers }) {
-	return new Promise((resolve, reject) => {
-		uni.request({
-			url,
-			method,
-			data,
-			header: headers,
-			success: (response) => resolve(response),
-			fail: (error) => reject(error)
-		});
-	});
-}
+import { cloudRequest } from '../cloud-request.js';
 
 async function commandEnvelope({ apiBaseUrl, openid, path, data }) {
-	const response = await requestJson({
-		url: `${apiBaseUrl}${path}`,
+	const response = await cloudRequest({
+		path: `/api${path}`,
 		method: 'POST',
 		data,
 		headers: {
-			'x-wx-openid': openid
+			'x-wx-openid': openid,
 		}
 	});
 
