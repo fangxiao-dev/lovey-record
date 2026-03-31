@@ -1,6 +1,6 @@
 // API base URL routing - used by uni.request fallback in development
 // Protocol-relative URL (//) automatically uses HTTPS in production, HTTP in dev
-const PROD_API_BASE_URL = '//prod-5gpr9l0q7ae42bfd/api'; // WeChat Cloud Run environment ID: prod-5gpr9l0q7ae42bfd
+const PROD_API_BASE_URL = '//prod-5gpr9j0q7ae42bfd/api'; // WeChat Cloud Run environment ID: prod-5gpr9j0q7ae42bfd
 const DEV_API_BASE_URL = 'http://localhost:3000/api'; // Local backend development server
 
 export const API_BASE_URL =
