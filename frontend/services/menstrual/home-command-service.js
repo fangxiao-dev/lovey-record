@@ -103,3 +103,18 @@ export async function persistBatchPeriodRange({ context, action, startDate, endD
 		}
 	});
 }
+
+export async function persistBatchDateDetails({ context, dates, flowLevel, painLevel, colorLevel }) {
+	return commandEnvelope({
+		apiBaseUrl: context.apiBaseUrl,
+		openid: context.openid,
+		path: '/api/commands/recordDayDetailsBatch',
+		data: {
+			moduleInstanceId: context.moduleInstanceId,
+			dates,
+			flowLevel: flowLevel ?? null,
+			painLevel: painLevel ?? null,
+			colorLevel: colorLevel ?? null,
+		}
+	});
+}
