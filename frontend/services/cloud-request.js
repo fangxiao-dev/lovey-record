@@ -1,4 +1,4 @@
-import { CLOUD_CONFIG } from '../config/api.js';
+import { CLOUD_CONFIG, DEV_API_BASE_URL } from '../config/api.js';
 
 /**
  * Unified request handler that routes to wx.cloud.callContainer in production,
@@ -11,8 +11,18 @@ import { CLOUD_CONFIG } from '../config/api.js';
  * @returns {Promise<{statusCode: number, data: {ok: boolean, data: any, error?: any}}>}
  */
 export async function cloudRequest({ path, method = 'GET', data, headers }) {
-  const useCloudApi = process.env.NODE_ENV === 'production';
-  console.log('[cloudRequest]', useCloudApi ? 'prod→callContainer' : 'dev→uni.request', path,
+  const useCloudApi = (() => {
+    try {
+      const info = wx.getAccountInfoSync();
+      const envVersion = info && info.miniProgram && info.miniProgram.envVersion;
+      console.log('[cloudRequest] envVersion:', envVersion);
+      return envVersion === 'release' || envVersion === 'trial';
+    } catch (e) {
+      console.log('[cloudRequest] getAccountInfoSync failed:', e && e.message);
+      return false; // H5 / local dev — no wx object
+    }
+  })();
+  console.log('[cloudRequest]', useCloudApi ? 'wx→callContainer' : 'h5→uni.request', path,
     useCloudApi ? { envId: CLOUD_CONFIG.envId, svc: CLOUD_CONFIG.serviceName } : '');
 
   if (useCloudApi) {
@@ -66,8 +76,7 @@ async function callCloudContainer({ path, method, data, headers }) {
  * Used for local testing against dev server
  */
 async function callUniRequest({ path, method, data, headers }) {
-  const baseUrl = 'http://localhost:3000';
-  const url = baseUrl + path;
+  const url = DEV_API_BASE_URL + path;
 
   return new Promise((resolve, reject) => {
     uni.request({
