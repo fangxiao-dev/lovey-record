@@ -58,13 +58,33 @@
 - Avoid introducing frontend language, UI assumptions, or view-specific shortcuts into backend domain code unless the application contract explicitly requires the read model.
 
 ## Persistence And Database Rules
+
+### Local Development Database
+- **Local DB setup**: Docker MySQL 8.4 container managed via `docker-compose.yml` in the repo root
+- **Connection**: `.env` contains `DATABASE_URL=mysql://root:password@localhost:3306/lovey_record`
+- **Prisma workflow for local changes**:
+  1. Modify `prisma/schema.prisma`
+  2. Run `npx prisma migrate dev --name <description>` to generate migration files
+  3. Migration SQL files are committed to `prisma/migrations/` in git
+  4. Local MySQL schema updates automatically
+- **Data isolation**: Local DB is for development/testing only; never shared with cloud
+- **Running locally**: `docker-compose up -d` starts the MySQL container, then `PORT=3004 npm run dev`
+
+### Cloud Deployment Database
+- **Cloud DB**: Tencent WeChat CloudRun managed MySQL instance at `10.8.108.220:3306`
+- **Cloud credentials**: Environment variables in cloud console (different from local)
+- **Migration path**: Dockerfile includes `RUN npx prisma migrate deploy` which applies committed migration files to cloud DB
+- **Never manually edit migrations**: All schema changes must go through local `prisma migrate dev` workflow first
+
+### General Persistence Rules
 - Prisma schema must reflect the domain contract, not redefine it.
 - Treat schema and migrations as backend implementation assets; durable business meaning still belongs in `docs/contracts/`.
 - Before introducing a real DB dependency into a feature, make sure the command/query contract and test coverage already exist.
 - When changing Prisma schema:
   - update `prisma/schema.prisma`
-  - generate or apply the appropriate migration workflow
+  - run `npx prisma migrate dev --name <description>` locally
   - verify affected tests
+  - commit migration files to git
   - document any contract-visible persistence impact
 - Do not add persistence-only fields that leak into public responses unless the application contract is updated first.
 
