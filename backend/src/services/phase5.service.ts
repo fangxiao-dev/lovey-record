@@ -310,3 +310,54 @@ export async function getPredictionSummary(input: { moduleInstanceId: string; us
       : null,
   };
 }
+
+export async function recordDayDetailsBatch(input: {
+  moduleInstanceId: string;
+  userId: string;
+  dates: string[];
+  painLevel: number | null;
+  flowLevel: number | null;
+  colorLevel: number | null;
+}) {
+  if (!input.dates.length) {
+    return { updatedCount: 0 };
+  }
+
+  const moduleInstance = await requireMaintenance(input.moduleInstanceId, input.userId);
+  const profileId = moduleInstance.profileId;
+
+  // Only update the non-null levels; null means "leave existing value unchanged"
+  const detailUpdate: Record<string, number> = {};
+  if (input.flowLevel !== null) detailUpdate.flowLevel = input.flowLevel;
+  if (input.painLevel !== null) detailUpdate.painLevel = input.painLevel;
+  if (input.colorLevel !== null) detailUpdate.colorLevel = input.colorLevel;
+
+  let updatedCount = 0;
+  for (const isoDate of input.dates) {
+    const date = toDateOnly(isoDate);
+    await prisma.dayRecord.upsert({
+      where: {
+        moduleInstanceId_profileId_date: {
+          moduleInstanceId: input.moduleInstanceId,
+          profileId,
+          date,
+        },
+      },
+      create: {
+        moduleInstanceId: input.moduleInstanceId,
+        profileId,
+        date,
+        isPeriod: false,
+        painLevel: input.painLevel,
+        flowLevel: input.flowLevel,
+        colorLevel: input.colorLevel,
+        note: null,
+        source: 'MANUAL',
+      },
+      update: detailUpdate,
+    });
+    updatedCount += 1;
+  }
+
+  return { updatedCount };
+}

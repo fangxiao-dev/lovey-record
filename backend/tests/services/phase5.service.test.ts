@@ -2,6 +2,7 @@ import prisma from '../../src/db/prisma';
 import {
   recordDayDetails,
   recordDayNote,
+  recordDayDetailsBatch,   // ← add this
   shareModuleInstance,
   revokeModuleAccess,
   getCalendarWindow,
@@ -209,5 +210,46 @@ describe('phase5.service', () => {
       moduleInstanceId: 'module-1',
       prediction: null,
     });
+  });
+
+  it('batch-updates details on multiple existing day records', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1', profileId: 'profile-1', ownerUserId: 'user-1',
+    });
+    (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({ id: 'day-x' });
+
+    const result = await recordDayDetailsBatch({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      dates: ['2026-04-01', '2026-04-02'],
+      flowLevel: 2,
+      painLevel: null,
+      colorLevel: null,
+    });
+
+    expect(result.updatedCount).toBe(2);
+    expect(prisma.dayRecord.upsert).toHaveBeenCalledTimes(2);
+    // update object must NOT include painLevel or colorLevel (null fields excluded)
+    const updateArg = (prisma.dayRecord.upsert as jest.Mock).mock.calls[0][0].update;
+    expect(updateArg).toEqual({ flowLevel: 2 });
+    expect(updateArg).not.toHaveProperty('painLevel');
+  });
+
+  it('returns updatedCount 0 when dates array is empty', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1', profileId: 'profile-1', ownerUserId: 'user-1',
+    });
+
+    const result = await recordDayDetailsBatch({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      dates: [],
+      flowLevel: 3,
+      painLevel: 2,
+      colorLevel: null,
+    });
+
+    expect(result.updatedCount).toBe(0);
+    expect(prisma.dayRecord.upsert).not.toHaveBeenCalled();
   });
 });
