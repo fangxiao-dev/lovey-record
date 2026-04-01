@@ -141,6 +141,21 @@ export function createModuleShellPageModel({
 	};
 }
 
+export async function resolveModuleContext(openid) {
+	const response = await cloudRequest({
+		path: '/api/queries/getMyModuleInstance',
+		method: 'GET',
+		data: {},
+		headers: { 'x-wx-openid': openid }
+	});
+
+	if (response.statusCode !== 200 || !response.data?.ok) {
+		throw new Error(response.data?.error?.message || 'Failed to resolve module context');
+	}
+
+	return response.data.data;
+}
+
 export async function loadMenstrualModuleShellPageModel(context = {}) {
 	const resolved = { ...DEFAULT_MODULE_SHELL_CONTEXT, ...context };
 	const accessState = await queryEnvelope({

@@ -145,7 +145,8 @@
 <script>
 	import {
 		DEFAULT_MODULE_SHELL_CONTEXT,
-		loadMenstrualModuleShellPageModel
+		loadMenstrualModuleShellPageModel,
+		resolveModuleContext
 	} from '../../services/menstrual/module-shell-service.js';
 	import {
 		persistModuleSettings,
@@ -165,16 +166,32 @@
 				context: { ...DEFAULT_MODULE_SHELL_CONTEXT }
 			};
 		},
-		onLoad(options) {
+		async onLoad(options) {
+			const openid = options.openid || DEFAULT_MODULE_SHELL_CONTEXT.openid;
 			this.context = {
 				...DEFAULT_MODULE_SHELL_CONTEXT,
 				apiBaseUrl: options.apiBaseUrl || DEFAULT_MODULE_SHELL_CONTEXT.apiBaseUrl,
-				openid: options.openid || DEFAULT_MODULE_SHELL_CONTEXT.openid,
+				openid,
 				moduleInstanceId: options.moduleInstanceId || DEFAULT_MODULE_SHELL_CONTEXT.moduleInstanceId,
 				profileId: options.profileId || DEFAULT_MODULE_SHELL_CONTEXT.profileId,
 				partnerUserId: options.partnerUserId || DEFAULT_MODULE_SHELL_CONTEXT.partnerUserId,
 				today: options.today || DEFAULT_MODULE_SHELL_CONTEXT.today
 			};
+
+			if (!options.moduleInstanceId) {
+				try {
+					const resolved = await resolveModuleContext(openid);
+					this.context = {
+						...this.context,
+						moduleInstanceId: resolved.moduleInstanceId,
+						profileId: resolved.profileId
+					};
+				} catch (error) {
+					this.loadError = error instanceof Error ? error.message : '获取模块信息失败';
+					return;
+				}
+			}
+
 			this.retryInitialLoad();
 		},
 		methods: {
