@@ -81,7 +81,7 @@
 			<text class="selected-date-panel__clear-button-label">清空</text>
 		</view>
 
-		<view class="selected-date-panel__note-block">
+		<view v-if="showNote" class="selected-date-panel__note-block">
 			<view class="selected-date-panel__note-head">
 				<text class="selected-date-panel__note-title">当天备注</text>
 				<text class="selected-date-panel__note-count">{{ noteDraft.length }}/500</text>
@@ -138,6 +138,10 @@
 			initialEditorOpen: {
 				type: Boolean,
 				default: false
+			},
+			showNote: {
+				type: Boolean,
+				default: true
 			}
 		},
 		data() {
