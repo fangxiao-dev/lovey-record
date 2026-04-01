@@ -7,7 +7,7 @@ export const DEFAULT_MODULE_SHELL_CONTEXT = Object.freeze({
 	moduleInstanceId: 'seed-home-module',
 	profileId: 'seed-home-profile',
 	partnerUserId: 'seed-shared-partner',
-	today: '2026-03-29'
+	today: new Date().toISOString().slice(0, 10)
 });
 
 async function queryEnvelope({ apiBaseUrl, openid, path, data }) {

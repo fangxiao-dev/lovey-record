@@ -10,7 +10,7 @@ export const DEFAULT_MENSTRUAL_HOME_CONTEXT = Object.freeze({
 	openid: 'seed-home-openid',
 	moduleInstanceId: 'seed-home-module',
 	profileId: 'seed-home-profile',
-	today: '2026-03-29'
+	today: new Date().toISOString().slice(0, 10)
 });
 
 function toDateOnly(value) {
