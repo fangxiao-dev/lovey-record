@@ -45,6 +45,23 @@
 - Component state surfaces should map through props or small pure helpers instead of page-local style forks.
 - Repeated UI patterns should be extracted or intentionally prepared for extraction.
 
+## Environment Routing — Verify Before Every Release
+
+`frontend/services/cloud-request.js` 的路由逻辑由 `wx.getAccountInfoSync().miniProgram.envVersion` 决定，**每次改动 cloud-request.js 或 config/api.js 后必须对照此表验证**：
+
+| 场景 | NODE_ENV | envVersion | useCloudApi | url 构造 | 期望结果 |
+|------|----------|------------|-------------|---------|---------|
+| WeChat DevTools 运行/联调 | development | develop | false | `localhost:3004/api/...` | ✓ 本地 |
+| WeChat DevTools 上传/构建 | production | develop | false | `localhost:3004/api/...` | ✓ 不再用 prod URL |
+| 线上正式版 | production | release | true | `callContainer` path | ✓ 云端 |
+| H5 / Playwright | development | wx throws | false | `localhost:3004/api/...` | ✓ 本地 |
+
+**关键约束**：
+- `callUniRequest` 永远用 `DEV_API_BASE_URL`（localhost），不依赖 `NODE_ENV`
+- `callCloudContainer` 不构造完整 URL，只传 `path`，微信网关注入真实 openid
+- `envVersion` 是判断依据，`NODE_ENV` 只用于 `API_BASE_URL` 的选择（仅影响非本地 dev 路径）
+- `callContainer` timeout 最大 15 秒；若云服务冷启动超时，需在控制台将实例副本数最小值设为 1
+
 ## Verification Expectations
 - Verify every new frontend page is registered in [pages.json](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/frontend/pages.json).
 - Verify shared frontend code does not rely on obvious browser-only APIs.
