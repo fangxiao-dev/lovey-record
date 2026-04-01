@@ -590,7 +590,7 @@
 
 	.selected-date-panel__note-input {
 		width: 100%;
-		min-height: 128rpx;
+		height: 154rpx;
 		font-size: 24rpx;
 		line-height: 1.6;
 		color: $text-primary;

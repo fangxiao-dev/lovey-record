@@ -1,16 +1,7 @@
 <template>
 	<view class="module-space u-page-shell">
 		<view v-if="page" class="hero-card ui-card u-page-section">
-			<view class="hero-header ui-card__header">
-				<view>
-					<text class="hero-title u-text-title-lg">{{ page.hero.title }}</text>
-					<text class="hero-subtitle u-text-body-secondary">{{ page.hero.subtitle }}</text>
-				</view>
-				<view class="status-tag ui-badge">
-					<text class="status-tag__text ui-badge__text">{{ page.hero.statusTag }}</text>
-				</view>
-			</view>
-			<text class="hero-copy u-text-body-secondary">模块壳当前只做真实读状态和进入入口，share/settings 改动会在后续切片接入。</text>
+			<text class="hero-title u-text-title-lg">{{ page.hero.title }}</text>
 		</view>
 
 		<view v-if="page" class="zone-board ui-page-container u-page-section">
@@ -76,7 +67,6 @@
 				<text class="info-panel__title u-text-title-sm">{{ page.summaryCard.title }}</text>
 				<text class="info-panel__state ui-badge__text">{{ page.summaryCard.sharingStatus.value }}</text>
 			</view>
-			<text class="info-panel__summary u-text-body-secondary">{{ page.summaryCard.description }}</text>
 			<view class="summary-grid">
 				<view class="summary-item">
 					<text class="summary-item__label u-text-caption">{{ page.summaryCard.sharingStatus.label }}</text>

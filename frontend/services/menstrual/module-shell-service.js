@@ -86,9 +86,7 @@ export function createModuleShellPageModel({
 
 	return {
 		hero: {
-			title: '记录空间',
-			subtitle: '真实模块入口已经接到联调数据，先从当前唯一的月经模块进入。',
-			statusTag: 'MVP'
+			title: '记录空间'
 		},
 		privateZone: {
 			title: '私人',
@@ -104,7 +102,6 @@ export function createModuleShellPageModel({
 		},
 		summaryCard: {
 			title: '模块摘要',
-			description: 'private/shared 只改变访问范围，不生成第二份数据。',
 			sharingStatus: {
 				label: '共享状态',
 				value: getSharingLabel(sharingStatus)
