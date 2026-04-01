@@ -88,7 +88,7 @@ function diffDays(startDate, endDate) {
 	return Math.round((end - start) / 86400000);
 }
 
-function createOptionRows(dayRecord) {
+export function createOptionRows(dayRecord) {
 	const selectedLevels = {
 		flow: dayRecord?.flowLevel ?? null,
 		pain: dayRecord?.painLevel ?? null,
@@ -126,7 +126,7 @@ function createOptionRows(dayRecord) {
 	];
 }
 
-function createSummaryItems(dayRecord) {
+export function createSummaryItems(dayRecord) {
 	if (!dayRecord) return [];
 
 	const items = [];
