@@ -60,14 +60,15 @@
 			/>
 			<CalendarLegend :items="page.legend" />
 			<SelectedDatePanel
-				v-if="panelMode !== 'batch'"
-				:title="page.selectedDatePanel.title"
-				:badge="page.selectedDatePanel.badge"
-				:summary-items="page.selectedDatePanel.summaryItems"
-				:attribute-rows="page.selectedDatePanel.attributeRows"
-				:note="page.selectedDatePanel.note"
-				:initial-period-marked="page.selectedDatePanel.initialPeriodMarked"
-				:initial-editor-open="page.selectedDatePanel.initialEditorOpen"
+				v-if="page"
+				:title="panelMode === 'batch' ? batchPanelTitle : page.selectedDatePanel.title"
+				:badge="panelMode === 'batch' ? '' : page.selectedDatePanel.badge"
+				:summary-items="panelMode === 'batch' ? batchPanelSummaryItems : page.selectedDatePanel.summaryItems"
+				:attribute-rows="panelMode === 'batch' ? batchPanelAttributeRows : page.selectedDatePanel.attributeRows"
+				:note="panelMode === 'batch' ? '' : page.selectedDatePanel.note"
+				:initial-period-marked="panelMode === 'batch' ? batchDraft.isPeriod : page.selectedDatePanel.initialPeriodMarked"
+				:initial-editor-open="panelMode === 'batch' ? false : page.selectedDatePanel.initialEditorOpen"
+				:show-note="panelMode !== 'batch'"
 				@toggle-attribute-option="handleToggleAttributeOption"
 				@clear-attributes="handleClearAttributes"
 				@toggle-period="handleTogglePeriod"
@@ -99,6 +100,8 @@
 		applySelectedDateNoteToPageModel,
 		applyToggleAttributeOptionToPageModel,
 		applyTogglePeriodToPageModel,
+		createOptionRows,
+		createSummaryItems,
 		resolveJumpTargetDate,
 		shiftFocusDate
 	} from '../../components/menstrual/home-contract-adapter.js';
@@ -107,6 +110,7 @@
 		loadMenstrualHomePageModel
 	} from '../../services/menstrual/home-contract-service.js';
 	import {
+		persistBatchDateDetails,
 		persistBatchPeriodRange,
 		persistSelectedDateNote,
 		persistSelectedDateDetails,
@@ -136,6 +140,12 @@
 				batchEndKey: null,
 				batchHoveredKey: null,
 				batchSelectedKeysState: [],
+				batchDraft: {
+					isPeriod: true,
+					flowLevel: null,
+					painLevel: null,
+					colorLevel: null
+				},
 				contractContext: { ...DEFAULT_MENSTRUAL_HOME_CONTEXT },
 				rawContracts: null
 			};
@@ -147,6 +157,22 @@
 			selectedBatchKeys() {
 				if (this.panelMode !== 'batch') return [];
 				return this.batchSelectedKeysState;
+			},
+			batchPanelTitle() {
+				const cells = this.allCalendarCells.filter(c => this.selectedBatchKeys.includes(c.key) && c.isoDate);
+				if (!cells.length) return '批量记录';
+				const fmt = d => d.slice(5).replace('-', '/');
+				const first = cells[0].isoDate;
+				const last = cells[cells.length - 1].isoDate;
+				return first === last
+					? `批量记录 ${fmt(first)}`
+					: `批量记录 ${fmt(first)}-${fmt(last)}`;
+			},
+			batchPanelAttributeRows() {
+				return createOptionRows(this.batchDraft);
+			},
+			batchPanelSummaryItems() {
+				return createSummaryItems(this.batchDraft);
 			}
 		},
 		onLoad(options) {
@@ -282,6 +308,20 @@
 				}
 			},
 			handleToggleAttributeOption(payload) {
+				if (this.panelMode === 'batch') {
+					const row = this.batchPanelAttributeRows.find(r => r.key === payload.rowKey);
+					if (!row) return;
+					const optionIndex = row.options.findIndex(o => o.key === payload.optionKey);
+					if (optionIndex === -1) return;
+					const level = optionIndex + 1;
+					const levelKey = `${payload.rowKey}Level`;
+					const currentLevel = this.batchDraft[levelKey];
+					this.batchDraft = {
+						...this.batchDraft,
+						[levelKey]: currentLevel === level ? null : level
+					};
+					return;
+				}
 				const nextPage = applyToggleAttributeOptionToPageModel(this.page, payload);
 				return this.runOptimisticMutation(nextPage, () => persistSelectedDateDetails({
 					context: this.contractContext,
@@ -290,6 +330,10 @@
 				}));
 			},
 			handleClearAttributes() {
+				if (this.panelMode === 'batch') {
+					this.batchDraft = { ...this.batchDraft, flowLevel: null, painLevel: null, colorLevel: null };
+					return;
+				}
 				const nextPage = applyClearAttributesToPageModel(this.page);
 				return this.runOptimisticMutation(nextPage, () => persistSelectedDateDetails({
 					context: this.contractContext,
@@ -298,6 +342,10 @@
 				}));
 			},
 			handleTogglePeriod(isPeriodMarked) {
+				if (this.panelMode === 'batch') {
+					this.batchDraft = { ...this.batchDraft, isPeriod: isPeriodMarked };
+					return;
+				}
 				const nextPage = applyTogglePeriodToPageModel(this.page, isPeriodMarked);
 				return this.runOptimisticMutation(nextPage, () => persistSelectedDatePeriodState({
 					context: this.contractContext,
@@ -318,6 +366,7 @@
 			handleBatchStart(cell) {
 				if (!cell?.key) return;
 				this.panelMode = 'batch';
+				this.batchDraft = { isPeriod: true, flowLevel: null, painLevel: null, colorLevel: null };
 				this.batchStartKey = cell.key;
 				this.batchEndKey = cell.key;
 				this.batchHoveredKey = cell.key;
@@ -354,14 +403,31 @@
 				const ranges = this.buildBatchRanges(this.selectedBatchKeys);
 
 				return this.runCommand(async () => {
+					// 1. Period: apply to each contiguous range
 					for (const range of ranges) {
 						await persistBatchPeriodRange({
 							context: this.contractContext,
-							action: 'set-period',
+							action: this.batchDraft.isPeriod ? 'set-period' : 'clear-record',
 							startDate: range.startDate,
 							endDate: range.endDate
 						});
 					}
+
+					// 2. Details: only if user set at least one level
+					const { flowLevel, painLevel, colorLevel } = this.batchDraft;
+					if (flowLevel !== null || painLevel !== null || colorLevel !== null) {
+						const dates = this.allCalendarCells
+							.filter(c => this.selectedBatchKeys.includes(c.key) && c.isoDate)
+							.map(c => c.isoDate);
+						await persistBatchDateDetails({
+							context: this.contractContext,
+							dates,
+							flowLevel,
+							painLevel,
+							colorLevel
+						});
+					}
+
 					this.cancelBatchMode();
 				});
 			},
