@@ -4,7 +4,7 @@ import { clearPeriodRange, recordPeriodRange } from '../../src/services/dayRecor
 import { createModuleInstance } from '../../src/services/moduleInstance.service';
 import { findOrCreateUser } from '../../src/services/auth.service';
 import { updateDefaultPeriodDuration } from '../../src/services/moduleSettings.service';
-import { recordDayDetails, recordDayNote } from '../../src/services/phase5.service';
+import { recordDayDetails, recordDayNote, recordDayDetailsBatch } from '../../src/services/phase5.service';
 
 jest.mock('../../src/services/auth.service');
 jest.mock('../../src/services/dayRecord.service');
@@ -158,6 +158,37 @@ describe('Commands Integration', () => {
         recordedDates: ['2026-03-16', '2026-03-17'],
       },
       error: null,
+    });
+  });
+
+  it('batch-records day details through the command endpoint', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+    (recordDayDetailsBatch as jest.Mock).mockResolvedValue({ updatedCount: 3 });
+
+    const response = await request(app)
+      .post('/api/commands/recordDayDetailsBatch')
+      .set('x-wx-openid', 'openid-1')
+      .send({
+        moduleInstanceId: 'module-1',
+        dates: ['2026-04-01', '2026-04-02', '2026-04-03'],
+        flowLevel: 2,
+        painLevel: null,
+        colorLevel: null,
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: { updatedCount: 3 },
+      error: null,
+    });
+    expect(recordDayDetailsBatch).toHaveBeenCalledWith({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      dates: ['2026-04-01', '2026-04-02', '2026-04-03'],
+      flowLevel: 2,
+      painLevel: null,
+      colorLevel: null,
     });
   });
 

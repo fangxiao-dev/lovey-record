@@ -3,6 +3,7 @@ import {
   getCalendarWindow,
   getPredictionSummary,
   recordDayDetails,
+  recordDayDetailsBatch,
   recordDayNote,
   revokeModuleAccess,
   shareModuleInstance,
@@ -86,6 +87,22 @@ export async function getPredictionSummaryHandler(req: Request, res: Response) {
 export async function updateDefaultPeriodDurationHandler(req: Request, res: Response) {
   try {
     const result = await updateDefaultPeriodDurationSetting(req.body.moduleInstanceId, req.body.defaultPeriodDurationDays, req.user.id);
+    res.json({ ok: true, data: result, error: null });
+  } catch (error) {
+    handleError(res, error);
+  }
+}
+
+export async function recordDayDetailsBatchHandler(req: Request, res: Response) {
+  try {
+    const result = await recordDayDetailsBatch({
+      moduleInstanceId: req.body.moduleInstanceId,
+      userId: req.user.id,
+      dates: req.body.dates,
+      flowLevel: req.body.flowLevel ?? null,
+      painLevel: req.body.painLevel ?? null,
+      colorLevel: req.body.colorLevel ?? null,
+    });
     res.json({ ok: true, data: result, error: null });
   } catch (error) {
     handleError(res, error);
