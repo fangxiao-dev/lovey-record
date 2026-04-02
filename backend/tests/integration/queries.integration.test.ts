@@ -142,4 +142,81 @@ describe('Queries Integration', () => {
       error: null,
     });
   });
+
+  it('returns the resolved single-day period action for a bridge candidate', async () => {
+    const queryService = jest.requireMock('../../src/services/query.service') as Record<string, jest.Mock>;
+
+    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+    queryService.getSingleDayPeriodAction = jest.fn().mockResolvedValue({
+      selectedDate: '2026-03-22',
+      role: 'not-period',
+      chip: {
+        text: '月经开始',
+        selected: false,
+      },
+      resolvedAction: {
+        action: 'start',
+        bridgeType: 'backward',
+        prompt: {
+          required: true,
+          type: 'backward',
+          message: '已在 03/24 标记了经期开始，要提前到 03/22 吗？',
+          confirmLabel: '确认',
+          cancelLabel: '取消',
+        },
+        effect: {
+          action: 'bridge-backward',
+          bridgeType: 'backward',
+          selectedDate: '2026-03-22',
+          writeDates: ['2026-03-22', '2026-03-23', '2026-03-24'],
+          clearDates: [],
+          resultingSegment: {
+            startDate: '2026-03-22',
+            endDate: '2026-03-28',
+          },
+        },
+      },
+    });
+
+    const response = await request(app)
+      .get('/api/queries/getSingleDayPeriodAction')
+      .set('x-wx-openid', 'openid-1')
+      .query({ moduleInstanceId: 'module-1', date: '2026-03-22' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        selectedDate: '2026-03-22',
+        role: 'not-period',
+        chip: {
+          text: '月经开始',
+          selected: false,
+        },
+        resolvedAction: {
+          action: 'start',
+          bridgeType: 'backward',
+          prompt: {
+            required: true,
+            type: 'backward',
+            message: '已在 03/24 标记了经期开始，要提前到 03/22 吗？',
+            confirmLabel: '确认',
+            cancelLabel: '取消',
+          },
+          effect: {
+            action: 'bridge-backward',
+            bridgeType: 'backward',
+            selectedDate: '2026-03-22',
+            writeDates: ['2026-03-22', '2026-03-23', '2026-03-24'],
+            clearDates: [],
+            resultingSegment: {
+              startDate: '2026-03-22',
+              endDate: '2026-03-28',
+            },
+          },
+        },
+      },
+      error: null,
+    });
+  });
 });

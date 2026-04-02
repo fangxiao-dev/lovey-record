@@ -1,5 +1,6 @@
 import prisma from '../db/prisma';
 import { getModuleSettings as getModuleSettingsRecord } from './moduleSettings.service';
+import { resolveSingleDayPeriodAction } from './singleDayPeriodAction.service';
 
 type AccessInput = {
   moduleInstanceId: string;
@@ -9,6 +10,12 @@ type AccessInput = {
 type DayDetailInput = {
   moduleInstanceId: string;
   profileId: string;
+  date: string;
+  userId: string;
+};
+
+type SingleDayPeriodActionInput = {
+  moduleInstanceId: string;
   date: string;
   userId: string;
 };
@@ -238,4 +245,23 @@ export async function getModuleSettings(input: AccessInput) {
       defaultPeriodDurationDays: settings.defaultPeriodDurationDays,
     },
   };
+}
+
+export async function getSingleDayPeriodAction(input: SingleDayPeriodActionInput) {
+  const moduleInstance = await requireAccess(input.moduleInstanceId, input.userId);
+  const settings = await getModuleSettingsRecord(input.moduleInstanceId);
+  const periodRecords = await prisma.dayRecord.findMany({
+    where: {
+      moduleInstanceId: input.moduleInstanceId,
+      profileId: moduleInstance.profileId,
+      isPeriod: true,
+    },
+    orderBy: { date: 'asc' },
+  });
+
+  return resolveSingleDayPeriodAction({
+    selectedDate: input.date,
+    periodDates: periodRecords.map((record) => formatDate(record.date)),
+    defaultPeriodDurationDays: settings.defaultPeriodDurationDays,
+  });
 }
