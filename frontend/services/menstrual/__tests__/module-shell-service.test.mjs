@@ -7,6 +7,11 @@ import {
 	loadMenstrualModuleShellPageModel
 } from '../module-shell-service.js';
 
+const DEFAULT_PERIOD_DURATION_DAYS = 5;
+const DEFAULT_PREDICTION_TERM_DAYS = 28;
+const PERIOD_DURATION_OPTIONS = [5, 6, 7];
+const PREDICTION_TERM_OPTIONS = [27, 28, 29];
+
 function installUniRequestMock(handler) {
 	globalThis.uni = {
 		request(options) {
@@ -42,7 +47,8 @@ test('loadMenstrualModuleShellPageModel maps a private module into the private z
 					data: {
 						moduleInstanceId: 'seed-home-module',
 						moduleSettings: {
-							defaultPeriodDurationDays: 6
+							defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+							defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS
 						}
 					},
 					error: null
@@ -60,7 +66,20 @@ test('loadMenstrualModuleShellPageModel maps a private module into the private z
 	assert.equal(result.page.sharedZone.modules.length, 0);
 	assert.equal(result.page.summaryCard.sharingStatus.value, '未共享');
 	assert.equal(result.page.summaryCard.activePartners.value, '0 人');
-	assert.equal(result.page.summaryCard.defaultPeriodDuration.value, '6 天');
+	assert.equal(result.page.summaryCard.defaultPeriodDuration.label, '经期时长');
+	assert.equal(result.page.summaryCard.defaultPeriodDuration.value, `${DEFAULT_PERIOD_DURATION_DAYS} 天`);
+	assert.equal(result.page.summaryCard.defaultPredictionTerm.label, '月经周期');
+	assert.equal(result.page.summaryCard.defaultPredictionTerm.value, `${DEFAULT_PREDICTION_TERM_DAYS} 天`);
+	assert.equal(result.page.summaryCard.settingsControl.label, '设置时长');
+	assert.deepEqual(
+		result.page.summaryCard.settingsControl.options.map((option) => option.value),
+		PERIOD_DURATION_OPTIONS
+	);
+	assert.equal(result.page.summaryCard.predictionSettingsControl.label, '设置天数');
+	assert.deepEqual(
+		result.page.summaryCard.predictionSettingsControl.options.map((option) => option.value),
+		PREDICTION_TERM_OPTIONS
+	);
 	assert.equal(result.page.primaryEntry.url, createMenstrualHomeEntryUrl({
 		...DEFAULT_MODULE_SHELL_CONTEXT,
 		moduleInstanceId: 'seed-home-module'
@@ -100,7 +119,8 @@ test('loadMenstrualModuleShellPageModel maps a shared module into the shared zon
 					data: {
 						moduleInstanceId: 'seed-shared-module',
 						moduleSettings: {
-							defaultPeriodDurationDays: 7
+							defaultPeriodDurationDays: 7,
+							defaultPredictionTermDays: 29
 						}
 					},
 					error: null
@@ -122,6 +142,7 @@ test('loadMenstrualModuleShellPageModel maps a shared module into the shared zon
 	assert.equal(result.page.summaryCard.sharingStatus.value, '共享中');
 	assert.equal(result.page.summaryCard.activePartners.value, '1 人');
 	assert.equal(result.page.summaryCard.defaultPeriodDuration.value, '7 天');
+	assert.equal(result.page.summaryCard.defaultPredictionTerm.value, '29 天');
 });
 
 test('loadMenstrualModuleShellPageModel requests live access and settings queries with shell context auth', async () => {
@@ -148,7 +169,8 @@ test('loadMenstrualModuleShellPageModel requests live access and settings querie
 					: {
 						moduleInstanceId: 'seed-home-module',
 						moduleSettings: {
-							defaultPeriodDurationDays: 6
+							defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+							defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS
 						}
 					},
 				error: null
@@ -225,11 +247,12 @@ test('loadMenstrualModuleShellPageModel starts access and settings queries in pa
 					data: {
 						ok: true,
 						data: {
-							moduleInstanceId: 'seed-home-module',
-							moduleSettings: {
-								defaultPeriodDurationDays: 6
-							}
-						},
+						moduleInstanceId: 'seed-home-module',
+						moduleSettings: {
+							defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+							defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS
+						}
+					},
 						error: null
 					}
 				});

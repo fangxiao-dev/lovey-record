@@ -38,8 +38,8 @@ test('module shell live entry renders the private module and opens menstrual hom
 
 	await expect(page.locator('.zone-card').filter({ hasText: '私人' }).locator('.module-tile')).toHaveCount(1);
 	await expect(page.locator('.zone-card').filter({ hasText: '共享' }).locator('.module-tile')).toHaveCount(0);
-	await expect(page.locator('.summary-item').filter({ hasText: '共享状态' })).toContainText('未共享');
-	await expect(page.locator('.summary-item').filter({ hasText: '默认经期时长' })).toContainText('6 天');
+	await expect(page.locator('.info-panel__state')).toContainText('未共享');
+	await expect(page.locator('.summary-item').filter({ hasText: '经期时长' })).toContainText('6 天');
 
 	await page.locator('.showcase-entry').click();
 	await page.waitForURL((url) => url.hash.includes(HOME_ROUTE));
@@ -59,7 +59,7 @@ test('module shell renders a shared module in the shared zone without duplicatin
 	await expect(page.locator('.zone-card').filter({ hasText: '私人' }).locator('.module-tile')).toHaveCount(0);
 	await expect(page.locator('.zone-card').filter({ hasText: '共享' }).locator('.module-tile')).toHaveCount(1);
 	await expect(page.locator('.zone-card').filter({ hasText: '共享' })).toContainText('已共享 · 1 位伙伴');
-	await expect(page.locator('.summary-item').filter({ hasText: '共享状态' })).toContainText('共享中');
+	await expect(page.locator('.info-panel__state')).toContainText('共享中');
 });
 
 async function postJson(path, body, openid = OPENID) {
@@ -253,11 +253,11 @@ test('owner shell can share and revoke the same module instance while partner re
 		}));
 		await page.waitForTimeout(1200);
 
-		await expect(page.locator('.summary-item').filter({ hasText: '共享状态' })).toContainText('未共享');
+		await expect(page.locator('.info-panel__state')).toContainText('未共享');
 		await expect(page.locator('.summary-action')).toContainText('共享给伙伴');
 		await page.locator('.summary-action').click();
 		await page.waitForTimeout(1200);
-		await expect(page.locator('.summary-item').filter({ hasText: '共享状态' })).toContainText('共享中');
+		await expect(page.locator('.info-panel__state')).toContainText('共享中');
 		await expect(page.locator('.zone-card').filter({ hasText: '共享' }).locator('.module-tile')).toHaveCount(1);
 
 		const ownerState = await getAccessState();
@@ -293,7 +293,7 @@ test('owner shell can share and revoke the same module instance while partner re
 		await expect(page.locator('.summary-action')).toContainText('撤回共享');
 		await page.locator('.summary-action').click();
 		await page.waitForTimeout(1200);
-		await expect(page.locator('.summary-item').filter({ hasText: '共享状态' })).toContainText('未共享');
+		await expect(page.locator('.info-panel__state')).toContainText('未共享');
 		const finalOwnerState = await getAccessState();
 		expect(finalOwnerState.sharingStatus).toBe('private');
 		expect(finalOwnerState.activePartners).toEqual([]);
@@ -316,10 +316,10 @@ test('owner shell can update the default period duration from the live settings 
 		}));
 		await page.waitForTimeout(1200);
 
-		await expect(page.locator('.summary-item').filter({ hasText: '默认经期时长' })).toContainText('6 天');
+		await expect(page.locator('.summary-item').filter({ hasText: '经期时长' })).toContainText('6 天');
 		await page.locator('.settings-chip').filter({ hasText: '5 天' }).click();
 		await page.waitForTimeout(1200);
-		await expect(page.locator('.summary-item').filter({ hasText: '默认经期时长' })).toContainText('5 天');
+		await expect(page.locator('.summary-item').filter({ hasText: '经期时长' })).toContainText('5 天');
 		await expect(page.locator('.settings-chip--selected')).toContainText('5 天');
 	} finally {
 		await ensureDefaultPeriodDuration(6);

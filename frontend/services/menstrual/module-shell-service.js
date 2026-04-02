@@ -39,6 +39,7 @@ function getZoneModule({
 	sharingStatus,
 	activePartners,
 	defaultPeriodDurationDays,
+	defaultPredictionTermDays,
 	entryUrl
 }) {
 	const partnerCount = activePartners.length;
@@ -50,7 +51,7 @@ function getZoneModule({
 		entryLabel: '进入月经记录',
 		entryUrl,
 		statusText: isShared ? `已共享 · ${partnerCount} 位伙伴` : '仅自己可见',
-		durationText: `默认经期 ${defaultPeriodDurationDays} 天`,
+		durationText: `默认经期 ${defaultPeriodDurationDays} 天 · 预测 ${defaultPredictionTermDays} 天`,
 		badgeText: isShared ? '共享' : '私人',
 		zoneTone: isShared ? 'shared' : 'private'
 	};
@@ -75,12 +76,14 @@ export function createModuleShellPageModel({
 	const sharingStatus = accessState?.sharingStatus || 'private';
 	const activePartners = accessState?.activePartners || [];
 	const defaultPeriodDurationDays = settings?.moduleSettings?.defaultPeriodDurationDays ?? 0;
+	const defaultPredictionTermDays = settings?.moduleSettings?.defaultPredictionTermDays ?? 28;
 	const entryUrl = createMenstrualHomeEntryUrl(context);
 	const moduleCard = getZoneModule({
 		moduleInstanceId: accessState.moduleInstanceId,
 		sharingStatus,
 		activePartners,
 		defaultPeriodDurationDays,
+		defaultPredictionTermDays,
 		entryUrl
 	});
 
@@ -111,16 +114,29 @@ export function createModuleShellPageModel({
 				value: `${activePartners.length} 人`
 			},
 			defaultPeriodDuration: {
-				label: '默认经期时长',
+				label: '经期时长',
 				value: `${defaultPeriodDurationDays} 天`
 			},
+			defaultPredictionTerm: {
+				label: '月经周期',
+				value: `${defaultPredictionTermDays} 天`
+			},
 			settingsControl: {
-				label: '默认经期时长',
+				label: '设置时长',
 				value: defaultPeriodDurationDays,
-				options: [4, 5, 6, 7].map((days) => ({
+				options: [5, 6, 7].map((days) => ({
 					value: days,
 					label: `${days} 天`,
 					selected: days === defaultPeriodDurationDays
+				}))
+			},
+			predictionSettingsControl: {
+				label: '设置周期',
+				value: defaultPredictionTermDays,
+				options: [27, 28, 29].map((days) => ({
+					value: days,
+					label: `${days} 天`,
+					selected: days === defaultPredictionTermDays
 				}))
 			},
 			shareAction: {

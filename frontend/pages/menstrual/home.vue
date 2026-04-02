@@ -65,6 +65,7 @@
 				:weekday-labels="page.calendarCard.weekdayLabels"
 				:interactive="page.viewModeControl.value === 'three-week'"
 				:selected-keys="selectedBatchKeys"
+				:preview-period-marked="panelMode === 'batch' ? batchDraft.isPeriod : null"
 				:busy="isBrowseBusy"
 				@cell-tap="handleCellTap"
 				@batch-start="handleBatchStart"

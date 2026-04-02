@@ -44,3 +44,15 @@ export async function persistModuleSettings({ context, defaultPeriodDurationDays
 		}
 	});
 }
+
+export async function persistModulePredictionTerm({ context, defaultPredictionTermDays }) {
+	return commandEnvelope({
+		apiBaseUrl: context.apiBaseUrl,
+		openid: context.openid,
+		path: '/api/commands/updateDefaultPredictionTerm',
+		data: {
+			moduleInstanceId: context.moduleInstanceId,
+			defaultPredictionTermDays
+		}
+	});
+}

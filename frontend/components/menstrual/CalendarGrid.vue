@@ -65,11 +65,60 @@
 		periodDetail: 'selectedPeriodDetail',
 		todayDetail: 'selectedTodayDetail',
 		todayPeriod: 'selectedTodayPeriod',
+		todayPeriodDetail: 'selectedTodayPeriodDetail',
+		todayPredictionDetail: 'selectedTodayPredictionDetail',
 		todayPrediction: 'selectedTodayPrediction'
 	});
 
+	const SELECT_VARIANT_REVERSE_MAP = Object.freeze(
+		Object.fromEntries(
+			Object.entries(SELECT_VARIANT_MAP).map(([baseVariant, selectedVariant]) => [selectedVariant, baseVariant])
+		)
+	);
+
 	const LONG_PRESS_DELAY = 400; // ms
 	const MOVE_CANCEL_THRESHOLD = 10; // px
+
+	function normalizeVariant(variant) {
+		return SELECT_VARIANT_REVERSE_MAP[variant] || variant;
+	}
+
+	function applyBatchPeriodPreview(variant, previewPeriodMarked) {
+		const normalizedVariant = normalizeVariant(variant);
+
+		if (previewPeriodMarked) {
+			const previewToPeriodMap = {
+				default: 'period',
+				detail: 'periodDetail',
+				prediction: 'period',
+				predictionDetail: 'periodDetail',
+				period: 'period',
+				periodDetail: 'periodDetail',
+				today: 'todayPeriod',
+				todayDetail: 'todayPeriodDetail',
+				todayPrediction: 'todayPeriod',
+				todayPredictionDetail: 'todayPeriodDetail',
+				todayPeriod: 'todayPeriod'
+			};
+			return previewToPeriodMap[normalizedVariant] || normalizedVariant;
+		}
+
+		const previewToDefaultMap = {
+			default: 'default',
+			detail: 'detail',
+			prediction: 'prediction',
+			predictionDetail: 'predictionDetail',
+			period: 'default',
+			periodDetail: 'detail',
+			today: 'today',
+			todayDetail: 'todayDetail',
+			todayPeriodDetail: 'todayDetail',
+			todayPrediction: 'todayPrediction',
+			todayPredictionDetail: 'todayPredictionDetail',
+			todayPeriod: 'today'
+		};
+		return previewToDefaultMap[normalizedVariant] || normalizedVariant;
+	}
 
 	export default {
 		name: 'CalendarGrid',
@@ -108,6 +157,10 @@
 				default() {
 					return [];
 				}
+			},
+			previewPeriodMarked: {
+				type: Boolean,
+				default: null
 			},
 			busy: {
 				type: Boolean,
@@ -151,7 +204,10 @@
 		methods: {
 			effectiveVariant(cell) {
 				if (this.selectedKeys.includes(cell.key)) {
-					return SELECT_VARIANT_MAP[cell.variant] || cell.variant;
+					const previewVariant = this.previewPeriodMarked === null
+						? normalizeVariant(cell.variant)
+						: applyBatchPeriodPreview(cell.variant, this.previewPeriodMarked);
+					return SELECT_VARIANT_MAP[previewVariant] || previewVariant;
 				}
 				return cell.variant;
 			},

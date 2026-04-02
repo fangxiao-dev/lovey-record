@@ -532,6 +532,54 @@ test('calendar grid extends batch selection when drag stays on a selectable past
 	assert.deepEqual(emitted, [['batch-extend', { key: '2026-03-19', selectable: true }]]);
 });
 
+test('calendar grid previews selected batch cells as period before save when batchDraft marks them as period', () => {
+	const CalendarGrid = loadVueOptions('frontend/components/menstrual/CalendarGrid.vue', {
+		DateCell: {}
+	});
+
+	const ctx = {
+		selectedKeys: ['2026-03-23', '2026-03-24', '2026-03-25'],
+		previewPeriodMarked: true
+	};
+
+	assert.equal(
+		CalendarGrid.methods.effectiveVariant.call(ctx, { key: '2026-03-23', variant: 'default' }),
+		'selectedPeriod'
+	);
+	assert.equal(
+		CalendarGrid.methods.effectiveVariant.call(ctx, { key: '2026-03-24', variant: 'todayDetail' }),
+		'selectedTodayPeriodDetail'
+	);
+	assert.equal(
+		CalendarGrid.methods.effectiveVariant.call(ctx, { key: '2026-03-25', variant: 'predictionDetail' }),
+		'selectedPeriodDetail'
+	);
+});
+
+test('calendar grid previews selected batch cells as non-period before save when batchDraft clears period', () => {
+	const CalendarGrid = loadVueOptions('frontend/components/menstrual/CalendarGrid.vue', {
+		DateCell: {}
+	});
+
+	const ctx = {
+		selectedKeys: ['2026-03-23', '2026-03-24', '2026-03-25'],
+		previewPeriodMarked: false
+	};
+
+	assert.equal(
+		CalendarGrid.methods.effectiveVariant.call(ctx, { key: '2026-03-23', variant: 'period' }),
+		'selected'
+	);
+	assert.equal(
+		CalendarGrid.methods.effectiveVariant.call(ctx, { key: '2026-03-24', variant: 'periodDetail' }),
+		'selectedDetail'
+	);
+	assert.equal(
+		CalendarGrid.methods.effectiveVariant.call(ctx, { key: '2026-03-25', variant: 'todayPeriodDetail' }),
+		'selectedTodayDetail'
+	);
+});
+
 test('home single-day period tap routes directly to applySingleDayPeriodAction when no confirmation is required', async () => {
 	const applyCalls = [];
 	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {

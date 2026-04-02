@@ -3,8 +3,11 @@ import assert from 'node:assert/strict';
 
 import {
 	persistModuleSharingState,
+	persistModulePredictionTerm,
 	persistModuleSettings
 } from '../module-shell-command-service.js';
+
+const DEFAULT_PERIOD_DURATION_DAYS = 5;
 
 function installUniRequestMock(handler) {
 	globalThis.uni = {
@@ -50,7 +53,7 @@ test('persistModuleSharingState posts shareModuleInstance with the owner shell c
 
 	assert.equal(result.sharingStatus, 'shared');
 	assert.equal(requests[0].method, 'POST');
-	assert.equal(requests[0].url, 'http://localhost:3000/api/commands/shareModuleInstance');
+	assert.equal(requests[0].url, 'http://localhost:3004/api/commands/shareModuleInstance');
 	assert.deepEqual(requests[0].data, {
 		moduleInstanceId: 'seed-home-module',
 		partnerUserId: 'seed-shared-partner'
@@ -94,7 +97,7 @@ test('persistModuleSharingState posts revokeModuleAccess with the owner shell co
 
 	assert.equal(result.sharingStatus, 'private');
 	assert.equal(requests[0].method, 'POST');
-	assert.equal(requests[0].url, 'http://localhost:3000/api/commands/revokeModuleAccess');
+	assert.equal(requests[0].url, 'http://localhost:3004/api/commands/revokeModuleAccess');
 	assert.deepEqual(requests[0].data, {
 		moduleInstanceId: 'seed-home-module',
 		partnerUserId: 'seed-shared-partner'
@@ -117,7 +120,7 @@ test('persistModuleSettings posts updateDefaultPeriodDuration with the owner she
 				ok: true,
 				data: {
 					moduleInstanceId: 'seed-home-module',
-					defaultPeriodDurationDays: 5,
+					defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
 					settingsChanged: true
 				},
 				error: null
@@ -131,15 +134,57 @@ test('persistModuleSettings posts updateDefaultPeriodDuration with the owner she
 			openid: 'seed-home-openid',
 			moduleInstanceId: 'seed-home-module'
 		},
-		defaultPeriodDurationDays: 5
+		defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS
 	});
 
-	assert.equal(result.defaultPeriodDurationDays, 5);
+	assert.equal(result.defaultPeriodDurationDays, DEFAULT_PERIOD_DURATION_DAYS);
 	assert.equal(requests[0].method, 'POST');
-	assert.equal(requests[0].url, 'http://localhost:3000/api/commands/updateDefaultPeriodDuration');
+	assert.equal(requests[0].url, 'http://localhost:3004/api/commands/updateDefaultPeriodDuration');
 	assert.deepEqual(requests[0].data, {
 		moduleInstanceId: 'seed-home-module',
-		defaultPeriodDurationDays: 5
+		defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS
+	});
+	assert.equal(requests[0].header['x-wx-openid'], 'seed-home-openid');
+});
+
+test('persistModulePredictionTerm posts updateDefaultPredictionTerm with the owner shell context and selected term', async () => {
+	const requests = [];
+	installUniRequestMock((options) => {
+		requests.push({
+			url: options.url,
+			method: options.method,
+			data: options.data,
+			header: options.header
+		});
+		options.success({
+			statusCode: 200,
+			data: {
+				ok: true,
+				data: {
+					moduleInstanceId: 'seed-home-module',
+					defaultPredictionTermDays: 29,
+					settingsChanged: true
+				},
+				error: null
+			}
+		});
+	});
+
+	const result = await persistModulePredictionTerm({
+		context: {
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-home-openid',
+			moduleInstanceId: 'seed-home-module'
+		},
+		defaultPredictionTermDays: 29
+	});
+
+	assert.equal(result.defaultPredictionTermDays, 29);
+	assert.equal(requests[0].method, 'POST');
+	assert.equal(requests[0].url, 'http://localhost:3004/api/commands/updateDefaultPredictionTerm');
+	assert.deepEqual(requests[0].data, {
+		moduleInstanceId: 'seed-home-module',
+		defaultPredictionTermDays: 29
 	});
 	assert.equal(requests[0].header['x-wx-openid'], 'seed-home-openid');
 });

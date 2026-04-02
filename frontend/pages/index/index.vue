@@ -69,33 +69,49 @@
 			</view>
 			<view class="summary-grid">
 				<view class="summary-item">
-					<text class="summary-item__label u-text-caption">{{ page.summaryCard.sharingStatus.label }}</text>
-					<text class="summary-item__value u-text-body">{{ page.summaryCard.sharingStatus.value }}</text>
-				</view>
-				<view class="summary-item">
-					<text class="summary-item__label u-text-caption">{{ page.summaryCard.activePartners.label }}</text>
-					<text class="summary-item__value u-text-body">{{ page.summaryCard.activePartners.value }}</text>
-				</view>
-				<view class="summary-item">
 					<text class="summary-item__label u-text-caption">{{ page.summaryCard.defaultPeriodDuration.label }}</text>
 					<text class="summary-item__value u-text-body">{{ page.summaryCard.defaultPeriodDuration.value }}</text>
 				</view>
+				<view class="summary-item">
+					<text class="summary-item__label u-text-caption">{{ page.summaryCard.defaultPredictionTerm.label }}</text>
+					<text class="summary-item__value u-text-body">{{ page.summaryCard.defaultPredictionTerm.value }}</text>
+				</view>
 			</view>
-			<view class="settings-strip">
-				<text class="settings-strip__label u-text-caption">{{ page.summaryCard.settingsControl.label }}</text>
-				<view class="settings-strip__options">
-					<view
-						v-for="option in page.summaryCard.settingsControl.options"
-						:key="option.value"
-						class="settings-chip"
-						:class="{ 'settings-chip--selected': option.selected }"
-						hover-class="ui-pressable-hover"
-						:hover-stay-time="70"
-						@tap="handleSettingsOptionSelect(option.value)"
-					>
-						<text class="settings-chip__text" :class="{ 'settings-chip__text--selected': option.selected }">
-							{{ option.label }}
-						</text>
+			<view class="settings-grid">
+				<view class="settings-strip">
+					<text class="settings-strip__label u-text-caption">{{ page.summaryCard.settingsControl.label }}</text>
+					<view class="settings-strip__options">
+						<view
+							v-for="option in page.summaryCard.settingsControl.options"
+							:key="option.value"
+							class="settings-chip"
+							:class="{ 'settings-chip--selected': option.selected }"
+							hover-class="ui-pressable-hover"
+							:hover-stay-time="70"
+							@tap="handleSettingsOptionSelect(option.value)"
+						>
+							<text class="settings-chip__text" :class="{ 'settings-chip__text--selected': option.selected }">
+								{{ option.label }}
+							</text>
+						</view>
+					</view>
+				</view>
+				<view class="settings-strip">
+					<text class="settings-strip__label u-text-caption">{{ page.summaryCard.predictionSettingsControl.label }}</text>
+					<view class="settings-strip__options">
+						<view
+							v-for="option in page.summaryCard.predictionSettingsControl.options"
+							:key="`prediction-${option.value}`"
+							class="settings-chip"
+							:class="{ 'settings-chip--selected': option.selected }"
+							hover-class="ui-pressable-hover"
+							:hover-stay-time="70"
+							@tap="handlePredictionTermSelect(option.value)"
+						>
+							<text class="settings-chip__text" :class="{ 'settings-chip__text--selected': option.selected }">
+								{{ option.label }}
+							</text>
+						</view>
 					</view>
 				</view>
 			</view>
@@ -155,6 +171,7 @@
 	} from '../../services/menstrual/module-shell-service.js';
 	import {
 		persistModuleSettings,
+		persistModulePredictionTerm,
 		persistModuleSharingState
 	} from '../../services/menstrual/module-shell-command-service.js';
 
@@ -259,6 +276,22 @@
 					await this.retryInitialLoad();
 				} catch (error) {
 					this.loadError = error instanceof Error ? error.message : '模块设置更新失败';
+				} finally {
+					this.isMutating = false;
+				}
+			},
+			async handlePredictionTermSelect(days) {
+				if (this.isMutating || !days || days === this.page?.summaryCard?.predictionSettingsControl?.value) return;
+				this.isMutating = true;
+				this.loadError = '';
+				try {
+					await persistModulePredictionTerm({
+						context: this.context,
+						defaultPredictionTermDays: days
+					});
+					await this.retryInitialLoad();
+				} catch (error) {
+					this.loadError = error instanceof Error ? error.message : '预测设置更新失败';
 				} finally {
 					this.isMutating = false;
 				}
@@ -382,6 +415,13 @@
 		flex-direction: column;
 		gap: $space-3;
 		margin-top: $space-5;
+	}
+
+	.settings-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: $space-4;
+		align-items: start;
 	}
 
 	.settings-strip__options {
