@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
 	applyClearAttributesToPageModel,
 	applyToggleAttributeOptionToPageModel,
+	createEmptyDayDetail,
 	createSeededHomeContracts,
 	createMenstrualHomePageModel
 } from '../home-contract-adapter.js';
@@ -79,6 +80,32 @@ test('home contract adapter builds the calendar from getCalendarWindow and prese
 		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-03-28' && cell.variant === 'periodDetail'),
 		true
 	);
+});
+
+test('home contract adapter can build a month-view calendar locally from homeView marks when calendarWindow is unavailable', () => {
+	const { homeView } = createSeededHomeContracts();
+
+	const model = createMenstrualHomePageModel({
+		homeView,
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			date: '2026-04-25'
+		}),
+		today: '2026-03-29',
+		focusDate: '2026-04-25',
+		viewMode: 'month'
+	});
+
+	assert.equal(model.viewModeControl.value, 'month');
+	assert.equal(model.headerNav.monthLabel, '2026.04');
+	assert.equal(model.calendarCard.weeks.length, 5);
+	assert.equal(
+		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-04-25' && cell.variant === 'selectedPrediction'),
+		true
+	);
+	assert.equal(model.selectedDatePanel.title, '4 月 25 日');
+	assert.equal(model.selectedDatePanel.badge, '点击记录');
 });
 
 test('home contract adapter supports implicit non-period day detail without leaking stale selections', () => {

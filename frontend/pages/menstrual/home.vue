@@ -44,7 +44,6 @@
 				<view v-if="panelMode === 'batch'" class="menstrual-home__batch-actions">
 					<view
 						class="menstrual-home__batch-btn menstrual-home__batch-btn--save"
-						:class="{ 'ui-pressable--busy': isMutating }"
 						hover-class="ui-pressable-hover"
 						:hover-stay-time="70"
 						@tap="applyBatchAction"
@@ -53,7 +52,6 @@
 					</view>
 					<view
 						class="menstrual-home__batch-btn menstrual-home__batch-btn--cancel"
-						:class="{ 'ui-pressable--busy': isMutating }"
 						hover-class="ui-pressable-hover"
 						:hover-stay-time="70"
 						@tap="cancelBatchMode"
@@ -100,7 +98,6 @@
 			<view
 				v-if="loadError"
 				class="menstrual-home__state-action"
-				:class="{ 'ui-pressable--busy': isRefreshing }"
 				hover-class="ui-pressable-hover"
 				:hover-stay-time="70"
 				@tap="retryInitialLoad"
@@ -123,13 +120,17 @@
 		applySelectedDateNoteToPageModel,
 		applyToggleAttributeOptionToPageModel,
 		applyTogglePeriodToPageModel,
+		createEmptyDayDetail,
 		createOptionRows,
+		createMenstrualHomePageModel,
 		createSummaryItems,
 		resolveJumpTargetDate,
 		shiftFocusDate
 	} from '../../components/menstrual/home-contract-adapter.js';
 	import {
 		DEFAULT_MENSTRUAL_HOME_CONTEXT,
+		loadMenstrualCalendarWindow,
+		loadMenstrualDayDetail,
 		loadMenstrualHomePageModel
 	} from '../../services/menstrual/home-contract-service.js';
 	import {
@@ -158,8 +159,12 @@
 				focusDate: DEFAULT_MENSTRUAL_HOME_CONTEXT.today,
 				viewMode: 'three-week',
 				isMutating: false,
-				isRefreshing: false,
-				refreshRequestId: 0,
+				isRefreshingSnapshot: false,
+				isRefreshingCalendar: false,
+				isRefreshingDayDetail: false,
+				snapshotRequestId: 0,
+				calendarRequestId: 0,
+				dayDetailRequestId: 0,
 				panelMode: 'single-day',
 				batchStartKey: null,
 				batchEndKey: null,
@@ -182,6 +187,9 @@
 			selectedBatchKeys() {
 				if (this.panelMode !== 'batch') return [];
 				return this.batchSelectedKeysState;
+			},
+			isRefreshing() {
+				return this.isRefreshingSnapshot || this.isRefreshingCalendar || this.isRefreshingDayDetail;
 			},
 			isBrowseBusy() {
 				return this.isRefreshing || this.isMutating;
@@ -216,8 +224,43 @@
 			this.retryInitialLoad();
 		},
 		methods: {
-			async refreshFromContracts(activeDate, options = {}) {
-				const requestId = options.requestId || ++this.refreshRequestId;
+			getSelectedDayDetail(selectedDate) {
+				if (this.rawContracts?.dayDetail?.dayRecord?.date === selectedDate) {
+					return this.rawContracts.dayDetail;
+				}
+				return createEmptyDayDetail({
+					moduleInstanceId: this.contractContext.moduleInstanceId,
+					profileId: this.contractContext.profileId,
+					date: selectedDate
+				});
+			},
+			rebuildLocalPage({ selectedDate = this.activeDate, focusDate = this.focusDate, viewMode = this.viewMode, useCalendarWindow = true, dayDetail = null } = {}) {
+				if (!this.rawContracts?.homeView) {
+					return this.page;
+				}
+				return createMenstrualHomePageModel({
+					homeView: this.rawContracts.homeView,
+					dayDetail: dayDetail || this.getSelectedDayDetail(selectedDate),
+					calendarWindow: useCalendarWindow ? this.rawContracts.calendarWindow : null,
+					today: this.contractContext.today,
+					focusDate,
+					viewMode
+				});
+			},
+			applyLocalBrowseState({ selectedDate = this.activeDate, focusDate = this.focusDate, viewMode = this.viewMode, useCalendarWindow = true, dayDetail = null } = {}) {
+				this.activeDate = selectedDate;
+				this.focusDate = focusDate;
+				this.viewMode = viewMode;
+				this.page = this.rebuildLocalPage({
+					selectedDate,
+					focusDate,
+					viewMode,
+					useCalendarWindow,
+					dayDetail
+				});
+			},
+			async refreshHomeSnapshot(activeDate, options = {}) {
+				const requestId = options.requestId || ++this.snapshotRequestId;
 				const nextViewMode = options.viewMode || this.viewMode;
 				const nextFocusDate = options.focusDate || this.focusDate || activeDate || this.activeDate;
 				const result = await loadMenstrualHomePageModel({
@@ -227,7 +270,7 @@
 					viewMode: nextViewMode,
 					fallbackOnError: options.fallbackOnError
 				});
-				if (requestId !== this.refreshRequestId) {
+				if (requestId !== this.snapshotRequestId) {
 					return result;
 				}
 				this.page = result.page;
@@ -238,11 +281,79 @@
 				this.viewMode = result.raw?.viewMode || nextViewMode;
 				return result;
 			},
+			async refreshCalendarWindow({ selectedDate = this.activeDate, focusDate = this.focusDate, viewMode = this.viewMode } = {}) {
+				const requestId = ++this.calendarRequestId;
+				this.isRefreshingCalendar = true;
+				this.loadError = '';
+				try {
+					const result = await loadMenstrualCalendarWindow({
+						...this.contractContext,
+						focusDate,
+						viewMode
+					});
+					if (requestId !== this.calendarRequestId) {
+						return result;
+					}
+					this.rawContracts = {
+						...this.rawContracts,
+						calendarWindow: result.calendarWindow,
+						focusDate: result.focusDate,
+						viewMode: result.viewMode
+					};
+					this.page = this.rebuildLocalPage({
+						selectedDate,
+						focusDate,
+						viewMode,
+						useCalendarWindow: true
+					});
+					return result;
+				} catch (error) {
+					this.loadError = error instanceof Error ? error.message : '联调环境请求失败';
+					throw error;
+				} finally {
+					if (requestId === this.calendarRequestId) {
+						this.isRefreshingCalendar = false;
+					}
+				}
+			},
+			async refreshSelectedDayDetail({ selectedDate = this.activeDate, focusDate = this.focusDate, viewMode = this.viewMode } = {}) {
+				const requestId = ++this.dayDetailRequestId;
+				this.isRefreshingDayDetail = true;
+				this.loadError = '';
+				try {
+					const dayDetail = await loadMenstrualDayDetail({
+						...this.contractContext,
+						activeDate: selectedDate
+					});
+					if (requestId !== this.dayDetailRequestId) {
+						return dayDetail;
+					}
+					this.rawContracts = {
+						...this.rawContracts,
+						dayDetail
+					};
+					this.page = this.rebuildLocalPage({
+						selectedDate,
+						focusDate,
+						viewMode,
+						useCalendarWindow: true,
+						dayDetail
+					});
+					return dayDetail;
+				} catch (error) {
+					this.loadError = error instanceof Error ? error.message : '联调环境请求失败';
+					throw error;
+				} finally {
+					if (requestId === this.dayDetailRequestId) {
+						this.isRefreshingDayDetail = false;
+					}
+				}
+			},
 			async retryInitialLoad() {
 				this.loadError = '';
-				this.isRefreshing = true;
+				this.isRefreshingSnapshot = true;
 				try {
-					await this.refreshFromContracts(this.activeDate, {
+					await this.refreshHomeSnapshot(this.activeDate, {
 						fallbackOnError: false,
 						focusDate: this.focusDate,
 						viewMode: this.viewMode
@@ -251,64 +362,98 @@
 					this.page = null;
 					this.loadError = error instanceof Error ? error.message : '联调环境请求失败';
 				} finally {
-					this.isRefreshing = false;
+					this.isRefreshingSnapshot = false;
 				}
-			},
-			runLiveRefresh(activeDate = this.activeDate, options = {}) {
-				const requestId = ++this.refreshRequestId;
-				this.isRefreshing = true;
-				return this.refreshFromContracts(activeDate, {
-					...options,
-					fallbackOnError: false,
-					requestId
-				}).catch((error) => {
-					this.loadError = error instanceof Error ? error.message : '联调环境请求失败';
-				}).finally(() => {
-					if (requestId === this.refreshRequestId) {
-						this.isRefreshing = false;
-					}
-				});
 			},
 			handleCellTap(cell) {
 				if (!cell?.isoDate) return;
 				if (this.isBrowseBusy) return;
 				this.panelMode = 'single-day';
-				this.runLiveRefresh(cell.isoDate);
+				this.applyLocalBrowseState({
+					selectedDate: cell.isoDate,
+					focusDate: this.focusDate,
+					viewMode: this.viewMode,
+					useCalendarWindow: true,
+					dayDetail: this.getSelectedDayDetail(cell.isoDate)
+				});
+				this.refreshSelectedDayDetail({
+					selectedDate: cell.isoDate,
+					focusDate: this.focusDate,
+					viewMode: this.viewMode
+				}).catch(() => {});
 			},
 			handleViewModeChange(nextMode) {
 				if (this.isBrowseBusy) return;
 				if (!nextMode || nextMode === this.viewMode) return;
 				this.panelMode = 'single-day';
-				this.runLiveRefresh(this.activeDate, {
+				this.applyLocalBrowseState({
+					selectedDate: this.activeDate,
+					focusDate: this.focusDate,
 					viewMode: nextMode,
-					focusDate: this.focusDate
+					useCalendarWindow: false
 				});
+				this.refreshCalendarWindow({
+					selectedDate: this.activeDate,
+					focusDate: this.focusDate,
+					viewMode: nextMode
+				}).catch(() => {});
 			},
 			handleHeaderPrev() {
 				if (this.isBrowseBusy) return;
 				this.panelMode = 'single-day';
-				this.runLiveRefresh(this.activeDate, {
+				const nextFocusDate = shiftFocusDate(this.focusDate, this.viewMode, -1);
+				this.applyLocalBrowseState({
+					selectedDate: this.activeDate,
+					focusDate: nextFocusDate,
 					viewMode: this.viewMode,
-					focusDate: shiftFocusDate(this.focusDate, this.viewMode, -1)
+					useCalendarWindow: false
 				});
+				this.refreshCalendarWindow({
+					selectedDate: this.activeDate,
+					focusDate: nextFocusDate,
+					viewMode: this.viewMode
+				}).catch(() => {});
 			},
 			handleHeaderNext() {
 				if (this.isBrowseBusy) return;
 				this.panelMode = 'single-day';
-				this.runLiveRefresh(this.activeDate, {
+				const nextFocusDate = shiftFocusDate(this.focusDate, this.viewMode, 1);
+				this.applyLocalBrowseState({
+					selectedDate: this.activeDate,
+					focusDate: nextFocusDate,
 					viewMode: this.viewMode,
-					focusDate: shiftFocusDate(this.focusDate, this.viewMode, 1)
+					useCalendarWindow: false
 				});
+				this.refreshCalendarWindow({
+					selectedDate: this.activeDate,
+					focusDate: nextFocusDate,
+					viewMode: this.viewMode
+				}).catch(() => {});
 			},
 			handleJump(jumpKey) {
 				if (this.isBrowseBusy) return;
 				const targetDate = resolveJumpTargetDate(this.rawContracts?.homeView, jumpKey, this.contractContext.today);
 				if (!targetDate) return;
 				this.panelMode = 'single-day';
-				this.runLiveRefresh(this.activeDate, {
+				this.applyLocalBrowseState({
+					selectedDate: targetDate,
+					focusDate: targetDate,
 					viewMode: this.viewMode,
-					focusDate: targetDate
+					useCalendarWindow: false,
+					dayDetail: this.getSelectedDayDetail(targetDate)
 				});
+				Promise.all([
+					this.refreshCalendarWindow({
+						selectedDate: targetDate,
+						focusDate: targetDate,
+						viewMode: this.viewMode
+					}),
+					this.refreshSelectedDayDetail({
+						selectedDate: targetDate,
+						focusDate: targetDate,
+						viewMode: this.viewMode
+					})
+				]).catch(() => {});
 			},
 			async runOptimisticMutation(nextPage, command) {
 				if (this.isMutating) return;
@@ -327,7 +472,7 @@
 				}
 
 				try {
-					await this.refreshFromContracts(this.activeDate, {
+					await this.refreshHomeSnapshot(this.activeDate, {
 						focusDate: this.focusDate,
 						viewMode: this.viewMode
 					});
@@ -345,7 +490,7 @@
 
 				try {
 					await command();
-					await this.refreshFromContracts(this.activeDate, {
+					await this.refreshHomeSnapshot(this.activeDate, {
 						focusDate: this.focusDate,
 						viewMode: this.viewMode
 					});

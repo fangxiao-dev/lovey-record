@@ -82,6 +82,18 @@ function addDays(dateString, amount) {
 	return formatYMD(date);
 }
 
+function startOfMonth(dateString) {
+	const date = toDateOnly(dateString);
+	date.setUTCDate(1);
+	return formatYMD(date);
+}
+
+function endOfMonth(dateString) {
+	const date = toDateOnly(dateString);
+	date.setUTCMonth(date.getUTCMonth() + 1, 0);
+	return formatYMD(date);
+}
+
 function diffDays(startDate, endDate) {
 	const start = toDateOnly(startDate);
 	const end = toDateOnly(endDate);
@@ -262,7 +274,19 @@ function updateSelectedCalendarCell(pageModel) {
 	return pageModel;
 }
 
-function buildCalendarCard(homeView, dayDetail, selectedDate, today) {
+function createCalendarDatesForViewMode({ focusDate, viewMode }) {
+	if (viewMode === 'month') {
+		const monthStart = startOfMonth(focusDate);
+		const monthEnd = endOfMonth(focusDate);
+		const startDate = startOfWeek(monthStart);
+		return createDateRange(startDate, addDays(startOfWeek(monthEnd), 6));
+	}
+
+	const startDate = addDays(startOfWeek(focusDate), -7);
+	return createDateRange(startDate, addDays(startDate, 20));
+}
+
+function buildCalendarCard(homeView, dayDetail, selectedDate, focusDate, viewMode, today) {
 	const periodDates = new Set(
 		(homeView.calendarMarks || [])
 			.filter((mark) => mark.kind === 'period' || mark.kind === 'period_start')
@@ -274,13 +298,16 @@ function buildCalendarCard(homeView, dayDetail, selectedDate, today) {
 			: []
 	);
 
-	const focusDate = getFocusDate(homeView, { dayRecord: { date: selectedDate } }, today);
-	const firstWeekStart = addDays(startOfWeek(focusDate), -7);
-	const days = createDateRange(firstWeekStart, addDays(firstWeekStart, 20));
+	const resolvedFocusDate = focusDate || getFocusDate(homeView, { dayRecord: { date: selectedDate } }, today);
+	const days = createCalendarDatesForViewMode({
+		focusDate: resolvedFocusDate,
+		viewMode
+	});
 
 	const weeks = [];
-	for (let weekIndex = 0; weekIndex < 3; weekIndex += 1) {
+	for (let weekIndex = 0; weekIndex < Math.ceil(days.length / 7); weekIndex += 1) {
 		const weekDays = days.slice(weekIndex * 7, weekIndex * 7 + 7);
+		if (!weekDays.length) break;
 		weeks.push({
 			key: `week-${weekIndex + 1}`,
 			cells: weekDays.map((date) => {
@@ -308,6 +335,24 @@ function buildCalendarCard(homeView, dayDetail, selectedDate, today) {
 	return {
 		weekdayLabels: [...WEEKDAY_LABELS],
 		weeks
+	};
+}
+
+export function createEmptyDayDetail({ moduleInstanceId, profileId, date }) {
+	return {
+		moduleInstanceId,
+		profileId,
+		dayRecord: {
+			date,
+			isPeriod: false,
+			painLevel: null,
+			flowLevel: null,
+			colorLevel: null,
+			note: null,
+			source: null,
+			isExplicit: false,
+			isDetailRecorded: false
+		}
 	};
 }
 
@@ -512,7 +557,7 @@ export function createMenstrualHomePageModel({ homeView, dayDetail, calendarWind
 		},
 		calendarCard: calendarWindow
 			? buildCalendarCardFromWindow(homeView, calendarWindow, activeDate, today)
-			: buildCalendarCard(homeView, dayDetail, activeDate, today),
+			: buildCalendarCard(homeView, dayDetail, activeDate, resolvedFocusDate, viewMode, today),
 		legend: createCalendarLegendItems(),
 		selectedDatePanel: createSelectedDatePanel(dayDetail, today),
 		selectedDateKey: activeDate,

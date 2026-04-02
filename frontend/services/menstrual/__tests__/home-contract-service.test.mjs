@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import {
 	createCalendarQueryRange,
+	loadMenstrualCalendarWindow,
+	loadMenstrualDayDetail,
 	loadMenstrualHomePageModel
 } from '../home-contract-service.js';
 
@@ -290,4 +292,99 @@ test('loadMenstrualHomePageModel starts calendar and detail queries in parallel 
 	resolveCalendar();
 	resolveDetail();
 	await loading;
+});
+
+test('loadMenstrualCalendarWindow only requests the calendar window query for the requested focus date and view mode', async () => {
+	const requests = [];
+	installUniRequestMock((options) => {
+		requests.push({
+			url: options.url,
+			data: options.data
+		});
+		options.success({
+			statusCode: 200,
+			data: {
+				ok: true,
+				data: {
+					moduleInstanceId: 'seed-home-module',
+					window: {
+						startDate: '2026-04-20',
+						endDate: '2026-05-31'
+					},
+					days: [],
+					marks: []
+				},
+				error: null
+			}
+		});
+	});
+
+	const result = await loadMenstrualCalendarWindow({
+		apiBaseUrl: 'http://localhost:3000/api',
+		openid: 'seed-home-openid',
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		focusDate: '2026-05-10',
+		viewMode: 'month'
+	});
+
+	assert.equal(requests.length, 1);
+	assert.match(requests[0].url, /\/queries\/getCalendarWindow\?_ts=\d+$/);
+	assert.deepEqual(requests[0].data, {
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		startDate: '2026-04-27',
+		endDate: '2026-05-31'
+	});
+	assert.equal(result.focusDate, '2026-05-10');
+	assert.equal(result.viewMode, 'month');
+});
+
+test('loadMenstrualDayDetail only requests the selected day detail query', async () => {
+	const requests = [];
+	installUniRequestMock((options) => {
+		requests.push({
+			url: options.url,
+			data: options.data
+		});
+		options.success({
+			statusCode: 200,
+			data: {
+				ok: true,
+				data: {
+					moduleInstanceId: 'seed-home-module',
+					profileId: 'seed-home-profile',
+					dayRecord: {
+						date: '2026-04-25',
+						isPeriod: false,
+						painLevel: null,
+						flowLevel: null,
+						colorLevel: null,
+						note: null,
+						source: null,
+						isExplicit: false,
+						isDetailRecorded: false
+					}
+				},
+				error: null
+			}
+		});
+	});
+
+	const dayDetail = await loadMenstrualDayDetail({
+		apiBaseUrl: 'http://localhost:3000/api',
+		openid: 'seed-home-openid',
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		activeDate: '2026-04-25'
+	});
+
+	assert.equal(requests.length, 1);
+	assert.match(requests[0].url, /\/queries\/getDayRecordDetail\?_ts=\d+$/);
+	assert.deepEqual(requests[0].data, {
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		date: '2026-04-25'
+	});
+	assert.equal(dayDetail.dayRecord.date, '2026-04-25');
 });

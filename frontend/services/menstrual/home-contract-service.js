@@ -92,20 +92,67 @@ async function queryEnvelope({ apiBaseUrl, openid, path, data }) {
 	return response.data.data;
 }
 
+export async function loadMenstrualHomeView(context = {}) {
+	const resolved = { ...DEFAULT_MENSTRUAL_HOME_CONTEXT, ...context };
+	return queryEnvelope({
+		apiBaseUrl: resolved.apiBaseUrl,
+		openid: resolved.openid,
+		path: '/api/queries/getModuleHomeView',
+		data: {
+			moduleInstanceId: resolved.moduleInstanceId
+		}
+	});
+}
+
+export async function loadMenstrualCalendarWindow(context = {}) {
+	const resolved = { ...DEFAULT_MENSTRUAL_HOME_CONTEXT, ...context };
+	const viewMode = resolved.viewMode || 'three-week';
+	const calendarRange = createCalendarQueryRange({
+		focusDate: resolved.focusDate || resolved.today,
+		viewMode
+	});
+
+	const calendarWindow = await queryEnvelope({
+		apiBaseUrl: resolved.apiBaseUrl,
+		openid: resolved.openid,
+		path: '/api/queries/getCalendarWindow',
+		data: {
+			moduleInstanceId: resolved.moduleInstanceId,
+			profileId: resolved.profileId,
+			startDate: calendarRange.startDate,
+			endDate: calendarRange.endDate
+		}
+	});
+
+	return {
+		calendarWindow,
+		focusDate: resolved.focusDate || resolved.today,
+		viewMode,
+		calendarRange
+	};
+}
+
+export async function loadMenstrualDayDetail(context = {}) {
+	const resolved = { ...DEFAULT_MENSTRUAL_HOME_CONTEXT, ...context };
+	return queryEnvelope({
+		apiBaseUrl: resolved.apiBaseUrl,
+		openid: resolved.openid,
+		path: '/api/queries/getDayRecordDetail',
+		data: {
+			moduleInstanceId: resolved.moduleInstanceId,
+			profileId: resolved.profileId,
+			date: resolved.activeDate || resolved.today
+		}
+	});
+}
+
 export async function loadMenstrualHomePageModel(context = {}) {
 	const resolved = { ...DEFAULT_MENSTRUAL_HOME_CONTEXT, ...context };
 	const fallbackOnError = resolved.fallbackOnError === true;
 	const viewMode = resolved.viewMode || 'three-week';
 
 	try {
-		const homeView = await queryEnvelope({
-			apiBaseUrl: resolved.apiBaseUrl,
-			openid: resolved.openid,
-			path: '/api/queries/getModuleHomeView',
-			data: {
-				moduleInstanceId: resolved.moduleInstanceId
-			}
-		});
+		const homeView = await loadMenstrualHomeView(resolved);
 
 		const activeDate = resolved.activeDate
 			|| homeView.selectedDay?.date
@@ -117,32 +164,16 @@ export async function loadMenstrualHomePageModel(context = {}) {
 			focusDate: resolved.focusDate,
 			today: resolved.today
 		});
-		const calendarRange = createCalendarQueryRange({
-			focusDate,
-			viewMode
-		});
 
-		const [calendarWindow, dayDetail] = await Promise.all([
-			queryEnvelope({
-				apiBaseUrl: resolved.apiBaseUrl,
-				openid: resolved.openid,
-				path: '/api/queries/getCalendarWindow',
-				data: {
-					moduleInstanceId: resolved.moduleInstanceId,
-					profileId: resolved.profileId,
-					startDate: calendarRange.startDate,
-					endDate: calendarRange.endDate
-				}
+		const [{ calendarWindow }, dayDetail] = await Promise.all([
+			loadMenstrualCalendarWindow({
+				...resolved,
+				focusDate,
+				viewMode
 			}),
-			queryEnvelope({
-				apiBaseUrl: resolved.apiBaseUrl,
-				openid: resolved.openid,
-				path: '/api/queries/getDayRecordDetail',
-				data: {
-					moduleInstanceId: resolved.moduleInstanceId,
-					profileId: resolved.profileId,
-					date: activeDate
-				}
+			loadMenstrualDayDetail({
+				...resolved,
+				activeDate
 			})
 		]);
 

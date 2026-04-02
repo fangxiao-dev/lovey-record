@@ -4,10 +4,7 @@
 			v-for="option in options"
 			:key="option.key"
 			class="segmented-control__option"
-			:class="[
-				{ 'segmented-control__option--active': option.key === value },
-				{ 'ui-pressable--busy': busy }
-			]"
+			:class="{ 'segmented-control__option--active': option.key === value }"
 			hover-class="ui-pressable-hover"
 			:hover-stay-time="70"
 			@tap="handleTap(option.key)"

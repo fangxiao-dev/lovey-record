@@ -4,7 +4,7 @@
 			v-for="item in items"
 			:key="item.key"
 			class="jump-tabs__item"
-			:class="[itemClasses(item), { 'ui-pressable--busy': busy }]"
+			:class="itemClasses(item)"
 			hover-class="ui-pressable-hover"
 			:hover-stay-time="70"
 			@tap="onTap(item)"

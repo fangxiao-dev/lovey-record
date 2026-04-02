@@ -9,11 +9,11 @@ function read(relativePath) {
 	return fs.readFileSync(path.resolve(repoRoot, relativePath), 'utf8');
 }
 
-test('foundation exposes the shared pressable hover and busy utility classes', () => {
+test('foundation exposes the shared pressable hover utility class', () => {
 	const source = read('styles/foundation/patterns.scss');
 
 	assert.match(source, /\.ui-pressable-hover/);
-	assert.match(source, /\.ui-pressable--busy/);
+	assert.doesNotMatch(source, /\.ui-pressable--busy/);
 });
 
 test('menstrual and shell hotspots wire hover-class feedback on tappable view controls', () => {

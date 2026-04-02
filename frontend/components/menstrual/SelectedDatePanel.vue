@@ -8,10 +8,7 @@
 		<view class="selected-date-panel__chip-row">
 			<view
 				class="selected-date-panel__chip"
-				:class="[
-					{ 'selected-date-panel__chip--accent': isPeriodMarked },
-					{ 'ui-pressable--busy': busy }
-				]"
+				:class="{ 'selected-date-panel__chip--accent': isPeriodMarked }"
 				hover-class="ui-pressable-hover"
 				:hover-stay-time="70"
 				@tap="togglePeriod"
@@ -20,7 +17,6 @@
 			</view>
 			<view
 				class="selected-date-panel__chip"
-				:class="{ 'ui-pressable--busy': busy }"
 				hover-class="ui-pressable-hover"
 				:hover-stay-time="70"
 				@tap="toggleEditor"
@@ -70,8 +66,7 @@
 						class="selected-date-panel__editor-option"
 						:class="[
 							`selected-date-panel__editor-option--${option.tone}`,
-							{ 'selected-date-panel__editor-option--selected': option.selected },
-							{ 'ui-pressable--busy': busy }
+							{ 'selected-date-panel__editor-option--selected': option.selected }
 						]"
 						hover-class="ui-pressable-hover"
 						:hover-stay-time="70"
@@ -91,7 +86,6 @@
 		<view
 			v-if="summaryItems.length > 0 && isEditorOpen"
 			class="selected-date-panel__clear-button"
-			:class="{ 'ui-pressable--busy': busy }"
 			hover-class="ui-pressable-hover"
 			:hover-stay-time="70"
 			@tap="clearAttributes"

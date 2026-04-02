@@ -88,10 +88,7 @@
 						v-for="option in page.summaryCard.settingsControl.options"
 						:key="option.value"
 						class="settings-chip"
-						:class="[
-							{ 'settings-chip--selected': option.selected },
-							{ 'ui-pressable--busy': isMutating }
-						]"
+						:class="{ 'settings-chip--selected': option.selected }"
 						hover-class="ui-pressable-hover"
 						:hover-stay-time="70"
 						@tap="handleSettingsOptionSelect(option.value)"
@@ -105,7 +102,6 @@
 			<view class="summary-actions">
 				<view
 					class="summary-action ui-button ui-button--secondary"
-					:class="{ 'ui-pressable--busy': isMutating }"
 					hover-class="ui-pressable-hover"
 					:hover-stay-time="70"
 					@tap="handleShareAction"
@@ -140,7 +136,7 @@
 		<view v-if="isDev" class="dev-toolbar u-page-section">
 			<view
 				class="dev-reset-btn"
-				:class="[{ 'dev-reset-btn--busy': isResetting }, { 'ui-pressable--busy': isResetting }]"
+				:class="{ 'dev-reset-btn--busy': isResetting }"
 				hover-class="ui-pressable-hover"
 				:hover-stay-time="70"
 				@tap="handleDevReset"

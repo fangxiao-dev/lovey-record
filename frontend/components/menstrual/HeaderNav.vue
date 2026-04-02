@@ -2,7 +2,6 @@
 	<view class="header-nav">
 		<view
 			class="header-nav__button"
-			:class="{ 'ui-pressable--busy': busy }"
 			hover-class="ui-pressable-hover"
 			:hover-stay-time="70"
 			@tap="handlePrev"
@@ -12,7 +11,6 @@
 		<text class="header-nav__month">{{ monthLabel }}</text>
 		<view
 			class="header-nav__button"
-			:class="{ 'ui-pressable--busy': busy }"
 			hover-class="ui-pressable-hover"
 			:hover-stay-time="70"
 			@tap="handleNext"

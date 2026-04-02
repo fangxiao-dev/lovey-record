@@ -29,8 +29,7 @@
 					:key="cell.key || cell.label"
 					class="calendar-grid__cell"
 					:class="[
-						{ 'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy },
-						{ 'ui-pressable--busy': busy }
+						{ 'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy }
 					]"
 					:hover-class="interactive && cell.selectable !== false && !busy ? 'ui-pressable-hover' : ''"
 					:hover-stay-time="70"
