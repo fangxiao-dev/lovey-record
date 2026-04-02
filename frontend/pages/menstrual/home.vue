@@ -124,7 +124,6 @@
 		applyClearAttributesToPageModel,
 		applySelectedDateNoteToPageModel,
 		applyToggleAttributeOptionToPageModel,
-		applyTogglePeriodToPageModel,
 		createOptionRows,
 		createSummaryItems,
 		resolveJumpTargetDate,
@@ -135,11 +134,11 @@
 		loadMenstrualHomePageModel
 	} from '../../services/menstrual/home-contract-service.js';
 	import {
+		applySingleDayPeriodAction,
 		persistBatchDateDetails,
 		persistBatchPeriodRange,
 		persistSelectedDateNote,
-		persistSelectedDateDetails,
-		persistSelectedDatePeriodState
+		persistSelectedDateDetails
 	} from '../../services/menstrual/home-command-service.js';
 
 	export default {
@@ -391,17 +390,41 @@
 					pageModel: nextPage
 				}));
 			},
-			handleTogglePeriod(isPeriodMarked) {
+			async handleTogglePeriod(isPeriodMarked) {
 				if (this.panelMode === 'batch') {
 					this.batchDraft = { ...this.batchDraft, isPeriod: isPeriodMarked };
 					return;
 				}
-				const nextPage = applyTogglePeriodToPageModel(this.page, isPeriodMarked);
-				return this.runOptimisticMutation(nextPage, () => persistSelectedDatePeriodState({
+				const resolvedAction = this.rawContracts?.singleDayPeriodAction?.resolvedAction;
+				if (!resolvedAction?.action) return;
+
+				const prompt = resolvedAction.prompt;
+				if (prompt?.required) {
+					const confirmed = await new Promise((resolve) => {
+						uni.showModal({
+							title: '提示',
+							content: prompt?.message || '',
+							confirmText: prompt?.confirmLabel || '确认',
+							cancelText: prompt?.cancelLabel || '取消',
+							success: (result) => {
+								resolve(Boolean(result?.confirm));
+							},
+							fail: () => resolve(false)
+						});
+					});
+					if (!confirmed) return;
+					return this.runCommand(() => applySingleDayPeriodAction({
+						context: this.contractContext,
+						activeDate: this.activeDate,
+						action: resolvedAction.action,
+						confirmed: true
+					}));
+				}
+
+				return this.runCommand(() => applySingleDayPeriodAction({
 					context: this.contractContext,
 					activeDate: this.activeDate,
-					pageModel: nextPage,
-					isPeriodMarked
+					action: resolvedAction.action
 				}));
 			},
 			handleNoteChange(note) {
@@ -479,7 +502,11 @@
 						});
 					}
 
-					this.cancelBatchMode();
+					this.panelMode = 'single-day';
+					this.batchStartKey = null;
+					this.batchEndKey = null;
+					this.batchHoveredKey = null;
+					this.batchSelectedKeysState = [];
 				});
 			},
 			toggleBatchSelectionKey(cellKey) {

@@ -192,7 +192,9 @@
 				this.isPeriodChipSelected = nextValue;
 			},
 			initialPeriodMarked(nextValue) {
-				this.isPeriodChipSelected = nextValue;
+				if (nextValue) {
+					this.isPeriodChipSelected = true;
+				}
 			}
 		},
 		methods: {
@@ -203,8 +205,7 @@
 			},
 			togglePeriod() {
 				if (this.busy) return;
-				this.isPeriodChipSelected = !this.isPeriodChipSelected;
-				this.$emit('toggle-period', this.isPeriodChipSelected);
+				this.$emit('toggle-period', !this.isPeriodChipSelected);
 			},
 			toggleAttributeOption(rowKey, optionKey) {
 				if (this.busy) return;

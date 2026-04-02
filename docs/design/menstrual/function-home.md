@@ -37,8 +37,12 @@ The home page must cover:
 
 ## Selected Date Panel
 
-- The panel always shows two independent chips: `经期` (period toggle) and `+ 记录详情` (attribute grid toggle).
+- The panel always shows two independent chips: contextual period action chip (`月经开始` or `月经结束`) and `+ 记录详情` (attribute grid toggle).
+- The period chip text is derived from the selected date's role inside the current period segment:
+  - `not-period` / `start` => `月经开始`
+  - `in-progress` / `end` => `月经结束`
 - Period marking and attribute recording are independent actions.
+- Single-day period editing must go through the resolve/apply flow; it is no longer treated as a blind boolean toggle on the page.
 - The attribute summary bar only renders when at least one attribute is recorded.
 - The attribute grid is controlled by `+ 记录详情` / `↑ 收起`, not by tapping the summary bar.
 - Attribute changes are WYSIWYG (immediate persistence); there is no save button.

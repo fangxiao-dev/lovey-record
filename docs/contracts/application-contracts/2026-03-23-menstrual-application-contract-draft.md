@@ -15,6 +15,8 @@ It is still a draft, but it is concrete enough to support:
 
 It does not commit the project to REST, RPC, or a specific database model.
 
+For single-day smart period editing, the newer draft [2026-04-02-menstrual-single-day-action-contract-draft.md](D:\CodeSpace\hbuilder-projects\lovey-record\docs\contracts\application-contracts\2026-04-02-menstrual-single-day-action-contract-draft.md) supersedes this document's older `recordPeriodDay / clearPeriodDay` UI interpretation.
+
 ## Contract Style
 
 The contract is expressed in application-service terms:
@@ -72,6 +74,7 @@ The contract is expressed in application-service terms:
 - `createModuleInstance`
 - `recordPeriodDay`
 - `clearPeriodDay`
+- `applySingleDayPeriodAction`
 - `recordPeriodRange`
 - `clearPeriodRange`
 - `recordDayDetails`
@@ -88,6 +91,7 @@ The contract is expressed in application-service terms:
 - `getPredictionSummary`
 - `getModuleAccessState`
 - `getModuleSettings`
+- `getSingleDayPeriodAction`
 
 ## Shared Payload Objects
 
@@ -207,9 +211,14 @@ Rules:
 
 Purpose:
 
-- mark one date as being in period
-- if the previous day is not in period, treat this date as the first day of a new anchored segment
-- automatically fill later dates according to the current default period duration
+- legacy compatibility command for marking one date as being in period
+- older behavior treated this as a direct write that could recognize a new anchored segment and auto-fill later dates according to the current default period duration
+
+Current direction:
+
+- frontend single-day interaction should no longer call this command directly
+- the stable semantic surface for single-day editing is now `getSingleDayPeriodAction` + `applySingleDayPeriodAction`
+- this older command may remain temporarily for backward compatibility or internal reuse
 
 Suggested input:
 
@@ -256,8 +265,12 @@ Suggested response data:
 
 Purpose:
 
-- remove one date from the current period interpretation
-- if the removed date is inside the current tail, truncate that date and every later date in the same derived tail
+- legacy compatibility command for clearing one date from the current period interpretation
+
+Current direction:
+
+- frontend single-day interaction should no longer call this command directly
+- contextual single-day revoke/truncate behavior should be exposed through `applySingleDayPeriodAction`
 
 Suggested input:
 
@@ -793,8 +806,8 @@ Suggested response shape:
 
 If the team wants the smallest practical first contract, stabilize these first:
 
-- `recordPeriodDay`
-- `clearPeriodDay`
+- `getSingleDayPeriodAction`
+- `applySingleDayPeriodAction`
 - `recordDayDetails`
 - `updateDefaultPeriodDuration`
 - `getModuleHomeView`
@@ -804,9 +817,9 @@ If the team wants the smallest practical first contract, stabilize these first:
 This slice is enough to support:
 
 - first-time entry
-- one-tap period start
-- automatic period fill
-- tail correction
+- contextual single-day `月经开始 / 月经结束`
+- bridge confirmation before single-day merge/extension
+- apply-time revalidation for single-day edits
 - detail refinement
 - settings refresh
 - prediction refresh
