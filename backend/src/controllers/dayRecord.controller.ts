@@ -1,5 +1,11 @@
 import { Request, Response } from 'express';
-import { clearPeriodDay, clearPeriodRange, recordPeriodDay, recordPeriodRange } from '../services/dayRecord.service';
+import {
+  applySingleDayPeriodAction,
+  clearPeriodDay,
+  clearPeriodRange,
+  recordPeriodDay,
+  recordPeriodRange,
+} from '../services/dayRecord.service';
 
 function handleError(res: Response, error: unknown) {
   if (error && typeof error === 'object' && 'code' in error && 'statusCode' in error) {
@@ -71,6 +77,22 @@ export async function clearPeriodRangeHandler(req: Request, res: Response) {
       userId: req.user.id,
       startDate: req.body.startDate,
       endDate: req.body.endDate,
+    });
+
+    res.json({ ok: true, data: result, error: null });
+  } catch (error) {
+    handleError(res, error);
+  }
+}
+
+export async function applySingleDayPeriodActionHandler(req: Request, res: Response) {
+  try {
+    const result = await applySingleDayPeriodAction({
+      moduleInstanceId: req.body.moduleInstanceId,
+      userId: req.user.id,
+      selectedDate: req.body.selectedDate,
+      action: req.body.action,
+      confirmed: req.body.confirmed,
     });
 
     res.json({ ok: true, data: result, error: null });

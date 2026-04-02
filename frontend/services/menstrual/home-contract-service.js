@@ -104,6 +104,18 @@ export async function loadMenstrualHomeView(context = {}) {
 	});
 }
 
+export async function getSingleDayPeriodAction({ apiBaseUrl, openid, moduleInstanceId, date }) {
+	return queryEnvelope({
+		apiBaseUrl,
+		openid,
+		path: '/api/queries/getSingleDayPeriodAction',
+		data: {
+			moduleInstanceId,
+			date
+		}
+	});
+}
+
 export async function loadMenstrualCalendarWindow(context = {}) {
 	const resolved = { ...DEFAULT_MENSTRUAL_HOME_CONTEXT, ...context };
 	const viewMode = resolved.viewMode || 'three-week';
@@ -165,7 +177,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 			today: resolved.today
 		});
 
-		const [{ calendarWindow }, dayDetail] = await Promise.all([
+		const [{ calendarWindow }, dayDetail, singleDayPeriodAction] = await Promise.all([
 			loadMenstrualCalendarWindow({
 				...resolved,
 				focusDate,
@@ -174,6 +186,12 @@ export async function loadMenstrualHomePageModel(context = {}) {
 			loadMenstrualDayDetail({
 				...resolved,
 				activeDate
+			}),
+			getSingleDayPeriodAction({
+				apiBaseUrl: resolved.apiBaseUrl,
+				openid: resolved.openid,
+				moduleInstanceId: resolved.moduleInstanceId,
+				date: activeDate
 			})
 		]);
 
@@ -182,6 +200,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 				homeView,
 				calendarWindow,
 				dayDetail,
+				singleDayPeriodAction,
 				today: resolved.today,
 				viewMode,
 				focusDate
@@ -190,6 +209,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 				homeView,
 				dayDetail,
 				calendarWindow,
+				singleDayPeriodAction,
 				focusDate,
 				viewMode
 			},
@@ -223,6 +243,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 			page: createMenstrualHomePageModel({
 				homeView: fallback.homeView,
 				dayDetail,
+				singleDayPeriodAction: null,
 				today: resolved.today,
 				viewMode,
 				focusDate: resolved.focusDate || resolved.activeDate || resolved.today
@@ -231,6 +252,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 				homeView: fallback.homeView,
 				dayDetail,
 				calendarWindow: null,
+				singleDayPeriodAction: null,
 				focusDate: resolved.focusDate || resolved.activeDate || resolved.today,
 				viewMode
 			},

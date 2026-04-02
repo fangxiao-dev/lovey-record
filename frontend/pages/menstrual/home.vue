@@ -79,6 +79,8 @@
 				:summary-items="panelMode === 'batch' ? batchPanelSummaryItems : page.selectedDatePanel.summaryItems"
 				:attribute-rows="panelMode === 'batch' ? batchPanelAttributeRows : page.selectedDatePanel.attributeRows"
 				:note="panelMode === 'batch' ? '' : page.selectedDatePanel.note"
+				:period-chip-text="panelMode === 'batch' ? '经期' : page.selectedDatePanel.periodChipText"
+				:period-chip-selected="panelMode === 'batch' ? batchDraft.isPeriod : page.selectedDatePanel.periodChipSelected"
 				:initial-period-marked="panelMode === 'batch' ? batchDraft.isPeriod : page.selectedDatePanel.initialPeriodMarked"
 				:initial-editor-open="panelMode === 'batch' ? false : page.selectedDatePanel.initialEditorOpen"
 				:show-note="panelMode !== 'batch'"
@@ -119,7 +121,6 @@
 		applyClearAttributesToPageModel,
 		applySelectedDateNoteToPageModel,
 		applyToggleAttributeOptionToPageModel,
-		applyTogglePeriodToPageModel,
 		createEmptyDayDetail,
 		createOptionRows,
 		createMenstrualHomePageModel,
@@ -129,16 +130,17 @@
 	} from '../../components/menstrual/home-contract-adapter.js';
 	import {
 		DEFAULT_MENSTRUAL_HOME_CONTEXT,
+		getSingleDayPeriodAction,
 		loadMenstrualCalendarWindow,
 		loadMenstrualDayDetail,
 		loadMenstrualHomePageModel
 	} from '../../services/menstrual/home-contract-service.js';
 	import {
+		applySingleDayPeriodAction,
 		persistBatchDateDetails,
 		persistBatchPeriodRange,
 		persistSelectedDateNote,
-		persistSelectedDateDetails,
-		persistSelectedDatePeriodState
+		persistSelectedDateDetails
 	} from '../../services/menstrual/home-command-service.js';
 
 	export default {
@@ -234,6 +236,12 @@
 					date: selectedDate
 				});
 			},
+			getSelectedSingleDayPeriodAction(selectedDate) {
+				if (this.rawContracts?.singleDayPeriodAction?.selectedDate === selectedDate) {
+					return this.rawContracts.singleDayPeriodAction;
+				}
+				return null;
+			},
 			rebuildLocalPage({ selectedDate = this.activeDate, focusDate = this.focusDate, viewMode = this.viewMode, useCalendarWindow = true, dayDetail = null } = {}) {
 				if (!this.rawContracts?.homeView) {
 					return this.page;
@@ -241,6 +249,7 @@
 				return createMenstrualHomePageModel({
 					homeView: this.rawContracts.homeView,
 					dayDetail: dayDetail || this.getSelectedDayDetail(selectedDate),
+					singleDayPeriodAction: this.getSelectedSingleDayPeriodAction(selectedDate),
 					calendarWindow: useCalendarWindow ? this.rawContracts.calendarWindow : null,
 					today: this.contractContext.today,
 					focusDate,
@@ -321,16 +330,25 @@
 				this.isRefreshingDayDetail = true;
 				this.loadError = '';
 				try {
-					const dayDetail = await loadMenstrualDayDetail({
-						...this.contractContext,
-						activeDate: selectedDate
-					});
+					const [dayDetail, singleDayPeriodAction] = await Promise.all([
+						loadMenstrualDayDetail({
+							...this.contractContext,
+							activeDate: selectedDate
+						}),
+						getSingleDayPeriodAction({
+							apiBaseUrl: this.contractContext.apiBaseUrl,
+							openid: this.contractContext.openid,
+							moduleInstanceId: this.contractContext.moduleInstanceId,
+							date: selectedDate
+						})
+					]);
 					if (requestId !== this.dayDetailRequestId) {
 						return dayDetail;
 					}
 					this.rawContracts = {
 						...this.rawContracts,
-						dayDetail
+						dayDetail,
+						singleDayPeriodAction
 					};
 					this.page = this.rebuildLocalPage({
 						selectedDate,
@@ -534,17 +552,41 @@
 					pageModel: nextPage
 				}));
 			},
-			handleTogglePeriod(isPeriodMarked) {
+			async handleTogglePeriod(isPeriodMarked) {
 				if (this.panelMode === 'batch') {
 					this.batchDraft = { ...this.batchDraft, isPeriod: isPeriodMarked };
 					return;
 				}
-				const nextPage = applyTogglePeriodToPageModel(this.page, isPeriodMarked);
-				return this.runOptimisticMutation(nextPage, () => persistSelectedDatePeriodState({
+				const resolvedAction = this.rawContracts?.singleDayPeriodAction?.resolvedAction;
+				if (!resolvedAction?.action) return;
+
+				const prompt = resolvedAction.prompt;
+				if (prompt?.required) {
+					const confirmed = await new Promise((resolve) => {
+						uni.showModal({
+							title: '提示',
+							content: prompt?.message || '',
+							confirmText: prompt?.confirmLabel || '确认',
+							cancelText: prompt?.cancelLabel || '取消',
+							success: (result) => {
+								resolve(Boolean(result?.confirm));
+							},
+							fail: () => resolve(false)
+						});
+					});
+					if (!confirmed) return;
+					return this.runCommand(() => applySingleDayPeriodAction({
+						context: this.contractContext,
+						activeDate: this.activeDate,
+						action: resolvedAction.action,
+						confirmed: true
+					}));
+				}
+
+				return this.runCommand(() => applySingleDayPeriodAction({
 					context: this.contractContext,
 					activeDate: this.activeDate,
-					pageModel: nextPage,
-					isPeriodMarked
+					action: resolvedAction.action
 				}));
 			},
 			handleNoteChange(note) {
@@ -597,7 +639,6 @@
 				const ranges = this.buildBatchRanges(this.selectedBatchKeys);
 
 				return this.runCommand(async () => {
-					// 1. Period: apply to each contiguous range
 					for (const range of ranges) {
 						await persistBatchPeriodRange({
 							context: this.contractContext,
@@ -607,7 +648,6 @@
 						});
 					}
 
-					// 2. Details: only if user set at least one level
 					const { flowLevel, painLevel, colorLevel } = this.batchDraft;
 					if (flowLevel !== null || painLevel !== null || colorLevel !== null) {
 						const dates = this.allCalendarCells
@@ -622,7 +662,11 @@
 						});
 					}
 
-					this.cancelBatchMode();
+					this.panelMode = 'single-day';
+					this.batchStartKey = null;
+					this.batchEndKey = null;
+					this.batchHoveredKey = null;
+					this.batchSelectedKeysState = [];
 				});
 			},
 			toggleBatchSelectionKey(cellKey) {

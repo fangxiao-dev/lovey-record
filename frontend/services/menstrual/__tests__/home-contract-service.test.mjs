@@ -128,6 +128,41 @@ test('loadMenstrualHomePageModel requests getCalendarWindow using the resolved f
 					error: null
 				}
 			});
+			return;
+		}
+
+		if (options.url.includes('/queries/getSingleDayPeriodAction')) {
+			options.success({
+				statusCode: 200,
+				data: {
+					ok: true,
+					data: {
+						selectedDate: '2026-03-29',
+						role: 'in-progress',
+						chip: {
+							text: '月经结束',
+							selected: true
+						},
+						resolvedAction: {
+							action: 'end-here',
+							bridgeType: 'none',
+							prompt: null,
+							effect: {
+								action: 'end-here',
+								bridgeType: 'none',
+								selectedDate: '2026-03-29',
+								writeDates: ['2026-03-29'],
+								clearDates: ['2026-03-30', '2026-03-31'],
+								resultingSegment: {
+									startDate: '2026-03-26',
+									endDate: '2026-03-29'
+								}
+							}
+						}
+					},
+					error: null
+				}
+			});
 		}
 	});
 
@@ -145,11 +180,16 @@ test('loadMenstrualHomePageModel requests getCalendarWindow using the resolved f
 	assert.match(requests[0].url, /\/queries\/getModuleHomeView\?_ts=\d+$/);
 	assert.match(requests[1].url, /\/queries\/getCalendarWindow\?_ts=\d+$/);
 	assert.match(requests[2].url, /\/queries\/getDayRecordDetail\?_ts=\d+$/);
+	assert.match(requests[3].url, /\/queries\/getSingleDayPeriodAction\?_ts=\d+$/);
 	assert.deepEqual(requests[1].data, {
 		moduleInstanceId: 'seed-home-module',
 		profileId: 'seed-home-profile',
 		startDate: '2026-02-23',
 		endDate: '2026-04-05'
+	});
+	assert.deepEqual(requests[3].data, {
+		moduleInstanceId: 'seed-home-module',
+		date: '2026-03-29'
 	});
 	assert.equal(requests[1].header['x-wx-openid'], 'seed-home-openid');
 });
@@ -184,11 +224,15 @@ test('loadMenstrualHomePageModel starts calendar and detail queries in parallel 
 	const startedPaths = [];
 	let resolveCalendar;
 	let resolveDetail;
+	let resolveAction;
 	const calendarResolved = new Promise((resolve) => {
 		resolveCalendar = resolve;
 	});
 	const detailResolved = new Promise((resolve) => {
 		resolveDetail = resolve;
+	});
+	const actionResolved = new Promise((resolve) => {
+		resolveAction = resolve;
 	});
 
 	installUniRequestMock((options) => {
@@ -269,6 +313,41 @@ test('loadMenstrualHomePageModel starts calendar and detail queries in parallel 
 					}
 				});
 			});
+			return;
+		}
+
+		if (options.url.includes('/queries/getSingleDayPeriodAction')) {
+			startedPaths.push('action');
+			actionResolved.then(() => {
+				options.success({
+					statusCode: 200,
+					data: {
+						ok: true,
+						data: {
+							selectedDate: '2026-03-29',
+							role: 'start',
+							chip: {
+								text: '月经开始',
+								selected: true
+							},
+							resolvedAction: {
+								action: 'revoke-start',
+								bridgeType: 'none',
+								prompt: null,
+								effect: {
+									action: 'revoke-start',
+									bridgeType: 'none',
+									selectedDate: '2026-03-29',
+									writeDates: [],
+									clearDates: ['2026-03-29'],
+									resultingSegment: null
+								}
+							}
+						},
+						error: null
+					}
+				});
+			});
 		}
 	});
 
@@ -285,12 +364,14 @@ test('loadMenstrualHomePageModel starts calendar and detail queries in parallel 
 
 	await new Promise((resolve) => setTimeout(resolve, 0));
 
-	assert.equal(startedPaths.length, 2);
+	assert.equal(startedPaths.length, 3);
 	assert.equal(startedPaths[0], 'calendar');
 	assert.equal(startedPaths[1], 'detail');
+	assert.equal(startedPaths[2], 'action');
 
 	resolveCalendar();
 	resolveDetail();
+	resolveAction();
 	await loading;
 });
 

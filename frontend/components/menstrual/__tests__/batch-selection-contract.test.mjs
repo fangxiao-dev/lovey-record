@@ -9,6 +9,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..', '..', '..', '..');
 
+function normalize(value) {
+	return JSON.parse(JSON.stringify(value));
+}
+
 function loadVueOptions(relativePath, injected = {}) {
 	const filePath = path.resolve(repoRoot, relativePath);
 	const source = fs.readFileSync(filePath, 'utf8');
@@ -286,6 +290,72 @@ test('home applyBatchAction keeps the latest batch-hovered day instead of the pr
 	assert.equal(persistCalls[0].endDate, '2026-03-24');
 });
 
+test('home applyBatchAction exits batch mode even while runCommand keeps the page in mutating state', async () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({}),
+		persistBatchPeriodRange: async () => {}
+	});
+
+	const ctx = {
+		selectedBatchKeys: ['2026-03-23', '2026-03-24'],
+		allCalendarCells: [
+			{ key: '2026-03-23', isoDate: '2026-03-23', selectable: true },
+			{ key: '2026-03-24', isoDate: '2026-03-24', selectable: true }
+		],
+		contractContext: {
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		batchDraft: {
+			isPeriod: true,
+			flowLevel: null,
+			painLevel: null,
+			colorLevel: null
+		},
+		activeDate: '2026-03-24',
+		panelMode: 'batch',
+		batchStartKey: '2026-03-23',
+		batchEndKey: '2026-03-24',
+		buildBatchRanges: home.methods.buildBatchRanges,
+		cancelBatchMode: home.methods.cancelBatchMode,
+		isMutating: false,
+		runCommand: async function(command) {
+			this.isMutating = true;
+			try {
+				await command();
+			} finally {
+				this.isMutating = false;
+			}
+		}
+	};
+
+	await home.methods.applyBatchAction.call(ctx);
+
+	assert.equal(ctx.panelMode, 'single-day');
+	assert.equal(ctx.batchStartKey, null);
+	assert.equal(ctx.batchEndKey, null);
+});
+
 test('calendar grid does not extend batch selection into a future-muted cell', () => {
 	const CalendarGrid = loadVueOptions('frontend/components/menstrual/CalendarGrid.vue', {
 		DateCell: {},
@@ -380,4 +450,222 @@ test('calendar grid extends batch selection when drag stays on a selectable past
 	});
 
 	assert.deepEqual(emitted, [['batch-extend', { key: '2026-03-19', selectable: true }]]);
+});
+
+test('home single-day period tap routes directly to applySingleDayPeriodAction when no confirmation is required', async () => {
+	const applyCalls = [];
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		applyTogglePeriodToPageModel: () => {
+			throw new Error('legacy toggle helper should not be used for single-day smart period editing');
+		},
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({}),
+		applySingleDayPeriodAction: async (payload) => {
+			applyCalls.push(payload);
+		},
+		uni: {
+			showModal() {
+				throw new Error('showModal should not run when confirmation is not required');
+			}
+		}
+	});
+
+	const ctx = {
+		panelMode: 'single-day',
+		contractContext: {
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module'
+		},
+		activeDate: '2026-03-29',
+		rawContracts: {
+			singleDayPeriodAction: {
+				resolvedAction: {
+					action: 'end-here',
+					prompt: null
+				}
+			}
+		},
+		runCommand(command) {
+			return command();
+		}
+	};
+
+	await home.methods.handleTogglePeriod.call(ctx, true);
+
+	assert.deepEqual(normalize(applyCalls), [{
+		context: {
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module'
+		},
+		activeDate: '2026-03-29',
+		action: 'end-here'
+	}]);
+});
+
+test('home single-day bridge cancel shows confirmation and does not mutate', async () => {
+	const applyCalls = [];
+	let modalConfig = null;
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		applyTogglePeriodToPageModel: () => {
+			throw new Error('legacy toggle helper should not be used for single-day smart period editing');
+		},
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({}),
+		applySingleDayPeriodAction: async (payload) => {
+			applyCalls.push(payload);
+		},
+		uni: {
+			showModal(options) {
+				modalConfig = options;
+				options.success({ confirm: false, cancel: true });
+			}
+		}
+	});
+
+	const ctx = {
+		panelMode: 'single-day',
+		contractContext: {
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module'
+		},
+		activeDate: '2026-03-22',
+		rawContracts: {
+			singleDayPeriodAction: {
+				resolvedAction: {
+					action: 'start',
+					prompt: {
+						required: true,
+						type: 'backward',
+						message: '已在 03/24 标记了经期开始，要提前到 03/22 吗？',
+						confirmLabel: '确认',
+						cancelLabel: '取消'
+					}
+				}
+			}
+		},
+		runCommand(command) {
+			return command();
+		}
+	};
+
+	await home.methods.handleTogglePeriod.call(ctx, false);
+
+	assert.equal(modalConfig.title, '提示');
+	assert.equal(modalConfig.content, '已在 03/24 标记了经期开始，要提前到 03/22 吗？');
+	assert.equal(modalConfig.confirmText, '确认');
+	assert.equal(modalConfig.cancelText, '取消');
+	assert.deepEqual(applyCalls, []);
+});
+
+test('home single-day bridge confirm calls applySingleDayPeriodAction with confirmed true', async () => {
+	const applyCalls = [];
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		applyTogglePeriodToPageModel: () => {
+			throw new Error('legacy toggle helper should not be used for single-day smart period editing');
+		},
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({}),
+		applySingleDayPeriodAction: async (payload) => {
+			applyCalls.push(payload);
+		},
+		uni: {
+			showModal(options) {
+				options.success({ confirm: true, cancel: false });
+			}
+		}
+	});
+
+	const ctx = {
+		panelMode: 'single-day',
+		contractContext: {
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module'
+		},
+		activeDate: '2026-03-22',
+		rawContracts: {
+			singleDayPeriodAction: {
+				resolvedAction: {
+					action: 'start',
+					prompt: {
+						required: true,
+						type: 'backward',
+						message: '已在 03/24 标记了经期开始，要提前到 03/22 吗？',
+						confirmLabel: '确认',
+						cancelLabel: '取消'
+					}
+				}
+			}
+		},
+		runCommand(command) {
+			return command();
+		}
+	};
+
+	await home.methods.handleTogglePeriod.call(ctx, false);
+
+	assert.deepEqual(normalize(applyCalls), [{
+		context: {
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module'
+		},
+		activeDate: '2026-03-22',
+		action: 'start',
+		confirmed: true
+	}]);
 });

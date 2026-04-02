@@ -1,7 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import vm from 'node:vm';
 
 import { createSelectedDatePanelData } from '../selected-date-panel-data.js';
+
+function loadVueOptions(relativePath, injected = {}) {
+	const filePath = path.resolve(process.cwd(), relativePath);
+	const source = fs.readFileSync(filePath, 'utf8');
+	const scriptMatch = source.match(/<script>([\s\S]*?)<\/script>/);
+	if (!scriptMatch) {
+		throw new Error(`No <script> block found in ${filePath}`);
+	}
+
+	const transformed = scriptMatch[1]
+		.replace(/^\s*import[\s\S]*?from\s+['"][^'"]+['"];\s*$/gm, '')
+		.replace(/export default/, 'module.exports =');
+
+	const module = { exports: {} };
+	const sandbox = vm.createContext({
+		module,
+		exports: module.exports,
+		console,
+		...injected
+	});
+	vm.runInContext(transformed, sandbox, { filename: filePath });
+	return module.exports;
+}
 
 test('selected date panel data exposes the approved home-panel content structure', () => {
 	const panel = createSelectedDatePanelData();
@@ -36,6 +62,53 @@ test('selected date panel data exposes the approved home-panel content structure
 		['正常', '轻', '深']
 	);
 	assert.equal(panel.initialPeriodMarked, true);
+	assert.equal(panel.periodChipText, '月经结束');
+	assert.equal(panel.periodChipSelected, true);
 	assert.equal(panel.initialEditorOpen, false);
 	assert.equal('actionLabel' in panel, false);
+});
+
+test('SelectedDatePanel renders the period chip label from props instead of hardcoding 经期', () => {
+	const source = fs.readFileSync(
+		path.resolve(process.cwd(), 'frontend/components/menstrual/SelectedDatePanel.vue'),
+		'utf8'
+	);
+
+	assert.match(source, /\{\{\s*periodChipText\s*\}\}/);
+	assert.equal(source.includes('>经期<'), false);
+});
+
+test('SelectedDatePanel keeps contextual periodChipSelected as the source of truth over legacy initialPeriodMarked fallback', () => {
+	const panel = loadVueOptions('frontend/components/menstrual/SelectedDatePanel.vue', {
+		flowIcon: 'flow.svg',
+		painIcon: 'pain.svg',
+		colorIcon: 'color.svg'
+	});
+	const ctx = { isPeriodChipSelected: false };
+
+	panel.watch.periodChipSelected.call(ctx, true);
+	panel.watch.initialPeriodMarked.call(ctx, false);
+
+	assert.equal(ctx.isPeriodChipSelected, true);
+});
+
+test('SelectedDatePanel period chip emits the next intent without mutating local selected state eagerly', () => {
+	const panel = loadVueOptions('frontend/components/menstrual/SelectedDatePanel.vue', {
+		flowIcon: 'flow.svg',
+		painIcon: 'pain.svg',
+		colorIcon: 'color.svg'
+	});
+	const emitted = [];
+	const ctx = {
+		busy: false,
+		isPeriodChipSelected: true,
+		$emit(eventName, payload) {
+			emitted.push([eventName, payload]);
+		}
+	};
+
+	panel.methods.togglePeriod.call(ctx);
+
+	assert.equal(ctx.isPeriodChipSelected, true);
+	assert.deepEqual(emitted, [['toggle-period', false]]);
 });

@@ -1,12 +1,19 @@
 import { Router } from 'express';
 import { createModuleInstanceHandler } from '../controllers/moduleInstance.controller';
-import { clearPeriodDayHandler, clearPeriodRangeHandler, recordPeriodDayHandler, recordPeriodRangeHandler } from '../controllers/dayRecord.controller';
+import {
+  applySingleDayPeriodActionHandler,
+  clearPeriodDayHandler,
+  clearPeriodRangeHandler,
+  recordPeriodDayHandler,
+  recordPeriodRangeHandler,
+} from '../controllers/dayRecord.controller';
 import { recordDayDetailsHandler, recordDayDetailsBatchHandler, recordDayNoteHandler, revokeModuleAccessHandler, shareModuleInstanceHandler, updateDefaultPeriodDurationHandler } from '../controllers/phase5.controller';
 
 const router = Router();
 
 router.post('/createModuleInstance', createModuleInstanceHandler);
 router.post('/recordPeriodDay', recordPeriodDayHandler);
+router.post('/applySingleDayPeriodAction', applySingleDayPeriodActionHandler);
 router.post('/clearPeriodDay', clearPeriodDayHandler);
 router.post('/recordPeriodRange', recordPeriodRangeHandler);
 router.post('/clearPeriodRange', clearPeriodRangeHandler);

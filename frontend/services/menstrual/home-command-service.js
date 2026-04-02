@@ -87,6 +87,25 @@ export async function persistSelectedDatePeriodState({ context, activeDate, page
 	});
 }
 
+export async function applySingleDayPeriodAction({ context, activeDate, action, confirmed }) {
+	const data = {
+		moduleInstanceId: context.moduleInstanceId,
+		selectedDate: activeDate,
+		action
+	};
+
+	if (typeof confirmed === 'boolean') {
+		data.confirmed = confirmed;
+	}
+
+	return commandEnvelope({
+		apiBaseUrl: context.apiBaseUrl,
+		openid: context.openid,
+		path: '/api/commands/applySingleDayPeriodAction',
+		data
+	});
+}
+
 export async function persistBatchPeriodRange({ context, action, startDate, endDate }) {
 	const path = action === 'clear-record'
 		? '/api/commands/clearPeriodRange'
