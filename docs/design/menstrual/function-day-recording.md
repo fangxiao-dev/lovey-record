@@ -278,7 +278,7 @@ The domain model already supports this design with no changes needed:
 - [function-recording-model.md](function-recording-model.md) — core recording model (users edit days, system derives segments)
 - [date-state-spec.md](date-state-spec.md) — date state visual rules
 - [token-component-mapping.md](token-component-mapping.md) — token consumption contracts
-- [../../contracts/domain-models/2026-03-23-menstrual-domain-model.md](../../contracts/domain-models/2026-03-23-menstrual-domain-model.md) — domain model
+- [../../contracts/domain-models/menstrual-domain-model.md](../../contracts/domain-models/menstrual-domain-model.md) — domain model
 - [../2026-03-28-ui-collaboration-lessons.md](../2026-03-28-ui-collaboration-lessons.md) — Pencil-to-code collaboration rules
 
 ## Source Of Truth

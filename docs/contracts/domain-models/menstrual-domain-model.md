@@ -1,6 +1,7 @@
 # Period Domain Model
 
-**Date:** 2026-03-23
+**Created:** 2026-03-23
+**Last Updated:** 2026-04-02
 
 ## Purpose
 

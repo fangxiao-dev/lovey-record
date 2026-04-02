@@ -16,9 +16,9 @@
    - `2026-03-27-backend-implementation-plan.md`
    - `2026-03-27-backend-period-model-alignment-plan.md`
 3. Read the active backend contracts under [docs/contracts](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/contracts):
-   - `domain-models/2026-03-23-menstrual-domain-model.md`
-   - `application-contracts/2026-03-23-menstrual-application-contract-draft.md`
-   - `use-cases/2026-03-23-menstrual-core-use-cases.md` when behavior or flow is affected
+   - `domain-models/menstrual-domain-model.md`
+   - `application-contracts/menstrual-application-contract.md`
+   - `use-cases/menstrual-core-use-cases.md` when behavior or flow is affected
 4. Read `backend/README.md` only as a local directory overview; if it conflicts with runtime code or contracts, prefer the contracts and the implemented source.
 5. Inspect `backend/src/`, `backend/prisma/`, and `backend/tests/` before changing structure or behavior.
 

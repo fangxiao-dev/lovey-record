@@ -1,6 +1,7 @@
 # Period Application Contract Draft
 
-**Date:** 2026-03-23
+**Created:** 2026-03-23
+**Last Updated:** 2026-04-02
 
 ## Purpose
 
@@ -14,8 +15,6 @@ It is still a draft, but it is concrete enough to support:
 - frontend mock service work if needed later
 
 It does not commit the project to REST, RPC, or a specific database model.
-
-For single-day smart period editing, the newer draft [2026-04-02-menstrual-single-day-action-contract-draft.md](D:\CodeSpace\hbuilder-projects\lovey-record\docs\contracts\application-contracts\2026-04-02-menstrual-single-day-action-contract-draft.md) supersedes this document's older `recordPeriodDay / clearPeriodDay` UI interpretation.
 
 ## Contract Style
 
@@ -92,6 +91,336 @@ The contract is expressed in application-service terms:
 - `getModuleAccessState`
 - `getModuleSettings`
 - `getSingleDayPeriodAction`
+
+## Single-Day Smart Period Editing Contract
+
+Single-day period editing is no longer interpreted as a generic boolean `isPeriod` toggle in the UI.
+
+The frontend must render a contextual chip based on the selected date's derived role inside the current continuous period segment:
+
+- `not-period` => `月经开始`
+- `start` => `月经开始`
+- `in-progress` => `月经结束`
+- `end` => `月经结束`
+
+The persisted source of truth remains day-based:
+
+- `day_record.isPeriod`
+
+Segment role is derived from neighboring continuous period dates and is not stored as a new persisted field.
+
+### `SingleDayPeriodRole`
+
+Allowed values:
+
+- `not-period`
+- `start`
+- `in-progress`
+- `end`
+
+Rules:
+
+- this is derived from the currently selected date and the surrounding continuous period segment
+- this is a UI-facing semantic role, not a persisted database field
+
+### `SingleDayPeriodAction`
+
+Allowed values:
+
+- `start`
+- `revoke-start`
+- `end-here`
+- `noop`
+
+Rules:
+
+- `start` means "start a new segment here or bridge from here"
+- `revoke-start` means "the selected day is already the segment start; tapping the selected `月经开始` revokes the whole segment"
+- `end-here` means "the selected day becomes the final day of the segment"
+- `noop` is currently allowed only when the selected day is already `end` and the user taps `月经结束`
+
+### `BridgeType`
+
+Allowed values:
+
+- `none`
+- `forward`
+- `backward`
+- `both`
+
+Rules:
+
+- bridging only applies to `start` actions on a `not-period` day
+- bridge threshold is `defaultPeriodDurationDays - 1`
+
+### `SingleDayPeriodPrompt`
+
+```json
+{
+  "required": true,
+  "type": "forward",
+  "message": "把这段经期延长到 03/15？",
+  "confirmLabel": "确认",
+  "cancelLabel": "取消"
+}
+```
+
+Rules:
+
+- `required = true` only when bridging is about to modify an already existing segment shape
+- if no confirmation is needed, this field should be `null`
+- frontend should render the backend-provided `message` directly
+
+### `SingleDayPeriodEffect`
+
+```json
+{
+  "action": "bridge-backward",
+  "bridgeType": "backward",
+  "selectedDate": "2026-03-22",
+  "writeDates": [
+    "2026-03-22",
+    "2026-03-23",
+    "2026-03-24"
+  ],
+  "clearDates": [],
+  "resultingSegment": {
+    "startDate": "2026-03-22",
+    "endDate": "2026-03-28"
+  }
+}
+```
+
+Rules:
+
+- `writeDates` lists dates whose period membership will be set or confirmed as `true`
+- `clearDates` lists dates whose period membership will be cleared
+- `resultingSegment` describes the final continuous segment that contains the selected date after the action is applied
+
+### `ResolveSingleDayPeriodActionInput`
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "date": "2026-03-22"
+}
+```
+
+### `ResolveSingleDayPeriodActionResult`
+
+```json
+{
+  "selectedDate": "2026-03-22",
+  "role": "not-period",
+  "chip": {
+    "text": "月经开始",
+    "selected": false
+  },
+  "resolvedAction": {
+    "action": "start",
+    "bridgeType": "backward",
+    "prompt": {
+      "required": true,
+      "type": "backward",
+      "message": "已在 03/24 标记了经期开始，要提前到 03/22 吗？",
+      "confirmLabel": "确认",
+      "cancelLabel": "取消"
+    },
+    "effect": {
+      "action": "bridge-backward",
+      "bridgeType": "backward",
+      "selectedDate": "2026-03-22",
+      "writeDates": ["2026-03-22", "2026-03-23", "2026-03-24"],
+      "clearDates": [],
+      "resultingSegment": {
+        "startDate": "2026-03-22",
+        "endDate": "2026-03-28"
+      }
+    }
+  }
+}
+```
+
+Rules:
+
+- the frontend should not infer bridge type or prompt copy by itself once this contract is stable
+
+### Single-Day Action Semantics
+
+`start` on `not-period`:
+
+- if bridging does not apply:
+  - set the selected date as a new segment start
+  - auto-fill forward by `N-1`, where `N = defaultPeriodDurationDays`
+- if bridging applies:
+  - require confirmation first
+  - after confirmation, write the bridged dates and recompute the resulting segment
+
+`revoke-start` on `start`:
+
+- chip text remains `月经开始`
+- chip appears selected
+- tapping it revokes the entire current segment
+- required effect: clear all dates in the selected segment
+
+`end-here` on `in-progress`:
+
+- keep the selected date as `period`
+- clear all later dates in the same segment
+- the selected date becomes the new segment end
+
+`noop` on `end`:
+
+- tapping `月经结束` results in no change
+- this should not silently clear the selected date
+
+### Resolver And Apply Direction
+
+The application layer supports two stages:
+
+1. resolve the action
+2. apply the action
+
+Recommended direction:
+
+- query: `getSingleDayPeriodAction`
+- command: `applySingleDayPeriodAction`
+
+Reasoning:
+
+- the frontend needs the contextual chip semantics before the user taps
+- bridge prompts are easier to render from a read-style resolver than from a write command that may or may not mutate
+- this keeps confirmation UX explicit and testable
+- it avoids overloading `recordPeriodDay` with multiple unrelated meanings
+
+Recommended flow:
+
+1. frontend loads selected date context
+2. frontend calls `getSingleDayPeriodAction`
+3. backend returns:
+   - derived role
+   - chip text
+   - selected state
+   - resolved action
+   - optional prompt
+   - effect preview
+4. if no confirmation is required:
+   - frontend calls `applySingleDayPeriodAction`
+5. if confirmation is required:
+   - frontend shows the prompt first
+   - on confirm, frontend calls `applySingleDayPeriodAction`
+
+Suggested apply input:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "selectedDate": "2026-03-22",
+  "action": "start",
+  "confirmed": true
+}
+```
+
+Rules:
+
+- `confirmed` should be `false` or omitted for actions that do not require confirmation
+- for bridge actions that require confirmation, frontend should only send `confirmed: true` after the user accepts the prompt
+- backend must still validate that the action remains valid at apply time if underlying data changed between resolve and apply
+
+Concurrency guard:
+
+- apply-time validation must re-check the selected date's current segment context before mutating
+- a `decisionKey` fingerprint is optional for now; apply-time revalidation is mandatory
+
+Recommended apply result without confirmation:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "selectedDate": "2026-03-22",
+  "appliedAction": "end-here",
+  "confirmationRequired": false,
+  "effect": {
+    "writeDates": ["2026-03-22"],
+    "clearDates": ["2026-03-23", "2026-03-24"],
+    "resultingSegment": {
+      "startDate": "2026-03-20",
+      "endDate": "2026-03-22"
+    }
+  },
+  "recomputed": {
+    "segmentChanged": true,
+    "predictionChanged": true
+  }
+}
+```
+
+Recommended apply result requiring confirmation:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "selectedDate": "2026-03-22",
+  "appliedAction": null,
+  "confirmationRequired": true,
+  "prompt": {
+    "required": true,
+    "type": "backward",
+    "message": "已在 03/24 标记了经期开始，要提前到 03/22 吗？",
+    "confirmLabel": "确认",
+    "cancelLabel": "取消"
+  },
+  "effectPreview": {
+    "action": "bridge-backward",
+    "bridgeType": "backward",
+    "selectedDate": "2026-03-22",
+    "writeDates": ["2026-03-22", "2026-03-23", "2026-03-24"],
+    "clearDates": [],
+    "resultingSegment": {
+      "startDate": "2026-03-22",
+      "endDate": "2026-03-28"
+    }
+  }
+}
+```
+
+### Prompt Copy Contract
+
+The frozen prompt texts are:
+
+- forward bridge:
+  - `把这段经期延长到 MM/DD？`
+- backward bridge:
+  - `已在 MM/DD 标记了经期开始，要提前到 MM/DD 吗？`
+- two-sided bridge:
+  - `附近已有经期记录，是否合并？`
+
+Rules:
+
+- `MM/DD` values must be provided from the resolved action context
+- prompt buttons should be `取消` and `确认`
+
+### Existing Command Reinterpretation
+
+`recordPeriodDay` is no longer sufficient as the long-term semantic surface by itself.
+
+The stable single-day meaning now covers:
+
+- plain forward auto-fill from a fresh start
+- revoking a whole segment from its start
+- truncating a segment at the selected day
+- forward, backward, and two-sided bridging with confirmation
+
+Implementation should stop treating `recordPeriodDay` as a blind write-only toggle and instead treat it as a resolved single-day period action flow.
+
+### Relationship With Batch Commands
+
+Batch semantics remain unchanged:
+
+- `recordPeriodRange` writes the explicit selected range only
+- `clearPeriodRange` clears the explicit selected range only
+- batch commands do not use smart bridging
+- batch commands do not use single-day `开始/结束` semantics
 
 ## Shared Payload Objects
 

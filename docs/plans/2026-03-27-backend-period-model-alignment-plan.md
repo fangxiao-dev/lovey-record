@@ -19,9 +19,9 @@
 
 ## Files To Keep Aligned
 
-- `docs/contracts/domain-models/2026-03-23-menstrual-domain-model.md`
-- `docs/contracts/application-contracts/2026-03-23-menstrual-application-contract-draft.md`
-- `docs/contracts/use-cases/2026-03-23-menstrual-core-use-cases.md`
+- `docs/contracts/domain-models/menstrual-domain-model.md`
+- `docs/contracts/application-contracts/menstrual-application-contract.md`
+- `docs/contracts/use-cases/menstrual-core-use-cases.md`
 - `docs/contracts/README.md`
 - `project-context.md`
 - `docs/README.md`

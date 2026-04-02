@@ -4,7 +4,7 @@
 
 This document summarizes the design-facing period model for the menstrual module.
 
-For the full data-model contract, also read [menstrual-domain-model.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/contracts/domain-models/2026-03-23-menstrual-domain-model.md).
+For the full data-model contract, also read [menstrual-domain-model.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/contracts/domain-models/menstrual-domain-model.md).
 
 ## Core Rule
 
