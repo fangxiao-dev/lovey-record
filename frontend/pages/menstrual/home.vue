@@ -81,6 +81,8 @@
 				:summary-items="panelMode === 'batch' ? batchPanelSummaryItems : page.selectedDatePanel.summaryItems"
 				:attribute-rows="panelMode === 'batch' ? batchPanelAttributeRows : page.selectedDatePanel.attributeRows"
 				:note="panelMode === 'batch' ? '' : page.selectedDatePanel.note"
+				:period-chip-text="panelMode === 'batch' ? '经期' : page.selectedDatePanel.periodChipText"
+				:period-chip-selected="panelMode === 'batch' ? batchDraft.isPeriod : page.selectedDatePanel.periodChipSelected"
 				:initial-period-marked="panelMode === 'batch' ? batchDraft.isPeriod : page.selectedDatePanel.initialPeriodMarked"
 				:initial-editor-open="panelMode === 'batch' ? false : page.selectedDatePanel.initialEditorOpen"
 				:show-note="panelMode !== 'batch'"

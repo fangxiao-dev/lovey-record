@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { createSelectedDatePanelData } from '../selected-date-panel-data.js';
 
@@ -36,6 +38,18 @@ test('selected date panel data exposes the approved home-panel content structure
 		['正常', '轻', '深']
 	);
 	assert.equal(panel.initialPeriodMarked, true);
+	assert.equal(panel.periodChipText, '月经结束');
+	assert.equal(panel.periodChipSelected, true);
 	assert.equal(panel.initialEditorOpen, false);
 	assert.equal('actionLabel' in panel, false);
+});
+
+test('SelectedDatePanel renders the period chip label from props instead of hardcoding 经期', () => {
+	const source = fs.readFileSync(
+		path.resolve(process.cwd(), 'frontend/components/menstrual/SelectedDatePanel.vue'),
+		'utf8'
+	);
+
+	assert.match(source, /\{\{\s*periodChipText\s*\}\}/);
+	assert.equal(source.includes('>经期<'), false);
 });

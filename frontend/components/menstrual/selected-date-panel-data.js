@@ -1,6 +1,8 @@
 const SELECTED_DATE_PANEL = Object.freeze({
 	title: '3 月 22 日',
 	badge: '今日',
+	periodChipText: '月经结束',
+	periodChipSelected: true,
 	initialPeriodMarked: true,
 	initialEditorOpen: false,
 	summaryItems: [

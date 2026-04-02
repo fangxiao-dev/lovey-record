@@ -88,6 +88,39 @@ function diffDays(startDate, endDate) {
 	return Math.round((end - start) / 86400000);
 }
 
+function deriveSingleDayPeriodChip({ homeView, dayRecord }) {
+	if (!dayRecord?.isPeriod || !dayRecord?.date) {
+		return {
+			text: '月经开始',
+			selected: false
+		};
+	}
+
+	const periodDates = new Set(
+		(homeView?.calendarMarks || [])
+			.filter((mark) => mark.kind === 'period' || mark.kind === 'period_start')
+			.map((mark) => mark.date)
+	);
+	periodDates.add(dayRecord.date);
+
+	const previousDate = addDays(dayRecord.date, -1);
+	const nextDate = addDays(dayRecord.date, 1);
+	const hasPreviousPeriod = periodDates.has(previousDate);
+	const hasNextPeriod = periodDates.has(nextDate);
+
+	return {
+		text: hasPreviousPeriod ? '月经结束' : '月经开始',
+		selected: true,
+		role: !hasPreviousPeriod && !hasNextPeriod
+			? 'start'
+			: !hasPreviousPeriod
+				? 'start'
+				: !hasNextPeriod
+					? 'end'
+					: 'in-progress'
+	};
+}
+
 export function createOptionRows(dayRecord) {
 	const selectedLevels = {
 		flow: dayRecord?.flowLevel ?? null,
@@ -378,7 +411,7 @@ function createHeroCard(homeView, today) {
 	};
 }
 
-function createSelectedDatePanel(dayDetail, today) {
+function createSelectedDatePanel(homeView, dayDetail, today, singleDayPeriodAction = null) {
 	const dayRecord = dayDetail?.dayRecord || null;
 	const summaryItems = createSummaryItems(dayRecord);
 	const hasAnyRecord = Boolean(dayRecord && (
@@ -389,10 +422,13 @@ function createSelectedDatePanel(dayDetail, today) {
 		|| Boolean(dayRecord.note)
 	));
 	const date = dayRecord?.date || today;
+	const periodChip = singleDayPeriodAction?.chip || deriveSingleDayPeriodChip({ homeView, dayRecord });
 
 	return {
 		title: formatHumanDate(date),
 		badge: date === today ? '今日' : (hasAnyRecord ? '已记录' : '点击记录'),
+		periodChipText: periodChip.text,
+		periodChipSelected: periodChip.selected,
 		initialPeriodMarked: Boolean(dayRecord?.isPeriod),
 		initialEditorOpen: false,
 		note: dayRecord?.note || '',
@@ -473,7 +509,15 @@ export function shiftFocusDate(focusDate, viewMode, direction) {
 	return addDays(focusDate, direction * 7);
 }
 
-export function createMenstrualHomePageModel({ homeView, dayDetail, calendarWindow = null, today, viewMode = 'three-week', focusDate = null }) {
+export function createMenstrualHomePageModel({
+	homeView,
+	dayDetail,
+	calendarWindow = null,
+	singleDayPeriodAction = null,
+	today,
+	viewMode = 'three-week',
+	focusDate = null
+}) {
 	const activeDate = dayDetail?.dayRecord?.date || today;
 	const resolvedFocusDate = focusDate || activeDate;
 
@@ -514,7 +558,7 @@ export function createMenstrualHomePageModel({ homeView, dayDetail, calendarWind
 			? buildCalendarCardFromWindow(homeView, calendarWindow, activeDate, today)
 			: buildCalendarCard(homeView, dayDetail, activeDate, today),
 		legend: createCalendarLegendItems(),
-		selectedDatePanel: createSelectedDatePanel(dayDetail, today),
+		selectedDatePanel: createSelectedDatePanel(homeView, dayDetail, today, singleDayPeriodAction),
 		selectedDateKey: activeDate,
 		todayKey: today
 	};

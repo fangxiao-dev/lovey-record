@@ -9,14 +9,14 @@
 			<view
 				class="selected-date-panel__chip"
 				:class="[
-					{ 'selected-date-panel__chip--accent': isPeriodMarked },
+					{ 'selected-date-panel__chip--accent': isPeriodChipSelected },
 					{ 'ui-pressable--busy': busy }
 				]"
 				hover-class="ui-pressable-hover"
 				:hover-stay-time="70"
 				@tap="togglePeriod"
 			>
-				<text class="selected-date-panel__chip-label">经期</text>
+				<text class="selected-date-panel__chip-label">{{ periodChipText }}</text>
 			</view>
 			<view
 				class="selected-date-panel__chip"
@@ -149,6 +149,14 @@
 				type: String,
 				default: ''
 			},
+			periodChipText: {
+				type: String,
+				default: '月经开始'
+			},
+			periodChipSelected: {
+				type: Boolean,
+				default: false
+			},
 			initialPeriodMarked: {
 				type: Boolean,
 				default: false
@@ -169,7 +177,7 @@
 		data() {
 			return {
 				isEditorOpen: this.initialEditorOpen,
-				isPeriodMarked: this.initialPeriodMarked,
+				isPeriodChipSelected: this.periodChipSelected ?? this.initialPeriodMarked,
 				noteDraft: this.note
 			};
 		},
@@ -180,8 +188,11 @@
 			initialEditorOpen(nextValue) {
 				this.isEditorOpen = nextValue;
 			},
+			periodChipSelected(nextValue) {
+				this.isPeriodChipSelected = nextValue;
+			},
 			initialPeriodMarked(nextValue) {
-				this.isPeriodMarked = nextValue;
+				this.isPeriodChipSelected = nextValue;
 			}
 		},
 		methods: {
@@ -192,8 +203,8 @@
 			},
 			togglePeriod() {
 				if (this.busy) return;
-				this.isPeriodMarked = !this.isPeriodMarked;
-				this.$emit('toggle-period', this.isPeriodMarked);
+				this.isPeriodChipSelected = !this.isPeriodChipSelected;
+				this.$emit('toggle-period', this.isPeriodChipSelected);
 			},
 			toggleAttributeOption(rowKey, optionKey) {
 				if (this.busy) return;
