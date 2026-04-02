@@ -48,7 +48,7 @@ function createCalendarCells() {
 	];
 }
 
-test('home batch selection toggles a cell back off when the drag path re-enters it', () => {
+test('home batch selection keeps a continuous inclusive range from the anchor to the latest dragged day', () => {
 	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
 		CalendarGrid: {},
 		CalendarLegend: {},
@@ -75,27 +75,42 @@ test('home batch selection toggles a cell back off when the drag path re-enters 
 		panelMode: 'single-day',
 		batchStartKey: null,
 		batchEndKey: null,
+		batchHoveredKey: null,
 		batchSelectedKeysState: [],
-		toggleBatchSelectionKey: home.methods.toggleBatchSelectionKey,
+		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
 		activeDate: '2026-03-25',
 		allCalendarCells: [
-			{ key: '2026-03-25', isoDate: '2026-03-25', selectable: true },
-			{ key: '2026-03-26', isoDate: '2026-03-26', selectable: true },
-			{ key: '2026-03-27', isoDate: '2026-03-27', selectable: true }
+			{ key: '2026-03-01', isoDate: '2026-03-01', selectable: true },
+			{ key: '2026-03-02', isoDate: '2026-03-02', selectable: true },
+			{ key: '2026-03-03', isoDate: '2026-03-03', selectable: true },
+			{ key: '2026-03-04', isoDate: '2026-03-04', selectable: true },
+			{ key: '2026-03-05', isoDate: '2026-03-05', selectable: true },
+			{ key: '2026-03-06', isoDate: '2026-03-06', selectable: true },
+			{ key: '2026-03-07', isoDate: '2026-03-07', selectable: true },
+			{ key: '2026-03-08', isoDate: '2026-03-08', selectable: true },
+			{ key: '2026-03-09', isoDate: '2026-03-09', selectable: true }
 		]
 	};
 
-	home.methods.handleBatchStart.call(ctx, { key: '2026-03-25', isoDate: '2026-03-25' });
-	home.methods.handleBatchExtend.call(ctx, { key: '2026-03-26', isoDate: '2026-03-26' });
-	home.methods.handleBatchExtend.call(ctx, { key: '2026-03-27', isoDate: '2026-03-27' });
-	home.methods.handleBatchExtend.call(ctx, { key: '2026-03-26', isoDate: '2026-03-26' });
-	home.methods.handleBatchExtend.call(ctx, { key: '2026-03-25', isoDate: '2026-03-25' });
+	home.methods.handleBatchStart.call(ctx, { key: '2026-03-01', isoDate: '2026-03-01' });
+	home.methods.handleBatchExtend.call(ctx, { key: '2026-03-05', isoDate: '2026-03-05' });
+	home.methods.handleBatchExtend.call(ctx, { key: '2026-03-09', isoDate: '2026-03-09' });
 
 	const selectedBatchKeys = home.computed.selectedBatchKeys.call(ctx);
 
-	assert.deepEqual(selectedBatchKeys, ['2026-03-27']);
-	assert.equal(selectedBatchKeys.includes('2026-03-25'), false);
-	assert.equal(selectedBatchKeys.includes('2026-03-26'), false);
+	assert.deepEqual(selectedBatchKeys, [
+		'2026-03-01',
+		'2026-03-02',
+		'2026-03-03',
+		'2026-03-04',
+		'2026-03-05',
+		'2026-03-06',
+		'2026-03-07',
+		'2026-03-08',
+		'2026-03-09'
+	]);
+	assert.equal(selectedBatchKeys.includes('2026-03-06'), true);
+	assert.equal(selectedBatchKeys.includes('2026-03-08'), true);
 });
 
 test('home batch selection updates the active single-day context to the latest dragged date', () => {
@@ -126,8 +141,9 @@ test('home batch selection updates the active single-day context to the latest d
 		panelMode: 'single-day',
 		batchStartKey: null,
 		batchEndKey: null,
+		batchHoveredKey: null,
 		batchSelectedKeysState: [],
-		toggleBatchSelectionKey: home.methods.toggleBatchSelectionKey,
+		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
 		activeDate: '2026-03-25',
 		allCalendarCells: [
 			{ key: '2026-03-23', isoDate: '2026-03-23', selectable: true },
@@ -143,6 +159,70 @@ test('home batch selection updates the active single-day context to the latest d
 	assert.equal(ctx.batchEndKey, '2026-03-24');
 	assert.equal(ctx.activeDate, '2026-03-24');
 	assert.notEqual(ctx.activeDate, '2026-03-25');
+});
+
+test('home batch selection recomputes the full range even when drag jumps across rows', () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		applyTogglePeriodToPageModel: () => {},
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({})
+	});
+
+	const ctx = {
+		panelMode: 'single-day',
+		batchStartKey: null,
+		batchEndKey: null,
+		batchHoveredKey: null,
+		batchSelectedKeysState: [],
+		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
+		activeDate: '2026-03-01',
+		allCalendarCells: [
+			{ key: '2026-03-01', isoDate: '2026-03-01', selectable: true },
+			{ key: '2026-03-02', isoDate: '2026-03-02', selectable: true },
+			{ key: '2026-03-03', isoDate: '2026-03-03', selectable: true },
+			{ key: '2026-03-04', isoDate: '2026-03-04', selectable: true },
+			{ key: '2026-03-05', isoDate: '2026-03-05', selectable: true },
+			{ key: '2026-03-06', isoDate: '2026-03-06', selectable: true },
+			{ key: '2026-03-07', isoDate: '2026-03-07', selectable: true },
+			{ key: '2026-03-08', isoDate: '2026-03-08', selectable: true },
+			{ key: '2026-03-09', isoDate: '2026-03-09', selectable: true },
+			{ key: '2026-03-10', isoDate: '2026-03-10', selectable: true }
+		]
+	};
+
+	home.methods.handleBatchStart.call(ctx, { key: '2026-03-01', isoDate: '2026-03-01' });
+	home.methods.handleBatchExtend.call(ctx, { key: '2026-03-05', isoDate: '2026-03-05' });
+	home.methods.handleBatchExtend.call(ctx, { key: '2026-03-09', isoDate: '2026-03-09' });
+
+	assert.deepEqual(home.computed.selectedBatchKeys.call(ctx), [
+		'2026-03-01',
+		'2026-03-02',
+		'2026-03-03',
+		'2026-03-04',
+		'2026-03-05',
+		'2026-03-06',
+		'2026-03-07',
+		'2026-03-08',
+		'2026-03-09'
+	]);
+	assert.equal(ctx.batchEndKey, '2026-03-09');
 });
 
 test('home applyBatchAction exits batch mode and keeps the latest dragged day as the selected single-day date', async () => {

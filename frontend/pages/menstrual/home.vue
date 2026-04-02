@@ -605,8 +605,7 @@
 				this.batchStartKey = cell.key;
 				this.batchEndKey = cell.key;
 				this.batchHoveredKey = cell.key;
-				this.batchSelectedKeysState = [];
-				this.toggleBatchSelectionKey(cell.key);
+				this.syncBatchSelectionRange();
 				if (cell.isoDate) {
 					this.activeDate = cell.isoDate;
 				}
@@ -616,7 +615,7 @@
 				if (cell.key === this.batchHoveredKey) return;
 				this.batchEndKey = cell.key;
 				this.batchHoveredKey = cell.key;
-				this.toggleBatchSelectionKey(cell.key);
+				this.syncBatchSelectionRange();
 				if (cell.isoDate) {
 					this.activeDate = cell.isoDate;
 				}
@@ -669,15 +668,24 @@
 					this.batchSelectedKeysState = [];
 				});
 			},
-			toggleBatchSelectionKey(cellKey) {
-				const nextKeys = new Set(this.batchSelectedKeysState);
-				if (nextKeys.has(cellKey)) {
-					nextKeys.delete(cellKey);
-				} else {
-					nextKeys.add(cellKey);
+			syncBatchSelectionRange() {
+				if (!this.batchStartKey || !this.batchEndKey) {
+					this.batchSelectedKeysState = [];
+					return;
 				}
+
+				const startIndex = this.allCalendarCells.findIndex((cell) => cell.key === this.batchStartKey);
+				const endIndex = this.allCalendarCells.findIndex((cell) => cell.key === this.batchEndKey);
+				if (startIndex === -1 || endIndex === -1) {
+					this.batchSelectedKeysState = [];
+					return;
+				}
+
+				const rangeStart = Math.min(startIndex, endIndex);
+				const rangeEnd = Math.max(startIndex, endIndex);
 				this.batchSelectedKeysState = this.allCalendarCells
-					.filter((cell) => nextKeys.has(cell.key))
+					.slice(rangeStart, rangeEnd + 1)
+					.filter((cell) => cell.selectable !== false)
 					.map((cell) => cell.key);
 			},
 			buildBatchRanges(selectedKeys) {
