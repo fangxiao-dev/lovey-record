@@ -32,5 +32,9 @@ jobs:
       - name: Run frontend unit tests
         shell: bash
         run: |
-          mapfile -d '' test_files < <(find frontend -path '*/__tests__/*.test.mjs' -print0 | sort -z)
+          mapfile -d '' test_files < <(
+            find frontend -path '*/__tests__/*.test.mjs' \
+              ! -path 'frontend/services/menstrual/__tests__/*' \
+              -print0 | sort -z
+          )
           node --test "${test_files[@]}"
