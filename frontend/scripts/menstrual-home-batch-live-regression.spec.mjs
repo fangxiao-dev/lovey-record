@@ -326,7 +326,7 @@ test('owner shell can update the default period duration from the live settings 
 	}
 });
 
-test('fresh not-period day shows 月经开始 and single tap applies the default forward fill length', async ({ page }) => {
+test('fresh not-period day shows 月经 and single tap applies the default forward fill length', async ({ page }) => {
 	const TEST_FIRST_DAY = '2026-03-23';
 	const TEST_WINDOW_END = '2026-03-28';
 	const TEST_DURATION = 4;
@@ -346,9 +346,9 @@ test('fresh not-period day shows 月经开始 and single tap applies the default
 
 		await openDay(page, '23');
 		await expect(page.locator('.selected-date-panel__title')).toHaveText('3 月 23 日');
-		await expect(getPeriodChip(page, '月经开始')).not.toHaveClass(/selected-date-panel__chip--accent/);
+		await expect(getPeriodChip(page, '月经')).not.toHaveClass(/selected-date-panel__chip--accent/);
 
-		await getPeriodChip(page, '月经开始').click();
+		await getPeriodChip(page, '月经').click();
 		await page.waitForTimeout(1600);
 
 		await expect(getPeriodChip(page, '月经开始')).toHaveClass(/selected-date-panel__chip--accent/);
@@ -457,9 +457,9 @@ test('bridge candidate shows frozen prompt copy and only confirms the merge afte
 
 		await openDay(page, '23');
 		await expect(page.locator('.selected-date-panel__title')).toHaveText('3 月 23 日');
-		await expect(getPeriodChip(page, '月经开始')).not.toHaveClass(/selected-date-panel__chip--accent/);
+		await expect(getPeriodChip(page, '月经')).not.toHaveClass(/selected-date-panel__chip--accent/);
 
-		await getPeriodChip(page, '月经开始').click();
+		await getPeriodChip(page, '月经').click();
 		await expect(page.getByText('已在 03/25 标记了经期开始，要提前到 03/23 吗？')).toBeVisible();
 		await page.getByText('取消').click();
 		await page.waitForTimeout(400);
@@ -467,7 +467,7 @@ test('bridge candidate shows frozen prompt copy and only confirms the merge afte
 			'2026-03-25', '2026-03-26', '2026-03-27', '2026-03-28', '2026-03-29'
 		]);
 
-		await getPeriodChip(page, '月经开始').click();
+		await getPeriodChip(page, '月经').click();
 		await expect(page.getByText('已在 03/25 标记了经期开始，要提前到 03/23 吗？')).toBeVisible();
 		await page.getByText('确认').click();
 		await page.waitForTimeout(1600);

@@ -293,7 +293,7 @@ export function resolveSingleDayPeriodAction(input: ResolveSingleDayPeriodAction
     selectedDate: input.selectedDate,
     role: 'not-period' as const,
     chip: {
-      text: '月经开始',
+      text: '月经',
       selected: false,
     },
     resolvedAction: {

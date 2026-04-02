@@ -151,7 +151,7 @@ describe('Queries Integration', () => {
       selectedDate: '2026-03-22',
       role: 'not-period',
       chip: {
-        text: '月经开始',
+        text: '月经',
         selected: false,
       },
       resolvedAction: {
@@ -190,7 +190,7 @@ describe('Queries Integration', () => {
         selectedDate: '2026-03-22',
         role: 'not-period',
         chip: {
-          text: '月经开始',
+          text: '月经',
           selected: false,
         },
         resolvedAction: {

@@ -34,7 +34,7 @@ This hierarchy should inform future prioritization decisions (e.g. if simplifyin
 The panel always shows two independent chips:
 
 ```
-[ 月经开始 / 月经结束 ]   [ + 记录详情 ]
+[ 月经 / 月经开始 / 月经结束 ]   [ + 记录详情 ]
 ```
 
 - Contextual period chip: single-day smart period action for this date. Independent of attribute recording.
@@ -50,12 +50,12 @@ These two chips are always visible regardless of recording state. A user can:
 
 The period chip is no longer a blind `经期` toggle. It is a contextual action chip:
 
-- `not-period`: show `月经开始`, unselected. Tapping starts a new segment here; if no bridge applies, the backend auto-fills forward by `defaultPeriodDurationDays - 1`.
+- `not-period`: show `月经`, unselected. Tapping starts a new segment here; if no bridge applies, the backend auto-fills forward by `defaultPeriodDurationDays - 1`.
 - `start`: show selected `月经开始`. Tapping revokes the whole current segment.
 - `in-progress`: show selected `月经结束`. Tapping means "所选这一天是该段经期的最后一天" and clears only later dates in the same segment.
 - `end`: show selected `月经结束`. Tapping is currently a no-op.
 
-If the selected `月经开始` would bridge to nearby existing period records, the page must show the backend-provided confirmation prompt before applying.
+If the selected `月经` would bridge to nearby existing period records, the page must show the backend-provided confirmation prompt before applying.
 
 Period action does not affect recorded attributes or note content. They remain independent data axes.
 
@@ -158,7 +158,7 @@ The panel has 4 orthogonal state axes:
 **Initial state (no data, collapsed)**:
 ```
 3 月 26 日                           点击记录
-[ 月经开始 ]   [ + 记录详情 ]
+[ 月经 ]   [ + 记录详情 ]
 选择属性后将显示在这里               ← summary bar, empty hint
 ```
 
@@ -192,7 +192,7 @@ The panel has 4 orthogonal state axes:
 **Grid expanded, no attributes selected yet**:
 ```
 3 月 26 日                           点击记录
-[ 月经开始 ]   [ ↑ 收起 ]
+[ 月经 ]   [ ↑ 收起 ]
 
 流量   极少  少  正常  多  极多
 疼痛   无    轻  正常  强  极强
@@ -248,7 +248,7 @@ The following existing Pencil primitives should be consumed, not recreated:
 
 | Aspect | Current Pencil | New Design |
 |---|---|---|
-| Chips | `经期` + `特殊标记` | contextual `月经开始 / 月经结束` + `+ 记录详情` / `↑ 收起` |
+| Chips | `经期` + `特殊标记` | contextual `月经 / 月经开始 / 月经结束` + `+ 记录详情` / `↑ 收起` |
 | Summary bar | Always present inside `SingleDayClickEditor` | Conditional, lives directly in `SelectedDatePanel` |
 | Attribute grid | Part of `SingleDayClickEditor` composite | Inline in `SelectedDatePanel`, controlled by RecordDetailChip |
 | Action button | `保存当天记录` (always present) | `清空` (conditional, only when attributes exist) |
@@ -258,7 +258,7 @@ The following existing Pencil primitives should be consumed, not recreated:
 
 | Aspect | Current Vue | New Design |
 |---|---|---|
-| `chips` prop | `['经期', '特殊标记']` | contextual `月经开始 / 月经结束` chip + `+ 记录详情` stateful expand/collapse chip |
+| `chips` prop | `['经期', '特殊标记']` | contextual `月经 / 月经开始 / 月经结束` chip + `+ 记录详情` stateful expand/collapse chip |
 | `summaryItems` | Always rendered | Always rendered; empty state shows hint text |
 | `isEditorOpen` | Toggled by tapping summary row | Toggled by tapping RecordDetailChip |
 | `actionLabel` | `'保存当天记录'` (always visible) | `'清空'` (visible only when attributes recorded) |

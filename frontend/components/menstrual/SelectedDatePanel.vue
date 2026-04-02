@@ -151,7 +151,7 @@
 			},
 			periodChipText: {
 				type: String,
-				default: '月经开始'
+				default: '月经'
 			},
 			periodChipSelected: {
 				type: Boolean,

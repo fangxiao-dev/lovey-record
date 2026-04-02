@@ -135,7 +135,7 @@ test('home contract adapter supports implicit non-period day detail without leak
 
 	assert.equal(model.selectedDatePanel.title, '4 月 2 日');
 	assert.equal(model.selectedDatePanel.badge, '点击记录');
-	assert.equal(model.selectedDatePanel.periodChipText, '月经开始');
+	assert.equal(model.selectedDatePanel.periodChipText, '月经');
 	assert.equal(model.selectedDatePanel.periodChipSelected, false);
 	assert.deepEqual(model.selectedDatePanel.summaryItems, []);
 	assert.equal(model.selectedDatePanel.note, '');

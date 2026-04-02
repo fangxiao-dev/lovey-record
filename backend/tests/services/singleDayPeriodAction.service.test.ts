@@ -9,7 +9,7 @@ describe('singleDayPeriodAction.service', () => {
     });
 
     expect(result.role).toBe('not-period');
-    expect(result.chip).toEqual({ text: '月经开始', selected: false });
+    expect(result.chip).toEqual({ text: '月经', selected: false });
     expect(result.resolvedAction.action).toBe('start');
     expect(result.resolvedAction.bridgeType).toBe('none');
     expect(result.resolvedAction.prompt).toBeNull();
@@ -98,6 +98,7 @@ describe('singleDayPeriodAction.service', () => {
     });
 
     expect(result.role).toBe('not-period');
+    expect(result.chip).toEqual({ text: '月经', selected: false });
     expect(result.resolvedAction.action).toBe('start');
     expect(result.resolvedAction.bridgeType).toBe('forward');
     expect(result.resolvedAction.prompt).toEqual({
@@ -128,6 +129,7 @@ describe('singleDayPeriodAction.service', () => {
     });
 
     expect(result.role).toBe('not-period');
+    expect(result.chip).toEqual({ text: '月经', selected: false });
     expect(result.resolvedAction.action).toBe('start');
     expect(result.resolvedAction.bridgeType).toBe('backward');
     expect(result.resolvedAction.prompt).toEqual({
@@ -158,6 +160,7 @@ describe('singleDayPeriodAction.service', () => {
     });
 
     expect(result.role).toBe('not-period');
+    expect(result.chip).toEqual({ text: '月经', selected: false });
     expect(result.resolvedAction.action).toBe('start');
     expect(result.resolvedAction.bridgeType).toBe('both');
     expect(result.resolvedAction.prompt).toEqual({

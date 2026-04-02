@@ -103,7 +103,7 @@ function diffDays(startDate, endDate) {
 function deriveSingleDayPeriodChip({ homeView, dayRecord }) {
 	if (!dayRecord?.isPeriod || !dayRecord?.date) {
 		return {
-			text: '月经开始',
+			text: '月经',
 			selected: false
 		};
 	}

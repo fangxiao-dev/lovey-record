@@ -98,7 +98,7 @@ Single-day period editing is no longer interpreted as a generic boolean `isPerio
 
 The frontend must render a contextual chip based on the selected date's derived role inside the current continuous period segment:
 
-- `not-period` => `月经开始`
+- `not-period` => `月经`
 - `start` => `月经开始`
 - `in-progress` => `月经结束`
 - `end` => `月经结束`
@@ -213,7 +213,7 @@ Rules:
   "selectedDate": "2026-03-22",
   "role": "not-period",
   "chip": {
-    "text": "月经开始",
+    "text": "月经",
     "selected": false
   },
   "resolvedAction": {
@@ -1146,7 +1146,7 @@ If the team wants the smallest practical first contract, stabilize these first:
 This slice is enough to support:
 
 - first-time entry
-- contextual single-day `月经开始 / 月经结束`
+- contextual single-day `月经 / 月经开始 / 月经结束`
 - bridge confirmation before single-day merge/extension
 - apply-time revalidation for single-day edits
 - detail refinement
