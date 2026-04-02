@@ -75,7 +75,7 @@ test('loadMenstrualModuleShellPageModel maps a private module into the private z
 		result.page.summaryCard.settingsControl.options.map((option) => option.value),
 		PERIOD_DURATION_OPTIONS
 	);
-	assert.equal(result.page.summaryCard.predictionSettingsControl.label, '设置天数');
+	assert.equal(result.page.summaryCard.predictionSettingsControl.label, '设置周期');
 	assert.deepEqual(
 		result.page.summaryCard.predictionSettingsControl.options.map((option) => option.value),
 		PREDICTION_TERM_OPTIONS
