@@ -73,6 +73,12 @@ test('CalendarGrid falls back to DOM bounding rects when selectorQuery cannot re
 	assert.match(source, /const fallbackRects = this\.captureCellRectsFromDom\(\)/);
 });
 
+test('CalendarGrid intercepts touchmove on the root node so mini-program batch dragging does not scroll the page', () => {
+	const source = fs.readFileSync(calendarGridPath, 'utf8');
+
+	assert.match(source, /@touchmove\.stop\.prevent="onTouchMove"/);
+});
+
 test('CalendarGrid treats a stationary long press release as batch entry once the hold duration has elapsed', () => {
 	const CalendarGrid = loadCalendarGrid();
 	let started = 0;
