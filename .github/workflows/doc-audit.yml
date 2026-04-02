@@ -6,9 +6,97 @@ on:
       - master
   pull_request:
   workflow_dispatch:
+    inputs:
+      tier:
+        description: 'Which test tier to run'
+        required: true
+        default: 'p0'
+        type: choice
+        options:
+          - p0
+          - p1
 
 jobs:
-  backend:
+  classify:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      public: ${{ steps.filter.outputs.public }}
+      global: ${{ steps.filter.outputs.global }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Classify changed paths
+        id: filter
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          backend=false
+          frontend=false
+          public=false
+          global=false
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            backend=true
+            frontend=true
+            public=true
+            global=true
+          else
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              base="${{ github.event.pull_request.base.sha }}"
+              head="${{ github.event.pull_request.head.sha }}"
+            else
+              base="${{ github.event.before }}"
+              head="${{ github.sha }}"
+            fi
+
+            if [[ -z "$base" || "$base" == "0000000000000000000000000000000000000000" ]]; then
+              git diff-tree --no-commit-id --name-only -r "$head" > changed-files.txt
+            else
+              git diff --name-only "$base" "$head" > changed-files.txt
+            fi
+
+            while IFS= read -r file; do
+              [[ -z "$file" ]] && continue
+              case "$file" in
+                backend/*)
+                  backend=true
+                  ;;
+                frontend/*|pages/*|App.vue|main.js|uni.scss|index.html|manifest.json)
+                  frontend=true
+                  ;;
+                tests/*|scripts/*|docs/*|.github/*|AGENTS.md|project-context.md|README.md)
+                  public=true
+                  ;;
+                package.json|package-lock.json)
+                  global=true
+                  ;;
+              esac
+            done < changed-files.txt
+
+            if [[ "$global" == true ]]; then
+              backend=true
+              frontend=true
+              public=true
+            fi
+          fi
+
+          {
+            echo "backend=$backend"
+            echo "frontend=$frontend"
+            echo "public=$public"
+            echo "global=$global"
+          } >> "$GITHUB_OUTPUT"
+
+  backend-p0:
+    needs: classify
+    if: needs.classify.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,23 +106,91 @@ jobs:
       - name: Install backend deps
         run: npm ci
         working-directory: backend
-      - name: Run backend tests
-        run: npm test -- --testPathIgnorePatterns=integration
+      - name: Run P0 backend tests
+        run: npm test -- --runInBand tests/services/phase5.service.test.ts tests/services/query.service.test.ts
         working-directory: backend
 
-  frontend:
+  frontend-p0:
+    needs: classify
+    if: needs.classify.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Run frontend unit tests
+      - name: Install frontend deps
+        run: npm ci
+        working-directory: frontend
+      - name: Run P0 frontend tests
+        shell: bash
+        run: |
+          node --test \
+            frontend/services/menstrual/__tests__/module-shell-service.test.mjs \
+            frontend/services/menstrual/__tests__/module-shell-command-service.test.mjs \
+            frontend/services/menstrual/__tests__/home-contract-service.test.mjs \
+            frontend/services/menstrual/__tests__/home-command-service.test.mjs \
+            frontend/components/menstrual/__tests__/batch-selection-contract.test.mjs \
+            frontend/components/menstrual/__tests__/calendar-grid-h5-long-press.test.mjs
+
+  public-p0:
+    needs: classify
+    if: needs.classify.outputs.public == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run public doc-audit tests
+        shell: bash
+        run: |
+          python -m unittest discover -s tests/doc_audit -p 'test_*.py'
+
+  backend-p1:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.tier == 'p1'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install backend deps
+        run: npm ci
+        working-directory: backend
+      - name: Run P1 backend tests
+        run: >
+          npm test -- --runInBand
+          tests/contracts/openapi.contract.test.ts
+          tests/middleware/auth.middleware.test.ts
+          tests/middleware/errorHandler.middleware.test.ts
+          tests/services/auth.service.test.ts
+          tests/services/moduleInstance.service.test.ts
+          tests/services/moduleSettings.service.test.ts
+          tests/services/phase5.record-day-details-nullable.test.ts
+          tests/services/singleDayPeriodAction.service.test.ts
+          tests/unit/seedScenarios.test.ts
+        working-directory: backend
+
+  frontend-p1:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.tier == 'p1'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install frontend deps
+        run: npm ci
+        working-directory: frontend
+      - name: Run P1 frontend tests
         shell: bash
         run: |
           mapfile -d '' test_files < <(
             find frontend -path '*/__tests__/*.test.mjs' \
               ! -path 'frontend/services/menstrual/__tests__/*' \
+              ! -name 'batch-selection-contract.test.mjs' \
+              ! -name 'calendar-grid-h5-long-press.test.mjs' \
               -print0 | sort -z
           )
           node --test "${test_files[@]}"
