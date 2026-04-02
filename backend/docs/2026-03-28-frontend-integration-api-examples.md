@@ -21,6 +21,10 @@
 }
 ```
 
+**Default-setting placeholder convention**
+- `"<DEFAULT_PERIOD_DURATION_DAYS>"` and `"<DEFAULT_PREDICTION_TERM_DAYS>"` below are semantic placeholders, not hard-coded runtime literals.
+- The runtime source of truth for those defaults lives in backend code and shared contracts, not in this examples document.
+
 **Shared response envelope**
 
 ```json
@@ -210,7 +214,7 @@ Request body:
 ```json
 {
   "moduleInstanceId": "module-1",
-  "defaultPeriodDurationDays": 7
+  "defaultPeriodDurationDays": "<DEFAULT_PERIOD_DURATION_DAYS>"
 }
 ```
 
@@ -221,7 +225,32 @@ Example response:
   "ok": true,
   "data": {
     "moduleInstanceId": "module-1",
-    "defaultPeriodDurationDays": 7,
+    "defaultPeriodDurationDays": "<DEFAULT_PERIOD_DURATION_DAYS>",
+    "settingsChanged": true
+  },
+  "error": null
+}
+```
+
+### `POST /api/commands/updateDefaultPredictionTerm`
+
+Request body:
+
+```json
+{
+  "moduleInstanceId": "module-1",
+  "defaultPredictionTermDays": "<DEFAULT_PREDICTION_TERM_DAYS>"
+}
+```
+
+Example response:
+
+```json
+{
+  "ok": true,
+  "data": {
+    "moduleInstanceId": "module-1",
+    "defaultPredictionTermDays": "<DEFAULT_PREDICTION_TERM_DAYS>",
     "settingsChanged": true
   },
   "error": null
@@ -526,7 +555,8 @@ Example response:
   "data": {
     "moduleInstanceId": "module-1",
     "moduleSettings": {
-      "defaultPeriodDurationDays": 6
+      "defaultPeriodDurationDays": "<DEFAULT_PERIOD_DURATION_DAYS>",
+      "defaultPredictionTermDays": "<DEFAULT_PREDICTION_TERM_DAYS>"
     }
   },
   "error": null

@@ -1,3 +1,4 @@
+import { DEFAULT_PERIOD_DURATION_DAYS, DEFAULT_PREDICTION_TERM_DAYS } from '../../src/domain/menstrualDefaults';
 import request from 'supertest';
 import app from '../../src/app';
 import { findOrCreateUser } from '../../src/services/auth.service';
@@ -121,7 +122,8 @@ describe('Queries Integration', () => {
     (getModuleSettings as jest.Mock).mockResolvedValue({
       moduleInstanceId: 'module-1',
       moduleSettings: {
-        defaultPeriodDurationDays: 6,
+        defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+        defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
       },
     });
 
@@ -136,7 +138,8 @@ describe('Queries Integration', () => {
       data: {
         moduleInstanceId: 'module-1',
         moduleSettings: {
-          defaultPeriodDurationDays: 6,
+          defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+          defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
         },
       },
       error: null,

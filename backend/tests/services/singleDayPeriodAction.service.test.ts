@@ -1,3 +1,4 @@
+import { DEFAULT_PERIOD_DURATION_DAYS } from '../../src/domain/menstrualDefaults';
 import { resolveSingleDayPeriodAction } from '../../src/services/singleDayPeriodAction.service';
 
 describe('singleDayPeriodAction.service', () => {
@@ -5,7 +6,7 @@ describe('singleDayPeriodAction.service', () => {
     const result = resolveSingleDayPeriodAction({
       selectedDate: '2026-03-22',
       periodDates: [],
-      defaultPeriodDurationDays: 5,
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
     });
 
     expect(result.role).toBe('not-period');
@@ -30,7 +31,7 @@ describe('singleDayPeriodAction.service', () => {
     const result = resolveSingleDayPeriodAction({
       selectedDate: '2026-03-20',
       periodDates: ['2026-03-20', '2026-03-21', '2026-03-22'],
-      defaultPeriodDurationDays: 5,
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
     });
 
     expect(result.role).toBe('start');
@@ -46,7 +47,7 @@ describe('singleDayPeriodAction.service', () => {
     const result = resolveSingleDayPeriodAction({
       selectedDate: '2026-03-22',
       periodDates: ['2026-03-20', '2026-03-21', '2026-03-22', '2026-03-23', '2026-03-24'],
-      defaultPeriodDurationDays: 5,
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
     });
 
     expect(result.role).toBe('in-progress');
@@ -70,7 +71,7 @@ describe('singleDayPeriodAction.service', () => {
     const result = resolveSingleDayPeriodAction({
       selectedDate: '2026-03-24',
       periodDates: ['2026-03-20', '2026-03-21', '2026-03-22', '2026-03-23', '2026-03-24'],
-      defaultPeriodDurationDays: 5,
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
     });
 
     expect(result.role).toBe('end');
@@ -94,7 +95,7 @@ describe('singleDayPeriodAction.service', () => {
     const result = resolveSingleDayPeriodAction({
       selectedDate: '2026-03-23',
       periodDates: ['2026-03-20', '2026-03-21'],
-      defaultPeriodDurationDays: 5,
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
     });
 
     expect(result.role).toBe('not-period');
@@ -125,7 +126,7 @@ describe('singleDayPeriodAction.service', () => {
     const result = resolveSingleDayPeriodAction({
       selectedDate: '2026-03-22',
       periodDates: ['2026-03-24', '2026-03-25', '2026-03-26', '2026-03-27', '2026-03-28'],
-      defaultPeriodDurationDays: 5,
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
     });
 
     expect(result.role).toBe('not-period');
@@ -156,7 +157,7 @@ describe('singleDayPeriodAction.service', () => {
     const result = resolveSingleDayPeriodAction({
       selectedDate: '2026-03-23',
       periodDates: ['2026-03-20', '2026-03-21', '2026-03-25', '2026-03-26'],
-      defaultPeriodDurationDays: 5,
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
     });
 
     expect(result.role).toBe('not-period');

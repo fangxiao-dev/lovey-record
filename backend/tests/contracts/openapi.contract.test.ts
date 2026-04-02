@@ -21,6 +21,7 @@ describe('openapi contract', () => {
     expect(spec.paths['/api/commands/recordDayDetails'].post).toBeTruthy();
     expect(spec.paths['/api/commands/recordDayNote'].post).toBeTruthy();
     expect(spec.paths['/api/commands/updateDefaultPeriodDuration'].post).toBeTruthy();
+    expect(spec.paths['/api/commands/updateDefaultPredictionTerm'].post).toBeTruthy();
     expect(spec.paths['/api/commands/shareModuleInstance'].post).toBeTruthy();
     expect(spec.paths['/api/commands/revokeModuleAccess'].post).toBeTruthy();
 
@@ -97,6 +98,7 @@ describe('openapi contract', () => {
     expect(spec.paths['/api/commands/recordDayNote'].post.requestBody.content['application/json'].schema.properties.note.maxLength).toBe(500);
     expect(Object.keys(spec.paths['/api/commands/recordDayNote'].post.responses)).toEqual(expect.arrayContaining(['200', '400', '404']));
     expect(Object.keys(spec.paths['/api/commands/updateDefaultPeriodDuration'].post.responses)).toEqual(expect.arrayContaining(['200', '403']));
+    expect(Object.keys(spec.paths['/api/commands/updateDefaultPredictionTerm'].post.responses)).toEqual(expect.arrayContaining(['200', '403']));
     expect(spec.paths['/api/queries/getCalendarWindow'].get.parameters.map((item: { name: string }) => item.name)).toEqual([
       'x-wx-openid',
       'moduleInstanceId',

@@ -61,8 +61,12 @@ async function seedScenario(scenario: SeedScenario) {
       create: {
         moduleInstanceId: scenario.moduleSettings.moduleInstanceId,
         defaultPeriodDurationDays: scenario.moduleSettings.defaultPeriodDurationDays,
+        defaultPredictionTermDays: scenario.moduleSettings.defaultPredictionTermDays,
       },
-      update: { defaultPeriodDurationDays: scenario.moduleSettings.defaultPeriodDurationDays },
+      update: {
+        defaultPeriodDurationDays: scenario.moduleSettings.defaultPeriodDurationDays,
+        defaultPredictionTermDays: scenario.moduleSettings.defaultPredictionTermDays,
+      },
     });
 
     for (const access of scenario.moduleAccesses) {

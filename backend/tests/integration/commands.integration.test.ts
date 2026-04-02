@@ -3,7 +3,7 @@ import app from '../../src/app';
 import { applySingleDayPeriodAction, clearPeriodRange, recordPeriodRange } from '../../src/services/dayRecord.service';
 import { createModuleInstance } from '../../src/services/moduleInstance.service';
 import { findOrCreateUser } from '../../src/services/auth.service';
-import { updateDefaultPeriodDuration } from '../../src/services/moduleSettings.service';
+import { updateDefaultPeriodDuration, updateDefaultPredictionTerm } from '../../src/services/moduleSettings.service';
 import { recordDayDetails, recordDayNote, recordDayDetailsBatch } from '../../src/services/phase5.service';
 
 jest.mock('../../src/services/auth.service');
@@ -252,6 +252,31 @@ describe('Commands Integration', () => {
         code: 'MODULE_ACCESS_DENIED',
         message: 'MODULE_ACCESS_DENIED',
       },
+    });
+  });
+
+  it('updates the default prediction term through the command endpoint', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+    (updateDefaultPredictionTerm as jest.Mock).mockResolvedValue({
+      moduleInstanceId: 'module-1',
+      defaultPredictionTermDays: 29,
+      settingsChanged: true,
+    });
+
+    const response = await request(app)
+      .post('/api/commands/updateDefaultPredictionTerm')
+      .set('x-wx-openid', 'openid-1')
+      .send({ moduleInstanceId: 'module-1', defaultPredictionTermDays: 29 });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        moduleInstanceId: 'module-1',
+        defaultPredictionTermDays: 29,
+        settingsChanged: true,
+      },
+      error: null,
     });
   });
 

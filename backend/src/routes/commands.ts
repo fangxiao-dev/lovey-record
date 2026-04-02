@@ -7,7 +7,15 @@ import {
   recordPeriodDayHandler,
   recordPeriodRangeHandler,
 } from '../controllers/dayRecord.controller';
-import { recordDayDetailsHandler, recordDayDetailsBatchHandler, recordDayNoteHandler, revokeModuleAccessHandler, shareModuleInstanceHandler, updateDefaultPeriodDurationHandler } from '../controllers/phase5.controller';
+import {
+  recordDayDetailsHandler,
+  recordDayDetailsBatchHandler,
+  recordDayNoteHandler,
+  revokeModuleAccessHandler,
+  shareModuleInstanceHandler,
+  updateDefaultPeriodDurationHandler,
+  updateDefaultPredictionTermHandler,
+} from '../controllers/phase5.controller';
 
 const router = Router();
 
@@ -21,6 +29,7 @@ router.post('/recordDayDetails', recordDayDetailsHandler);
 router.post('/recordDayDetailsBatch', recordDayDetailsBatchHandler);
 router.post('/recordDayNote', recordDayNoteHandler);
 router.post('/updateDefaultPeriodDuration', updateDefaultPeriodDurationHandler);
+router.post('/updateDefaultPredictionTerm', updateDefaultPredictionTermHandler);
 router.post('/shareModuleInstance', shareModuleInstanceHandler);
 router.post('/revokeModuleAccess', revokeModuleAccessHandler);
 

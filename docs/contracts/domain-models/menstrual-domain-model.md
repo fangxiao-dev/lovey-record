@@ -75,10 +75,12 @@ Notes:
 
 - `module_instance_id`
 - `default_period_duration_days`
+- `default_prediction_term_days`
 
 Notes:
 
 - stores the current default fill length for anchored period segments
+- stores the fixed term used to predict the next period start from the latest segment start
 - settings changes affect future auto-fill and derived read models
 
 ### DayRecord
@@ -135,6 +137,7 @@ Notes:
 
 - derived object, not primary user-authored input
 - can be cached if needed
+- `predicted_start_date` is computed as `latest_period_segment_start + default_prediction_term_days`
 
 ### ModuleHomeView
 
@@ -170,7 +173,7 @@ Business interpretation:
 - a partner user may gain access through `ModuleAccess`
 - `DayRecord` belongs to one `ModuleInstance` on one date
 - `AnchoredPeriodSegment` comes from a first-day anchor plus automatic fill and later tail correction
-- `Prediction` is computed from anchored segment start dates
+- `Prediction` is computed from the latest anchored segment start date plus the configured prediction term
 
 ## State Models
 
@@ -307,7 +310,7 @@ Default:
 - future dates are not recordable.
 - shared/private changes access scope, not data ownership.
 - private and shared entry points must resolve to the same `module instance`.
-- prediction must be computed from anchored segment start dates rather than user-authored end dates.
+- prediction must be computed from the latest anchored segment start date rather than user-authored end dates.
 
 ## Derived Data
 

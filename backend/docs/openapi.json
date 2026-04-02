@@ -455,6 +455,48 @@
         }
       }
     },
+    "/api/commands/updateDefaultPredictionTerm": {
+      "post": {
+        "summary": "Update default prediction term",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["moduleInstanceId", "defaultPredictionTermDays"],
+                "properties": {
+                  "moduleInstanceId": {
+                    "type": "string"
+                  },
+                  "defaultPredictionTermDays": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Prediction term updated"
+          },
+          "403": {
+            "description": "Module access denied"
+          }
+        }
+      }
+    },
     "/api/commands/shareModuleInstance": {
       "post": {
         "summary": "Share a module instance",
@@ -872,7 +914,30 @@
         ],
         "responses": {
           "200": {
-            "description": "Module settings returned"
+            "description": "Module settings returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "moduleInstanceId": {
+                      "type": "string"
+                    },
+                    "moduleSettings": {
+                      "type": "object",
+                      "properties": {
+                        "defaultPeriodDurationDays": {
+                          "type": "integer"
+                        },
+                        "defaultPredictionTermDays": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

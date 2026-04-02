@@ -79,6 +79,7 @@ The contract is expressed in application-service terms:
 - `recordDayDetails`
 - `recordDayNote`
 - `updateDefaultPeriodDuration`
+- `updateDefaultPredictionTerm`
 - `shareModuleInstance`
 - `revokeModuleAccess`
 
@@ -483,16 +484,15 @@ Rules:
   "moduleInstanceId": "mi_123",
   "profileId": "profile_123",
   "anchorDate": "2026-03-23",
-  "endDate": "2026-03-28",
-  "durationDays": 6,
-  "defaultPeriodDurationDays": 6,
+  "endDate": "2026-03-27",
+  "durationDays": 5,
+  "defaultPeriodDurationDays": "<DEFAULT_PERIOD_DURATION_DAYS>",
   "derivedFromDates": [
     "2026-03-23",
     "2026-03-24",
     "2026-03-25",
     "2026-03-26",
-    "2026-03-27",
-    "2026-03-28"
+    "2026-03-27"
   ]
 }
 ```
@@ -502,7 +502,8 @@ Rules:
 ```json
 {
   "moduleInstanceId": "mi_123",
-  "defaultPeriodDurationDays": 6
+  "defaultPeriodDurationDays": "<DEFAULT_PERIOD_DURATION_DAYS>",
+  "defaultPredictionTermDays": "<DEFAULT_PREDICTION_TERM_DAYS>"
 }
 ```
 
@@ -515,6 +516,11 @@ Rules:
   "predictionWindowEnd": "2026-04-14",
   "basedOnCycleCount": 4
 }
+
+Rules:
+
+- `predictedStartDate` is derived from the latest period segment start plus `defaultPredictionTermDays`
+- `basedOnCycleCount` remains a compatibility field and is not the prediction source of truth
 ```
 
 ### `ModuleAccessReadModel`
@@ -807,7 +813,7 @@ Suggested input:
 ```json
 {
   "moduleInstanceId": "mi_123",
-  "defaultPeriodDurationDays": 6
+  "defaultPeriodDurationDays": "<DEFAULT_PERIOD_DURATION_DAYS>"
 }
 ```
 
@@ -822,9 +828,39 @@ Suggested response data:
 ```json
 {
   "moduleInstanceId": "mi_123",
-  "defaultPeriodDurationDays": 6,
+  "defaultPeriodDurationDays": "<DEFAULT_PERIOD_DURATION_DAYS>",
   "settingsChanged": true
 }
+
+### `updateDefaultPredictionTerm`
+
+Purpose:
+
+- adjust the fixed prediction term used to compute the next predicted period start
+
+Suggested input:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "defaultPredictionTermDays": "<DEFAULT_PREDICTION_TERM_DAYS>"
+}
+```
+
+Effects:
+
+- update module-level settings
+- future prediction recomputation uses the new term
+
+Suggested response data:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "defaultPredictionTermDays": "<DEFAULT_PREDICTION_TERM_DAYS>",
+  "settingsChanged": true
+}
+```
 ```
 
 ### `shareModuleInstance`
@@ -917,9 +953,9 @@ Suggested response shape:
     "anchorDate": "2026-03-23",
     "currentSegment": {
       "anchorDate": "2026-03-23",
-      "endDate": "2026-03-28",
-      "durationDays": 6,
-      "defaultPeriodDurationDays": 6
+      "endDate": "2026-03-27",
+      "durationDays": 5,
+      "defaultPeriodDurationDays": "<DEFAULT_PERIOD_DURATION_DAYS>"
     }
   },
   "visibleWindow": {
@@ -941,7 +977,8 @@ Suggested response shape:
     "basedOnCycleCount": 4
   },
   "moduleSettings": {
-    "defaultPeriodDurationDays": 6
+    "defaultPeriodDurationDays": "<DEFAULT_PERIOD_DURATION_DAYS>",
+    "defaultPredictionTermDays": "<DEFAULT_PREDICTION_TERM_DAYS>"
   }
 }
 ```
@@ -1110,7 +1147,7 @@ Suggested response shape:
 
 Returns:
 
-- current default period duration for the module instance
+- current default period duration and prediction term for the module instance
 
 Suggested input:
 
@@ -1126,7 +1163,8 @@ Suggested response shape:
 {
   "moduleInstanceId": "mi_123",
   "moduleSettings": {
-    "defaultPeriodDurationDays": 6
+    "defaultPeriodDurationDays": "<DEFAULT_PERIOD_DURATION_DAYS>",
+    "defaultPredictionTermDays": "<DEFAULT_PREDICTION_TERM_DAYS>"
   }
 }
 ```

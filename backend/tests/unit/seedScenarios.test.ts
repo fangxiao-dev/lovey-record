@@ -1,3 +1,4 @@
+import { DEFAULT_PERIOD_DURATION_DAYS, DEFAULT_PREDICTION_TERM_DAYS } from '../../src/domain/menstrualDefaults';
 import { buildFrontendIntegrationSeedScenarios } from '../../src/testing/seedScenarios';
 
 describe('seedScenarios', () => {
@@ -7,7 +8,7 @@ describe('seedScenarios', () => {
 
     expect(first).toEqual(second);
     expect(first.map((scenario) => scenario.name)).toEqual([
-      'emptyModule',
+      'noRecordModule',
       'activePeriodHomeView',
       'predictedNextPeriod',
       'dayDetailRecorded',
@@ -19,18 +20,19 @@ describe('seedScenarios', () => {
     const scenarios = buildFrontendIntegrationSeedScenarios();
     const byName = Object.fromEntries(scenarios.map((scenario) => [scenario.name, scenario]));
 
-    expect(byName.emptyModule.dayRecords).toHaveLength(0);
-    expect(byName.emptyModule.derivedCycles).toHaveLength(0);
-    expect(byName.emptyModule.partnerUsers).toHaveLength(0);
-    expect(byName.emptyModule.moduleSettings.defaultPeriodDurationDays).toBe(6);
+    expect(byName.noRecordModule.dayRecords).toHaveLength(0);
+    expect(byName.noRecordModule.derivedCycles).toHaveLength(0);
+    expect(byName.noRecordModule.partnerUsers).toHaveLength(0);
+    expect(byName.noRecordModule.moduleSettings.defaultPeriodDurationDays).toBe(DEFAULT_PERIOD_DURATION_DAYS);
+    expect(byName.noRecordModule.moduleSettings.defaultPredictionTermDays).toBe(DEFAULT_PREDICTION_TERM_DAYS);
 
-    expect(byName.activePeriodHomeView.dayRecords).toHaveLength(6);
+    expect(byName.activePeriodHomeView.dayRecords).toHaveLength(5);
     expect(byName.activePeriodHomeView.derivedCycles).toHaveLength(1);
     expect(byName.activePeriodHomeView.prediction).toBeDefined();
 
     expect(byName.predictedNextPeriod.dayRecords).toHaveLength(0);
     expect(byName.predictedNextPeriod.derivedCycles).toHaveLength(2);
-    expect(byName.predictedNextPeriod.prediction?.predictedStartDate).toBe('2026-03-28');
+    expect(byName.predictedNextPeriod.prediction?.predictedStartDate).toBe('2026-03-14');
 
     expect(byName.dayDetailRecorded.dayRecords).toHaveLength(1);
     expect(byName.dayDetailRecorded.dayRecords[0].note).toBe('rough day with cramps');

@@ -8,7 +8,10 @@ import {
   revokeModuleAccess,
   shareModuleInstance,
 } from '../services/phase5.service';
-import { updateDefaultPeriodDuration as updateDefaultPeriodDurationSetting } from '../services/moduleSettings.service';
+import {
+  updateDefaultPeriodDuration as updateDefaultPeriodDurationSetting,
+  updateDefaultPredictionTerm as updateDefaultPredictionTermSetting,
+} from '../services/moduleSettings.service';
 
 function handleError(res: Response, error: unknown) {
   if (error && typeof error === 'object' && 'code' in error && 'statusCode' in error) {
@@ -87,6 +90,15 @@ export async function getPredictionSummaryHandler(req: Request, res: Response) {
 export async function updateDefaultPeriodDurationHandler(req: Request, res: Response) {
   try {
     const result = await updateDefaultPeriodDurationSetting(req.body.moduleInstanceId, req.body.defaultPeriodDurationDays, req.user.id);
+    res.json({ ok: true, data: result, error: null });
+  } catch (error) {
+    handleError(res, error);
+  }
+}
+
+export async function updateDefaultPredictionTermHandler(req: Request, res: Response) {
+  try {
+    const result = await updateDefaultPredictionTermSetting(req.body.moduleInstanceId, req.body.defaultPredictionTermDays, req.user.id);
     res.json({ ok: true, data: result, error: null });
   } catch (error) {
     handleError(res, error);

@@ -243,6 +243,7 @@ export async function getModuleSettings(input: AccessInput) {
     moduleInstanceId: settings.moduleInstanceId,
     moduleSettings: {
       defaultPeriodDurationDays: settings.defaultPeriodDurationDays,
+      defaultPredictionTermDays: settings.defaultPredictionTermDays,
     },
   };
 }

@@ -1,3 +1,4 @@
+import { DEFAULT_PERIOD_DURATION_DAYS, DEFAULT_PREDICTION_TERM_DAYS } from '../../src/domain/menstrualDefaults';
 import request from 'supertest';
 import app from '../../src/app';
 import prisma from '../../src/db/prisma';
@@ -42,7 +43,8 @@ describe('non-period recording integration', () => {
     await prisma.moduleSettings.create({
       data: {
         moduleInstanceId,
-        defaultPeriodDurationDays: 6,
+        defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+        defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
       },
     });
   });

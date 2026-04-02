@@ -99,7 +99,8 @@ model DayRecord {
 model ModuleSettings {
   id                       String   @id @default(cuid())
   moduleInstanceId         String   @unique @map("module_instance_id")
-  defaultPeriodDurationDays Int    @map("default_period_duration_days")
+  defaultPeriodDurationDays Int     @map("default_period_duration_days")
+  defaultPredictionTermDays Int     @default(28) @map("default_prediction_term_days")
   createdAt                DateTime @default(now()) @map("created_at")
   updatedAt                DateTime @updatedAt @map("updated_at")
 

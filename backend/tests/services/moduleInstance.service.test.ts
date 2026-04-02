@@ -1,3 +1,4 @@
+import { DEFAULT_PERIOD_DURATION_DAYS, DEFAULT_PREDICTION_TERM_DAYS } from '../../src/domain/menstrualDefaults';
 import prisma from '../../src/db/prisma';
 import { createModuleInstance } from '../../src/services/moduleInstance.service';
 
@@ -49,7 +50,7 @@ describe('moduleInstance.service', () => {
     });
     (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
       moduleInstanceId: 'module-1',
-      defaultPeriodDurationDays: 6,
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
     });
 
     const result = await createModuleInstance({ id: 'user-1', openid: 'openid-1' });
@@ -76,7 +77,8 @@ describe('moduleInstance.service', () => {
       where: { moduleInstanceId: 'module-1' },
       create: {
         moduleInstanceId: 'module-1',
-        defaultPeriodDurationDays: 6,
+        defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+        defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
       },
       update: {},
     });

@@ -1,5 +1,10 @@
 import prisma from '../db/prisma';
-import { getDefaultPeriodDurationDays, getModuleSettings } from './moduleSettings.service';
+import {
+  getDefaultPeriodDurationDays,
+  getDefaultPredictionTermDays,
+  getModuleSettings,
+} from './moduleSettings.service';
+import { recomputePredictionFromCycles } from './prediction.service';
 import { resolveSingleDayPeriodAction } from './singleDayPeriodAction.service';
 
 type RecordPeriodDayInput = {
@@ -106,35 +111,6 @@ function deriveCycles(periodDates: Date[]) {
   return cycles;
 }
 
-function derivePrediction(cycleStarts: Date[]) {
-  if (cycleStarts.length < 2) {
-    return null;
-  }
-
-  const intervals = [];
-  for (let i = 1; i < cycleStarts.length; i++) {
-    const prev = cycleStarts[i - 1].getTime();
-    const curr = cycleStarts[i].getTime();
-    intervals.push(Math.round((curr - prev) / 86400000));
-  }
-
-  // Filter out unreasonable intervals (< 15 days) to avoid using fragments from the same menstrual period
-  const validIntervals = intervals.filter(i => i >= 15);
-  if (validIntervals.length === 0) {
-    return null;
-  }
-
-  const average = Math.round(validIntervals.reduce((sum, value) => sum + value, 0) / validIntervals.length) || 28;
-  const last = cycleStarts[cycleStarts.length - 1];
-  const predicted = addDays(last, average);
-  return {
-    predictedStartDate: predicted,
-    predictionWindowStart: addDays(predicted, -2),
-    predictionWindowEnd: addDays(predicted, 2),
-    basedOnCycleCount: cycleStarts.length,
-  };
-}
-
 async function assertAccess(moduleInstanceId: string, userId: string) {
   const moduleInstance = await prisma.moduleInstance.findFirst({
     where: {
@@ -184,42 +160,13 @@ async function recompute(moduleInstanceId: string, profileId: string) {
     });
   }
 
-  const prediction = derivePrediction(cycles.map((cycle) => cycle.startDate));
-  await prisma.prediction.upsert({
-    where: { moduleInstanceId },
-    create: prediction
-      ? {
-          moduleInstanceId,
-          profileId,
-          predictedStartDate: prediction.predictedStartDate,
-          predictionWindowStart: prediction.predictionWindowStart,
-          predictionWindowEnd: prediction.predictionWindowEnd,
-          basedOnCycleCount: prediction.basedOnCycleCount,
-        }
-      : {
-          moduleInstanceId,
-          profileId,
-          predictedStartDate: new Date('1970-01-01T00:00:00.000Z'),
-          predictionWindowStart: new Date('1970-01-01T00:00:00.000Z'),
-          predictionWindowEnd: new Date('1970-01-01T00:00:00.000Z'),
-          basedOnCycleCount: 0,
-        },
-    update: prediction
-      ? {
-          profileId,
-          predictedStartDate: prediction.predictedStartDate,
-          predictionWindowStart: prediction.predictionWindowStart,
-          predictionWindowEnd: prediction.predictionWindowEnd,
-          basedOnCycleCount: prediction.basedOnCycleCount,
-        }
-      : {
-          profileId,
-          predictedStartDate: new Date('1970-01-01T00:00:00.000Z'),
-          predictionWindowStart: new Date('1970-01-01T00:00:00.000Z'),
-          predictionWindowEnd: new Date('1970-01-01T00:00:00.000Z'),
-          basedOnCycleCount: 0,
-        },
-  });
+  const settings = await getModuleSettings(moduleInstanceId);
+  await recomputePredictionFromCycles(
+    moduleInstanceId,
+    profileId,
+    cycles.map((cycle) => ({ startDate: cycle.startDate })),
+    settings.defaultPredictionTermDays ?? getDefaultPredictionTermDays(),
+  );
 }
 
 async function getDefaultDuration(moduleInstanceId: string) {

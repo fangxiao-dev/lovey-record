@@ -1,3 +1,5 @@
+import { DEFAULT_PERIOD_DURATION_DAYS, DEFAULT_PREDICTION_TERM_DAYS } from '../domain/menstrualDefaults';
+
 export type SeedDayRecordSource = 'MANUAL' | 'AUTO_FILLED';
 export type SeedSharingStatus = 'PRIVATE' | 'SHARED';
 export type SeedAccessRole = 'OWNER' | 'PARTNER';
@@ -32,6 +34,7 @@ export interface SeedModuleAccess {
 export interface SeedModuleSettings {
   moduleInstanceId: string;
   defaultPeriodDurationDays: number;
+  defaultPredictionTermDays: number;
 }
 
 export interface SeedDayRecord {
@@ -68,7 +71,7 @@ export interface SeedPrediction {
 }
 
 export interface SeedScenario {
-  name: 'emptyModule' | 'activePeriodHomeView' | 'predictedNextPeriod' | 'dayDetailRecorded' | 'sharedModuleAccess';
+  name: 'noRecordModule' | 'activePeriodHomeView' | 'predictedNextPeriod' | 'dayDetailRecorded' | 'sharedModuleAccess';
   ownerUser: SeedUser;
   partnerUsers: SeedUser[];
   profile: SeedProfile;
@@ -79,8 +82,6 @@ export interface SeedScenario {
   derivedCycles: SeedDerivedCycle[];
   prediction?: SeedPrediction;
 }
-
-const DEFAULT_PERIOD_DURATION_DAYS = 6;
 
 function buildCycleDates(startDate: string, endDate: string) {
   const dates: string[] = [];
@@ -122,7 +123,7 @@ function createPrediction(params: Omit<SeedPrediction, 'id'> & { idSuffix: strin
 export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
   return [
     {
-      name: 'emptyModule',
+      name: 'noRecordModule',
       ownerUser: {
         id: 'seed-empty-owner',
         openid: 'seed-empty-openid',
@@ -151,6 +152,7 @@ export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
       moduleSettings: {
         moduleInstanceId: 'seed-empty-module',
         defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+        defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
       },
       dayRecords: [],
       derivedCycles: [],
@@ -185,6 +187,7 @@ export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
       moduleSettings: {
         moduleInstanceId: 'seed-home-module',
         defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+        defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
       },
       dayRecords: [
         createDayRecord({
@@ -247,18 +250,6 @@ export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
           colorLevel: 3,
           note: null,
         }),
-        createDayRecord({
-          idSuffix: 'tail-5',
-          moduleInstanceId: 'seed-home-module',
-          profileId: 'seed-home-profile',
-          date: '2026-03-31',
-          isPeriod: true,
-          source: 'AUTO_FILLED',
-          painLevel: 3,
-          flowLevel: 3,
-          colorLevel: 3,
-          note: null,
-        }),
       ],
       derivedCycles: [
         createDerivedCycle({
@@ -266,19 +257,19 @@ export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
           moduleInstanceId: 'seed-home-module',
           profileId: 'seed-home-profile',
           startDate: '2026-03-26',
-          endDate: '2026-03-31',
-          durationDays: 6,
-          derivedFromDates: buildCycleDates('2026-03-26', '2026-03-31'),
+          endDate: '2026-03-30',
+          durationDays: 5,
+          derivedFromDates: buildCycleDates('2026-03-26', '2026-03-30'),
         }),
       ],
       prediction: createPrediction({
         idSuffix: 'next',
         moduleInstanceId: 'seed-home-module',
         profileId: 'seed-home-profile',
-        predictedStartDate: '2026-04-25',
-        predictionWindowStart: '2026-04-23',
-        predictionWindowEnd: '2026-04-27',
-        basedOnCycleCount: 3,
+        predictedStartDate: '2026-04-23',
+        predictionWindowStart: '2026-04-21',
+        predictionWindowEnd: '2026-04-25',
+        basedOnCycleCount: 1,
       }),
     },
     {
@@ -311,6 +302,7 @@ export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
       moduleSettings: {
         moduleInstanceId: 'seed-pred-module',
         defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+        defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
       },
       dayRecords: [],
       derivedCycles: [
@@ -319,27 +311,27 @@ export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
           moduleInstanceId: 'seed-pred-module',
           profileId: 'seed-pred-profile',
           startDate: '2026-01-18',
-          endDate: '2026-01-23',
-          durationDays: 6,
-          derivedFromDates: buildCycleDates('2026-01-18', '2026-01-23'),
+          endDate: '2026-01-22',
+          durationDays: 5,
+          derivedFromDates: buildCycleDates('2026-01-18', '2026-01-22'),
         }),
         createDerivedCycle({
           idSuffix: 'feb',
           moduleInstanceId: 'seed-pred-module',
           profileId: 'seed-pred-profile',
           startDate: '2026-02-14',
-          endDate: '2026-02-19',
-          durationDays: 6,
-          derivedFromDates: buildCycleDates('2026-02-14', '2026-02-19'),
+          endDate: '2026-02-18',
+          durationDays: 5,
+          derivedFromDates: buildCycleDates('2026-02-14', '2026-02-18'),
         }),
       ],
       prediction: createPrediction({
         idSuffix: 'next',
         moduleInstanceId: 'seed-pred-module',
         profileId: 'seed-pred-profile',
-        predictedStartDate: '2026-03-28',
-        predictionWindowStart: '2026-03-26',
-        predictionWindowEnd: '2026-03-30',
+        predictedStartDate: '2026-03-14',
+        predictionWindowStart: '2026-03-12',
+        predictionWindowEnd: '2026-03-16',
         basedOnCycleCount: 2,
       }),
     },
@@ -373,6 +365,7 @@ export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
       moduleSettings: {
         moduleInstanceId: 'seed-detail-module',
         defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+        defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
       },
       dayRecords: [
         createDayRecord({
@@ -431,6 +424,7 @@ export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
       moduleSettings: {
         moduleInstanceId: 'seed-shared-module',
         defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+        defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
       },
       dayRecords: [
         createDayRecord({
@@ -493,18 +487,6 @@ export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
           colorLevel: 3,
           note: null,
         }),
-        createDayRecord({
-          idSuffix: 'tail-5',
-          moduleInstanceId: 'seed-shared-module',
-          profileId: 'seed-shared-profile',
-          date: '2026-03-30',
-          isPeriod: true,
-          source: 'AUTO_FILLED',
-          painLevel: 3,
-          flowLevel: 3,
-          colorLevel: 3,
-          note: null,
-        }),
       ],
       derivedCycles: [
         createDerivedCycle({
@@ -512,19 +494,19 @@ export function buildFrontendIntegrationSeedScenarios(): SeedScenario[] {
           moduleInstanceId: 'seed-shared-module',
           profileId: 'seed-shared-profile',
           startDate: '2026-03-25',
-          endDate: '2026-03-30',
-          durationDays: 6,
-          derivedFromDates: buildCycleDates('2026-03-25', '2026-03-30'),
+          endDate: '2026-03-29',
+          durationDays: 5,
+          derivedFromDates: buildCycleDates('2026-03-25', '2026-03-29'),
         }),
       ],
       prediction: createPrediction({
         idSuffix: 'next',
         moduleInstanceId: 'seed-shared-module',
         profileId: 'seed-shared-profile',
-        predictedStartDate: '2026-04-24',
-        predictionWindowStart: '2026-04-22',
-        predictionWindowEnd: '2026-04-26',
-        basedOnCycleCount: 3,
+        predictedStartDate: '2026-04-22',
+        predictionWindowStart: '2026-04-20',
+        predictionWindowEnd: '2026-04-24',
+        basedOnCycleCount: 1,
       }),
     },
   ];

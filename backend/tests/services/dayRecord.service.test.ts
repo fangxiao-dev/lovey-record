@@ -1,3 +1,4 @@
+import { DEFAULT_PERIOD_DURATION_DAYS, DEFAULT_PREDICTION_TERM_DAYS } from '../../src/domain/menstrualDefaults';
 import prisma from '../../src/db/prisma';
 import {
   applySingleDayPeriodAction,
@@ -44,7 +45,10 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({
       id: 'day-1',
       isPeriod: true,
@@ -86,7 +90,10 @@ describe('dayRecord.service', () => {
       ownerUserId: 'user-1',
     });
     (prisma.dayRecord.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([]);
 
     const result = await clearPeriodDay({
@@ -105,7 +112,10 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({
       id: 'day-1',
       isPeriod: true,
@@ -146,7 +156,10 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
 
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
@@ -209,13 +222,16 @@ describe('dayRecord.service', () => {
     });
   });
 
-  it('uses a +/-2 day prediction window when at least two cycles exist', async () => {
+  it('predicts from the latest cycle start plus the configured fixed term', async () => {
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
       id: 'module-1',
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
       { date: new Date('2026-03-01'), isPeriod: true, source: 'MANUAL' },
@@ -231,9 +247,9 @@ describe('dayRecord.service', () => {
     expect(prisma.prediction.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         update: expect.objectContaining({
-          predictedStartDate: new Date('2026-04-26'),
-          predictionWindowStart: new Date('2026-04-24'),
-          predictionWindowEnd: new Date('2026-04-28'),
+          predictedStartDate: new Date('2026-04-26T00:00:00.000Z'),
+          predictionWindowStart: new Date('2026-04-24T00:00:00.000Z'),
+          predictionWindowEnd: new Date('2026-04-28T00:00:00.000Z'),
           basedOnCycleCount: 2,
         }),
       }),
@@ -246,7 +262,10 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
       { date: new Date('2026-03-01'), isPeriod: true, source: 'MANUAL' },
@@ -282,17 +301,18 @@ describe('dayRecord.service', () => {
     });
   });
 
-  it('stores empty prediction when fewer than two cycles exist', async () => {
+  it('stores empty prediction when no period segment start exists after recompute', async () => {
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
       id: 'module-1',
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
-    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
-      { date: new Date('2026-03-01'), isPeriod: true, source: 'MANUAL' },
-    ]);
+    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([]);
 
     await recordPeriodDay({
       moduleInstanceId: 'module-1',
@@ -318,7 +338,10 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 6 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
       { date: new Date('2026-03-20'), isPeriod: true, source: 'MANUAL' },
@@ -431,7 +454,10 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 5 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.findMany as jest.Mock)
       .mockResolvedValueOnce([
         { date: new Date('2026-03-20T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
@@ -485,7 +511,10 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 5 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.findMany as jest.Mock)
       .mockResolvedValueOnce([
         { date: new Date('2026-03-20T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
@@ -528,7 +557,10 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 5 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
       { date: new Date('2026-03-24T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
       { date: new Date('2026-03-25T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
@@ -576,7 +608,10 @@ describe('dayRecord.service', () => {
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 5 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.findMany as jest.Mock)
       .mockResolvedValueOnce([
         { date: new Date('2026-03-24T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
@@ -606,13 +641,51 @@ describe('dayRecord.service', () => {
     expect(result.effect?.writeDates).toEqual(['2026-03-22', '2026-03-23', '2026-03-24']);
   });
 
+  it('uses the start of the latest continuous period segment as the prediction anchor', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
+    (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
+    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
+      { date: new Date('2026-03-25T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-26T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-27T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-31T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-04-01T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+    ]);
+
+    await recordPeriodDay({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      date: '2026-04-01',
+    });
+
+    expect(prisma.prediction.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({
+          predictedStartDate: new Date('2026-04-28T00:00:00.000Z'),
+          basedOnCycleCount: 2,
+        }),
+      }),
+    );
+  });
+
   it('re-validates the current action before mutating and rejects stale decisions', async () => {
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
       id: 'module-1',
       profileId: 'profile-1',
       ownerUserId: 'user-1',
     });
-    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 5 });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
     (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
       { date: new Date('2026-03-20T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
       { date: new Date('2026-03-21T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
