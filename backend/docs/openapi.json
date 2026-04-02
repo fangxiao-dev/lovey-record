@@ -58,6 +58,88 @@
         }
       }
     },
+    "/api/commands/applySingleDayPeriodAction": {
+      "post": {
+        "summary": "Apply the resolved single-day period action",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["moduleInstanceId", "selectedDate", "action"],
+                "properties": {
+                  "moduleInstanceId": {
+                    "type": "string"
+                  },
+                  "selectedDate": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": ["start", "revoke-start", "end-here", "noop"]
+                  },
+                  "confirmed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Single-day period action applied or confirmation returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "moduleInstanceId": {
+                      "type": "string"
+                    },
+                    "selectedDate": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "appliedAction": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "confirmationRequired": {
+                      "type": "boolean"
+                    },
+                    "prompt": {
+                      "type": "object",
+                      "nullable": true
+                    },
+                    "effect": {
+                      "type": "object",
+                      "nullable": true
+                    },
+                    "effectPreview": {
+                      "type": "object",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/commands/recordPeriodDay": {
       "post": {
         "summary": "Record a period day",
@@ -475,6 +557,131 @@
         "responses": {
           "200": {
             "description": "Home view returned"
+          }
+        }
+      }
+    },
+    "/api/queries/getSingleDayPeriodAction": {
+      "get": {
+        "summary": "Resolve contextual single-day period action",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "moduleInstanceId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Single-day period action resolved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "selectedDate": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": ["not-period", "start", "in-progress", "end"]
+                    },
+                    "chip": {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "type": "string"
+                        },
+                        "selected": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "resolvedAction": {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "enum": ["start", "revoke-start", "end-here", "noop"]
+                        },
+                        "bridgeType": {
+                          "type": "string",
+                          "enum": ["none", "forward", "backward", "both"]
+                        },
+                        "prompt": {
+                          "type": "object",
+                          "nullable": true
+                        },
+                        "effect": {
+                          "type": "object",
+                          "properties": {
+                            "action": {
+                              "type": "string"
+                            },
+                            "bridgeType": {
+                              "type": "string",
+                              "enum": ["none", "forward", "backward", "both"]
+                            },
+                            "selectedDate": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "writeDates": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "format": "date"
+                              }
+                            },
+                            "clearDates": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "format": "date"
+                              }
+                            },
+                            "resultingSegment": {
+                              "type": "object",
+                              "properties": {
+                                "startDate": {
+                                  "type": "string",
+                                  "format": "date"
+                                },
+                                "endDate": {
+                                  "type": "string",
+                                  "format": "date"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
