@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const frontendRoot = path.resolve(__dirname, '..');
+const repoRoot = path.resolve(frontendRoot, '..');
 
 test('frontend directory contains the minimum uni-app entry files', () => {
   for (const relativePath of ['App.vue', 'pages.json', 'manifest.json', 'main.js', 'index.html', 'uni.scss']) {
@@ -40,4 +41,12 @@ test('frontend typography tokens prefer IBM Plex Sans', () => {
 
   assert.match(primitives, /\$font-family-base:\s*"IBM Plex Sans"/);
   assert.match(primitives, /\$font-family-emphasis:\s*"IBM Plex Sans"/);
+});
+
+test('github workflow enumerates frontend node tests instead of passing a quoted glob literal', () => {
+  const workflow = fs.readFileSync(path.join(repoRoot, '.github', 'workflows', 'doc-audit.yml'), 'utf8');
+
+  assert.doesNotMatch(workflow, /node --test 'frontend\/\*\*\/__tests__\/\*\.test\.mjs'/);
+  assert.match(workflow, /find frontend/);
+  assert.match(workflow, /node --test/);
 });

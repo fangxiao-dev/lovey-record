@@ -30,4 +30,7 @@ jobs:
         with:
           node-version: '20'
       - name: Run frontend unit tests
-        run: node --test 'frontend/**/__tests__/*.test.mjs'
+        shell: bash
+        run: |
+          mapfile -d '' test_files < <(find frontend -path '*/__tests__/*.test.mjs' -print0 | sort -z)
+          node --test "${test_files[@]}"
