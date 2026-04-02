@@ -185,6 +185,12 @@ test('home applyBatchAction exits batch mode and keeps the latest dragged day as
 			moduleInstanceId: 'seed-module',
 			profileId: 'seed-profile'
 		},
+		batchDraft: {
+			isPeriod: true,
+			flowLevel: null,
+			painLevel: null,
+			colorLevel: null
+		},
 		batchAction: 'clear-record',
 		activeDate: '2026-03-18',
 		panelMode: 'batch',
@@ -253,6 +259,12 @@ test('home applyBatchAction keeps the latest batch-hovered day instead of the pr
 			openid: 'seed-openid',
 			moduleInstanceId: 'seed-module',
 			profileId: 'seed-profile'
+		},
+		batchDraft: {
+			isPeriod: true,
+			flowLevel: null,
+			painLevel: null,
+			colorLevel: null
 		},
 		activeDate: '2026-03-24',
 		panelMode: 'batch',

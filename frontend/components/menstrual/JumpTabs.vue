@@ -4,7 +4,9 @@
 			v-for="item in items"
 			:key="item.key"
 			class="jump-tabs__item"
-			:class="itemClasses(item)"
+			:class="[itemClasses(item), { 'ui-pressable--busy': busy }]"
+			hover-class="ui-pressable-hover"
+			:hover-stay-time="70"
 			@tap="onTap(item)"
 		>
 			<text class="jump-tabs__label" :class="labelClasses(item)">{{ item.label }}</text>
@@ -23,11 +25,16 @@
 			value: {
 				type: String,
 				default: ''
+			},
+			busy: {
+				type: Boolean,
+				default: false
 			}
 		},
 		emits: ['jump'],
 		methods: {
 			onTap(item) {
+				if (this.busy) return;
 				if (item.disabled) return;
 				this.$emit('jump', item.key);
 			},

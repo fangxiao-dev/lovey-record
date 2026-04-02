@@ -4,8 +4,13 @@
 			v-for="option in options"
 			:key="option.key"
 			class="segmented-control__option"
-			:class="{ 'segmented-control__option--active': option.key === value }"
-			@tap="$emit('change', option.key)"
+			:class="[
+				{ 'segmented-control__option--active': option.key === value },
+				{ 'ui-pressable--busy': busy }
+			]"
+			hover-class="ui-pressable-hover"
+			:hover-stay-time="70"
+			@tap="handleTap(option.key)"
 		>
 			<text
 				class="segmented-control__label"
@@ -28,9 +33,19 @@
 			value: {
 				type: String,
 				default: ''
+			},
+			busy: {
+				type: Boolean,
+				default: false
 			}
 		},
-		emits: ['change']
+		emits: ['change'],
+		methods: {
+			handleTap(optionKey) {
+				if (this.busy) return;
+				this.$emit('change', optionKey);
+			}
+		}
 	};
 </script>
 

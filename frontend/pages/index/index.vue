@@ -88,7 +88,12 @@
 						v-for="option in page.summaryCard.settingsControl.options"
 						:key="option.value"
 						class="settings-chip"
-						:class="{ 'settings-chip--selected': option.selected }"
+						:class="[
+							{ 'settings-chip--selected': option.selected },
+							{ 'ui-pressable--busy': isMutating }
+						]"
+						hover-class="ui-pressable-hover"
+						:hover-stay-time="70"
 						@tap="handleSettingsOptionSelect(option.value)"
 					>
 						<text class="settings-chip__text" :class="{ 'settings-chip__text--selected': option.selected }">
@@ -98,7 +103,13 @@
 				</view>
 			</view>
 			<view class="summary-actions">
-				<view class="summary-action ui-button ui-button--secondary" @tap="handleShareAction">
+				<view
+					class="summary-action ui-button ui-button--secondary"
+					:class="{ 'ui-pressable--busy': isMutating }"
+					hover-class="ui-pressable-hover"
+					:hover-stay-time="70"
+					@tap="handleShareAction"
+				>
 					<text class="summary-action__text ui-button__text">
 						{{ isMutating ? '处理中...' : page.summaryCard.shareAction.label }}
 					</text>
@@ -115,7 +126,13 @@
 			<text class="shell-state-card__copy u-text-body-secondary">
 				{{ loadError || '正在读取模块访问状态和模块设置。' }}
 			</text>
-			<view v-if="loadError" class="shell-state-card__action ui-button ui-button--primary" @tap="retryInitialLoad">
+			<view
+				v-if="loadError"
+				class="shell-state-card__action ui-button ui-button--primary"
+				:hover-stay-time="70"
+				hover-class="ui-pressable-hover"
+				@tap="retryInitialLoad"
+			>
 				<text class="ui-button__text info-action__text--primary">重新加载</text>
 			</view>
 		</view>
@@ -123,7 +140,9 @@
 		<view v-if="isDev" class="dev-toolbar u-page-section">
 			<view
 				class="dev-reset-btn"
-				:class="{ 'dev-reset-btn--busy': isResetting }"
+				:class="[{ 'dev-reset-btn--busy': isResetting }, { 'ui-pressable--busy': isResetting }]"
+				hover-class="ui-pressable-hover"
+				:hover-stay-time="70"
 				@tap="handleDevReset"
 			>
 				<text class="dev-reset-btn__text">{{ isResetting ? '重置中…' : devResetLabel }}</text>

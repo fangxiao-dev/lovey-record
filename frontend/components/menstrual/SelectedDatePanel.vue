@@ -8,13 +8,21 @@
 		<view class="selected-date-panel__chip-row">
 			<view
 				class="selected-date-panel__chip"
-				:class="{ 'selected-date-panel__chip--accent': isPeriodMarked }"
+				:class="[
+					{ 'selected-date-panel__chip--accent': isPeriodMarked },
+					{ 'ui-pressable--busy': busy }
+				]"
+				hover-class="ui-pressable-hover"
+				:hover-stay-time="70"
 				@tap="togglePeriod"
 			>
 				<text class="selected-date-panel__chip-label">经期</text>
 			</view>
 			<view
 				class="selected-date-panel__chip"
+				:class="{ 'ui-pressable--busy': busy }"
+				hover-class="ui-pressable-hover"
+				:hover-stay-time="70"
 				@tap="toggleEditor"
 			>
 				<text class="selected-date-panel__chip-label">{{ isEditorOpen ? '↑ 收起' : '+ 记录详情' }}</text>
@@ -62,8 +70,11 @@
 						class="selected-date-panel__editor-option"
 						:class="[
 							`selected-date-panel__editor-option--${option.tone}`,
-							{ 'selected-date-panel__editor-option--selected': option.selected }
+							{ 'selected-date-panel__editor-option--selected': option.selected },
+							{ 'ui-pressable--busy': busy }
 						]"
+						hover-class="ui-pressable-hover"
+						:hover-stay-time="70"
 						@tap="toggleAttributeOption(row.key, option.key)"
 					>
 						<text
@@ -77,7 +88,14 @@
 			</view>
 		</view>
 
-		<view v-if="summaryItems.length > 0 && isEditorOpen" class="selected-date-panel__clear-button" @tap="clearAttributes">
+		<view
+			v-if="summaryItems.length > 0 && isEditorOpen"
+			class="selected-date-panel__clear-button"
+			:class="{ 'ui-pressable--busy': busy }"
+			hover-class="ui-pressable-hover"
+			:hover-stay-time="70"
+			@tap="clearAttributes"
+		>
 			<text class="selected-date-panel__clear-button-label">清空</text>
 		</view>
 
@@ -142,6 +160,10 @@
 			showNote: {
 				type: Boolean,
 				default: true
+			},
+			busy: {
+				type: Boolean,
+				default: false
 			}
 		},
 		data() {
@@ -164,17 +186,21 @@
 		},
 		methods: {
 			toggleEditor() {
+				if (this.busy) return;
 				this.isEditorOpen = !this.isEditorOpen;
 				this.$emit('toggle-editor', this.isEditorOpen);
 			},
 			togglePeriod() {
+				if (this.busy) return;
 				this.isPeriodMarked = !this.isPeriodMarked;
 				this.$emit('toggle-period', this.isPeriodMarked);
 			},
 			toggleAttributeOption(rowKey, optionKey) {
+				if (this.busy) return;
 				this.$emit('toggle-attribute-option', { rowKey, optionKey });
 			},
 			clearAttributes() {
+				if (this.busy) return;
 				this.$emit('clear-attributes');
 			},
 			handleNoteInput(event) {

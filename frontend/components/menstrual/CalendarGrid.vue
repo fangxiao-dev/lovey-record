@@ -28,7 +28,12 @@
 					v-for="cell in week.cells"
 					:key="cell.key || cell.label"
 					class="calendar-grid__cell"
-					:class="{ 'calendar-grid__cell--tappable': interactive && cell.selectable !== false }"
+					:class="[
+						{ 'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy },
+						{ 'ui-pressable--busy': busy }
+					]"
+					:hover-class="interactive && cell.selectable !== false && !busy ? 'ui-pressable-hover' : ''"
+					:hover-stay-time="70"
 					@tap.stop="onCellTap(cell)"
 				>
 					<DateCell :label="cell.label" :variant="effectiveVariant(cell)" />
@@ -104,6 +109,10 @@
 				default() {
 					return [];
 				}
+			},
+			busy: {
+				type: Boolean,
+				default: false
 			}
 		},
 		emits: ['cell-tap', 'batch-start', 'batch-extend', 'batch-end'],
@@ -149,6 +158,7 @@
 			},
 
 			onCellTap(cell) {
+				if (this.busy) return;
 				if (!this.interactive) return;
 				if (cell.selectable === false) return;
 				if (Date.now() < this.suppressTapUntil) return;
@@ -204,22 +214,26 @@
 			},
 
 			onTouchStart(e) {
+				if (this.busy) return;
 				if (!this.interactive) return;
 				const touch = e.touches[0];
 				this.beginLongPress(touch.clientX, touch.clientY);
 			},
 
 			onTouchMove(e) {
+				if (this.busy) return;
 				if (!this.interactive) return;
 				const touch = e.touches[0];
 				this.handlePointerMove(touch.clientX, touch.clientY, e);
 			},
 
 			onTouchEnd() {
+				if (this.busy) return;
 				this.finishLongPress();
 			},
 
 			onTouchCancel() {
+				if (this.busy) return;
 				this.finishLongPress();
 			},
 

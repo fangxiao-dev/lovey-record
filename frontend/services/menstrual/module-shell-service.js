@@ -155,22 +155,24 @@ export async function resolveModuleContext(openid) {
 
 export async function loadMenstrualModuleShellPageModel(context = {}) {
 	const resolved = { ...DEFAULT_MODULE_SHELL_CONTEXT, ...context };
-	const accessState = await queryEnvelope({
-		apiBaseUrl: resolved.apiBaseUrl,
-		openid: resolved.openid,
-		path: '/api/queries/getModuleAccessState',
-		data: {
-			moduleInstanceId: resolved.moduleInstanceId
-		}
-	});
-	const settings = await queryEnvelope({
-		apiBaseUrl: resolved.apiBaseUrl,
-		openid: resolved.openid,
-		path: '/api/queries/getModuleSettings',
-		data: {
-			moduleInstanceId: resolved.moduleInstanceId
-		}
-	});
+	const [accessState, settings] = await Promise.all([
+		queryEnvelope({
+			apiBaseUrl: resolved.apiBaseUrl,
+			openid: resolved.openid,
+			path: '/api/queries/getModuleAccessState',
+			data: {
+				moduleInstanceId: resolved.moduleInstanceId
+			}
+		}),
+		queryEnvelope({
+			apiBaseUrl: resolved.apiBaseUrl,
+			openid: resolved.openid,
+			path: '/api/queries/getModuleSettings',
+			data: {
+				moduleInstanceId: resolved.moduleInstanceId
+			}
+		})
+	]);
 
 	return {
 		page: createModuleShellPageModel({

@@ -1,10 +1,22 @@
 <template>
 	<view class="header-nav">
-		<view class="header-nav__button" @tap="$emit('prev')">
+		<view
+			class="header-nav__button"
+			:class="{ 'ui-pressable--busy': busy }"
+			hover-class="ui-pressable-hover"
+			:hover-stay-time="70"
+			@tap="handlePrev"
+		>
 			<text class="header-nav__button-label">{{ leadingLabel }}</text>
 		</view>
 		<text class="header-nav__month">{{ monthLabel }}</text>
-		<view class="header-nav__button" @tap="$emit('next')">
+		<view
+			class="header-nav__button"
+			:class="{ 'ui-pressable--busy': busy }"
+			hover-class="ui-pressable-hover"
+			:hover-stay-time="70"
+			@tap="handleNext"
+		>
 			<text class="header-nav__button-label">{{ trailingLabel }}</text>
 		</view>
 	</view>
@@ -25,9 +37,23 @@
 			trailingLabel: {
 				type: String,
 				default: '›'
+			},
+			busy: {
+				type: Boolean,
+				default: false
 			}
 		},
-		emits: ['prev', 'next']
+		emits: ['prev', 'next'],
+		methods: {
+			handlePrev() {
+				if (this.busy) return;
+				this.$emit('prev');
+			},
+			handleNext() {
+				if (this.busy) return;
+				this.$emit('next');
+			}
+		}
 	};
 </script>
 

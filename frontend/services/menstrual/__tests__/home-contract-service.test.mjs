@@ -177,3 +177,117 @@ test('loadMenstrualHomePageModel throws by default when live queries fail', asyn
 		/boom/
 	);
 });
+
+test('loadMenstrualHomePageModel starts calendar and detail queries in parallel after home view resolves', async () => {
+	const startedPaths = [];
+	let resolveCalendar;
+	let resolveDetail;
+	const calendarResolved = new Promise((resolve) => {
+		resolveCalendar = resolve;
+	});
+	const detailResolved = new Promise((resolve) => {
+		resolveDetail = resolve;
+	});
+
+	installUniRequestMock((options) => {
+		if (options.url.includes('/queries/getModuleHomeView')) {
+			options.success({
+				statusCode: 200,
+				data: {
+					ok: true,
+					data: {
+						moduleInstanceId: 'seed-home-module',
+						sharingStatus: 'private',
+						currentStatusSummary: {
+							status: 'in_period',
+							anchorDate: '2026-03-29',
+							currentCycle: {
+								startDate: '2026-03-26',
+								endDate: '2026-03-31',
+								durationDays: 6
+							}
+						},
+						visibleWindow: null,
+						calendarMarks: [],
+						selectedDay: null,
+						predictionSummary: null
+					},
+					error: null
+				}
+			});
+			return;
+		}
+
+		if (options.url.includes('/queries/getCalendarWindow')) {
+			startedPaths.push('calendar');
+			calendarResolved.then(() => {
+				options.success({
+					statusCode: 200,
+					data: {
+						ok: true,
+						data: {
+							moduleInstanceId: 'seed-home-module',
+							window: {
+								startDate: '2026-03-16',
+								endDate: '2026-04-05'
+							},
+							days: [],
+							marks: []
+						},
+						error: null
+					}
+				});
+			});
+			return;
+		}
+
+		if (options.url.includes('/queries/getDayRecordDetail')) {
+			startedPaths.push('detail');
+			detailResolved.then(() => {
+				options.success({
+					statusCode: 200,
+					data: {
+						ok: true,
+						data: {
+							moduleInstanceId: 'seed-home-module',
+							profileId: 'seed-home-profile',
+							dayRecord: {
+								date: '2026-03-29',
+								isPeriod: true,
+								painLevel: null,
+								flowLevel: null,
+								colorLevel: null,
+								note: null,
+								source: 'manual',
+								isExplicit: true,
+								isDetailRecorded: false
+							}
+						},
+						error: null
+					}
+				});
+			});
+		}
+	});
+
+	const loading = loadMenstrualHomePageModel({
+		apiBaseUrl: 'http://localhost:3000/api',
+		openid: 'seed-home-openid',
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		today: '2026-03-29',
+		activeDate: '2026-03-29',
+		focusDate: '2026-03-29',
+		viewMode: 'three-week'
+	});
+
+	await new Promise((resolve) => setTimeout(resolve, 0));
+
+	assert.equal(startedPaths.length, 2);
+	assert.equal(startedPaths[0], 'calendar');
+	assert.equal(startedPaths[1], 'detail');
+
+	resolveCalendar();
+	resolveDetail();
+	await loading;
+});

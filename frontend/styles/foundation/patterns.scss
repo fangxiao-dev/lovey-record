@@ -41,6 +41,15 @@
 	color: inherit;
 }
 
+.ui-pressable-hover {
+	opacity: 0.88;
+}
+
+.ui-pressable--busy {
+	opacity: 0.72;
+	pointer-events: none;
+}
+
 .ui-input {
 	display: flex;
 	align-items: center;

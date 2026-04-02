@@ -122,28 +122,29 @@ export async function loadMenstrualHomePageModel(context = {}) {
 			viewMode
 		});
 
-		const calendarWindow = await queryEnvelope({
-			apiBaseUrl: resolved.apiBaseUrl,
-			openid: resolved.openid,
-			path: '/api/queries/getCalendarWindow',
-			data: {
-				moduleInstanceId: resolved.moduleInstanceId,
-				profileId: resolved.profileId,
-				startDate: calendarRange.startDate,
-				endDate: calendarRange.endDate
-			}
-		});
-
-		const dayDetail = await queryEnvelope({
-			apiBaseUrl: resolved.apiBaseUrl,
-			openid: resolved.openid,
-			path: '/api/queries/getDayRecordDetail',
-			data: {
-				moduleInstanceId: resolved.moduleInstanceId,
-				profileId: resolved.profileId,
-				date: activeDate
-			}
-		});
+		const [calendarWindow, dayDetail] = await Promise.all([
+			queryEnvelope({
+				apiBaseUrl: resolved.apiBaseUrl,
+				openid: resolved.openid,
+				path: '/api/queries/getCalendarWindow',
+				data: {
+					moduleInstanceId: resolved.moduleInstanceId,
+					profileId: resolved.profileId,
+					startDate: calendarRange.startDate,
+					endDate: calendarRange.endDate
+				}
+			}),
+			queryEnvelope({
+				apiBaseUrl: resolved.apiBaseUrl,
+				openid: resolved.openid,
+				path: '/api/queries/getDayRecordDetail',
+				data: {
+					moduleInstanceId: resolved.moduleInstanceId,
+					profileId: resolved.profileId,
+					date: activeDate
+				}
+			})
+		]);
 
 		return {
 			page: createMenstrualHomePageModel({

@@ -28,22 +28,36 @@
 			<SegmentedControl
 				:options="page.viewModeControl.options"
 				:value="page.viewModeControl.value"
+				:busy="isBrowseBusy"
 				@change="handleViewModeChange"
 			/>
 			<HeaderNav
 				:month-label="page.headerNav.monthLabel"
 				:leading-label="page.headerNav.leadingLabel"
 				:trailing-label="page.headerNav.trailingLabel"
+				:busy="isBrowseBusy"
 				@prev="handleHeaderPrev"
 				@next="handleHeaderNext"
 			/>
 			<view class="menstrual-home__jump-row">
-				<JumpTabs :items="page.jumpTabs.items" :value="page.jumpTabs.value" @jump="handleJump" />
+				<JumpTabs :items="page.jumpTabs.items" :value="page.jumpTabs.value" :busy="isBrowseBusy" @jump="handleJump" />
 				<view v-if="panelMode === 'batch'" class="menstrual-home__batch-actions">
-					<view class="menstrual-home__batch-btn menstrual-home__batch-btn--save" @tap="applyBatchAction">
+					<view
+						class="menstrual-home__batch-btn menstrual-home__batch-btn--save"
+						:class="{ 'ui-pressable--busy': isMutating }"
+						hover-class="ui-pressable-hover"
+						:hover-stay-time="70"
+						@tap="applyBatchAction"
+					>
 						<text class="menstrual-home__batch-btn-label menstrual-home__batch-btn-label--save">保存</text>
 					</view>
-					<view class="menstrual-home__batch-btn menstrual-home__batch-btn--cancel" @tap="cancelBatchMode">
+					<view
+						class="menstrual-home__batch-btn menstrual-home__batch-btn--cancel"
+						:class="{ 'ui-pressable--busy': isMutating }"
+						hover-class="ui-pressable-hover"
+						:hover-stay-time="70"
+						@tap="cancelBatchMode"
+					>
 						<text class="menstrual-home__batch-btn-label">取消</text>
 					</view>
 				</view>
@@ -53,6 +67,7 @@
 				:weekday-labels="page.calendarCard.weekdayLabels"
 				:interactive="page.viewModeControl.value === 'three-week'"
 				:selected-keys="selectedBatchKeys"
+				:busy="isBrowseBusy"
 				@cell-tap="handleCellTap"
 				@batch-start="handleBatchStart"
 				@batch-extend="handleBatchExtend"
@@ -69,6 +84,7 @@
 				:initial-period-marked="panelMode === 'batch' ? batchDraft.isPeriod : page.selectedDatePanel.initialPeriodMarked"
 				:initial-editor-open="panelMode === 'batch' ? false : page.selectedDatePanel.initialEditorOpen"
 				:show-note="panelMode !== 'batch'"
+				:busy="isMutating"
 				@toggle-attribute-option="handleToggleAttributeOption"
 				@clear-attributes="handleClearAttributes"
 				@toggle-period="handleTogglePeriod"
@@ -81,7 +97,14 @@
 			<text class="menstrual-home__state-copy">
 				{{ loadError || '正在读取 getModuleHomeView、getCalendarWindow、getDayRecordDetail。' }}
 			</text>
-			<view v-if="loadError" class="menstrual-home__state-action" @tap="retryInitialLoad">
+			<view
+				v-if="loadError"
+				class="menstrual-home__state-action"
+				:class="{ 'ui-pressable--busy': isRefreshing }"
+				hover-class="ui-pressable-hover"
+				:hover-stay-time="70"
+				@tap="retryInitialLoad"
+			>
 				<text class="menstrual-home__state-action-label">重新加载</text>
 			</view>
 		</view>
@@ -135,6 +158,8 @@
 				focusDate: DEFAULT_MENSTRUAL_HOME_CONTEXT.today,
 				viewMode: 'three-week',
 				isMutating: false,
+				isRefreshing: false,
+				refreshRequestId: 0,
 				panelMode: 'single-day',
 				batchStartKey: null,
 				batchEndKey: null,
@@ -157,6 +182,9 @@
 			selectedBatchKeys() {
 				if (this.panelMode !== 'batch') return [];
 				return this.batchSelectedKeysState;
+			},
+			isBrowseBusy() {
+				return this.isRefreshing || this.isMutating;
 			},
 			batchPanelTitle() {
 				const cells = this.allCalendarCells.filter(c => this.selectedBatchKeys.includes(c.key) && c.isoDate);
@@ -189,6 +217,7 @@
 		},
 		methods: {
 			async refreshFromContracts(activeDate, options = {}) {
+				const requestId = options.requestId || ++this.refreshRequestId;
 				const nextViewMode = options.viewMode || this.viewMode;
 				const nextFocusDate = options.focusDate || this.focusDate || activeDate || this.activeDate;
 				const result = await loadMenstrualHomePageModel({
@@ -198,15 +227,20 @@
 					viewMode: nextViewMode,
 					fallbackOnError: options.fallbackOnError
 				});
+				if (requestId !== this.refreshRequestId) {
+					return result;
+				}
 				this.page = result.page;
 				this.loadError = result.error || '';
 				this.rawContracts = result.raw;
 				this.activeDate = result.raw?.dayDetail?.dayRecord?.date || activeDate || this.activeDate;
 				this.focusDate = result.raw?.focusDate || nextFocusDate;
 				this.viewMode = result.raw?.viewMode || nextViewMode;
+				return result;
 			},
 			async retryInitialLoad() {
 				this.loadError = '';
+				this.isRefreshing = true;
 				try {
 					await this.refreshFromContracts(this.activeDate, {
 						fallbackOnError: false,
@@ -216,22 +250,33 @@
 				} catch (error) {
 					this.page = null;
 					this.loadError = error instanceof Error ? error.message : '联调环境请求失败';
+				} finally {
+					this.isRefreshing = false;
 				}
 			},
 			runLiveRefresh(activeDate = this.activeDate, options = {}) {
+				const requestId = ++this.refreshRequestId;
+				this.isRefreshing = true;
 				return this.refreshFromContracts(activeDate, {
 					...options,
-					fallbackOnError: false
+					fallbackOnError: false,
+					requestId
 				}).catch((error) => {
 					this.loadError = error instanceof Error ? error.message : '联调环境请求失败';
+				}).finally(() => {
+					if (requestId === this.refreshRequestId) {
+						this.isRefreshing = false;
+					}
 				});
 			},
 			handleCellTap(cell) {
 				if (!cell?.isoDate) return;
+				if (this.isBrowseBusy) return;
 				this.panelMode = 'single-day';
 				this.runLiveRefresh(cell.isoDate);
 			},
 			handleViewModeChange(nextMode) {
+				if (this.isBrowseBusy) return;
 				if (!nextMode || nextMode === this.viewMode) return;
 				this.panelMode = 'single-day';
 				this.runLiveRefresh(this.activeDate, {
@@ -240,6 +285,7 @@
 				});
 			},
 			handleHeaderPrev() {
+				if (this.isBrowseBusy) return;
 				this.panelMode = 'single-day';
 				this.runLiveRefresh(this.activeDate, {
 					viewMode: this.viewMode,
@@ -247,6 +293,7 @@
 				});
 			},
 			handleHeaderNext() {
+				if (this.isBrowseBusy) return;
 				this.panelMode = 'single-day';
 				this.runLiveRefresh(this.activeDate, {
 					viewMode: this.viewMode,
@@ -254,6 +301,7 @@
 				});
 			},
 			handleJump(jumpKey) {
+				if (this.isBrowseBusy) return;
 				const targetDate = resolveJumpTargetDate(this.rawContracts?.homeView, jumpKey, this.contractContext.today);
 				if (!targetDate) return;
 				this.panelMode = 'single-day';
@@ -392,6 +440,7 @@
 				}
 			},
 			cancelBatchMode() {
+				if (this.isMutating) return;
 				this.panelMode = 'single-day';
 				this.batchStartKey = null;
 				this.batchEndKey = null;

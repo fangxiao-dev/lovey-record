@@ -61,7 +61,10 @@ test('loadMenstrualModuleShellPageModel maps a private module into the private z
 	assert.equal(result.page.summaryCard.sharingStatus.value, '未共享');
 	assert.equal(result.page.summaryCard.activePartners.value, '0 人');
 	assert.equal(result.page.summaryCard.defaultPeriodDuration.value, '6 天');
-	assert.equal(result.page.primaryEntry.url, '/pages/menstrual/home?apiBaseUrl=http%3A%2F%2Flocalhost%3A3000%2Fapi&openid=seed-home-openid&moduleInstanceId=seed-home-module&profileId=seed-home-profile&today=2026-03-29');
+	assert.equal(result.page.primaryEntry.url, createMenstrualHomeEntryUrl({
+		...DEFAULT_MODULE_SHELL_CONTEXT,
+		moduleInstanceId: 'seed-home-module'
+	}));
 });
 
 test('loadMenstrualModuleShellPageModel maps a shared module into the shared zone and does not duplicate it in private zone', async () => {
@@ -180,4 +183,69 @@ test('createMenstrualHomeEntryUrl preserves the shell live context for navigatio
 		}),
 		'/pages/menstrual/home?apiBaseUrl=http%3A%2F%2Flocalhost%3A3000%2Fapi&openid=seed-shared-openid&moduleInstanceId=seed-shared-module&profileId=seed-shared-profile&today=2026-03-29'
 	);
+});
+
+test('loadMenstrualModuleShellPageModel starts access and settings queries in parallel', async () => {
+	const startedPaths = [];
+	let resolveAccess;
+	let resolveSettings;
+	const accessResolved = new Promise((resolve) => {
+		resolveAccess = resolve;
+	});
+	const settingsResolved = new Promise((resolve) => {
+		resolveSettings = resolve;
+	});
+
+	installUniRequestMock((options) => {
+		if (options.url.includes('/queries/getModuleAccessState')) {
+			startedPaths.push('access');
+			accessResolved.then(() => {
+				options.success({
+					statusCode: 200,
+					data: {
+						ok: true,
+						data: {
+							moduleInstanceId: 'seed-home-module',
+							sharingStatus: 'private',
+							ownerUserId: 'seed-home-owner',
+							activePartners: []
+						},
+						error: null
+					}
+				});
+			});
+			return;
+		}
+
+		if (options.url.includes('/queries/getModuleSettings')) {
+			startedPaths.push('settings');
+			settingsResolved.then(() => {
+				options.success({
+					statusCode: 200,
+					data: {
+						ok: true,
+						data: {
+							moduleInstanceId: 'seed-home-module',
+							moduleSettings: {
+								defaultPeriodDurationDays: 6
+							}
+						},
+						error: null
+					}
+				});
+			});
+		}
+	});
+
+	const loading = loadMenstrualModuleShellPageModel({
+		...DEFAULT_MODULE_SHELL_CONTEXT
+	});
+
+	await Promise.resolve();
+
+	assert.deepEqual(startedPaths, ['access', 'settings']);
+
+	resolveAccess();
+	resolveSettings();
+	await loading;
 });
