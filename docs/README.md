@@ -26,6 +26,7 @@ Legacy reference repo (only reference when it comes to frontend code, not for UI
 - `docs/design/` - open the relevant module or cross-module design doc only when the design contract itself matters.
 - `docs/design-drafts/` - open when you need to inspect current Pencil drafts or exported design artifacts.
 - `docs/plans/` - use for active sequencing, migration, or handoff context; do not scan it exhaustively.
+- `docs/checklists/frontend-h5-live-regression.md` - use when you need the fixed H5 Playwright regression entry, local ports, or one-click startup flow.
 
 ## Automated Audits
 
