@@ -17,3 +17,8 @@ This monorepo hosts a relationship-record product whose first MVP module is mens
 ## Current Milestone
 
 The active mainline is moving from backend/runtime alignment into frontend integration and shared seed/mock scenarios.
+
+## Live Regression
+
+- Fixed H5 live regression entry: `npm run test:menstrual:live`
+- One-click startup + H5 live regression: `npm run test:menstrual:live:boot`

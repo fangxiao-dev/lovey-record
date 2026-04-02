@@ -26,8 +26,8 @@ node --test \
   frontend/components/menstrual/__tests__/batch-selection-contract.test.mjs \
   frontend/components/menstrual/__tests__/calendar-grid-h5-long-press.test.mjs
 
-# 3. Full live H5 regression (requires backend + frontend dev servers running)
-npm run test:menstrual:live
+# 3. Full live H5 regression with one-click startup
+npm run test:menstrual:live:boot
 ```
 
 All three commands must exit 0 with 0 failures.
@@ -94,7 +94,7 @@ Release Gate Run: ____-__-__
 
 [ ] npm test (backend phase5 + query): PASS / FAIL
 [ ] node --test (frontend unit suite, 22 tests): PASS / FAIL
-[ ] npm run test:menstrual:live (7 tests): PASS / FAIL
+[ ] npm run test:menstrual:live:boot (10 tests): PASS / FAIL
 
 Manual (Mini Program):
 [ ] M1 shell loads
