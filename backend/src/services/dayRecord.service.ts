@@ -1,5 +1,6 @@
 import prisma from '../db/prisma';
 import { getDefaultPeriodDurationDays, getModuleSettings } from './moduleSettings.service';
+import { resolveSingleDayPeriodAction } from './singleDayPeriodAction.service';
 
 type RecordPeriodDayInput = {
   moduleInstanceId: string;
@@ -18,6 +19,14 @@ type PeriodRangeInput = {
   userId: string;
   startDate: string;
   endDate: string;
+};
+
+type ApplySingleDayPeriodActionInput = {
+  moduleInstanceId: string;
+  userId: string;
+  selectedDate: string;
+  action: 'start' | 'revoke-start' | 'end-here' | 'noop';
+  confirmed?: boolean;
 };
 
 function toDateOnly(value: string) {
@@ -218,6 +227,13 @@ async function getDefaultDuration(moduleInstanceId: string) {
   return settings.defaultPeriodDurationDays ?? getDefaultPeriodDurationDays();
 }
 
+function staleSingleDayActionError() {
+  const error = new Error('SINGLE_DAY_ACTION_STALE') as Error & { code?: string; statusCode?: number };
+  error.code = 'SINGLE_DAY_ACTION_STALE';
+  error.statusCode = 409;
+  return error;
+}
+
 export async function recordPeriodDay(input: RecordPeriodDayInput) {
   const moduleInstance = await assertAccess(input.moduleInstanceId, input.userId);
   const profileId = moduleInstance.profileId;
@@ -378,4 +394,97 @@ export async function clearPeriodRange(input: PeriodRangeInput) {
   await recompute(input.moduleInstanceId, profileId);
 
   return { clearedDates: existingRecords.map((record) => formatDate(record.date)) };
+}
+
+export async function applySingleDayPeriodAction(input: ApplySingleDayPeriodActionInput) {
+  const moduleInstance = await assertAccess(input.moduleInstanceId, input.userId);
+  const profileId = moduleInstance.profileId;
+  const defaultPeriodDurationDays = await getDefaultDuration(input.moduleInstanceId);
+  const currentPeriodRecords = await prisma.dayRecord.findMany({
+    where: {
+      moduleInstanceId: input.moduleInstanceId,
+      profileId,
+      isPeriod: true,
+    },
+    orderBy: { date: 'asc' },
+  });
+  const resolved = resolveSingleDayPeriodAction({
+    selectedDate: input.selectedDate,
+    periodDates: currentPeriodRecords.map((record) => formatDate(record.date)),
+    defaultPeriodDurationDays,
+  });
+
+  if (resolved.resolvedAction.action !== input.action) {
+    throw staleSingleDayActionError();
+  }
+
+  if (resolved.resolvedAction.prompt && !input.confirmed) {
+    return {
+      moduleInstanceId: input.moduleInstanceId,
+      selectedDate: input.selectedDate,
+      appliedAction: null,
+      confirmationRequired: true,
+      prompt: resolved.resolvedAction.prompt,
+      effectPreview: resolved.resolvedAction.effect,
+    };
+  }
+
+  for (const isoDate of resolved.resolvedAction.effect.writeDates) {
+    const date = toDateOnly(isoDate);
+    await prisma.dayRecord.upsert({
+      where: {
+        moduleInstanceId_profileId_date: {
+          moduleInstanceId: input.moduleInstanceId,
+          profileId,
+          date,
+        },
+      },
+      create: {
+        moduleInstanceId: input.moduleInstanceId,
+        profileId,
+        date,
+        isPeriod: true,
+        source: 'MANUAL',
+        painLevel: null,
+        flowLevel: null,
+        colorLevel: null,
+        note: null,
+      },
+      update: {
+        isPeriod: true,
+        source: 'MANUAL',
+      },
+    });
+  }
+
+  if (resolved.resolvedAction.effect.clearDates.length > 0) {
+    await prisma.dayRecord.updateMany({
+      where: {
+        moduleInstanceId: input.moduleInstanceId,
+        profileId,
+        date: { in: resolved.resolvedAction.effect.clearDates.map((date) => toDateOnly(date)) },
+        isPeriod: true,
+      },
+      data: {
+        isPeriod: false,
+        source: 'MANUAL',
+      },
+    });
+  }
+
+  if (resolved.resolvedAction.action !== 'noop') {
+    await recompute(input.moduleInstanceId, profileId);
+  }
+
+  return {
+    moduleInstanceId: input.moduleInstanceId,
+    selectedDate: input.selectedDate,
+    appliedAction: resolved.resolvedAction.effect.action,
+    confirmationRequired: false,
+    effect: resolved.resolvedAction.effect,
+    recomputed: {
+      segmentChanged: resolved.resolvedAction.action !== 'noop',
+      predictionChanged: resolved.resolvedAction.action !== 'noop',
+    },
+  };
 }

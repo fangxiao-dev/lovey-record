@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from '../../src/app';
-import { clearPeriodRange, recordPeriodRange } from '../../src/services/dayRecord.service';
+import { applySingleDayPeriodAction, clearPeriodRange, recordPeriodRange } from '../../src/services/dayRecord.service';
 import { createModuleInstance } from '../../src/services/moduleInstance.service';
 import { findOrCreateUser } from '../../src/services/auth.service';
 import { updateDefaultPeriodDuration } from '../../src/services/moduleSettings.service';
@@ -252,6 +252,133 @@ describe('Commands Integration', () => {
         code: 'MODULE_ACCESS_DENIED',
         message: 'MODULE_ACCESS_DENIED',
       },
+    });
+  });
+
+  it('returns confirmationRequired for an unconfirmed single-day bridge action', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+    (applySingleDayPeriodAction as jest.Mock).mockResolvedValue({
+      moduleInstanceId: 'module-1',
+      selectedDate: '2026-03-22',
+      appliedAction: null,
+      confirmationRequired: true,
+      prompt: {
+        required: true,
+        type: 'backward',
+        message: '已在 03/24 标记了经期开始，要提前到 03/22 吗？',
+        confirmLabel: '确认',
+        cancelLabel: '取消',
+      },
+      effectPreview: {
+        action: 'bridge-backward',
+        bridgeType: 'backward',
+        selectedDate: '2026-03-22',
+        writeDates: ['2026-03-22', '2026-03-23', '2026-03-24'],
+        clearDates: [],
+        resultingSegment: {
+          startDate: '2026-03-22',
+          endDate: '2026-03-28',
+        },
+      },
+    });
+
+    const response = await request(app)
+      .post('/api/commands/applySingleDayPeriodAction')
+      .set('x-wx-openid', 'openid-1')
+      .send({ moduleInstanceId: 'module-1', selectedDate: '2026-03-22', action: 'start' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        moduleInstanceId: 'module-1',
+        selectedDate: '2026-03-22',
+        appliedAction: null,
+        confirmationRequired: true,
+        prompt: {
+          required: true,
+          type: 'backward',
+          message: '已在 03/24 标记了经期开始，要提前到 03/22 吗？',
+          confirmLabel: '确认',
+          cancelLabel: '取消',
+        },
+        effectPreview: {
+          action: 'bridge-backward',
+          bridgeType: 'backward',
+          selectedDate: '2026-03-22',
+          writeDates: ['2026-03-22', '2026-03-23', '2026-03-24'],
+          clearDates: [],
+          resultingSegment: {
+            startDate: '2026-03-22',
+            endDate: '2026-03-28',
+          },
+        },
+      },
+      error: null,
+    });
+    expect(applySingleDayPeriodAction).toHaveBeenCalledWith({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      selectedDate: '2026-03-22',
+      action: 'start',
+      confirmed: undefined,
+    });
+  });
+
+  it('forwards a confirmed single-day action through the command endpoint', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+    (applySingleDayPeriodAction as jest.Mock).mockResolvedValue({
+      moduleInstanceId: 'module-1',
+      selectedDate: '2026-03-22',
+      appliedAction: 'bridge-backward',
+      confirmationRequired: false,
+      effect: {
+        action: 'bridge-backward',
+        bridgeType: 'backward',
+        selectedDate: '2026-03-22',
+        writeDates: ['2026-03-22', '2026-03-23', '2026-03-24'],
+        clearDates: [],
+        resultingSegment: {
+          startDate: '2026-03-22',
+          endDate: '2026-03-28',
+        },
+      },
+      recomputed: {
+        segmentChanged: true,
+        predictionChanged: true,
+      },
+    });
+
+    const response = await request(app)
+      .post('/api/commands/applySingleDayPeriodAction')
+      .set('x-wx-openid', 'openid-1')
+      .send({ moduleInstanceId: 'module-1', selectedDate: '2026-03-22', action: 'start', confirmed: true });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        moduleInstanceId: 'module-1',
+        selectedDate: '2026-03-22',
+        appliedAction: 'bridge-backward',
+        confirmationRequired: false,
+        effect: {
+          action: 'bridge-backward',
+          bridgeType: 'backward',
+          selectedDate: '2026-03-22',
+          writeDates: ['2026-03-22', '2026-03-23', '2026-03-24'],
+          clearDates: [],
+          resultingSegment: {
+            startDate: '2026-03-22',
+            endDate: '2026-03-28',
+          },
+        },
+        recomputed: {
+          segmentChanged: true,
+          predictionChanged: true,
+        },
+      },
+      error: null,
     });
   });
 });

@@ -1,5 +1,11 @@
 import prisma from '../../src/db/prisma';
-import { clearPeriodDay, clearPeriodRange, recordPeriodDay, recordPeriodRange } from '../../src/services/dayRecord.service';
+import {
+  applySingleDayPeriodAction,
+  clearPeriodDay,
+  clearPeriodRange,
+  recordPeriodDay,
+  recordPeriodRange,
+} from '../../src/services/dayRecord.service';
 
 jest.mock('../../src/db/prisma', () => ({
   __esModule: true,
@@ -417,5 +423,214 @@ describe('dayRecord.service', () => {
         }),
       }),
     );
+  });
+
+  it('applies revoke-start by clearing the full selected segment', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 5 });
+    (prisma.dayRecord.findMany as jest.Mock)
+      .mockResolvedValueOnce([
+        { date: new Date('2026-03-20T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-21T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-22T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      ])
+      .mockResolvedValueOnce([]);
+    (prisma.dayRecord.updateMany as jest.Mock).mockResolvedValue({ count: 3 });
+
+    const result = await applySingleDayPeriodAction({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      selectedDate: '2026-03-20',
+      action: 'revoke-start',
+    });
+
+    expect(result.confirmationRequired).toBe(false);
+    expect(result.appliedAction).toBe('revoke-start');
+    expect(result.effect).toEqual({
+      action: 'revoke-start',
+      bridgeType: 'none',
+      selectedDate: '2026-03-20',
+      writeDates: [],
+      clearDates: ['2026-03-20', '2026-03-21', '2026-03-22'],
+      resultingSegment: null,
+    });
+    expect(prisma.dayRecord.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          moduleInstanceId: 'module-1',
+          profileId: 'profile-1',
+          date: {
+            in: [
+              new Date('2026-03-20T00:00:00.000Z'),
+              new Date('2026-03-21T00:00:00.000Z'),
+              new Date('2026-03-22T00:00:00.000Z'),
+            ],
+          },
+        }),
+        data: expect.objectContaining({
+          isPeriod: false,
+          source: 'MANUAL',
+        }),
+      }),
+    );
+  });
+
+  it('applies end-here by clearing only later dates in the same segment', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 5 });
+    (prisma.dayRecord.findMany as jest.Mock)
+      .mockResolvedValueOnce([
+        { date: new Date('2026-03-20T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-21T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-22T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-23T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-24T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      ])
+      .mockResolvedValueOnce([
+        { date: new Date('2026-03-20T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-21T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-22T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      ]);
+    (prisma.dayRecord.updateMany as jest.Mock).mockResolvedValue({ count: 2 });
+
+    const result = await applySingleDayPeriodAction({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      selectedDate: '2026-03-22',
+      action: 'end-here',
+    });
+
+    expect(result.confirmationRequired).toBe(false);
+    expect(result.appliedAction).toBe('end-here');
+    expect(result.effect?.clearDates).toEqual(['2026-03-23', '2026-03-24']);
+    expect(prisma.dayRecord.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          date: {
+            in: [new Date('2026-03-23T00:00:00.000Z'), new Date('2026-03-24T00:00:00.000Z')],
+          },
+        }),
+      }),
+    );
+  });
+
+  it('returns confirmationRequired without mutating when a bridge action is not confirmed', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 5 });
+    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
+      { date: new Date('2026-03-24T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-25T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-26T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+    ]);
+
+    const result = await applySingleDayPeriodAction({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      selectedDate: '2026-03-22',
+      action: 'start',
+    });
+
+    expect(result).toEqual({
+      moduleInstanceId: 'module-1',
+      selectedDate: '2026-03-22',
+      appliedAction: null,
+      confirmationRequired: true,
+      prompt: {
+        required: true,
+        type: 'backward',
+        message: '已在 03/24 标记了经期开始，要提前到 03/22 吗？',
+        confirmLabel: '确认',
+        cancelLabel: '取消',
+      },
+      effectPreview: {
+        action: 'bridge-backward',
+        bridgeType: 'backward',
+        selectedDate: '2026-03-22',
+        writeDates: ['2026-03-22', '2026-03-23', '2026-03-24'],
+        clearDates: [],
+        resultingSegment: {
+          startDate: '2026-03-22',
+          endDate: '2026-03-26',
+        },
+      },
+    });
+    expect(prisma.dayRecord.upsert).not.toHaveBeenCalled();
+    expect(prisma.dayRecord.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('applies a confirmed bridge action and writes the resolved dates', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 5 });
+    (prisma.dayRecord.findMany as jest.Mock)
+      .mockResolvedValueOnce([
+        { date: new Date('2026-03-24T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-25T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-26T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      ])
+      .mockResolvedValueOnce([
+        { date: new Date('2026-03-22T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-23T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-24T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-25T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+        { date: new Date('2026-03-26T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      ]);
+    (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
+
+    const result = await applySingleDayPeriodAction({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      selectedDate: '2026-03-22',
+      action: 'start',
+      confirmed: true,
+    });
+
+    expect(result.confirmationRequired).toBe(false);
+    expect(result.appliedAction).toBe('bridge-backward');
+    expect(prisma.dayRecord.upsert).toHaveBeenCalledTimes(3);
+    expect(result.effect?.writeDates).toEqual(['2026-03-22', '2026-03-23', '2026-03-24']);
+  });
+
+  it('re-validates the current action before mutating and rejects stale decisions', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({ defaultPeriodDurationDays: 5 });
+    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
+      { date: new Date('2026-03-20T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-21T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-22T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+    ]);
+
+    await expect(
+      applySingleDayPeriodAction({
+        moduleInstanceId: 'module-1',
+        userId: 'user-1',
+        selectedDate: '2026-03-21',
+        action: 'start',
+      }),
+    ).rejects.toMatchObject({
+      code: 'SINGLE_DAY_ACTION_STALE',
+      statusCode: 409,
+    });
+    expect(prisma.dayRecord.upsert).not.toHaveBeenCalled();
+    expect(prisma.dayRecord.updateMany).not.toHaveBeenCalled();
   });
 });
