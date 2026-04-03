@@ -8,6 +8,10 @@ It covers how users mark period status, record optional attributes, and manage r
 
 This is the authoritative UX contract for the `SelectedDatePanel` and its child surfaces.
 
+For the frontend/UI presentation contract, read:
+
+- [frontend-day-recording.md](./frontend-day-recording.md)
+
 ## Design Philosophy
 
 - Most users only need period date marking; attribute details are secondary.
@@ -31,20 +35,17 @@ This hierarchy should inform future prioritization decisions (e.g. if simplifyin
 
 ### Entry Points
 
-The panel always shows two independent chips:
+The panel always shows two independent controls:
 
-```
-[ 月经 / 月经开始 / 月经结束 ]   [ + 记录详情 ]
-```
+- contextual period action
+- detail-grid toggle
 
-- Contextual period chip: single-day smart period action for this date. Independent of attribute recording.
-- `+ 记录详情` chip: opens/closes the attribute editor grid.
+Users can:
 
-These two chips are always visible regardless of recording state. A user can:
-- Mark period without recording attributes
-- Record attributes without marking period
-- Do both
-- Do neither
+- mark period without recording attributes
+- record attributes without marking period
+- do both
+- do neither
 
 ### Period Chip Behavior
 
@@ -100,10 +101,6 @@ The summary bar is **always visible** (permanent fixture in the panel). It does 
 
 When an attribute is deselected (returns to empty), its chip disappears from the summary bar. If the last attribute is deselected, the bar returns to the empty hint state.
 
-The summary bar chip fill color matches the corresponding option cell in the attribute grid exactly (same tone, no stroke). This gives users a direct visual connection between what they selected and what the summary shows.
-
-**Rationale**: a permanent summary bar reduces cognitive load — users always know where to look for their selections, and there is no layout shift when attributes are added or removed.
-
 **Critical rule**: empty value is NOT represented by "正常". Empty means "not recorded". "正常" (level 3) is a meaningful recorded value. Confusing these would pollute data semantics and break future trend analysis.
 
 ### Clear Button
@@ -153,95 +150,6 @@ The panel has 4 orthogonal state axes:
 4. **Note presence**: `empty` | `recorded`
 5. **Date context**: `past` | `today` | `future` (future dates are read-only)
 
-### Composite States And Their Rendering
-
-**Initial state (no data, collapsed)**:
-```
-3 月 26 日                           点击记录
-[ 月经 ]   [ + 记录详情 ]
-选择属性后将显示在这里               ← summary bar, empty hint
-```
-
-**Period marked only (collapsed)**:
-```
-3 月 26 日                           已记录
-[ 月经开始 ✓ ]   [ + 记录详情 ]
-选择属性后将显示在这里               ← summary bar, empty hint
-```
-
-**Attributes recorded, grid collapsed**:
-```
-3 月 26 日                           已记录
-[ 月经结束 ✓ ]   [ + 记录详情 ]
-[流量 正常] [疼痛 轻]                ← summary bar (only recorded slots)
-```
-
-**Grid expanded, some attributes selected**:
-```
-3 月 26 日                           已记录
-[ 月经结束 ✓ ]   [ ↑ 收起 ]
-[流量 正常] [疼痛 轻]                ← summary bar
-
-流量   极少  少  [正常]  多  极多
-疼痛   无   [轻]  正常  强  极强
-颜色   极浅  浅  正常  深  极深     ← no selection in this row
-
-              [ 清空 ]
-```
-
-**Grid expanded, no attributes selected yet**:
-```
-3 月 26 日                           点击记录
-[ 月经 ]   [ ↑ 收起 ]
-
-流量   极少  少  正常  多  极多
-疼痛   无    轻  正常  强  极强
-颜色   极浅  浅  正常  深  极深
-
-                                    ← no summary bar, no 清空 button
-```
-
-## Component Architecture
-
-### Hierarchy
-
-```
-SelectedDatePanel
-├── Head (title + badge)
-├── ChipRow
-│   ├── PeriodChip          ← contextual single-day action chip, accent when selected day is already in a segment
-│   └── RecordDetailChip    ← "+ 记录详情" / "↑ 收起"
-├── SummaryBar              ← always rendered
-│   ├── EmptyHint           ← shown when attributes.length === 0
-│   └── SummarySlot × N     ← one per recorded attribute, hidden when none
-├── AttributeGrid           ← conditional: only when grid is expanded
-│   ├── FlowRow
-│   ├── PainRow
-│   └── ColorRow
-└── ClearButton             ← conditional: only when attributes.length > 0
-└── NoteInput               ← always rendered, blur-to-save
-```
-
-### Reusable Primitives From Component Library
-
-The following existing Pencil primitives should be consumed, not recreated:
-
-- `Primitive/ThreeAttrStateSummary` (node `uqMCN`) — visual language for the summary bar. Adapt to support partial rendering (1-2 slots instead of always 3).
-- `Composite/SingleDayClickEditor` stateMatrix (node `aRXKk`) — the 3-row attribute grid. Already has correct option styling, selected state emphasis, and tone-based coloring.
-- Attribute token families (`attribute.flow.*`, `attribute.pain.*`, `attribute.tone.*`) — already locked in the token system.
-
-### New Elements To Create
-
-- **RecordDetailChip**: a chip that toggles between `+ 记录详情` and `↑ 收起`. Should be implemented as a stateful chip variant, not a new component type. Reuse the existing chip styling from `ChipRow`.
-- **ClearButton**: a secondary-emphasis button. Use `bg.subtle` background with `text.secondary` label. Should NOT use `accent.period` (that's reserved for primary actions like the period chip).
-- **Partial SummaryBar**: the current `ThreeAttrStateSummary` assumes all 3 slots are always present. It needs to support rendering 1 or 2 slots gracefully. The layout should use `flex` with `gap`, so fewer slots naturally distribute.
-
-### Elements To Remove Or Replace
-
-- **`保存当天记录` button** (node `YayuR` in Pencil, `action` slot in Vue): replaced by WYSIWYG behavior + `清空` button.
-- **`特殊标记` chip**: this is NOT part of the day recording panel. Recorded attribute marks are expressed as eye markers on `DateCell` and belong to the calendar grid layer, not the recording panel. Remove from `SelectedDatePanel` chip row.
-- **Summary bar**: always rendered. When no attributes are recorded, shows hint text "选择属性后将显示在这里" instead of chips. The previous design had conditional rendering; this is now permanent.
-
 ## Diff From Current Design
 
 ### vs. Current Pencil (`Composite/SelectedDatePanel`, node `AGEIj`)
@@ -278,6 +186,7 @@ The domain model already supports this design with no changes needed:
 - [function-recording-model.md](function-recording-model.md) — core recording model (users edit days, system derives segments)
 - [date-state-spec.md](date-state-spec.md) — date state visual rules
 - [token-component-mapping.md](token-component-mapping.md) — token consumption contracts
+- [frontend-day-recording.md](frontend-day-recording.md) — frontend/UI presentation contract
 - [../../contracts/domain-models/menstrual-domain-model.md](../../contracts/domain-models/menstrual-domain-model.md) — domain model
 - [../2026-03-28-ui-collaboration-lessons.md](../2026-03-28-ui-collaboration-lessons.md) — Pencil-to-code collaboration rules
 

@@ -4,6 +4,14 @@
 
 This directory stores long-lived product and engineering contracts that should remain stable across implementation phases.
 
+Only keep documents here when they are:
+
+- durable
+- maintained
+- intended to define product or engineering meaning as a single source of truth
+
+Temporary design exploration, migration notes, and execution sequencing do not belong here.
+
 Use `docs/contracts/` for documents that define:
 
 - what the product must do

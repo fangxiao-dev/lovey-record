@@ -1,7 +1,7 @@
 # Period Application Contract Draft
 
 **Created:** 2026-03-23
-**Last Updated:** 2026-04-02
+**Last Updated:** 2026-04-03
 
 ## Purpose
 
@@ -92,6 +92,127 @@ The contract is expressed in application-service terms:
 - `getModuleAccessState`
 - `getModuleSettings`
 - `getSingleDayPeriodAction`
+
+## Home Status And Shortcut Semantics
+
+The menstrual home hero now separates:
+
+- current status semantics
+- historical / predictive reference ranges
+
+The frontend must not derive these meanings from ad-hoc UI rules. The application-layer home read model is the stable source.
+
+### `HomeCurrentStatus`
+
+Allowed values for the current MVP:
+
+- `in_period`
+- `out_of_period`
+
+Future-compatible values may later include states such as:
+
+- `luteal_phase`
+- `approaching_period`
+
+Rules:
+
+- `in_period` means `today` is inside the latest continuous period segment's inclusive range
+- `out_of_period` means no latest continuous period segment covers `today`
+- if the latest persisted segment ends before `today`, the home must render `out_of_period`
+- if later edits bridge or extend the segment so the recomputed latest segment covers `today`, the home must render `in_period` again
+
+### `HomeStatusCard`
+
+```json
+{
+  "status": "in_period",
+  "label": "经期中",
+  "rangeText": "03.29 - 03.30"
+}
+```
+
+Rules:
+
+- this is the primary home status expression
+- when `status = in_period`, `rangeText` must describe the latest continuous segment that contains `today`
+- when `status = out_of_period`, `rangeText` should be `null`
+- frontend should render `经期中：MM.DD - MM.DD` for `in_period`
+- frontend should render `不在经期中` for `out_of_period`
+
+### `SegmentReferenceReadModel`
+
+```json
+{
+  "startDate": "2026-03-29",
+  "endDate": "2026-03-30"
+}
+```
+
+Rules:
+
+- represents one continuous period segment reference for home shortcuts and hero info frames
+- absence means the value is currently unavailable, not an implicit `null range`
+
+### Home Hero Reference Frames
+
+The hero keeps two fixed reference frames:
+
+- `previous`
+- `next`
+
+Rules:
+
+- `previous` points to the continuous segment immediately before the latest segment
+- `next` points to `predictionSummary`
+- if `previous` is missing, frontend should render `暂无记录`
+- if `next` is missing, frontend should render `暂无记录`
+- the home shortcut row should expose `上次` as a jump target and disable it when `previous` is missing
+- the home shortcut row may continue exposing `今天`
+- the previous `本次` shortcut semantics are absorbed by the status card and no longer appear as a separate home shortcut
+
+### Home Hero Status Source
+
+The home hero must compute its status from the recomputed latest segment, not from stale cached text.
+
+Required behavior:
+
+- if the latest segment includes `today`, hero shows `经期中`
+- if the latest segment ends before `today` and there is at least one blank day after the end, hero shows `不在经期中`
+- if a later bridge, extension, revoke, or truncation changes the latest segment, hero status and ranges must update from the recomputed result in the next home read model refresh
+
+### Home Read Model Direction
+
+`getModuleHomeView` should stabilize around these additional home-facing fields:
+
+```json
+{
+  "currentStatusSummary": {
+    "status": "out_of_period",
+    "anchorDate": "2026-03-29",
+    "currentSegment": {
+      "startDate": "2026-03-29",
+      "endDate": "2026-03-30",
+      "durationDays": 2
+    },
+    "statusCard": {
+      "status": "out_of_period",
+      "label": "不在经期中",
+      "rangeText": null
+    },
+    "previousSegment": {
+      "startDate": "2026-03-01",
+      "endDate": "2026-03-05"
+    }
+  }
+}
+```
+
+Rules:
+
+- `currentSegment` remains the latest actual segment even when `today` is outside it
+- `statusCard` expresses whether that latest segment currently covers `today`
+- `previousSegment` is optional and should be omitted when unavailable
+- frontend should treat these fields as the durable semantic contract once implemented, rather than recomputing previous/latest segment ranking locally
 
 ## Single-Day Smart Period Editing Contract
 

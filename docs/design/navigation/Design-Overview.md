@@ -43,7 +43,7 @@ The second tab exists to expose all modules, organization, and sharing-related m
 
 ## Related Function Docs
 
-- [function-tab-structure.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/navigation/function-tab-structure.md)
-- [function-dashboard-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/navigation/function-dashboard-home.md)
+- [function-tab-structure.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/navigation/function-tab-structure.md)
+- [function-dashboard-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/navigation/function-dashboard-home.md)
 
 

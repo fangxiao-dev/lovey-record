@@ -27,9 +27,10 @@ It should preserve:
 - Do not collapse shared semantics into duplicated module cards with different data identities.
 - Do not simplify the page so far that it loses ownership and shared-state meaning.
 
-## Related Function Docs
+## Related Surface Docs
 
-- [function-module-management-page.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/management/function-module-management-page.md)
-- [function-sharing-expression.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/management/function-sharing-expression.md)
+- [function-module-management-page.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/management/function-module-management-page.md)
+- [function-sharing-expression.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/management/function-sharing-expression.md)
+- [frontend-sharing-expression.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/management/frontend-sharing-expression.md)
 
 

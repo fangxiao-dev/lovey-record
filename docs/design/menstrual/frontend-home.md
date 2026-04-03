@@ -1,0 +1,135 @@
+# Menstrual Home Frontend
+
+## Purpose
+
+This document defines the durable frontend/UI presentation contract for the menstrual home page.
+
+For feature semantics, interaction meaning, and behavioral rules, read the paired function doc:
+
+- [function-home.md](./function-home.md)
+
+The menstrual home frontend must present the module as a status-first workbench.
+
+It should make current state legible before exposing deeper browsing and editing controls.
+
+## Page Structure
+
+The core composition remains:
+
+- `StatusHeroCard`
+- `CalendarGrid`
+- `CalendarLegend`
+- `SelectedDatePanel`
+- batch-mode action buttons in the jump row
+
+## Hero Structure
+
+The hero is status-first and should now use this structure:
+
+- one top row with:
+  - current-status label
+  - private/shared chip
+- one primary status frame
+- one secondary reference row with:
+  - `上次`
+  - `下次`
+
+The hero should no longer show:
+
+- duplicated page title text such as `月经记录`
+- helper copy such as `先看当前状态，再在下方 3 周视图里定位和记录。`
+
+The private/shared chip belongs inside the hero, not as a detached page-level badge above it.
+
+### Status Frame
+
+The primary hero frame is not a small chip. It is a dedicated status container.
+
+Current MVP states:
+
+- `经期中：MM.DD - MM.DD`
+- `不在经期中`
+
+Future expansion is reserved for states such as:
+
+- `黄体期`
+- `临近经期`
+
+Design rule:
+
+- treat this as a reusable `status frame` pattern, not as a one-off menstrual text block
+
+### Reference Frames
+
+The secondary hero row keeps two fixed info frames:
+
+- `上次`
+- `下次`
+
+Rules:
+
+- these frames always exist in layout even when their value is missing
+- when a value is missing, the frame should render `暂无记录`
+- `上次` and `下次` are informational frames in the hero, not the main status carrier
+
+## Jump Shortcut Row
+
+The shortcut row should align with the hero semantics.
+
+Rules:
+
+- add `上次` as a shortcut
+- tapping `上次` jumps to the previous segment's `startDate`
+- when no previous segment exists, `上次` is disabled
+- `本次` should be removed from the shortcut row because its semantics are now carried by the hero status frame
+- the remaining shortcuts may continue to include `今天` and `下次预测` as long as they reflect the same read-model semantics as the hero
+
+## Selected Date Panel
+
+- The panel always shows two independent chips: contextual period action chip (`月经` / `月经开始` / `月经结束`) and `+ 记录详情` (attribute grid toggle).
+- The period chip text is derived from the selected date's role inside the current period segment:
+  - `not-period` => `月经`
+  - `start` => `月经开始`
+  - `in-progress` / `end` => `月经结束`
+- Period marking and attribute recording are independent actions.
+- Single-day period editing must go through the resolve/apply flow; it is no longer treated as a blind boolean toggle on the page.
+- The attribute summary bar only renders when at least one attribute is recorded.
+- The attribute grid is controlled by `+ 记录详情` / `↑ 收起`, not by tapping the summary bar.
+- Attribute changes are WYSIWYG (immediate persistence); there is no save button.
+- A `清空` button appears only when attributes are recorded, and only clears attributes (not period status).
+- The full interaction contract is defined in [function-day-recording.md](function-day-recording.md).
+
+## Calendar Grid Structure
+
+- `CalendarGrid` carries week-divider lines as part of the grid structure.
+- Week dividers support browsing rhythm only; they are not date-state markers.
+- Date cells in the grid should consume the component-library date-state source instead of page-local hand-drawn variants.
+
+## Visual Direction
+
+The page should feel:
+
+- clean
+- warm
+- precise
+- light but intentional
+
+It should not collapse into:
+
+- a generic pink period app
+- a medical dashboard
+- a noisy analytics board
+
+## Semantic Dependency
+
+This file defines the UI contract only.
+
+The durable logic for:
+
+- when the page is `经期中`
+- when it becomes `不在经期中`
+- how `上次` is derived
+- when `暂无记录` appears
+
+must be maintained in the application contract under [../../contracts/application-contracts/menstrual-application-contract.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/contracts/application-contracts/menstrual-application-contract.md).
+

@@ -13,16 +13,16 @@ It answers four questions:
 
 ## Parent Plans
 
-- umbrella plan: [../../plans/2026-03-28-pencil-to-uniapp-implementation-plan.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/plans/2026-03-28-pencil-to-uniapp-implementation-plan.md)
-- phase 1 child plan: [../../plans/2026-03-28-token-component-alignment-plan.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/plans/2026-03-28-token-component-alignment-plan.md)
+- umbrella plan: [../../plans/2026-03-28-pencil-to-uniapp-implementation-plan.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/plans/2026-03-28-pencil-to-uniapp-implementation-plan.md)
+- phase 1 child plan: [../../plans/2026-03-28-token-component-alignment-plan.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/plans/2026-03-28-token-component-alignment-plan.md)
 
 ## Source Priority
 
 Use this order when the token draft and the current page/component expressions disagree:
 
-1. current component-library and page expressions in [../../design-drafts/2026-03-22-module-space-and-period-home.pen](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design-drafts/2026-03-22-module-space-and-period-home.pen)
-2. approved visual rules in [../2026-03-23-ui-visual-language-guide.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-23-ui-visual-language-guide.md) and [date-state-spec.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/date-state-spec.md)
-3. token/foundation candidates in [../../design-drafts/2026-03-22-design-tokene.pen](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design-drafts/2026-03-22-design-tokene.pen)
+1. current component-library and page expressions in [../../design-drafts/2026-03-22-module-space-and-period-home.pen](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design-drafts/2026-03-22-module-space-and-period-home.pen)
+2. approved visual rules in [../2026-03-23-ui-visual-language-guide.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-23-ui-visual-language-guide.md) and [date-state-spec.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/date-state-spec.md)
+3. token/foundation candidates in [../../design-drafts/2026-03-22-design-tokene.pen](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design-drafts/2026-03-22-design-tokene.pen)
 4. current frontend SCSS token layer under `frontend/styles/tokens/`
 
 Rule:

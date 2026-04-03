@@ -1,20 +1,22 @@
-# Menstrual Home
+# Menstrual Home Function
 
 ## Purpose
+
+This document defines the durable feature and interaction contract for the menstrual home page.
+
+For the frontend/UI presentation contract, read the paired frontend doc:
+
+- [frontend-home.md](./frontend-home.md)
+
+For durable home read-model semantics, read:
+
+- [../../contracts/application-contracts/menstrual-application-contract.md](../../contracts/application-contracts/menstrual-application-contract.md)
+
+## Role
 
 The menstrual home is the module's main workbench.
 
 It must answer current status before exposing deeper browsing and editing.
-
-## Page Structure
-
-The core structure remains:
-
-- `StatusHeroCard`
-- `CalendarGrid`
-- `CalendarLegend`
-- `SelectedDatePanel`
-- batch-mode action buttons in the jump row
 
 ## Must Preserve
 
@@ -35,39 +37,24 @@ The home page must cover:
 - detail-recorded marker state
 - future-date blocked state
 
-## Selected Date Panel
+## Hero Behavior
 
-- The panel always shows two independent chips: contextual period action chip (`月经` / `月经开始` / `月经结束`) and `+ 记录详情` (attribute grid toggle).
-- The period chip text is derived from the selected date's role inside the current period segment:
-  - `not-period` => `月经`
-  - `start` => `月经开始`
-  - `in-progress` / `end` => `月经结束`
-- Period marking and attribute recording are independent actions.
-- Single-day period editing must go through the resolve/apply flow; it is no longer treated as a blind boolean toggle on the page.
-- The attribute summary bar only renders when at least one attribute is recorded.
-- The attribute grid is controlled by `+ 记录详情` / `↑ 收起`, not by tapping the summary bar.
-- Attribute changes are WYSIWYG (immediate persistence); there is no save button.
-- A `清空` button appears only when attributes are recorded, and only clears attributes (not period status).
-- The full interaction contract is defined in [function-day-recording.md](function-day-recording.md).
+- the hero is status-first
+- current status is derived from the latest recomputed segment, not from stale text
+- if `today` is inside the latest segment, the home shows the in-period state
+- if `today` is outside the latest segment, the home shows the out-of-period state
+- if later bridge or extension logic changes the latest segment, the hero status and reference ranges must update with the refreshed home read model
 
-## Calendar Grid Structure
+## Shortcut Semantics
 
-- `CalendarGrid` carries week-divider lines as part of the grid structure.
-- Week dividers support browsing rhythm only; they are not date-state markers.
-- Date cells in the grid should consume the component-library date-state source instead of page-local hand-drawn variants.
+- `今天` jumps to today's week / focus surface
+- `上次` jumps to the previous segment `startDate`
+- `上次` is disabled when no previous segment exists
+- `下次预测` jumps to the prediction start when prediction exists
+- the old `本次` shortcut semantics are absorbed by the hero status layer and should not remain as a separate shortcut
 
-## Visual Direction
+## Related Docs
 
-The page should feel:
-
-- clean
-- warm
-- precise
-- light but intentional
-
-It should not collapse into:
-
-- a generic pink period app
-- a medical dashboard
-- a noisy analytics board
-
+- [function-calendar.md](./function-calendar.md)
+- [function-day-recording.md](./function-day-recording.md)
+- [frontend-home.md](./frontend-home.md)

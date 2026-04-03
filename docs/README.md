@@ -4,9 +4,17 @@
 
 This `docs/` directory holds the design, planning, checklist, and copied reference material that supports the active uni-app mainline in this repository.
 
+Directory rule:
+
+- `docs/contracts/` and `docs/design/` hold durable, maintained single sources of truth
+- `docs/checklists/` holds durable verification procedures and release-support checklists
+- `docs/plans/` holds temporary execution plans, rollout notes, and implementation sequencing only
+
+If a document is not meant to remain maintained as a durable reference, it should not live under `design/`, `contracts/`, or `checklists/`.
+
 Current mainline repo:
 
-`D:\CodeSpace\hbuilder-projects\lovey-record-backend`
+`D:\CodeSpace\hbuilder-projects\lovey-record`
 
 Legacy reference repo (only reference when it comes to frontend code, not for UI design):
 
@@ -14,16 +22,17 @@ Legacy reference repo (only reference when it comes to frontend code, not for UI
 
 ## Read First
 
-1. [../project-context.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/project-context.md) - repo purpose, scope, current milestone, and hard boundaries.
-2. [../tech-stack-investigate.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/tech-stack-investigate.md) - only when you need stack, runtime, or styling assumptions that are not already in the active contracts.
-3. [contracts/README.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/contracts/README.md) - read when a task affects product rules, domain meaning, or frontend-backend alignment.
-4. [design/README.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/README.md) - read when a task affects visual language, module design, or design-asset structure.
-5. [design/pencil/README.md](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/README.md) - read when editing `.pen` files or working on Pencil workflow and recovery.
-6. [plans/](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/plans) - open only the latest relevant plan when sequencing or migration detail is actually needed.
+1. [../project-context.md](D:/CodeSpace/hbuilder-projects/lovey-record/project-context.md) - repo purpose, scope, current milestone, and hard boundaries.
+2. [references/tech-stack-investigate.md](D:/CodeSpace/hbuilder-projects/lovey-record/docs/references/tech-stack-investigate.md) - only when you need stack, runtime, or styling assumptions that are not already in the active contracts.
+3. [contracts/README.md](D:/CodeSpace/hbuilder-projects/lovey-record/docs/contracts/README.md) - read when a task affects product rules, domain meaning, or frontend-backend alignment.
+4. [design/README.md](D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/README.md) - read when a task affects visual language, module design, or design-asset structure.
+5. [design/pencil/README.md](D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/pencil/README.md) - read when editing `.pen` files or working on Pencil workflow and recovery.
+6. [plans/](D:/CodeSpace/hbuilder-projects/lovey-record/docs/plans) - open only the latest relevant plan when sequencing or migration detail is actually needed.
 
 ## Useful Reference
 
 - `docs/design/` - open the relevant module or cross-module design doc only when the design contract itself matters.
+- `docs/checklists/` - open when you need maintained QA or release-verification procedures, not product semantics.
 - `docs/design-drafts/` - open when you need to inspect current Pencil drafts or exported design artifacts.
 - `docs/plans/` - use for active sequencing, migration, or handoff context; do not scan it exhaustively.
 - `docs/governance/test-strategy-matrix.md` - use when you need the current test classification and trigger policy.
@@ -46,13 +55,13 @@ Two automated systems help keep documentation correct:
 
 ## What Is Here
 
-- `checklists/`: rule and QA references for current MVP work
+- `checklists/`: durable QA and release-verification procedures
 - `design/`: active design contracts, cross-module rules, and module-level design docs
 - `design/pencil/`: long-lived Pencil collaboration rules, SOPs, and recovery references
 - `contracts/`: long-lived product and engineering contracts such as use cases, domain models, and application contracts
-- `plans/`: approved design and implementation docs, handoff notes, and migration inventories
+- `plans/`: temporary execution plans, implementation sequencing, and handoff notes
 - `design-drafts/`: preserved visual draft artifacts that still inform the current mainline
-- `governance/`: durable rules for documentation health and release readiness — see [`governance/doc-audit-policy.md`](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/governance/doc-audit-policy.md), [`governance/release-gate.md`](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/governance/release-gate.md), and [`governance/content-audit-policy.md`](D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/governance/content-audit-policy.md)
+- `governance/`: durable rules for documentation health and release readiness — see [`governance/doc-audit-policy.md`](D:/CodeSpace/hbuilder-projects/lovey-record/docs/governance/doc-audit-policy.md), [`governance/release-gate.md`](D:/CodeSpace/hbuilder-projects/lovey-record/docs/governance/release-gate.md), and [`governance/content-audit-policy.md`](D:/CodeSpace/hbuilder-projects/lovey-record/docs/governance/content-audit-policy.md)
 - `generated/doc-audit/`: machine-generated structural audit reports and suggested patches; do not edit by hand
 - `generated/content-audit/`: machine-generated content correctness recommendations (plan status, rule completeness, terminology consistency); do not edit by hand
 - top-level markdown files: product, design, and model notes that continue to shape implementation decisions

@@ -8,16 +8,9 @@ It covers view switching, navigation, jump shortcuts, batch editing, and the dat
 
 This is the authoritative UX contract for `CalendarGrid` and all supporting calendar primitives on the menstrual home page.
 
-## Component Structure
+For the frontend/UI presentation contract, read:
 
-```
-CalendarPanel
-├── HeaderNav           ← month label + prev/next arrows
-├── SegmentedControl    ← 3-week / month-view toggle
-├── CalendarGrid        ← date cells, week dividers
-├── JumpTabs            ← today / current / next-prediction shortcuts
-└── CalendarLegend      ← period / prediction / detail-recorded legend
-```
+- [frontend-calendar.md](./frontend-calendar.md)
 
 ## View Modes
 
@@ -37,23 +30,6 @@ CalendarPanel
 - Users can navigate and inspect date states, but cannot tap to edit or drag to batch-select.
 - Switching to month view does not clear any selection state; it simply disables editing affordances.
 
-## HeaderNav
-
-- Displays the current month label (e.g. `2026.03`).
-- Prev (`<`) and next (`>`) arrows navigate by week in 3-week view, and by month in month view.
-- The month label updates as navigation proceeds.
-
-## SegmentedControl
-
-Two options:
-
-| Option | State | Behavior |
-|---|---|---|
-| 3 周 | Active (fill: `bg.card`) | Default editing view |
-| 月览 | Inactive (text: `text.secondary`) | Browse-only view |
-
-Switching views preserves the current focus date; the view re-centers around it.
-
 ## JumpTabs
 
 Three shortcut buttons that scroll the calendar to a specific date range:
@@ -61,11 +37,11 @@ Three shortcut buttons that scroll the calendar to a specific date range:
 | Button | Style | Scroll Target |
 |---|---|---|
 | 今天 | Outline: `accent.today` | Week containing today |
-| 本次 | Fill: `accent.period` | First day of the current period |
+| 上次 | Neutral / disabled-aware | First day of the previous period segment |
 | 下次预测 | Fill: `accent.period.soft` | First day of the next predicted period |
 
 Rules:
-- If no current period exists, `本次` is disabled (not hidden).
+- If no previous segment exists, `上次` is disabled (not hidden).
 - If no prediction exists, `下次预测` is disabled (not hidden).
 - Tapping a jump tab does not change the selected date; it only scrolls the view.
 
@@ -140,19 +116,6 @@ Batch operations target `is_period` only. Attribute values (`pain_level`, `flow_
 
 Rationale: batch editing exists specifically for period marking. Attributes are per-day subjective inputs that users add manually; bulk-deleting them is not a valid use case.
 
-## CalendarLegend
-
-Three legend items:
-
-| Item | Visual | Meaning |
-|---|---|---|
-| 本次经期 | `accent.period` fill | Days marked as period |
-| 经期预测 | `accent.period.soft` fill | System-predicted future period days |
-| 属性已记录 | Eye marker (`visibility` glyph) | Days with one or more recorded attribute values |
-
-- Legend items use the same visual language as the component-library date-state source.
-- Legend does not include `today` (self-explanatory) or `future muted` (implicit).
-
 ## Panel State Machine
 
 The calendar panel operates in two mutually exclusive modes:
@@ -173,3 +136,4 @@ Switching between modes:
 - [function-day-recording.md](function-day-recording.md) — SelectedDatePanel interaction contract
 - [function-recording-model.md](function-recording-model.md) — period recording model
 - [function-home.md](function-home.md) — page structure and must-preserve rules
+- [frontend-calendar.md](frontend-calendar.md) — frontend/UI presentation contract

@@ -30,18 +30,21 @@ The module must prove:
 - single-day inline editing
 - long-press batch editing
 
-## Related Function Docs
+## Related Surface Docs
 
-- [function-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-home.md)
-- [function-calendar.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-calendar.md)
-- [function-day-recording.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-day-recording.md)
-- [date-state-spec.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/date-state-spec.md)
-- [token-component-mapping.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/token-component-mapping.md)
-- [function-recording-model.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/menstrual/function-recording-model.md)
+- [function-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/function-home.md)
+- [frontend-home.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/frontend-home.md)
+- [function-calendar.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/function-calendar.md)
+- [frontend-calendar.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/frontend-calendar.md)
+- [function-day-recording.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/function-day-recording.md)
+- [frontend-day-recording.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/frontend-day-recording.md)
+- [date-state-spec.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/date-state-spec.md)
+- [token-component-mapping.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/token-component-mapping.md)
+- [function-recording-model.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/function-recording-model.md)
 
 ## Upstream References
 
-- [../2026-03-23-ui-visual-language-guide.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-23-ui-visual-language-guide.md)
-- [../2026-03-22-tokenize-collaboration-rule.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-22-tokenize-collaboration-rule.md)
+- [../2026-03-23-ui-visual-language-guide.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-23-ui-visual-language-guide.md)
+- [../2026-03-22-tokenize-collaboration-rule.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-22-tokenize-collaboration-rule.md)
 - [../../contracts/domain-models/menstrual-domain-model.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/contracts/domain-models/menstrual-domain-model.md)
 
