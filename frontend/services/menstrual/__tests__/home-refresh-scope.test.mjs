@@ -1,27 +1,51 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { resolveRefreshTarget } from '../home-refresh-scope.js';
+import { resolveRefreshPlan } from '../home-refresh-scope.js';
 
-test('resolveRefreshTarget falls back to full snapshot when scopes are missing', () => {
-	assert.equal(resolveRefreshTarget(null), 'fullSnapshot');
-	assert.equal(resolveRefreshTarget(undefined), 'fullSnapshot');
+test('resolveRefreshPlan falls back to full snapshot when scopes are missing', () => {
+	assert.deepEqual(resolveRefreshPlan(null), { immediate: 'fullSnapshot', deferredHero: false });
+	assert.deepEqual(resolveRefreshPlan(undefined), { immediate: 'fullSnapshot', deferredHero: false });
 });
 
-test('resolveRefreshTarget keeps prediction and moduleOverview writes on the full snapshot path', () => {
-	assert.equal(resolveRefreshTarget(['prediction']), 'fullSnapshot');
-	assert.equal(resolveRefreshTarget(['moduleOverview', 'prediction']), 'fullSnapshot');
-	assert.equal(resolveRefreshTarget(['calendar', 'dayDetail', 'prediction']), 'fullSnapshot');
+test('resolveRefreshPlan routes prediction-only writes to deferred hero reconciliation', () => {
+	assert.deepEqual(resolveRefreshPlan(['prediction']), {
+		immediate: 'skip',
+		deferredHero: true
+	});
 });
 
-test('resolveRefreshTarget refreshes only the selected day when day detail is the only affected scope', () => {
-	assert.equal(resolveRefreshTarget(['dayDetail']), 'dayDetail');
+test('resolveRefreshPlan keeps moduleOverview writes on the full snapshot path', () => {
+	assert.deepEqual(resolveRefreshPlan(['moduleOverview', 'prediction']), {
+		immediate: 'fullSnapshot',
+		deferredHero: false
+	});
 });
 
-test('resolveRefreshTarget refreshes only the calendar when calendar is affected without prediction', () => {
-	assert.equal(resolveRefreshTarget(['calendar']), 'calendar');
+test('resolveRefreshPlan performs calendar and day-detail reconciliation first for period writes', () => {
+	assert.deepEqual(resolveRefreshPlan(['calendar', 'dayDetail', 'prediction']), {
+		immediate: 'calendar+dayDetail',
+		deferredHero: true
+	});
 });
 
-test('resolveRefreshTarget skips refresh when the command explicitly reports no affected scopes', () => {
-	assert.equal(resolveRefreshTarget([]), 'skip');
+test('resolveRefreshPlan refreshes only the selected day when day detail is the only affected scope', () => {
+	assert.deepEqual(resolveRefreshPlan(['dayDetail']), {
+		immediate: 'dayDetail',
+		deferredHero: false
+	});
+});
+
+test('resolveRefreshPlan refreshes only the calendar when calendar is affected without prediction', () => {
+	assert.deepEqual(resolveRefreshPlan(['calendar']), {
+		immediate: 'calendar',
+		deferredHero: false
+	});
+});
+
+test('resolveRefreshPlan skips refresh when the command explicitly reports no affected scopes', () => {
+	assert.deepEqual(resolveRefreshPlan([]), {
+		immediate: 'skip',
+		deferredHero: false
+	});
 });

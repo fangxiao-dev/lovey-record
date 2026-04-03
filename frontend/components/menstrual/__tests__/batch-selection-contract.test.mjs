@@ -605,6 +605,137 @@ test('home handleTogglePeriod waits for confirmation before optimistic commit wh
 	assert.equal(calls.length, 0);
 });
 
+test('home refreshByScopes reconciles calendar and day detail before scheduling deferred hero refresh', async () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		resolveRefreshPlan: () => ({
+			immediate: 'calendar+dayDetail',
+			deferredHero: true
+		})
+	});
+
+	const order = [];
+	const ctx = {
+		activeDate: '2026-03-23',
+		focusDate: '2026-03-23',
+		viewMode: 'three-week',
+		async refreshCalendarWindow() {
+			order.push('calendar');
+		},
+		async refreshSelectedDayDetail() {
+			order.push('dayDetail');
+		},
+		scheduleDeferredHeroRefresh() {
+			order.push('hero');
+		}
+	};
+
+	await home.methods.refreshByScopes.call(ctx, ['calendar', 'dayDetail', 'prediction']);
+
+	assert.deepEqual(order, ['calendar', 'dayDetail', 'hero']);
+});
+
+test('home scheduleDeferredHeroRefresh reports failure without rolling back page state', async () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		resolveRefreshPlan: () => ({
+			immediate: 'skip',
+			deferredHero: true
+		})
+	});
+
+	const ctx = {
+		page: { id: 'optimistic-page' },
+		loadError: '',
+		activeDate: '2026-03-23',
+		focusDate: '2026-03-23',
+		viewMode: 'three-week',
+		heroRefreshRequestId: 0,
+		refreshHeroSnapshot: async () => {
+			throw new Error('hero query failed');
+		}
+	};
+
+	home.methods.scheduleDeferredHeroRefresh.call(ctx, ['prediction']);
+	await new Promise((resolve) => setTimeout(resolve, 0));
+
+	assert.equal(ctx.page.id, 'optimistic-page');
+	assert.match(ctx.loadError, /^写入成功，但主页摘要刷新失败/);
+});
+
+test('home refreshHeroSnapshot ignores stale hero responses and applies only the latest snapshot', async () => {
+	let resolveFirst;
+	let resolveSecond;
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		loadMenstrualHomeView: ({ activeDate }) => new Promise((resolve) => {
+			if (activeDate === '2026-03-23') {
+				resolveFirst = () => resolve({ sharingStatus: 'private', currentStatusSummary: { statusCard: { label: '旧' } } });
+				return;
+			}
+			resolveSecond = () => resolve({ sharingStatus: 'shared', currentStatusSummary: { statusCard: { label: '新' } } });
+		}),
+		applyHeroSnapshotToPageModel: (page, { homeView }) => ({
+			...page,
+			heroCard: {
+				...page.heroCard,
+				statusFrame: {
+					...page.heroCard.statusFrame,
+					text: homeView.currentStatusSummary.statusCard.label
+				}
+			}
+		})
+	});
+
+	const ctx = {
+		page: {
+			heroCard: {
+				statusFrame: { text: '初始' }
+			}
+		},
+		rawContracts: {
+			homeView: { sharingStatus: 'private' }
+		},
+		contractContext: {
+			today: '2026-03-29'
+		},
+		heroRefreshRequestId: 0,
+		isRefreshingHero: false
+	};
+
+	const first = home.methods.refreshHeroSnapshot.call(ctx, {
+		activeDate: '2026-03-23',
+		backgroundRequestId: 1
+	});
+	ctx.heroRefreshRequestId = 2;
+	const second = home.methods.refreshHeroSnapshot.call(ctx, {
+		activeDate: '2026-03-24',
+		backgroundRequestId: 2
+	});
+
+	resolveFirst();
+	resolveSecond();
+	await Promise.all([first, second]);
+
+	assert.equal(ctx.page.heroCard.statusFrame.text, '新');
+	assert.equal(ctx.rawContracts.homeView.sharingStatus, 'shared');
+});
+
 test('calendar grid does not extend batch selection into a future-muted cell', () => {
 	const CalendarGrid = loadVueOptions('frontend/components/menstrual/CalendarGrid.vue', {
 		DateCell: {},

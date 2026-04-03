@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+	applyHeroSnapshotToPageModel,
 	applyClearAttributesToPageModel,
 	applyBatchPeriodDraftToPageModel,
 	applySingleDayPeriodActionToPageModel,
@@ -583,4 +584,59 @@ test('home contract adapter applies batch draft to the visible calendar and sele
 	assert.equal(next.selectedDatePanel.periodChipSelected, true);
 	assert.equal(next.selectedDatePanel.periodChipText, '月经结束');
 	assert.deepEqual(next.heroCard, originalHero);
+});
+
+test('home contract adapter applies hero snapshot without mutating calendar or selected day panel state', () => {
+	const { homeView } = createSeededHomeContracts();
+	const dayDetail = createEmptyDayDetail({
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		date: '2026-03-24'
+	});
+	const model = createMenstrualHomePageModel({
+		homeView,
+		dayDetail,
+		today: '2026-03-29',
+		focusDate: '2026-03-24',
+		viewMode: 'month'
+	});
+
+	const originalCalendar = structuredClone(model.calendarCard);
+	const originalPanel = structuredClone(model.selectedDatePanel);
+	const next = applyHeroSnapshotToPageModel(model, {
+		homeView: {
+			...homeView,
+			sharingStatus: 'shared',
+			currentStatusSummary: {
+				currentStatus: 'in_period',
+				anchorDate: '2026-03-29',
+				currentSegment: {
+					startDate: '2026-03-29',
+					endDate: '2026-04-01',
+					durationDays: 4
+				},
+				previousSegment: homeView.currentStatusSummary.previousSegment,
+				statusCard: {
+					label: '经期中'
+				}
+			},
+			predictionSummary: {
+				predictedStartDate: '2026-04-21',
+				predictionWindowStart: '2026-04-19',
+				predictionWindowEnd: '2026-04-23',
+				basedOnCycleCount: 4
+			}
+		},
+		today: '2026-03-29'
+	});
+
+	assert.equal(next.topBar.statusLabel, '共享');
+	assert.equal(next.heroCard.statusFrame.state, 'in_period');
+	assert.equal(next.heroCard.statusFrame.text, '经期中');
+	assert.equal(next.heroCard.nextFrame.value, '04.21');
+	assert.deepEqual(next.calendarCard, originalCalendar);
+	assert.deepEqual(next.selectedDatePanel, originalPanel);
+	assert.equal(next.selectedDateKey, model.selectedDateKey);
+	assert.equal(next.headerNav.monthLabel, model.headerNav.monthLabel);
+	assert.equal(next.viewModeControl.value, model.viewModeControl.value);
 });

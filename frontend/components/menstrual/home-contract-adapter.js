@@ -739,6 +739,39 @@ export function createMenstrualHomePageModel({
 	};
 }
 
+export function applyHeroSnapshotToPageModel(pageModel, { homeView, today }) {
+	const next = clonePageModel(pageModel);
+	const previousJumpValue = next.jumpTabs.value;
+	next.topBar.statusLabel = mapStatusLabel(homeView?.sharingStatus);
+	next.heroCard = createHeroCard(homeView || {}, today);
+	next.jumpTabs.items = [
+		{ key: 'today', label: '今天', tone: 'outlined', disabled: false },
+		{
+			key: 'previous',
+			label: '上次',
+			tone: 'muted',
+			disabled: (() => {
+				const summary = homeView?.currentStatusSummary || {};
+				const currentStatus = summary.currentStatus || summary.status || 'out_of_period';
+				const lastSegment = currentStatus === 'in_period'
+					? summary.previousSegment
+					: (summary.currentSegment || summary.currentCycle);
+				return !lastSegment;
+			})()
+		},
+		{
+			key: 'prediction',
+			label: '下次预测',
+			tone: 'soft',
+			disabled: !homeView?.predictionSummary
+		}
+	];
+	next.jumpTabs.value = ['today', 'previous', 'prediction'].includes(previousJumpValue)
+		? previousJumpValue
+		: getJumpTabValue(homeView || {}, today);
+	return next;
+}
+
 export function applyToggleAttributeOptionToPageModel(pageModel, { rowKey, optionKey }) {
 	const next = clonePageModel(pageModel);
 	const targetRow = next.selectedDatePanel.attributeRows.find((row) => row.key === rowKey);

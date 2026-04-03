@@ -120,6 +120,7 @@
 	import SelectedDatePanel from '../../components/menstrual/SelectedDatePanel.vue';
 	import SegmentedControl from '../../components/menstrual/SegmentedControl.vue';
 	import {
+		applyHeroSnapshotToPageModel,
 		applyBatchPeriodDraftToPageModel,
 		applyClearAttributesToPageModel,
 		applySingleDayPeriodActionToPageModel,
@@ -137,6 +138,7 @@
 		getSingleDayPeriodAction,
 		loadMenstrualCalendarWindow,
 		loadMenstrualDayDetail,
+		loadMenstrualHomeView,
 		loadMenstrualHomePageModel
 	} from '../../services/menstrual/home-contract-service.js';
 	import {
@@ -146,7 +148,7 @@
 		persistSelectedDateNote,
 		persistSelectedDateDetails
 	} from '../../services/menstrual/home-command-service.js';
-	import { resolveRefreshTarget } from '../../services/menstrual/home-refresh-scope.js';
+	import { resolveRefreshPlan } from '../../services/menstrual/home-refresh-scope.js';
 
 	export default {
 		name: 'MenstrualHomePage',
@@ -169,9 +171,11 @@
 				isRefreshingSnapshot: false,
 				isRefreshingCalendar: false,
 				isRefreshingDayDetail: false,
+				isRefreshingHero: false,
 				snapshotRequestId: 0,
 				calendarRequestId: 0,
 				dayDetailRequestId: 0,
+				heroRefreshRequestId: 0,
 				panelMode: 'single-day',
 				batchStartKey: null,
 				batchEndKey: null,
@@ -375,9 +379,64 @@
 					}
 				}
 			},
+			async refreshHeroSnapshot({
+				activeDate = this.activeDate,
+				focusDate = this.focusDate,
+				viewMode = this.viewMode,
+				backgroundRequestId
+			} = {}) {
+				const requestId = backgroundRequestId || ++this.heroRefreshRequestId;
+				this.isRefreshingHero = true;
+				try {
+					const homeView = await loadMenstrualHomeView({
+						...this.contractContext,
+						activeDate,
+						focusDate,
+						viewMode
+					});
+					if (requestId !== this.heroRefreshRequestId) {
+						return homeView;
+					}
+					this.rawContracts = {
+						...this.rawContracts,
+						homeView
+					};
+					if (this.page) {
+						this.page = applyHeroSnapshotToPageModel(this.page, {
+							homeView,
+							today: this.contractContext.today
+						});
+					}
+					return homeView;
+				} finally {
+					if (requestId === this.heroRefreshRequestId) {
+						this.isRefreshingHero = false;
+					}
+				}
+			},
+			scheduleDeferredHeroRefresh(scopes) {
+				const plan = resolveRefreshPlan(scopes);
+				if (!plan.deferredHero) return;
+				const requestId = ++this.heroRefreshRequestId;
+				Promise.resolve()
+					.then(() => this.refreshHeroSnapshot({
+						activeDate: this.activeDate,
+						focusDate: this.focusDate,
+						viewMode: this.viewMode,
+						backgroundRequestId: requestId
+					}))
+					.catch((error) => {
+						if (requestId !== this.heroRefreshRequestId) return;
+						this.loadError = error instanceof Error
+							? `写入成功，但主页摘要刷新失败：${error.message}`
+							: '写入成功，但主页摘要刷新失败';
+					});
+			},
 			async refreshByScopes(scopes) {
-				switch (resolveRefreshTarget(scopes)) {
+				const plan = resolveRefreshPlan(scopes);
+				switch (plan.immediate) {
 					case 'skip':
+						this.scheduleDeferredHeroRefresh(scopes);
 						return;
 					case 'dayDetail':
 						await this.refreshSelectedDayDetail({
@@ -385,6 +444,7 @@
 							focusDate: this.focusDate,
 							viewMode: this.viewMode
 						});
+						this.scheduleDeferredHeroRefresh(scopes);
 						return;
 					case 'calendar':
 						await this.refreshCalendarWindow({
@@ -392,6 +452,20 @@
 							focusDate: this.focusDate,
 							viewMode: this.viewMode
 						});
+						this.scheduleDeferredHeroRefresh(scopes);
+						return;
+					case 'calendar+dayDetail':
+						await this.refreshCalendarWindow({
+							selectedDate: this.activeDate,
+							focusDate: this.focusDate,
+							viewMode: this.viewMode
+						});
+						await this.refreshSelectedDayDetail({
+							selectedDate: this.activeDate,
+							focusDate: this.focusDate,
+							viewMode: this.viewMode
+						});
+						this.scheduleDeferredHeroRefresh(scopes);
 						return;
 					case 'fullSnapshot':
 					default:

@@ -511,6 +511,56 @@ test('fresh not-period day shows 月经 and single tap applies the default forwa
 	}
 });
 
+test('single-day period tap stays immediate even when deferred hero refresh is slow', async ({ page }) => {
+	const TEST_FIRST_DAY = '2026-03-23';
+	const TEST_WINDOW_END = '2026-03-27';
+
+	await postJson('/commands/clearPeriodRange', {
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		startDate: TEST_FIRST_DAY,
+		endDate: TEST_WINDOW_END
+	});
+
+	try {
+		await page.goto(FRONTEND_URL);
+		await page.waitForTimeout(1200);
+
+		await openDay(page, '23');
+		await expect(getPeriodChip(page, '月经')).not.toHaveClass(/selected-date-panel__chip--accent/);
+
+		await page.route('**/api/queries/getModuleHomeView**', async (route) => {
+			await page.waitForTimeout(900);
+			await route.continue();
+		});
+
+		await getPeriodChip(page, '月经').click();
+		await page.waitForTimeout(120);
+
+		await expect(getPeriodChip(page, '月经开始')).toHaveClass(/selected-date-panel__chip--accent/);
+		const immediateClasses = await getCellClasses(page, ['23', '24', '25', '26']);
+		expect(immediateClasses.every((item) => item.className.includes('date-cell--bg-period'))).toBeTruthy();
+
+		await page.unroute('**/api/queries/getModuleHomeView**');
+		await page.waitForTimeout(1400);
+		const calendarWindow = await getCalendarWindow('2026-03-23', '2026-03-27');
+		const periodDates = calendarWindow.days
+			.filter((day) => day.date >= '2026-03-23' && day.date <= '2026-03-27' && day.isPeriod)
+			.map((day) => day.date);
+		expect(periodDates[0]).toBe('2026-03-23');
+		expect(periodDates.includes('2026-03-23')).toBeTruthy();
+		expect(periodDates.includes('2026-03-24')).toBeTruthy();
+		expect(periodDates.includes('2026-03-25')).toBeTruthy();
+		expect(periodDates.includes('2026-03-26')).toBeTruthy();
+	} finally {
+		await page.unroute('**/api/queries/getModuleHomeView**').catch(() => {});
+		await postJson('/commands/clearPeriodRange', {
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			startDate: TEST_FIRST_DAY,
+			endDate: TEST_WINDOW_END
+		});
+	}
+});
+
 test('attribute and note edits use selective day-detail refresh instead of reloading home view or calendar window', async ({ page }) => {
 	const TEST_DATE = '2026-03-23';
 	const seenRequests = [];
