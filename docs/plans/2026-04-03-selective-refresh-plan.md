@@ -7,10 +7,7 @@
 ## 背景
 
 当前瓶颈：`runOptimisticMutation` 和 `runCommand` 成功后都会调用 `refreshHomeSnapshot()`，
-该方法无差别地触发 3 个串行请求：
-1. `loadHomeViewSnapshot()` → `getModuleHomeView`
-2. `loadCalendarWindow()` → `getCalendarWindow`
-3. `loadDayDetail()` → `getDayRecordDetail` + `getSingleDayPeriodAction`
+该方法无差别地触发多个请求（getModuleHomeView + getCalendarWindow + getDayRecordDetail + getSingleDayPeriodAction）。
 
 即使只改了一个痛感等级，也会重新拉取整个日历窗口。
 
@@ -38,6 +35,24 @@ type Scope = 'dayDetail' | 'calendar' | 'prediction' | 'moduleOverview'
 | `calendar` | `getCalendarWindow` | 修改了 isPeriod 字段（影响日历格子显示）|
 | `prediction` | `getModuleHomeView` 中的预测部分 | 经期数据变更后 recompute() 重算了预测 |
 | `moduleOverview` | `getModuleHomeView` | 模块设置变更（经期时长、预测周期） |
+
+### 安全刷新路由规则（重要）
+
+分析各 command 的 scope 组合，实际上只有两种模式：
+
+- `['dayDetail']` — 属性切换、笔记编辑（不涉及经期数据）
+- `['calendar', 'dayDetail', 'prediction']` 或 `['moduleOverview', 'prediction']` — 包含 `prediction`
+
+这意味着前端的刷新逻辑可以简单路由：
+
+```
+含 prediction / moduleOverview → refreshHomeSnapshot()（全量，覆盖 calendar + dayDetail + homeView）
+仅含 dayDetail               → refreshSelectedDayDetail()（跳过 calendar 和 homeView）
+仅含 calendar                → refreshCalendarWindow()（备用，当前无此组合）
+空 scopes                    → 不刷新（如 prompt-only 操作）
+```
+
+**不使用 Promise.all 并行刷新**：`refreshHomeSnapshot` 做全量替换（`this.rawContracts = result.raw`），而 `refreshCalendarWindow` / `refreshSelectedDayDetail` 做部分合并，并发执行会产生 last-writer-wins 竞态，导致 UI 呈现来自不同时间点的混合状态。
 
 ---
 
@@ -175,97 +190,112 @@ const { data: actionResult } = await applySingleDayPeriodAction({...})
 在当前 `refreshHomeSnapshot()`（第 272-293 行）之后，新增：
 
 ```js
+// 按 scopes 路由刷新。含 prediction/moduleOverview 时走全量，仅 dayDetail 时走局部。
+// 不并行：refreshHomeSnapshot 做全量替换，与部分刷新并发会产生竞态。
 async refreshByScopes(scopes) {
   if (!scopes || scopes.length === 0) return
 
-  const promises = []
+  const needsFullSnapshot =
+    scopes.includes('prediction') || scopes.includes('moduleOverview')
 
-  if (scopes.includes('dayDetail')) {
-    promises.push(this.loadDayDetail())
+  if (needsFullSnapshot) {
+    await this.refreshHomeSnapshot(this.activeDate, {
+      focusDate: this.focusDate,
+      viewMode: this.viewMode
+    })
+  } else if (scopes.includes('dayDetail')) {
+    await this.refreshSelectedDayDetail({
+      selectedDate: this.activeDate,
+      focusDate: this.focusDate,
+      viewMode: this.viewMode
+    })
+  } else if (scopes.includes('calendar')) {
+    await this.refreshCalendarWindow()
   }
-  if (scopes.includes('calendar')) {
-    promises.push(this.loadCalendarWindow())
-  }
-  if (scopes.includes('prediction') || scopes.includes('moduleOverview')) {
-    promises.push(this.loadHomeViewSnapshot())
-  }
-
-  await Promise.all(promises)  // 注意：这里可以并行！
 },
 ```
 
 #### 8. home.vue — 修改 runOptimisticMutation
 
-**当前代码（第 477-504 行）：**
-```js
-async runOptimisticMutation(nextPage, commandFn) {
-  const prevPage = this.page
-  this.page = nextPage
-  this.isMutating = true
-  try {
-    await commandFn()
-    await this.refreshHomeSnapshot()  // ← 问题所在
-  } catch (e) {
-    this.page = prevPage
-    throw e
-  } finally {
-    this.isMutating = false
-  }
-}
-```
+当前代码（第 477-504 行）已正确分离命令失败和刷新失败（命令失败回滚，刷新失败保留乐观值）。
+只需将刷新调用从固定的 `refreshHomeSnapshot` 改为 `refreshByScopes`：
 
-**改为：**
 ```js
-async runOptimisticMutation(nextPage, commandFn) {
-  const prevPage = this.page
+async runOptimisticMutation(nextPage, command) {
+  if (this.isMutating) return
+  const previousPage = this.page
   this.page = nextPage
+  this.loadError = ''
   this.isMutating = true
+
   try {
-    const { affectedScopes } = await commandFn()
+    const { affectedScopes } = await command()  // ← 解构 affectedScopes
+  } catch (error) {
+    this.page = previousPage
+    this.loadError = error instanceof Error ? error.message : 'Command failed'
+    this.isMutating = false
+    return
+  }
+
+  try {
     if (affectedScopes) {
-      await this.refreshByScopes(affectedScopes)
+      await this.refreshByScopes(affectedScopes)     // ← 选择性刷新
     } else {
-      await this.refreshHomeSnapshot()  // 降级：老接口兜底
+      await this.refreshHomeSnapshot(this.activeDate, {  // ← 降级兜底
+        focusDate: this.focusDate,
+        viewMode: this.viewMode
+      })
     }
-  } catch (e) {
-    this.page = prevPage
-    throw e
+  } catch (error) {
+    this.page = nextPage  // 刷新失败保留乐观值，不回滚
+    this.loadError = error instanceof Error
+      ? `写入成功，但刷新失败：${error.message}`
+      : '写入成功，但刷新失败'
   } finally {
     this.isMutating = false
   }
-}
+},
 ```
 
 #### 9. home.vue — 修改 runCommand
 
-**当前代码（第 505-521 行）：**
-```js
-async runCommand(commandFn) {
-  this.isMutating = true
-  try {
-    await commandFn()
-    await this.refreshHomeSnapshot()  // ← 问题所在
-  } finally {
-    this.isMutating = false
-  }
-}
-```
+当前 `runCommand`（第 505-521 行）命令失败和刷新失败在同一 try 块，且无法区分错误来源。
+修改为分两段 try/catch，同时支持 affectedScopes：
 
-**改为：**
 ```js
-async runCommand(commandFn) {
+async runCommand(command) {
+  if (this.isMutating) return
+  this.loadError = ''
   this.isMutating = true
+
+  let affectedScopes = null
   try {
-    const { affectedScopes } = await commandFn()
+    const result = await command()  // ← 命令失败在这里 catch
+    affectedScopes = result?.affectedScopes ?? null
+  } catch (error) {
+    this.loadError = error instanceof Error ? error.message : 'Command failed'
+    this.isMutating = false
+    return
+  }
+
+  try {
     if (affectedScopes) {
       await this.refreshByScopes(affectedScopes)
     } else {
-      await this.refreshHomeSnapshot()
+      await this.refreshHomeSnapshot(this.activeDate, {
+        focusDate: this.focusDate,
+        viewMode: this.viewMode
+      })
     }
+  } catch (error) {
+    // 命令已成功，刷新失败不影响写入结果
+    this.loadError = error instanceof Error
+      ? `写入成功，但刷新失败：${error.message}`
+      : '写入成功，但刷新失败'
   } finally {
     this.isMutating = false
   }
-}
+},
 ```
 
 ---
@@ -282,19 +312,27 @@ async handleSettingsOptionSelect(days) {
 }
 ```
 
-改为：
+改为（命令失败和 reload 失败分离，各自处理）：
 ```js
 async handleSettingsOptionSelect(days) {
   const nextPage = applySettingsOptionToPageModel(this.page, days)
   const prevPage = this.page
-  this.page = nextPage
+  this.page = nextPage  // 乐观更新
 
+  // 只在命令本身失败时回滚 UI
   try {
     await persistModuleSettings({...})
-    await this.retryInitialLoad()  // TODO: 后续可按 scope 进一步优化
   } catch (e) {
     this.page = prevPage
-    throw e
+    this.loadError = e instanceof Error ? e.message : 'Command failed'
+    return
+  }
+
+  // reload 失败不回滚（服务器已提交，保持乐观值，提示用户）
+  try {
+    await this.retryInitialLoad()
+  } catch (e) {
+    this.loadError = `写入成功，但刷新失败：${e instanceof Error ? e.message : ''}`
   }
 }
 ```
@@ -305,13 +343,13 @@ async handleSettingsOptionSelect(days) {
 
 ## 预期效果
 
-| 操作 | 改前（请求数） | 改后（请求数） | 节省 |
+| 操作 | 改前 | 改后 | 节省 |
 |---|---|---|---|
-| 切换痛感/流量/颜色 | 3 个请求串行 | 1 个请求（仅 dayDetail）| -67% |
-| 编辑笔记 | 3 个请求串行 | 1 个请求（仅 dayDetail）| -67% |
-| 标记/取消经期 | 3 个请求串行 | 3 个请求**并行** | 延迟减半 |
-| 经期智能操作 | 3 个请求串行 | 3 个请求并行 | 延迟减半 |
-| 修改模块设置 | 全页 reload | 乐观更新 + 1 个请求 | 消除全页闪烁 |
+| 切换痛感/流量/颜色 | refreshHomeSnapshot（全量）| refreshSelectedDayDetail（仅当日）| 减少约 2 个请求 |
+| 编辑笔记 | refreshHomeSnapshot（全量）| refreshSelectedDayDetail（仅当日）| 减少约 2 个请求 |
+| 标记/取消经期 | refreshHomeSnapshot | refreshHomeSnapshot（via scopes）| 不变 |
+| 经期智能操作 | refreshHomeSnapshot | refreshHomeSnapshot（via scopes）| 不变 |
+| 修改模块设置 | 全页 reload | 乐观更新 + refreshHomeSnapshot | 消除全页闪烁 |
 
 ---
 
@@ -322,19 +360,23 @@ async handleSettingsOptionSelect(days) {
 3. 后端：`phase5.controller.ts` 添加 scopes（最简单，无逻辑变化）
 4. 前端：`home-command-service.js` 修改 `commandEnvelope` 返回结构
 5. 前端：`home.vue` 新增 `refreshByScopes`，修改 `runOptimisticMutation` 和 `runCommand`
-6. 验证：切换属性只触发 1 个请求
+6. 验证：切换属性只触发 `refreshSelectedDayDetail`（网络面板确认）
 7. 后端：`dayRecord.controller.ts` 添加 scopes
 8. 前端：修复 `handleTogglePeriod` 中对 `applySingleDayPeriodAction` 返回值的解构
-9. 验证：经期操作并行刷新
+9. 验证：经期操作仍走全量刷新
 10. 后端：module shell controllers 添加 scopes
 11. 前端：`index.vue` settings 加乐观更新
 
 ## 测试要点
 
+- [ ] 切换属性后，`refreshHomeSnapshot` 不被调用（网络面板验证）
 - [ ] 切换属性后，日历格子状态不变（不该变）
 - [ ] 切换属性后，当日详情面板正确更新
-- [ ] 标记经期后，日历格子正确变色
-- [ ] 标记经期后，预测信息正确更新
-- [ ] 乐观更新失败时，UI 正确回滚
+- [ ] 标记经期后，全量刷新仍然执行（日历格子变色、预测更新）
+- [ ] applySingleDayPeriodAction 仅返回 prompt 时，不触发任何刷新
+- [ ] applySingleDayPeriodAction 的 prompt 逻辑不受影响（handleTogglePeriod 解构正确）
+- [ ] 乐观更新命令失败时，UI 正确回滚
+- [ ] 命令成功但刷新失败时，UI 保持乐观值，显示「写入成功，但刷新失败」
+- [ ] settings 写入成功但 reload 失败时，UI 保持新值（不回滚）
+- [ ] settings 写入失败时，UI 回滚到旧值
 - [ ] 老版本后端（无 affectedScopes）能降级到全量刷新
-- [ ] applySingleDayPeriodAction 的 prompt 逻辑不受影响
