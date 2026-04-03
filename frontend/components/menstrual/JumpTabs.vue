@@ -61,7 +61,9 @@
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
+		justify-content: space-around;
 		gap: 16rpx;
+		padding: 0 20rpx;
 	}
 
 	.jump-tabs__item {
