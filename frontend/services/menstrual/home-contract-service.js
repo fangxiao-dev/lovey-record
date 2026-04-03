@@ -99,7 +99,8 @@ export async function loadMenstrualHomeView(context = {}) {
 		openid: resolved.openid,
 		path: '/api/queries/getModuleHomeView',
 		data: {
-			moduleInstanceId: resolved.moduleInstanceId
+			moduleInstanceId: resolved.moduleInstanceId,
+			today: resolved.today
 		}
 	});
 }

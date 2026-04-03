@@ -30,9 +30,11 @@ function handleError(res: Response, error: unknown) {
 export async function getModuleHomeViewHandler(req: Request, res: Response) {
   try {
     const moduleInstanceId = req.query.moduleInstanceId as string;
+    const today = req.query.today as string | undefined;
     const result = await getModuleHomeView({
       moduleInstanceId,
       userId: req.user.id,
+      today,
     });
     return res.json({ ok: true, data: result, error: null });
   } catch (error) {

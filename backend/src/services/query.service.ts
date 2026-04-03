@@ -184,7 +184,7 @@ export async function getModuleAccessState(input: AccessInput) {
   };
 }
 
-export async function getModuleHomeView(input: AccessInput) {
+export async function getModuleHomeView(input: AccessInput & { today?: string }) {
   const moduleInstance = await requireAccess(input.moduleInstanceId, input.userId);
   const cycles = await prisma.derivedCycle.findMany({
     where: { moduleInstanceId: input.moduleInstanceId, profileId: moduleInstance.profileId },
@@ -197,7 +197,8 @@ export async function getModuleHomeView(input: AccessInput) {
 
   const latestSegment = cycles.length > 0 ? cycles[cycles.length - 1] : null;
   const previousSegmentRecord = cycles.length > 1 ? cycles[cycles.length - 2] : null;
-  const today = getTodayDateOnly();
+  // Use provided 'today' from client if available, otherwise use server time
+  const today = input.today ? toDateOnly(input.today) : getTodayDateOnly();
   const todayStr = formatDate(today);
   const currentSegment = formatSegment(latestSegment);
   const previousSegment = formatSegment(previousSegmentRecord);
