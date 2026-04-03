@@ -701,46 +701,74 @@ export function applySelectedDateNoteToPageModel(pageModel, note) {
 }
 
 export function createSeededHomeContracts() {
+	const today = new Date();
+	const todayStr = today.toISOString().slice(0, 10);
+
+	// Create a period that ended 3 days ago, for testing "上次" display
+	const periodEnd = new Date(today);
+	periodEnd.setDate(periodEnd.getDate() - 3);
+	const periodEndStr = periodEnd.toISOString().slice(0, 10);
+
+	const periodStart = new Date(periodEnd);
+	periodStart.setDate(periodStart.getDate() - 5);  // 6-day period
+	const periodStartStr = periodStart.toISOString().slice(0, 10);
+
+	// Prediction starts in ~22 days
+	const predictionStart = new Date(today);
+	predictionStart.setDate(predictionStart.getDate() + 22);
+	const predictionStartStr = predictionStart.toISOString().slice(0, 10);
+
+	const predictionWindowStart = new Date(predictionStart);
+	predictionWindowStart.setDate(predictionWindowStart.getDate() - 2);
+	const predictionWindowStartStr = predictionWindowStart.toISOString().slice(0, 10);
+
+	const predictionWindowEnd = new Date(predictionStart);
+	predictionWindowEnd.setDate(predictionWindowEnd.getDate() + 4);
+	const predictionWindowEndStr = predictionWindowEnd.toISOString().slice(0, 10);
+
+	// Generate period marks between periodStart and periodEnd
+	const calendarMarks = [{ date: todayStr, kind: 'today' }];
+	const currentDate = new Date(periodStart);
+	let isFirst = true;
+	while (currentDate <= periodEnd) {
+		const dateStr = currentDate.toISOString().slice(0, 10);
+		calendarMarks.push({
+			date: dateStr,
+			kind: isFirst ? 'period_start' : 'period'
+		});
+		isFirst = false;
+		currentDate.setDate(currentDate.getDate() + 1);
+	}
+	calendarMarks.push({ date: predictionStartStr, kind: 'prediction_start' });
+
 	return {
 		homeView: {
 			moduleInstanceId: 'seed-home-module',
 			sharingStatus: 'private',
 			currentStatusSummary: {
-				currentStatus: 'in_period',
-				anchorDate: '2026-03-29',
+				currentStatus: 'out_of_period',
+				anchorDate: periodStartStr,
 				currentSegment: {
-					startDate: '2026-03-26',
-					endDate: '2026-03-31',
+					startDate: periodStartStr,
+					endDate: periodEndStr,
 					durationDays: 6
 				},
 				statusCard: {
-					label: '经期第 3 天'
+					label: '不在经期中'
 				},
-				previousSegment: {
-					startDate: '2026-03-01',
-					endDate: '2026-03-05'
-				}
+				previousSegment: null
 			},
 			visibleWindow: {
 				kind: 'cycle_window',
-				startDate: '2026-03-26',
-				endDate: '2026-04-27'
+				startDate: periodStartStr,
+				endDate: predictionWindowEndStr
 			},
-			calendarMarks: [
-				{ date: '2026-03-26', kind: 'period_start' },
-				{ date: '2026-03-27', kind: 'period' },
-				{ date: '2026-03-28', kind: 'period' },
-				{ date: '2026-03-29', kind: 'period' },
-				{ date: '2026-03-30', kind: 'period' },
-				{ date: '2026-03-31', kind: 'period' },
-				{ date: '2026-03-29', kind: 'today' },
-				{ date: '2026-04-25', kind: 'prediction_start' }
-			],
+			calendarMarks,
 			selectedDay: null,
 			predictionSummary: {
-				predictedStartDate: '2026-04-25',
-				predictionWindowStart: '2026-04-23',
-				predictionWindowEnd: '2026-04-27',
+				predictedStartDate: predictionStartStr,
+				predictionWindowStart: predictionWindowStartStr,
+				predictionWindowEnd: predictionWindowEndStr,
 				basedOnCycleCount: 3
 			}
 		},
@@ -748,15 +776,15 @@ export function createSeededHomeContracts() {
 			moduleInstanceId: 'seed-home-module',
 			profileId: 'seed-home-profile',
 			dayRecord: {
-				date: '2026-03-29',
-				isPeriod: true,
-				painLevel: 3,
-				flowLevel: 3,
-				colorLevel: 3,
+				date: todayStr,
+				isPeriod: false,
+				painLevel: null,
+				flowLevel: null,
+				colorLevel: null,
 				note: null,
-				source: 'auto_filled',
-				isExplicit: true,
-				isDetailRecorded: true
+				source: null,
+				isExplicit: false,
+				isDetailRecorded: false
 			}
 		}
 	};
