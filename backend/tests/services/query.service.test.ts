@@ -220,9 +220,7 @@ describe('query.service', () => {
     expect(result.sharingStatus).toBe('private');
     expect(result.currentStatus).toBe('in_period');
     expect(result.statusCard).toEqual({
-      status: 'in_period',
       label: '经期中',
-      rangeText: '03.20 - 03.24',
     });
     expect(result.currentSegment).toEqual({
       startDate: '2026-03-20',
@@ -231,7 +229,7 @@ describe('query.service', () => {
     });
     expect(result.previousSegment).toBeNull();
     expect(result.currentStatusSummary).toEqual({
-      status: 'in_period',
+      currentStatus: 'in_period',
       anchorDate: '2026-03-20',
       currentSegment: {
         startDate: '2026-03-20',
@@ -239,9 +237,7 @@ describe('query.service', () => {
         durationDays: 5,
       },
       statusCard: {
-        status: 'in_period',
         label: '经期中',
-        rangeText: '03.20 - 03.24',
       },
       previousSegment: null,
     });
@@ -327,7 +323,7 @@ describe('query.service', () => {
     });
 
     expect(result.currentStatus).toBe('in_period');
-    expect(result.statusCard?.rangeText).toBe('03.20 - 03.24');
+    expect(result.statusCard?.label).toBe('经期中');
     jest.useRealTimers();
   });
 
@@ -376,9 +372,7 @@ describe('query.service', () => {
 
     expect(result.currentStatus).toBe('out_of_period');
     expect(result.statusCard).toEqual({
-      status: 'out_of_period',
       label: '不在经期中',
-      rangeText: null,
     });
     expect(result.currentSegment).toEqual({
       startDate: '2026-03-29',
@@ -391,7 +385,7 @@ describe('query.service', () => {
       durationDays: 5,
     });
     expect(result.currentStatusSummary).toEqual({
-      status: 'out_of_period',
+      currentStatus: 'out_of_period',
       anchorDate: '2026-03-29',
       currentSegment: {
         startDate: '2026-03-29',
@@ -399,9 +393,7 @@ describe('query.service', () => {
         durationDays: 2,
       },
       statusCard: {
-        status: 'out_of_period',
         label: '不在经期中',
-        rangeText: null,
       },
       previousSegment: {
         startDate: '2026-03-01',
@@ -430,20 +422,16 @@ describe('query.service', () => {
 
     expect(result.currentStatus).toBe('out_of_period');
     expect(result.statusCard).toEqual({
-      status: 'out_of_period',
       label: '不在经期中',
-      rangeText: null,
     });
     expect(result.currentSegment).toBeNull();
     expect(result.previousSegment).toBeNull();
     expect(result.currentStatusSummary).toEqual({
-      status: 'out_of_period',
+      currentStatus: 'out_of_period',
       anchorDate: null,
       currentSegment: null,
       statusCard: {
-        status: 'out_of_period',
         label: '不在经期中',
-        rangeText: null,
       },
       previousSegment: null,
     });

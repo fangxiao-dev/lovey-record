@@ -78,16 +78,8 @@ function createStatusCard(
   currentSegment: ReturnType<typeof formatSegment>,
 ) {
   return currentStatus === 'in_period' && currentSegment
-    ? {
-        status: 'in_period' as const,
-        label: '经期中',
-        rangeText: `${formatMonthDay(toDateOnly(currentSegment.startDate))} - ${formatMonthDay(toDateOnly(currentSegment.endDate))}`,
-      }
-    : {
-        status: 'out_of_period' as const,
-        label: '不在经期中',
-        rangeText: null,
-      };
+    ? { label: '经期中' }
+    : { label: '不在经期中' };
 }
 
 async function requireAccess(moduleInstanceId: string, userId: string, profileId?: string) {
@@ -212,7 +204,7 @@ export async function getModuleHomeView(input: AccessInput) {
   const currentStatus = isDateWithinSegment(today, latestSegment) ? 'in_period' : 'out_of_period';
   const statusCard = createStatusCard(currentStatus, currentSegment);
   const currentStatusSummary = {
-    status: currentStatus,
+    currentStatus,
     anchorDate: currentSegment?.startDate ?? null,
     currentSegment,
     statusCard,
