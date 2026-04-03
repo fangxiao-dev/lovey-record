@@ -32,6 +32,12 @@ function formatMonthDay(date: Date) {
   return formatDate(date).slice(5).replace('-', '.');
 }
 
+function diffDaysInclusive(startDate: Date, endDate: Date) {
+  const utcStart = Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate());
+  const utcEnd = Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate());
+  return Math.floor((utcEnd - utcStart) / 86400000) + 1;
+}
+
 function lower(value: string | null | undefined) {
   return value ? value.toLowerCase() : value;
 }
@@ -76,10 +82,14 @@ function formatSegment(segment: { startDate: Date; endDate: Date; durationDays: 
 function createStatusCard(
   currentStatus: 'in_period' | 'out_of_period',
   currentSegment: ReturnType<typeof formatSegment>,
+  today: Date,
 ) {
-  return currentStatus === 'in_period' && currentSegment
-    ? { label: '经期中' }
-    : { label: '不在经期中' };
+  if (currentStatus === 'in_period' && currentSegment) {
+    const currentDayNumber = diffDaysInclusive(toDateOnly(currentSegment.startDate), today);
+    return { label: `经期第${currentDayNumber}天` };
+  }
+
+  return { label: '非经期' };
 }
 
 async function requireAccess(moduleInstanceId: string, userId: string, profileId?: string) {
@@ -203,7 +213,7 @@ export async function getModuleHomeView(input: AccessInput & { today?: string })
   const currentSegment = formatSegment(latestSegment);
   const previousSegment = formatSegment(previousSegmentRecord);
   const currentStatus = isDateWithinSegment(today, latestSegment) ? 'in_period' : 'out_of_period';
-  const statusCard = createStatusCard(currentStatus, currentSegment);
+  const statusCard = createStatusCard(currentStatus, currentSegment, today);
   const currentStatusSummary = {
     currentStatus,
     anchorDate: currentSegment?.startDate ?? null,

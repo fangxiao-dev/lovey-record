@@ -20,7 +20,7 @@ describe('Queries Integration', () => {
       currentStatus: 'out_of_period',
       statusCard: {
         status: 'out_of_period',
-        label: '不在经期中',
+        label: '非经期',
         rangeText: null,
       },
       currentSegment: null,
@@ -31,7 +31,7 @@ describe('Queries Integration', () => {
         currentSegment: null,
         statusCard: {
           status: 'out_of_period',
-          label: '不在经期中',
+          label: '非经期',
           rangeText: null,
         },
         previousSegment: null,
@@ -56,7 +56,7 @@ describe('Queries Integration', () => {
         currentStatus: 'out_of_period',
         statusCard: {
           status: 'out_of_period',
-          label: '不在经期中',
+          label: '非经期',
           rangeText: null,
         },
         currentSegment: null,
@@ -67,7 +67,7 @@ describe('Queries Integration', () => {
           currentSegment: null,
           statusCard: {
             status: 'out_of_period',
-            label: '不在经期中',
+            label: '非经期',
             rangeText: null,
           },
           previousSegment: null,

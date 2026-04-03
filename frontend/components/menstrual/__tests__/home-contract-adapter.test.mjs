@@ -6,7 +6,8 @@ import {
 	applyToggleAttributeOptionToPageModel,
 	createEmptyDayDetail,
 	createSeededHomeContracts,
-	createMenstrualHomePageModel
+	createMenstrualHomePageModel,
+	resolveJumpTargetDate
 } from '../home-contract-adapter.js';
 
 test('home contract adapter maps query responses into the formal menstrual home page model', () => {
@@ -34,7 +35,7 @@ test('home contract adapter maps query responses into the formal menstrual home 
 	);
 	assert.equal(model.heroCard.nextFrame.label, '下次');
 	// Should have prediction
-	assert.ok(model.heroCard.nextFrame.value && model.heroCard.nextFrame.value !== '暂无记录');
+	assert.equal(model.heroCard.nextFrame.value, homeView.predictionSummary.predictedStartDate.slice(5).replace('-', '.'));
 	assert.equal(model.viewModeControl.value, 'three-week');
 	assert.deepEqual(
 		model.jumpTabs.items.map((item) => [item.key, item.label, item.disabled]),
@@ -165,10 +166,10 @@ test('home contract adapter can build a month-view calendar locally from homeVie
 		dayDetail: createEmptyDayDetail({
 			moduleInstanceId: 'seed-home-module',
 			profileId: 'seed-home-profile',
-			date: '2026-04-25'
+			date: '2026-04-27'
 		}),
 		today: '2026-03-29',
-		focusDate: '2026-04-25',
+		focusDate: '2026-04-27',
 		viewMode: 'month'
 	});
 
@@ -176,11 +177,28 @@ test('home contract adapter can build a month-view calendar locally from homeVie
 	assert.equal(model.headerNav.monthLabel, '2026.04');
 	assert.equal(model.calendarCard.weeks.length, 5);
 	assert.equal(
-		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-04-25' && cell.variant === 'selectedPrediction'),
+		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-04-27' && cell.variant === 'selectedPrediction'),
 		true
 	);
-	assert.equal(model.selectedDatePanel.title, '4 月 25 日');
+	assert.equal(model.selectedDatePanel.title, '4 月 27 日');
 	assert.equal(model.selectedDatePanel.badge, '点击记录');
+});
+
+test('home contract adapter uses predictedStartDate for the hero next frame and prediction jump target', () => {
+	const { homeView, dayDetail } = createSeededHomeContracts();
+
+	const model = createMenstrualHomePageModel({
+		homeView,
+		dayDetail,
+		today: '2026-03-29'
+	});
+
+	assert.equal(
+		model.heroCard.nextFrame.value,
+		homeView.predictionSummary.predictedStartDate.slice(5).replace('-', '.')
+	);
+	assert.equal(model.jumpTabs.items.find((item) => item.key === 'prediction')?.disabled, false);
+	assert.equal(resolveJumpTargetDate(homeView, 'prediction', '2026-03-29'), homeView.predictionSummary.predictedStartDate);
 });
 
 test('home contract adapter supports implicit non-period day detail without leaking stale selections', () => {

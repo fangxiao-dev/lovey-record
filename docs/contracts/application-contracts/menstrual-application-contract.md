@@ -126,18 +126,19 @@ Rules:
 ```json
 {
   "status": "in_period",
-  "label": "经期中",
-  "rangeText": "03.29 - 03.30"
+  "label": "经期第2天",
+  "rangeText": null
 }
 ```
 
 Rules:
 
 - this is the primary home status expression
-- when `status = in_period`, `rangeText` must describe the latest continuous segment that contains `today`
+- when `status = in_period`, `label` must render as `经期第<N>天`
+- `N` is the inclusive day index of `today` inside the latest continuous segment that contains `today`
 - when `status = out_of_period`, `rangeText` should be `null`
-- frontend should render `经期中：MM.DD - MM.DD` for `in_period`
-- frontend should render `不在经期中` for `out_of_period`
+- frontend should render `经期第<N>天` for `in_period`
+- frontend should render `非经期` for `out_of_period`
 
 ### `SegmentReferenceReadModel`
 
@@ -176,8 +177,8 @@ The home hero must compute its status from the recomputed latest segment, not fr
 
 Required behavior:
 
-- if the latest segment includes `today`, hero shows `经期中`
-- if the latest segment ends before `today` and there is at least one blank day after the end, hero shows `不在经期中`
+- if the latest segment includes `today`, hero shows `经期第<N>天`
+- if the latest segment ends before `today` and there is at least one blank day after the end, hero shows `非经期`
 - if a later bridge, extension, revoke, or truncation changes the latest segment, hero status and ranges must update from the recomputed result in the next home read model refresh
 
 ### Home Read Model Direction
@@ -189,7 +190,7 @@ Required behavior:
   "currentStatus": "out_of_period",
   "statusCard": {
     "status": "out_of_period",
-    "label": "不在经期中",
+    "label": "非经期",
     "rangeText": null
   },
   "currentSegment": {
@@ -214,7 +215,7 @@ Rules:
 - if later bridge or extension logic causes the recomputed latest segment to cover `today`, `currentStatus` must return to `in_period`
 - `statusCard` expresses whether that latest segment currently covers `today`
 - `previousSegment` is optional and should be `null` when unavailable
-- if no segment exists yet, `currentStatus` still returns `out_of_period`, `statusCard` returns `不在经期中`, and both segment references are `null`
+- if no segment exists yet, `currentStatus` still returns `out_of_period`, `statusCard` returns `非经期`, and both segment references are `null`
 - frontend should treat these fields as the durable semantic contract once implemented, rather than recomputing previous/latest segment ranking locally
 - `currentStatusSummary` may remain temporarily as a compatibility wrapper during migration, but it is deprecated compatibility output rather than the primary contract surface
 
@@ -1075,8 +1076,8 @@ Suggested response shape:
   "currentStatus": "in_period",
   "statusCard": {
     "status": "in_period",
-    "label": "经期中",
-    "rangeText": "03.23 - 03.27"
+    "label": "经期第1天",
+    "rangeText": null
   },
   "currentSegment": {
     "startDate": "2026-03-23",
@@ -1094,8 +1095,8 @@ Suggested response shape:
     },
     "statusCard": {
       "status": "in_period",
-      "label": "经期中",
-      "rangeText": "03.23 - 03.27"
+      "label": "经期第1天",
+      "rangeText": null
     },
     "previousSegment": null
   },

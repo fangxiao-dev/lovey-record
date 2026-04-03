@@ -456,7 +456,7 @@ function createHeroCard(homeView, today) {
 
 	const statusText = statusCard.label || '非经期';
 	const nextFrameValue = prediction
-		? `${formatMonthDayDot(prediction.predictionWindowStart)} - ${formatMonthDayDot(prediction.predictionWindowEnd)}`
+		? formatMonthDayDot(prediction.predictedStartDate)
 		: '暂无记录';
 
 	// When in period: "上次" refers to the previous segment
@@ -579,7 +579,7 @@ export function resolveJumpTargetDate(homeView, jumpKey, today) {
 			: (statusSummary.currentSegment || statusSummary.currentCycle);
 		return lastSegment?.startDate || null;
 	}
-	if (jumpKey === 'prediction') return homeView.predictionSummary?.predictionWindowStart || null;
+	if (jumpKey === 'prediction') return homeView.predictionSummary?.predictedStartDate || null;
 	return null;
 }
 
