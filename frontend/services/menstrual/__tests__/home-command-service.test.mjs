@@ -27,6 +27,7 @@ test('persistSelectedDateDetails posts selected attribute levels to recordDayDet
 			data: {
 				ok: true,
 				data: { detailChanged: true, isDetailRecorded: true },
+				affectedScopes: ['dayDetail'],
 				error: null
 			}
 		});
@@ -46,7 +47,7 @@ test('persistSelectedDateDetails posts selected attribute levels to recordDayDet
 		}))
 	}));
 
-	await persistSelectedDateDetails({
+	const result = await persistSelectedDateDetails({
 		context: {
 			apiBaseUrl: 'http://localhost:3000/api',
 			openid: 'seed-home-openid',
@@ -60,6 +61,10 @@ test('persistSelectedDateDetails posts selected attribute levels to recordDayDet
 	assert.equal(requests[0].method, 'POST');
 	assert.equal(requests[0].url, 'http://localhost:3004/api/commands/recordDayDetails');
 	assert.equal(requests[0].header['x-wx-openid'], 'seed-home-openid');
+	assert.deepEqual(result, {
+		data: { detailChanged: true, isDetailRecorded: true },
+		affectedScopes: ['dayDetail']
+	});
 	assert.deepEqual(requests[0].data, {
 		moduleInstanceId: 'seed-home-module',
 		date: '2026-03-29',
@@ -78,6 +83,7 @@ test('persistSelectedDateDetails sends null levels when attributes are cleared',
 			data: {
 				ok: true,
 				data: { detailChanged: true, isDetailRecorded: false },
+				affectedScopes: ['dayDetail'],
 				error: null
 			}
 		});
@@ -118,12 +124,13 @@ test('persistSelectedDateNote posts note text to recordDayNote', async () => {
 			data: {
 				ok: true,
 				data: { noteChanged: true },
+				affectedScopes: ['dayDetail'],
 				error: null
 			}
 		});
 	});
 
-	await persistSelectedDateNote({
+	const result = await persistSelectedDateNote({
 		context: {
 			apiBaseUrl: 'http://localhost:3000/api',
 			openid: 'seed-home-openid',
@@ -134,6 +141,10 @@ test('persistSelectedDateNote posts note text to recordDayNote', async () => {
 	});
 
 	assert.equal(requests[0].url, 'http://localhost:3004/api/commands/recordDayNote');
+	assert.deepEqual(result, {
+		data: { noteChanged: true },
+		affectedScopes: ['dayDetail']
+	});
 	assert.deepEqual(requests[0].data, {
 		moduleInstanceId: 'seed-home-module',
 		date: '2026-03-29',
@@ -150,6 +161,7 @@ test('persistBatchPeriodRange maps batch actions to explicit range commands', as
 			data: {
 				ok: true,
 				data: {},
+				affectedScopes: ['calendar', 'dayDetail', 'prediction'],
 				error: null
 			}
 		});
@@ -199,6 +211,7 @@ test('applySingleDayPeriodAction posts the resolved action and optional confirme
 			data: {
 				ok: true,
 				data: {},
+				affectedScopes: [],
 				error: null
 			}
 		});

@@ -113,6 +113,24 @@ async function recordRange(startDate, endDate) {
 	});
 }
 
+async function recordDayDetails(date, { flowLevel = null, painLevel = null, colorLevel = null } = {}) {
+	await postJson('/commands/recordDayDetails', {
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		date,
+		flowLevel,
+		painLevel,
+		colorLevel
+	});
+}
+
+async function recordDayNote(date, note) {
+	await postJson('/commands/recordDayNote', {
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		date,
+		note
+	});
+}
+
 async function ensurePrivateModuleState() {
 	try {
 		await postJson('/commands/revokeModuleAccess', {
@@ -378,6 +396,60 @@ test('fresh not-period day shows 月经 and single tap applies the default forwa
 			endDate: TEST_WINDOW_END
 		});
 		await ensureDefaultPeriodDuration(6);
+	}
+});
+
+test('attribute and note edits use selective day-detail refresh instead of reloading home view or calendar window', async ({ page }) => {
+	const TEST_DATE = '2026-03-23';
+	const seenRequests = [];
+	const trackRequest = (request) => {
+		const url = request.url();
+		if (url.includes('/api/')) {
+			seenRequests.push(url);
+		}
+	};
+
+	await recordDayDetails(TEST_DATE, { flowLevel: null, painLevel: null, colorLevel: null });
+	await recordDayNote(TEST_DATE, '');
+	page.on('request', trackRequest);
+
+	try {
+		await page.goto(FRONTEND_URL);
+		await page.waitForTimeout(1200);
+		await openDay(page, '23');
+		await page.locator('.selected-date-panel__chip').filter({ hasText: '+ 记录详情' }).click();
+		await page.waitForTimeout(250);
+
+		seenRequests.length = 0;
+		await page
+			.locator('.selected-date-panel__editor-row')
+			.filter({ hasText: '疼痛' })
+			.locator('.selected-date-panel__editor-option')
+			.filter({ hasText: '轻' })
+			.click();
+		await page.waitForTimeout(1400);
+
+		expect(seenRequests.some((url) => url.includes('/api/commands/recordDayDetails'))).toBeTruthy();
+		expect(seenRequests.some((url) => url.includes('/api/queries/getDayRecordDetail'))).toBeTruthy();
+		expect(seenRequests.some((url) => url.includes('/api/queries/getSingleDayPeriodAction'))).toBeTruthy();
+		expect(seenRequests.some((url) => url.includes('/api/queries/getModuleHomeView'))).toBeFalsy();
+		expect(seenRequests.some((url) => url.includes('/api/queries/getCalendarWindow'))).toBeFalsy();
+
+		seenRequests.length = 0;
+		const noteInput = page.getByRole('textbox');
+		await noteInput.fill('selective refresh note');
+		await noteInput.blur();
+		await page.waitForTimeout(1400);
+
+		expect(seenRequests.some((url) => url.includes('/api/commands/recordDayNote'))).toBeTruthy();
+		expect(seenRequests.some((url) => url.includes('/api/queries/getDayRecordDetail'))).toBeTruthy();
+		expect(seenRequests.some((url) => url.includes('/api/queries/getSingleDayPeriodAction'))).toBeTruthy();
+		expect(seenRequests.some((url) => url.includes('/api/queries/getModuleHomeView'))).toBeFalsy();
+		expect(seenRequests.some((url) => url.includes('/api/queries/getCalendarWindow'))).toBeFalsy();
+	} finally {
+		page.off('request', trackRequest);
+		await recordDayDetails(TEST_DATE, { flowLevel: null, painLevel: null, colorLevel: null });
+		await recordDayNote(TEST_DATE, '');
 	}
 });
 

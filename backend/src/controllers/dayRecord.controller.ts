@@ -6,6 +6,7 @@ import {
   recordPeriodDay,
   recordPeriodRange,
 } from '../services/dayRecord.service';
+import { scopeResponse } from '../types/scopes';
 
 function handleError(res: Response, error: unknown) {
   if (error && typeof error === 'object' && 'code' in error && 'statusCode' in error) {
@@ -35,7 +36,7 @@ export async function recordPeriodDayHandler(req: Request, res: Response) {
       date: req.body.date,
     });
 
-    res.json({ ok: true, data: result, error: null });
+    res.json(scopeResponse(result, ['calendar', 'dayDetail', 'prediction']));
   } catch (error) {
     handleError(res, error);
   }
@@ -49,7 +50,7 @@ export async function clearPeriodDayHandler(req: Request, res: Response) {
       date: req.body.date,
     });
 
-    res.json({ ok: true, data: result, error: null });
+    res.json(scopeResponse(result, ['calendar', 'dayDetail', 'prediction']));
   } catch (error) {
     handleError(res, error);
   }
@@ -64,7 +65,7 @@ export async function recordPeriodRangeHandler(req: Request, res: Response) {
       endDate: req.body.endDate,
     });
 
-    res.json({ ok: true, data: result, error: null });
+    res.json(scopeResponse(result, ['calendar', 'dayDetail', 'prediction']));
   } catch (error) {
     handleError(res, error);
   }
@@ -79,7 +80,7 @@ export async function clearPeriodRangeHandler(req: Request, res: Response) {
       endDate: req.body.endDate,
     });
 
-    res.json({ ok: true, data: result, error: null });
+    res.json(scopeResponse(result, ['calendar', 'dayDetail', 'prediction']));
   } catch (error) {
     handleError(res, error);
   }
@@ -95,7 +96,17 @@ export async function applySingleDayPeriodActionHandler(req: Request, res: Respo
       confirmed: req.body.confirmed,
     });
 
-    res.json({ ok: true, data: result, error: null });
+    if (result.confirmationRequired) {
+      res.json(scopeResponse(result, []));
+      return;
+    }
+
+    if (result.recomputed?.segmentChanged) {
+      res.json(scopeResponse(result, ['calendar', 'dayDetail', 'prediction']));
+      return;
+    }
+
+    res.json(scopeResponse(result, ['dayDetail']));
   } catch (error) {
     handleError(res, error);
   }

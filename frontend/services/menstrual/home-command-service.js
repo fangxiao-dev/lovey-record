@@ -14,7 +14,10 @@ async function commandEnvelope({ apiBaseUrl, openid, path, data }) {
 		throw new Error(response.data?.error?.message || `Command failed: ${path}`);
 	}
 
-	return response.data.data;
+	return {
+		data: response.data.data,
+		affectedScopes: response.data.affectedScopes ?? null
+	};
 }
 
 function getSelectedLevel(row) {

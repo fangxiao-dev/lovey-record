@@ -12,6 +12,7 @@ import {
   updateDefaultPeriodDuration as updateDefaultPeriodDurationSetting,
   updateDefaultPredictionTerm as updateDefaultPredictionTermSetting,
 } from '../services/moduleSettings.service';
+import { scopeResponse } from '../types/scopes';
 
 function handleError(res: Response, error: unknown) {
   if (error && typeof error === 'object' && 'code' in error && 'statusCode' in error) {
@@ -36,7 +37,7 @@ function handleError(res: Response, error: unknown) {
 export async function recordDayDetailsHandler(req: Request, res: Response) {
   try {
     const result = await recordDayDetails({ ...req.body, userId: req.user.id });
-    res.json({ ok: true, data: result, error: null });
+    res.json(scopeResponse(result, ['dayDetail']));
   } catch (error) {
     handleError(res, error);
   }
@@ -45,7 +46,7 @@ export async function recordDayDetailsHandler(req: Request, res: Response) {
 export async function recordDayNoteHandler(req: Request, res: Response) {
   try {
     const result = await recordDayNote({ ...req.body, userId: req.user.id });
-    res.json({ ok: true, data: result, error: null });
+    res.json(scopeResponse(result, ['dayDetail']));
   } catch (error) {
     handleError(res, error);
   }
@@ -90,7 +91,7 @@ export async function getPredictionSummaryHandler(req: Request, res: Response) {
 export async function updateDefaultPeriodDurationHandler(req: Request, res: Response) {
   try {
     const result = await updateDefaultPeriodDurationSetting(req.body.moduleInstanceId, req.body.defaultPeriodDurationDays, req.user.id);
-    res.json({ ok: true, data: result, error: null });
+    res.json(scopeResponse(result, ['moduleOverview', 'prediction']));
   } catch (error) {
     handleError(res, error);
   }
@@ -99,7 +100,7 @@ export async function updateDefaultPeriodDurationHandler(req: Request, res: Resp
 export async function updateDefaultPredictionTermHandler(req: Request, res: Response) {
   try {
     const result = await updateDefaultPredictionTermSetting(req.body.moduleInstanceId, req.body.defaultPredictionTermDays, req.user.id);
-    res.json({ ok: true, data: result, error: null });
+    res.json(scopeResponse(result, ['moduleOverview', 'prediction']));
   } catch (error) {
     handleError(res, error);
   }
@@ -115,7 +116,7 @@ export async function recordDayDetailsBatchHandler(req: Request, res: Response) 
       painLevel: req.body.painLevel ?? null,
       colorLevel: req.body.colorLevel ?? null,
     });
-    res.json({ ok: true, data: result, error: null });
+    res.json(scopeResponse(result, ['dayDetail']));
   } catch (error) {
     handleError(res, error);
   }

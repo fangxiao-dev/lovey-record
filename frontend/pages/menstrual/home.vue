@@ -143,6 +143,7 @@
 		persistSelectedDateNote,
 		persistSelectedDateDetails
 	} from '../../services/menstrual/home-command-service.js';
+	import { resolveRefreshTarget } from '../../services/menstrual/home-refresh-scope.js';
 
 	export default {
 		name: 'MenstrualHomePage',
@@ -368,6 +369,32 @@
 					}
 				}
 			},
+			async refreshByScopes(scopes) {
+				switch (resolveRefreshTarget(scopes)) {
+					case 'skip':
+						return;
+					case 'dayDetail':
+						await this.refreshSelectedDayDetail({
+							selectedDate: this.activeDate,
+							focusDate: this.focusDate,
+							viewMode: this.viewMode
+						});
+						return;
+					case 'calendar':
+						await this.refreshCalendarWindow({
+							selectedDate: this.activeDate,
+							focusDate: this.focusDate,
+							viewMode: this.viewMode
+						});
+						return;
+					case 'fullSnapshot':
+					default:
+						await this.refreshHomeSnapshot(this.activeDate, {
+							focusDate: this.focusDate,
+							viewMode: this.viewMode
+						});
+				}
+			},
 			async retryInitialLoad() {
 				this.loadError = '';
 				this.isRefreshingSnapshot = true;
@@ -477,12 +504,13 @@
 			async runOptimisticMutation(nextPage, command) {
 				if (this.isMutating) return;
 				const previousPage = this.page;
+				let affectedScopes = null;
 				this.page = nextPage;
 				this.loadError = '';
 				this.isMutating = true;
 
 				try {
-					await command();
+					affectedScopes = (await command())?.affectedScopes ?? null;
 				} catch (error) {
 					this.page = previousPage;
 					this.loadError = error instanceof Error ? error.message : 'Command failed';
@@ -491,10 +519,7 @@
 				}
 
 				try {
-					await this.refreshHomeSnapshot(this.activeDate, {
-						focusDate: this.focusDate,
-						viewMode: this.viewMode
-					});
+					await this.refreshByScopes(affectedScopes);
 				} catch (error) {
 					this.page = nextPage;
 					this.loadError = error instanceof Error ? `写入成功，但刷新失败：${error.message}` : '写入成功，但刷新失败';
@@ -506,15 +531,20 @@
 				if (this.isMutating) return;
 				this.loadError = '';
 				this.isMutating = true;
+				let affectedScopes = null;
 
 				try {
-					await command();
-					await this.refreshHomeSnapshot(this.activeDate, {
-						focusDate: this.focusDate,
-						viewMode: this.viewMode
-					});
+					affectedScopes = (await command())?.affectedScopes ?? null;
 				} catch (error) {
 					this.loadError = error instanceof Error ? error.message : 'Command failed';
+					this.isMutating = false;
+					return;
+				}
+
+				try {
+					await this.refreshByScopes(affectedScopes);
+				} catch (error) {
+					this.loadError = error instanceof Error ? `写入成功，但刷新失败：${error.message}` : '写入成功，但刷新失败';
 				} finally {
 					this.isMutating = false;
 				}

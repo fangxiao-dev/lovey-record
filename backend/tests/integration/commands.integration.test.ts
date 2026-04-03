@@ -72,6 +72,7 @@ describe('Commands Integration', () => {
         defaultPeriodDurationDays: 7,
         settingsChanged: true,
       },
+      affectedScopes: ['moduleOverview', 'prediction'],
       error: null,
     });
   });
@@ -115,6 +116,7 @@ describe('Commands Integration', () => {
         detailChanged: true,
         hasDeviation: true,
       },
+      affectedScopes: ['dayDetail'],
       error: null,
     });
   });
@@ -136,6 +138,7 @@ describe('Commands Integration', () => {
       data: {
         noteChanged: true,
       },
+      affectedScopes: ['dayDetail'],
       error: null,
     });
   });
@@ -157,6 +160,7 @@ describe('Commands Integration', () => {
       data: {
         recordedDates: ['2026-03-16', '2026-03-17'],
       },
+      affectedScopes: ['calendar', 'dayDetail', 'prediction'],
       error: null,
     });
   });
@@ -180,6 +184,7 @@ describe('Commands Integration', () => {
     expect(response.body).toEqual({
       ok: true,
       data: { updatedCount: 3 },
+      affectedScopes: ['dayDetail'],
       error: null,
     });
     expect(recordDayDetailsBatch).toHaveBeenCalledWith({
@@ -209,6 +214,7 @@ describe('Commands Integration', () => {
       data: {
         clearedDates: ['2026-03-16'],
       },
+      affectedScopes: ['calendar', 'dayDetail', 'prediction'],
       error: null,
     });
   });
@@ -276,6 +282,7 @@ describe('Commands Integration', () => {
         defaultPredictionTermDays: 29,
         settingsChanged: true,
       },
+      affectedScopes: ['moduleOverview', 'prediction'],
       error: null,
     });
   });
@@ -339,6 +346,7 @@ describe('Commands Integration', () => {
           },
         },
       },
+      affectedScopes: [],
       error: null,
     });
     expect(applySingleDayPeriodAction).toHaveBeenCalledWith({
@@ -403,6 +411,7 @@ describe('Commands Integration', () => {
           predictionChanged: true,
         },
       },
+      affectedScopes: ['calendar', 'dayDetail', 'prediction'],
       error: null,
     });
   });
