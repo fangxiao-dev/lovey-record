@@ -38,6 +38,13 @@ test('persistSelectedDateDetails posts selected attribute levels to recordDayDet
 		dayDetail,
 		today: '2026-03-29'
 	});
+	page.selectedDatePanel.attributeRows = page.selectedDatePanel.attributeRows.map((row) => ({
+		...row,
+		options: row.options.map((option, index) => ({
+			...option,
+			selected: index === 2
+		}))
+	}));
 
 	await persistSelectedDateDetails({
 		context: {

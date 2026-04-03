@@ -121,7 +121,6 @@
 	import {
 		applyClearAttributesToPageModel,
 		applySelectedDateNoteToPageModel,
-		applyTogglePeriodToPageModel,
 		applyToggleAttributeOptionToPageModel,
 		createEmptyDayDetail,
 		createOptionRows,
@@ -562,9 +561,6 @@
 				const resolvedAction = this.rawContracts?.singleDayPeriodAction?.resolvedAction;
 				if (!resolvedAction?.action) return;
 
-				// 立即应用本地更改（用户看到瞬间反馈）
-				const nextPage = applyTogglePeriodToPageModel(this.page, isPeriodMarked);
-
 				const prompt = resolvedAction.prompt;
 				if (prompt?.required) {
 					const confirmed = await new Promise((resolve) => {
@@ -580,7 +576,7 @@
 						});
 					});
 					if (!confirmed) return;
-					return this.runOptimisticMutation(nextPage, () => applySingleDayPeriodAction({
+					return this.runCommand(() => applySingleDayPeriodAction({
 						context: this.contractContext,
 						activeDate: this.activeDate,
 						action: resolvedAction.action,
@@ -588,7 +584,7 @@
 					}));
 				}
 
-				return this.runOptimisticMutation(nextPage, () => applySingleDayPeriodAction({
+				return this.runCommand(() => applySingleDayPeriodAction({
 					context: this.contractContext,
 					activeDate: this.activeDate,
 					action: resolvedAction.action
