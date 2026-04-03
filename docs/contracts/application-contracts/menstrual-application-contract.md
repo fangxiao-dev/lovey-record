@@ -1067,6 +1067,13 @@ Returns:
 - selected day detail when applicable
 - prediction summary
 
+Calendar prediction semantics:
+
+- `predictionSummary.predictionWindowStart` / `predictionWindowEnd` describe the forecast window for hero and supporting read models
+- visible calendar prediction styling is driven by `calendarMarks`
+- the current home calendar contract uses `kind: 'prediction_start'` as the visible prediction marker
+- frontend must not expand the whole prediction window into prediction-styled date cells unless a future contract explicitly adds such a mark type
+
 Suggested response shape:
 
 ```json
@@ -1168,6 +1175,12 @@ Returns:
 - requested date window
 - day rows for every requested date
 - derived marks for period start, period, prediction start, and today when applicable
+
+Calendar rendering note:
+
+- `marks` is the visual-state source for calendar overlays
+- `prediction_start` identifies the single visible forecast start day in the calendar
+- `predictionSummary` may still expose a wider prediction window, but that window is not itself a calendar highlighting instruction
 
 Suggested input:
 

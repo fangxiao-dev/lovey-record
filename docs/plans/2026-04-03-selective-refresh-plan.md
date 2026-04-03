@@ -38,21 +38,31 @@ type Scope = 'dayDetail' | 'calendar' | 'prediction' | 'moduleOverview'
 
 ### 安全刷新路由规则（重要）
 
-分析各 command 的 scope 组合，实际上只有两种模式：
+当前实现已经进一步收口为“两阶段 refresh plan”：
 
-- `['dayDetail']` — 属性切换、笔记编辑（不涉及经期数据）
-- `['calendar', 'dayDetail', 'prediction']` 或 `['moduleOverview', 'prediction']` — 包含 `prediction`
+- immediate reconciliation：优先稳定 `calendar` / `dayDetail`
+- deferred hero reconciliation：仅在包含 `prediction` 且不需要 `moduleOverview` 全量替换时，后台补拉 `getModuleHomeView`
 
-这意味着前端的刷新逻辑可以简单路由：
+典型 scope 组合：
+
+- `['dayDetail']` — 属性切换、笔记编辑（仅刷新当日）
+- `['calendar', 'dayDetail', 'prediction']` — period 类写入（先局部，再后台 hero）
+- `['moduleOverview', 'prediction']` — 模块设置变更（仍走 full snapshot）
+
+前端当前路由：
 
 ```
-含 prediction / moduleOverview → refreshHomeSnapshot()（全量，覆盖 calendar + dayDetail + homeView）
-仅含 dayDetail               → refreshSelectedDayDetail()（跳过 calendar 和 homeView）
-仅含 calendar                → refreshCalendarWindow()（备用，当前无此组合）
-空 scopes                    → 不刷新（如 prompt-only 操作）
+含 moduleOverview          → refreshHomeSnapshot()（全量 authoritative replace）
+仅含 dayDetail             → refreshSelectedDayDetail()
+仅含 calendar              → refreshCalendarWindow()
+calendar + dayDetail       → 顺序执行 calendar → dayDetail
+prediction only            → 不阻塞主链，后台 refreshHeroSnapshot()
+calendar/dayDetail + prediction
+                         → 先局部对账，再后台 refreshHeroSnapshot()
+空 scopes                  → 不刷新（如 prompt-only 操作）
 ```
 
-**不使用 Promise.all 并行刷新**：`refreshHomeSnapshot` 做全量替换（`this.rawContracts = result.raw`），而 `refreshCalendarWindow` / `refreshSelectedDayDetail` 做部分合并，并发执行会产生 last-writer-wins 竞态，导致 UI 呈现来自不同时间点的混合状态。
+**不使用 Promise.all 并行刷新**：`refreshHomeSnapshot` 做全量替换（`this.rawContracts = result.raw`），而 `refreshCalendarWindow` / `refreshSelectedDayDetail` / `refreshHeroSnapshot` 做部分合并，并发执行会产生 last-writer-wins 竞态，导致 UI 呈现来自不同时间点的混合状态。当前实现中 `calendar + dayDetail` 明确顺序执行，hero 则脱离主 mutation promise 链路后台对账。
 
 ---
 
@@ -397,8 +407,8 @@ async handleSettingsOptionSelect(days) {
 |---|---|---|---|
 | 切换痛感/流量/颜色 | refreshHomeSnapshot（全量）| refreshSelectedDayDetail（仅当日）| 减少约 2 个请求 |
 | 编辑笔记 | refreshHomeSnapshot（全量）| refreshSelectedDayDetail（仅当日）| 减少约 2 个请求 |
-| 标记/取消经期 | refreshHomeSnapshot | refreshHomeSnapshot（via scopes）| 不变 |
-| 经期智能操作 | refreshHomeSnapshot | refreshHomeSnapshot（via scopes）| 不变 |
+| 标记/取消经期 | refreshHomeSnapshot | `calendar + dayDetail` 立即对账，hero 后台补拉 | 降低主交互阻塞 |
+| 经期智能操作 | refreshHomeSnapshot | `calendar + dayDetail` 立即对账，hero 后台补拉 | 降低主交互阻塞 |
 | 修改模块设置 | 全页 reload | 乐观更新 + refreshHomeSnapshot | 消除全页闪烁 |
 
 ---

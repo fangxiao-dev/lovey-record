@@ -129,8 +129,10 @@ These axes should be the design source of truth even when implementation still e
 ### Future Muting
 
 - `future muted` is a time-position modifier, not a peer business fact.
-- use muted text for future dates only when there is no stronger business state.
-- future prediction dates should remain recognizable as `prediction`, not collapse to a gray-only state.
+- on the current menstrual home calendar, unselected future dates remain `future muted` even when a later forecast window exists.
+- visible prediction styling in the calendar is mark-driven, not window-driven.
+- the current contract exposes `prediction_start` as the visible forecast day; the rest of the prediction window does not automatically become prediction-styled cells.
+- if a future prediction-start date is brought into an explicitly selected/focused state by a higher-level interaction contract, that interaction may layer selected emphasis on top of the forecast meaning.
 
 ## High-Value Overlay Cases
 

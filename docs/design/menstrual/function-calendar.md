@@ -94,7 +94,7 @@ Forbidden combinations from `date-state-spec.md`:
 
 ```
 JumpTabs Row
-├── JumpTabs           ← 今天 / 本次 / 下次预测
+├── JumpTabs           ← 今天 / 上次 / 下次预测
 └── Batch Actions      ← visible only in batch mode
     ├── 保存           ← period-accent small button
     └── 取消           ← neutral small button
@@ -129,6 +129,11 @@ Switching between modes:
 - Entering batch mode (long-press drag) collapses `SelectedDatePanel`.
 - `取消` exits batch mode without persistence and returns to the latest single-day context reached during the batch gesture.
 - `保存` commits the current selected dates, then returns to single-day edit mode focused on the latest dragged day.
+
+## Reconciliation Expectation
+
+- Period writes should stabilize `CalendarGrid` and `SelectedDatePanel` first.
+- Hero / shortcut summary may reconcile one refresh beat later as long as the already-committed calendar and selected-day state do not flash back.
 
 ## Related Documents
 
