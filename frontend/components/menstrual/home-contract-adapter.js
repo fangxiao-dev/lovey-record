@@ -331,9 +331,9 @@ function buildCalendarCard(homeView, dayDetail, selectedDate, focusDate, viewMod
 			.map((mark) => mark.date)
 	);
 	const predictionDates = new Set(
-		homeView.predictionSummary
-			? createDateRange(homeView.predictionSummary.predictionWindowStart, homeView.predictionSummary.predictionWindowEnd)
-			: []
+		(homeView.calendarMarks || [])
+			.filter((mark) => mark.kind === 'prediction_start')
+			.map((mark) => mark.date)
 	);
 
 	const resolvedFocusDate = focusDate || getFocusDate(homeView, { dayRecord: { date: selectedDate } }, today);
@@ -397,9 +397,9 @@ export function createEmptyDayDetail({ moduleInstanceId, profileId, date }) {
 function buildCalendarCardFromWindow(homeView, calendarWindow, selectedDate, today) {
 	const dayMap = new Map((calendarWindow.days || []).map((day) => [day.date, day]));
 	const predictionDates = new Set(
-		homeView.predictionSummary
-			? createDateRange(homeView.predictionSummary.predictionWindowStart, homeView.predictionSummary.predictionWindowEnd)
-			: []
+		(calendarWindow.marks || homeView.calendarMarks || [])
+			.filter((mark) => mark.kind === 'prediction_start')
+			.map((mark) => mark.date)
 	);
 	const dates = createDateRange(calendarWindow.window.startDate, calendarWindow.window.endDate);
 	const weeks = [];

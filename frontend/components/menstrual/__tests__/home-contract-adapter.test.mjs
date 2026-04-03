@@ -180,11 +180,86 @@ test('home contract adapter can build a month-view calendar locally from homeVie
 	assert.equal(model.headerNav.monthLabel, '2026.04');
 	assert.equal(model.calendarCard.weeks.length, 5);
 	assert.equal(
-		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-04-27' && cell.variant === 'selectedPrediction'),
+		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-04-27' && cell.variant === 'selected'),
 		true
 	);
 	assert.equal(model.selectedDatePanel.title, '4 月 27 日');
 	assert.equal(model.selectedDatePanel.badge, '点击记录');
+});
+
+test('home contract adapter renders only prediction_start as prediction instead of the whole prediction window', () => {
+	const homeView = {
+		moduleInstanceId: 'seed-home-module',
+		sharingStatus: 'private',
+		currentStatusSummary: {
+			currentStatus: 'out_of_period',
+			anchorDate: '2026-03-29',
+			currentSegment: {
+				startDate: '2026-03-20',
+				endDate: '2026-03-25',
+				durationDays: 6
+			},
+			statusCard: {
+				label: '非经期'
+			}
+		},
+		predictionSummary: {
+			predictedStartDate: '2026-04-03',
+			predictionWindowStart: '2026-04-01',
+			predictionWindowEnd: '2026-04-05',
+			basedOnCycleCount: 3
+		},
+		calendarMarks: [
+			{ date: '2026-04-03', kind: 'prediction_start' }
+		]
+	};
+
+	const localModel = createMenstrualHomePageModel({
+		homeView,
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			date: '2026-04-03'
+		}),
+		today: '2026-04-06',
+		focusDate: '2026-04-03',
+		viewMode: 'month'
+	});
+	const localByDate = Object.fromEntries(localModel.calendarCard.weeks.flatMap((week) => week.cells).map((cell) => [cell.key, cell.variant]));
+	assert.equal(localByDate['2026-04-01'], 'default');
+	assert.equal(localByDate['2026-04-02'], 'default');
+	assert.equal(localByDate['2026-04-03'], 'selectedPrediction');
+
+	const windowModel = createMenstrualHomePageModel({
+		homeView,
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			date: '2026-04-03'
+		}),
+		calendarWindow: {
+			moduleInstanceId: 'seed-home-module',
+			window: {
+				startDate: '2026-03-30',
+				endDate: '2026-04-05'
+			},
+			days: [
+				{ date: '2026-04-01', isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false },
+				{ date: '2026-04-02', isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false },
+				{ date: '2026-04-03', isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false }
+			],
+			marks: [
+				{ date: '2026-04-03', kind: 'prediction_start' }
+			]
+		},
+		today: '2026-04-06',
+		focusDate: '2026-04-03',
+		viewMode: 'month'
+	});
+	const windowByDate = Object.fromEntries(windowModel.calendarCard.weeks.flatMap((week) => week.cells).map((cell) => [cell.key, cell.variant]));
+	assert.equal(windowByDate['2026-04-01'], 'default');
+	assert.equal(windowByDate['2026-04-02'], 'default');
+	assert.equal(windowByDate['2026-04-03'], 'selectedPrediction');
 });
 
 test('home contract adapter uses predictedStartDate for the hero next frame and prediction jump target', () => {
@@ -311,7 +386,7 @@ test('home contract adapter keeps period-only days recorded without adding an ey
 	);
 });
 
-test('home contract adapter keeps the eye marker when today is also inside the prediction window', () => {
+test('home contract adapter keeps the eye marker when today has detail and prediction starts on a later date', () => {
 	const { homeView } = createSeededHomeContracts();
 	const todayPredictionDetail = {
 		moduleInstanceId: 'seed-home-module',
@@ -361,7 +436,11 @@ test('home contract adapter keeps the eye marker when today is also inside the p
 	});
 
 	assert.equal(
-		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-03-29' && cell.variant === 'selectedTodayPredictionDetail'),
+		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-03-29' && cell.variant === 'selectedTodayDetail'),
+		true
+	);
+	assert.equal(
+		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-03-31' && cell.variant === 'futureMuted'),
 		true
 	);
 });
