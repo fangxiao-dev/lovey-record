@@ -202,7 +202,7 @@ function mapStatusLabel(sharingStatus) {
 }
 
 function getCurrentSegment(homeView) {
-	return homeView.currentStatusSummary?.currentSegment || null;
+	return homeView.currentStatusSummary?.currentSegment || homeView.currentStatusSummary?.currentCycle || null;
 }
 
 function getFocusDate(homeView, dayDetail, today) {
@@ -447,9 +447,10 @@ const STATUS_ICON = {
 
 function createHeroCard(homeView, today) {
 	const statusSummary = homeView.currentStatusSummary || {};
-	const currentStatus = statusSummary.currentStatus || 'out_of_period';
+	// Handle both old field names (status/currentCycle) and new ones (currentStatus/currentSegment)
+	const currentStatus = statusSummary.currentStatus || statusSummary.status || 'out_of_period';
 	const statusCard = statusSummary.statusCard || {};
-	const currentSegment = statusSummary.currentSegment || null;
+	const currentSegment = statusSummary.currentSegment || statusSummary.currentCycle || null;
 	const previousSegment = statusSummary.previousSegment || null;
 	const prediction = homeView.predictionSummary;
 
@@ -569,12 +570,13 @@ export function resolveJumpTargetDate(homeView, jumpKey, today) {
 	if (jumpKey === 'today') return today;
 	if (jumpKey === 'previous') {
 		const statusSummary = homeView.currentStatusSummary || {};
-		const currentStatus = statusSummary.currentStatus || 'out_of_period';
+		// Handle both old field names (status) and new ones (currentStatus)
+		const currentStatus = statusSummary.currentStatus || statusSummary.status || 'out_of_period';
 		// When in period: "上次" refers to previousSegment
 		// When out of period: "上次" refers to the segment we just exited (currentSegment)
 		const lastSegment = currentStatus === 'in_period'
 			? statusSummary.previousSegment
-			: statusSummary.currentSegment;
+			: (statusSummary.currentSegment || statusSummary.currentCycle);
 		return lastSegment?.startDate || null;
 	}
 	if (jumpKey === 'prediction') return homeView.predictionSummary?.predictedStartDate || null;
@@ -625,7 +627,7 @@ export function createMenstrualHomePageModel({
 			})(),
 			items: [
 				{ key: 'today', label: '今天', tone: 'outlined', disabled: false },
-				{ key: 'previous', label: '上次', tone: 'muted', disabled: (() => { const s = homeView.currentStatusSummary || {}; const cs = s.currentStatus || 'out_of_period'; const ls = cs === 'in_period' ? s.previousSegment : s.currentSegment; return !ls; })() },
+				{ key: 'previous', label: '上次', tone: 'muted', disabled: (() => { const s = homeView.currentStatusSummary || {}; const cs = s.currentStatus || s.status || 'out_of_period'; const ls = cs === 'in_period' ? s.previousSegment : (s.currentSegment || s.currentCycle); return !ls; })() },
 				{ key: 'prediction', label: '下次预测', tone: 'soft', disabled: !homeView.predictionSummary }
 			]
 		},
