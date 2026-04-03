@@ -125,11 +125,30 @@
 		components: {
 			DateCell
 		},
+		watch: {
+			weeks: {
+				handler() {
+					this.invalidateCellRects();
+				}
+			}
+		},
 		mounted() {
 			this.bindDesktopLongPressEvents();
+			this._invalidateRects = () => {
+				this.invalidateCellRects();
+			};
+			// #ifdef H5
+			window.addEventListener('scroll', this._invalidateRects, { passive: true });
+			window.addEventListener('resize', this._invalidateRects, { passive: true });
+			// #endif
 		},
 		beforeUnmount() {
 			this.unbindDesktopLongPressEvents();
+			// #ifdef H5
+			window.removeEventListener('scroll', this._invalidateRects);
+			window.removeEventListener('resize', this._invalidateRects);
+			// #endif
+			this._invalidateRects = null;
 		},
 		props: {
 			weeks: {
@@ -178,6 +197,7 @@
 				cellRects: null,
 				suppressTapUntil: 0,
 				desktopRootEl: null,
+				_invalidateRects: null,
 				_boundMouseDown: null,
 				_boundMouseMove: null,
 				_boundMouseUp: null,
@@ -296,7 +316,6 @@
 				this.touchStartX = clientX;
 				this.touchStartY = clientY;
 				this.longPressStartedAt = Date.now();
-				this.cellRects = null;
 				if (this.longPressTimer) {
 					clearTimeout(this.longPressTimer);
 				}
@@ -364,11 +383,34 @@
 					};
 				});
 			},
+			invalidateCellRects() {
+				this.cellRects = null;
+			},
+			captureCellRects(onReady) {
+				if (this.cellRects && this.cellRects.length > 0) {
+					onReady(this.cellRects);
+					return true;
+				}
 
-			startBatchMode(x, y) {
 				const fallbackRects = this.captureCellRectsFromDom();
 				if (fallbackRects.length > 0) {
 					this.cellRects = fallbackRects;
+					onReady(fallbackRects);
+					return true;
+				}
+
+				const query = uni.createSelectorQuery().in(this);
+				query.selectAll('.calendar-grid__cell').boundingClientRect((rects) => {
+					if (!rects || rects.length === 0) return;
+					this.cellRects = rects;
+					onReady(rects);
+				});
+				query.exec();
+				return false;
+			},
+
+			startBatchMode(x, y) {
+				this.captureCellRects(() => {
 					const idx = this.hitTestCell(x, y);
 					if (idx !== -1) {
 						const cell = this.allCells[idx];
@@ -380,23 +422,7 @@
 							return;
 						}
 					}
-				}
-
-				// Query all cell bounding rects for hit testing
-				const query = uni.createSelectorQuery().in(this);
-				query.selectAll('.calendar-grid__cell').boundingClientRect((rects) => {
-					if (!rects || rects.length === 0) return;
-					this.cellRects = rects;
-					const idx = this.hitTestCell(x, y);
-					if (idx === -1) return;
-					const cell = this.allCells[idx];
-					if (cell.selectable === false) return;
-					this.batchMode = true;
-					this.suppressTapUntil = Date.now() + 500;
-					this.longPressStartedAt = 0;
-					this.$emit('batch-start', cell);
 				});
-				query.exec();
 			},
 
 			hitTestCell(x, y) {

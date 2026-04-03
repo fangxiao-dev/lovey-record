@@ -103,3 +103,67 @@ test('CalendarGrid treats a stationary long press release as batch entry once th
 	assert.equal(started, 1);
 	assert.equal(ctx.longPressTimer, null);
 });
+
+test('CalendarGrid reuses cached cell rects for the next batch start until invalidated', () => {
+	const CalendarGrid = loadCalendarGrid();
+	let captureCalls = 0;
+	let selectorQueryUsed = 0;
+	let startedCell = null;
+	const ctx = {
+		cellRects: [{ left: 0, right: 40, top: 0, bottom: 40 }],
+		allCells: [{ key: '2026-03-23', selectable: true }],
+		batchMode: false,
+		suppressTapUntil: 0,
+		longPressStartedAt: 123,
+		captureCellRects(onReady) {
+			captureCalls += 1;
+			onReady(this.cellRects);
+			return true;
+		},
+		hitTestCell() {
+			return 0;
+		},
+		$emit(event, cell) {
+			if (event === 'batch-start') startedCell = cell;
+		}
+	};
+
+	globalThis.uni = {
+		createSelectorQuery() {
+			selectorQueryUsed += 1;
+			return {
+				in() { return this; },
+				selectAll() { return this; },
+				boundingClientRect() { return this; },
+				exec() {}
+			};
+		}
+	};
+
+	CalendarGrid.methods.startBatchMode.call(ctx, 10, 10);
+
+	assert.equal(captureCalls, 1);
+	assert.equal(selectorQueryUsed, 0);
+	assert.deepEqual(startedCell, { key: '2026-03-23', selectable: true });
+});
+
+test('CalendarGrid invalidateCellRects clears cached hit-test geometry', () => {
+	const CalendarGrid = loadCalendarGrid();
+	const ctx = {
+		cellRects: [{ left: 0, right: 40, top: 0, bottom: 40 }]
+	};
+
+	CalendarGrid.methods.invalidateCellRects.call(ctx);
+
+	assert.equal(ctx.cellRects, null);
+});
+
+test('CalendarGrid invalidates cached rects when weeks change or the page scrolls', () => {
+	const source = fs.readFileSync(calendarGridPath, 'utf8');
+
+	assert.match(source, /invalidateCellRects\(\)\s*\{/);
+	assert.match(source, /watch:\s*\{\s*weeks:/s);
+	assert.match(source, /this\.invalidateCellRects\(\)/);
+	assert.match(source, /window\.addEventListener\('scroll', this\._invalidateRects/);
+	assert.match(source, /window\.addEventListener\('resize', this\._invalidateRects/);
+});

@@ -61,6 +61,7 @@
 				</view>
 			</view>
 			<CalendarGrid
+				ref="calendarGrid"
 				:weeks="page.calendarCard.weeks"
 				:weekday-labels="page.calendarCard.weekdayLabels"
 				:interactive="page.viewModeControl.value === 'three-week'"
@@ -119,7 +120,9 @@
 	import SelectedDatePanel from '../../components/menstrual/SelectedDatePanel.vue';
 	import SegmentedControl from '../../components/menstrual/SegmentedControl.vue';
 	import {
+		applyBatchPeriodDraftToPageModel,
 		applyClearAttributesToPageModel,
+		applySingleDayPeriodActionToPageModel,
 		applySelectedDateNoteToPageModel,
 		applyToggleAttributeOptionToPageModel,
 		createEmptyDayDetail,
@@ -226,6 +229,9 @@
 				today: d(options.today) || DEFAULT_MENSTRUAL_HOME_CONTEXT.today
 			};
 			this.retryInitialLoad();
+		},
+		onPageScroll() {
+			this.$refs.calendarGrid?.invalidateCellRects?.();
 		},
 		methods: {
 			getSelectedDayDetail(selectedDate) {
@@ -549,6 +555,51 @@
 					this.isMutating = false;
 				}
 			},
+			async runOptimisticBatchMutation(nextPage, command) {
+				if (this.isMutating) return;
+				const previousState = {
+					page: this.page,
+					panelMode: this.panelMode,
+					batchStartKey: this.batchStartKey,
+					batchEndKey: this.batchEndKey,
+					batchHoveredKey: this.batchHoveredKey,
+					batchSelectedKeysState: [...this.batchSelectedKeysState],
+					activeDate: this.activeDate
+				};
+				let affectedScopes = null;
+				this.page = nextPage;
+				this.panelMode = 'single-day';
+				this.batchStartKey = null;
+				this.batchEndKey = null;
+				this.batchHoveredKey = null;
+				this.batchSelectedKeysState = [];
+				this.loadError = '';
+				this.isMutating = true;
+
+				try {
+					affectedScopes = (await command())?.affectedScopes ?? null;
+				} catch (error) {
+					this.page = previousState.page;
+					this.panelMode = previousState.panelMode;
+					this.batchStartKey = previousState.batchStartKey;
+					this.batchEndKey = previousState.batchEndKey;
+					this.batchHoveredKey = previousState.batchHoveredKey;
+					this.batchSelectedKeysState = previousState.batchSelectedKeysState;
+					this.activeDate = previousState.activeDate;
+					this.loadError = error instanceof Error ? error.message : 'Command failed';
+					this.isMutating = false;
+					return;
+				}
+
+				try {
+					await this.refreshByScopes(affectedScopes);
+				} catch (error) {
+					this.page = nextPage;
+					this.loadError = error instanceof Error ? `写入成功，但刷新失败：${error.message}` : '写入成功，但刷新失败';
+				} finally {
+					this.isMutating = false;
+				}
+			},
 			handleToggleAttributeOption(payload) {
 				if (this.panelMode === 'batch') {
 					const row = this.batchPanelAttributeRows.find(r => r.key === payload.rowKey);
@@ -589,7 +640,7 @@
 					return;
 				}
 				const resolvedAction = this.rawContracts?.singleDayPeriodAction?.resolvedAction;
-				if (!resolvedAction?.action) return;
+				if (!resolvedAction?.action || !resolvedAction?.effect) return;
 
 				const prompt = resolvedAction.prompt;
 				if (prompt?.required) {
@@ -606,7 +657,8 @@
 						});
 					});
 					if (!confirmed) return;
-					return this.runCommand(() => applySingleDayPeriodAction({
+					const nextPage = applySingleDayPeriodActionToPageModel(this.page, { resolvedAction });
+					return this.runOptimisticMutation(nextPage, () => applySingleDayPeriodAction({
 						context: this.contractContext,
 						activeDate: this.activeDate,
 						action: resolvedAction.action,
@@ -614,7 +666,8 @@
 					}));
 				}
 
-				return this.runCommand(() => applySingleDayPeriodAction({
+				const nextPage = applySingleDayPeriodActionToPageModel(this.page, { resolvedAction });
+				return this.runOptimisticMutation(nextPage, () => applySingleDayPeriodAction({
 					context: this.contractContext,
 					activeDate: this.activeDate,
 					action: resolvedAction.action
@@ -667,8 +720,13 @@
 			applyBatchAction() {
 				if (!this.selectedBatchKeys.length) return;
 				const ranges = this.buildBatchRanges(this.selectedBatchKeys);
+				const nextPage = applyBatchPeriodDraftToPageModel(this.page, {
+					selectedKeys: this.selectedBatchKeys,
+					batchDraft: this.batchDraft,
+					activeDate: this.activeDate
+				});
 
-				return this.runCommand(async () => {
+				return this.runOptimisticBatchMutation(nextPage, async () => {
 					for (const range of ranges) {
 						await persistBatchPeriodRange({
 							context: this.contractContext,
@@ -691,12 +749,7 @@
 							colorLevel
 						});
 					}
-
-					this.panelMode = 'single-day';
-					this.batchStartKey = null;
-					this.batchEndKey = null;
-					this.batchHoveredKey = null;
-					this.batchSelectedKeysState = [];
+					return { affectedScopes: ['calendar', 'dayDetail', 'prediction'] };
 				});
 			},
 			syncBatchSelectionRange() {

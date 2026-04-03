@@ -236,24 +236,128 @@ test('menstrual home batch live regression', async ({ page }) => {
 		await page.mouse.move(p25.x, p25.y, { steps: 3 });
 		await waitForSelectionState(page, { '23': true, '24': true, '25': true });
 		await page.mouse.move(p24.x, p24.y, { steps: 3 });
-		await waitForSelectionState(page, { '23': true, '24': false, '25': true });
+		await waitForSelectionState(page, { '23': true, '24': true, '25': false });
 		await page.mouse.move(p23.x, p23.y, { steps: 3 });
-		await waitForSelectionState(page, { '23': false, '24': false, '25': true });
+		await waitForSelectionState(page, { '23': true, '24': false, '25': false });
 		await page.mouse.up();
 
 		await expect(page.locator('.menstrual-home__batch-btn').filter({ hasText: '保存' })).toHaveCount(1);
 		await page.locator('.menstrual-home__batch-btn').filter({ hasText: '保存' }).click();
+		await page.waitForTimeout(120);
+		const immediateClasses = await getCellClasses(page, ['23', '24', '25']);
+		expect(immediateClasses[0].className.includes('date-cell--bg-period')).toBeTruthy();
+		expect(immediateClasses[1].className.includes('date-cell--bg-period')).toBeFalsy();
+		expect(immediateClasses[2].className.includes('date-cell--bg-period')).toBeFalsy();
 		await page.waitForTimeout(1600);
 		await expect(page.locator('.selected-date-panel__title')).toHaveText('3 月 23 日');
 
 		await page.goto(FRONTEND_URL);
 		await page.waitForTimeout(1200);
 		const classes = await getCellClasses(page, ['23', '24', '25']);
-		expect(classes[0].className.includes('date-cell--bg-period')).toBeFalsy();
+		expect(classes[0].className.includes('date-cell--bg-period')).toBeTruthy();
 		expect(classes[1].className.includes('date-cell--bg-period')).toBeFalsy();
-		expect(classes[2].className.includes('date-cell--bg-period')).toBeTruthy();
+		expect(classes[2].className.includes('date-cell--bg-period')).toBeFalsy();
 	} finally {
 		await resetRange();
+	}
+});
+
+test('batch drag still hits the correct cells after page scroll invalidates cached rects', async ({ page }) => {
+	await postJson('/commands/clearPeriodRange', {
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		startDate: '2026-03-23',
+		endDate: '2026-03-24'
+	});
+
+	try {
+		await page.goto(FRONTEND_URL);
+		await page.waitForTimeout(1200);
+
+		const firstP23 = await getCellCenter(page, '23');
+		expect(firstP23).toBeTruthy();
+
+		await page.mouse.move(firstP23.x, firstP23.y);
+		await page.mouse.down();
+		await page.waitForTimeout(550);
+		await expect(page.locator('.menstrual-home__batch-btn').filter({ hasText: '保存' })).toHaveCount(1);
+		await page.mouse.up();
+		await page.locator('.menstrual-home__batch-btn').filter({ hasText: '取消' }).click();
+		await page.waitForTimeout(250);
+
+		await page.evaluate(() => {
+			window.scrollTo({ top: 120, behavior: 'instant' });
+		});
+		await page.waitForTimeout(250);
+
+		const p23 = await getCellCenter(page, '23');
+		const p24 = await getCellCenter(page, '24');
+		expect(p23).toBeTruthy();
+		expect(p24).toBeTruthy();
+		expect(p23.y).not.toBe(firstP23.y);
+
+		await page.mouse.move(p23.x, p23.y);
+		await page.mouse.down();
+		await page.waitForTimeout(550);
+		await page.mouse.move(p24.x, p24.y, { steps: 3 });
+		await waitForSelectionState(page, { '23': true, '24': true });
+		await page.mouse.up();
+
+		await page.locator('.menstrual-home__batch-btn').filter({ hasText: '保存' }).click();
+		await page.waitForTimeout(1600);
+		await expect(page.locator('.selected-date-panel__title')).toHaveText('3 月 24 日');
+		await waitForPeriodDates('2026-03-23', '2026-03-24', [
+			'2026-03-23', '2026-03-24'
+		]);
+	} finally {
+		await postJson('/commands/clearPeriodRange', {
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			startDate: '2026-03-23',
+			endDate: '2026-03-24'
+		});
+	}
+});
+
+test('batch save keeps the optimistic period result visible before backend reconciliation finishes', async ({ page }) => {
+	await postJson('/commands/clearPeriodRange', {
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		startDate: '2026-03-23',
+		endDate: '2026-03-24'
+	});
+
+	try {
+		await page.goto(FRONTEND_URL);
+		await page.waitForTimeout(1200);
+
+		const p23 = await getCellCenter(page, '23');
+		const p24 = await getCellCenter(page, '24');
+		expect(p23).toBeTruthy();
+		expect(p24).toBeTruthy();
+
+		await page.mouse.move(p23.x, p23.y);
+		await page.mouse.down();
+		await page.waitForTimeout(550);
+		await page.mouse.move(p24.x, p24.y, { steps: 3 });
+		await waitForSelectionState(page, { '23': true, '24': true });
+		await page.mouse.up();
+
+		await page.locator('.menstrual-home__batch-btn').filter({ hasText: '保存' }).click();
+		await page.waitForTimeout(120);
+
+		const immediateClasses = await getCellClasses(page, ['23', '24']);
+		expect(immediateClasses[0].className.includes('date-cell--bg-period')).toBeTruthy();
+		expect(immediateClasses[1].className.includes('date-cell--bg-period')).toBeTruthy();
+		await expect(page.locator('.selected-date-panel__title')).toHaveText('3 月 24 日');
+
+		await page.waitForTimeout(1600);
+		await waitForPeriodDates('2026-03-23', '2026-03-24', [
+			'2026-03-23', '2026-03-24'
+		]);
+	} finally {
+		await postJson('/commands/clearPeriodRange', {
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			startDate: '2026-03-23',
+			endDate: '2026-03-24'
+		});
 	}
 });
 
@@ -367,6 +471,14 @@ test('fresh not-period day shows 月经 and single tap applies the default forwa
 		await expect(getPeriodChip(page, '月经')).not.toHaveClass(/selected-date-panel__chip--accent/);
 
 		await getPeriodChip(page, '月经').click();
+		await page.waitForTimeout(120);
+		await expect(getPeriodChip(page, '月经开始')).toHaveClass(/selected-date-panel__chip--accent/);
+		const immediateClasses = await getCellClasses(page, ['23', '24', '25', '26', '27']);
+		expect(immediateClasses.find((c) => c.day === '23').className).toContain('date-cell--bg-period');
+		expect(immediateClasses.find((c) => c.day === '24').className).toContain('date-cell--bg-period');
+		expect(immediateClasses.find((c) => c.day === '25').className).toContain('date-cell--bg-period');
+		expect(immediateClasses.find((c) => c.day === '26').className).toContain('date-cell--bg-period');
+		expect(immediateClasses.find((c) => c.day === '27').className).not.toContain('date-cell--bg-period');
 		await page.waitForTimeout(1600);
 
 		await expect(getPeriodChip(page, '月经开始')).toHaveClass(/selected-date-panel__chip--accent/);

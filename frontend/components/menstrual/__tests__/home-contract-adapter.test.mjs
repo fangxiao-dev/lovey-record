@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import {
 	applyClearAttributesToPageModel,
+	applyBatchPeriodDraftToPageModel,
+	applySingleDayPeriodActionToPageModel,
 	applyToggleAttributeOptionToPageModel,
 	createEmptyDayDetail,
 	createSeededHomeContracts,
@@ -458,4 +460,127 @@ test('home contract adapter clears all attribute selections and removes summary 
 		cleared.selectedDatePanel.attributeRows.every((row) => row.options.every((option) => option.selected === false)),
 		true
 	);
+});
+
+test('home contract adapter optimistically marks a non-period day as period using the resolved action effect', () => {
+	const { homeView } = createSeededHomeContracts();
+	const dayDetail = createEmptyDayDetail({
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		date: '2026-03-23'
+	});
+	const model = createMenstrualHomePageModel({
+		homeView,
+		dayDetail,
+		today: '2026-03-29'
+	});
+
+	const next = applySingleDayPeriodActionToPageModel(model, {
+		resolvedAction: {
+			action: 'mark-start',
+			effect: {
+				action: 'mark-start',
+				writeDates: ['2026-03-23', '2026-03-24', '2026-03-25'],
+				clearDates: []
+			}
+		}
+	});
+
+	const selectedCell = next.calendarCard.weeks.flatMap((week) => week.cells).find((cell) => cell.key === '2026-03-23');
+	assert.equal(selectedCell.variant, 'selectedPeriod');
+	assert.equal(next.selectedDatePanel.periodChipSelected, true);
+	assert.equal(next.selectedDatePanel.periodChipText, '月经开始');
+	assert.equal(next.selectedDatePanel.badge, '已记录');
+});
+
+test('home contract adapter optimistically truncates later period dates using the resolved action effect', () => {
+	const homeView = {
+		moduleInstanceId: 'seed-home-module',
+		sharingStatus: 'private',
+		currentStatusSummary: {
+			currentStatus: 'in_period',
+			currentSegment: { startDate: '2026-03-23', endDate: '2026-03-27', durationDays: 5 },
+			statusCard: { label: '经期中' },
+			previousSegment: null
+		},
+		predictionSummary: null,
+		calendarMarks: [
+			{ date: '2026-03-23', kind: 'period_start' },
+			{ date: '2026-03-24', kind: 'period' },
+			{ date: '2026-03-25', kind: 'period' },
+			{ date: '2026-03-26', kind: 'period' },
+			{ date: '2026-03-27', kind: 'period' }
+		]
+	};
+	const dayDetail = {
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		dayRecord: {
+			date: '2026-03-25',
+			isPeriod: true,
+			painLevel: null,
+			flowLevel: null,
+			colorLevel: null,
+			note: null,
+			source: 'manual',
+			isExplicit: true,
+			isDetailRecorded: false
+		}
+	};
+	const model = createMenstrualHomePageModel({
+		homeView,
+		dayDetail,
+		today: '2026-03-29'
+	});
+
+	const next = applySingleDayPeriodActionToPageModel(model, {
+		resolvedAction: {
+			action: 'truncate-end',
+			effect: {
+				action: 'truncate-end',
+				writeDates: ['2026-03-23', '2026-03-24', '2026-03-25'],
+				clearDates: ['2026-03-26', '2026-03-27']
+			}
+		}
+	});
+
+	const byDate = Object.fromEntries(next.calendarCard.weeks.flatMap((week) => week.cells).map((cell) => [cell.key, cell.variant]));
+	assert.equal(byDate['2026-03-25'], 'selectedPeriod');
+	assert.equal(byDate['2026-03-26'], 'default');
+	assert.equal(byDate['2026-03-27'], 'default');
+	assert.equal(next.selectedDatePanel.periodChipSelected, true);
+	assert.equal(next.selectedDatePanel.periodChipText, '月经结束');
+});
+
+test('home contract adapter applies batch draft to the visible calendar and selected day panel without touching hero', () => {
+	const { homeView } = createSeededHomeContracts();
+	const dayDetail = createEmptyDayDetail({
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		date: '2026-03-24'
+	});
+	const model = createMenstrualHomePageModel({
+		homeView,
+		dayDetail,
+		today: '2026-03-29'
+	});
+	const originalHero = structuredClone(model.heroCard);
+
+	const next = applyBatchPeriodDraftToPageModel(model, {
+		selectedKeys: ['2026-03-23', '2026-03-24'],
+		batchDraft: {
+			isPeriod: true,
+			flowLevel: null,
+			painLevel: null,
+			colorLevel: null
+		},
+		activeDate: '2026-03-24'
+	});
+
+	const byDate = Object.fromEntries(next.calendarCard.weeks.flatMap((week) => week.cells).map((cell) => [cell.key, cell.variant]));
+	assert.equal(byDate['2026-03-23'], 'period');
+	assert.equal(byDate['2026-03-24'], 'selectedPeriod');
+	assert.equal(next.selectedDatePanel.periodChipSelected, true);
+	assert.equal(next.selectedDatePanel.periodChipText, '月经结束');
+	assert.deepEqual(next.heroCard, originalHero);
 });

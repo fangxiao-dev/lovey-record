@@ -526,6 +526,97 @@ function rebuildSummaryItemsFromRows(attributeRows) {
 		.filter(Boolean);
 }
 
+function cloneDayRecordFromPanel(pageModel) {
+	const panel = pageModel.selectedDatePanel;
+	const rows = panel.attributeRows || [];
+	const selectedLevel = (rowKey) => {
+		const row = rows.find((item) => item.key === rowKey);
+		if (!row) return null;
+		const index = row.options.findIndex((option) => option.selected);
+		return index === -1 ? null : index + 1;
+	};
+
+	return {
+		date: pageModel.selectedDateKey,
+		isPeriod: Boolean(panel.initialPeriodMarked),
+		painLevel: selectedLevel('pain'),
+		flowLevel: selectedLevel('flow'),
+		colorLevel: selectedLevel('color'),
+		note: panel.note || null
+	};
+}
+
+function buildVisiblePeriodDates(pageModel, overrides = {}) {
+	const periodDates = new Set();
+	const detailRecordedDates = new Set();
+
+	pageModel.calendarCard.weeks.forEach((week) => {
+		week.cells.forEach((cell) => {
+			if (cell.variant?.toLowerCase().includes('period')) {
+				periodDates.add(cell.isoDate);
+			}
+			if (cell.variant?.includes('Detail')) {
+				detailRecordedDates.add(cell.isoDate);
+			}
+		});
+	});
+
+	Object.entries(overrides).forEach(([isoDate, nextState]) => {
+		if (nextState?.isPeriod) {
+			periodDates.add(isoDate);
+		} else {
+			periodDates.delete(isoDate);
+		}
+		if (nextState?.isDetailRecorded) {
+			detailRecordedDates.add(isoDate);
+		} else {
+			detailRecordedDates.delete(isoDate);
+		}
+	});
+
+	return { periodDates, detailRecordedDates };
+}
+
+function deriveChipFromPeriodDates(selectedDate, periodDates) {
+	if (!selectedDate || !periodDates.has(selectedDate)) {
+		return {
+			text: '月经',
+			selected: false
+		};
+	}
+
+	const hasPreviousPeriod = periodDates.has(addDays(selectedDate, -1));
+	const hasNextPeriod = periodDates.has(addDays(selectedDate, 1));
+	return {
+		text: hasPreviousPeriod ? '月经结束' : '月经开始',
+		selected: true
+	};
+}
+
+function patchCalendarCells(pageModel, overrides = {}) {
+	const { periodDates, detailRecordedDates } = buildVisiblePeriodDates(pageModel, overrides);
+	pageModel.calendarCard.weeks = pageModel.calendarCard.weeks.map((week) => ({
+		...week,
+		cells: week.cells.map((cell) => {
+			const stateOverride = overrides[cell.isoDate];
+			const isPeriod = stateOverride ? stateOverride.isPeriod : periodDates.has(cell.isoDate);
+			const isDetailRecorded = stateOverride ? stateOverride.isDetailRecorded : detailRecordedDates.has(cell.isoDate);
+			return {
+				...cell,
+				variant: composeCalendarVariant({
+					date: cell.isoDate,
+					today: pageModel.todayKey,
+					isPeriod,
+					isPrediction: cell.variant.toLowerCase().includes('prediction'),
+					isDetailRecorded,
+					isSelected: cell.key === pageModel.selectedDateKey
+				})
+			};
+		})
+	}));
+	return { periodDates, detailRecordedDates };
+}
+
 function clonePageModel(pageModel) {
 	return {
 		...pageModel,
@@ -684,6 +775,92 @@ export function applyTogglePeriodToPageModel(pageModel, isPeriodMarked) {
 			? '已记录'
 			: '点击记录';
 	}
+	return next;
+}
+
+export function applySingleDayPeriodActionToPageModel(pageModel, { resolvedAction }) {
+	const next = clonePageModel(pageModel);
+	const selectedDate = next.selectedDateKey;
+	const dayRecord = cloneDayRecordFromPanel(next);
+	const effect = resolvedAction?.effect || { writeDates: [], clearDates: [] };
+	const writeDates = new Set(effect.writeDates || []);
+	const clearDates = new Set(effect.clearDates || []);
+	const selectedIsPeriod = writeDates.has(selectedDate) ? true : clearDates.has(selectedDate) ? false : dayRecord.isPeriod;
+
+	next.selectedDatePanel.initialPeriodMarked = selectedIsPeriod;
+	if (next.selectedDatePanel.badge !== '今日') {
+		next.selectedDatePanel.badge = (
+			selectedIsPeriod
+			|| next.selectedDatePanel.summaryItems.length > 0
+			|| Boolean(next.selectedDatePanel.note)
+		) ? '已记录' : '点击记录';
+	}
+
+	const overrides = {};
+	writeDates.forEach((isoDate) => {
+		overrides[isoDate] = {
+			isPeriod: true,
+			isDetailRecorded: isoDate === selectedDate
+				? next.selectedDatePanel.summaryItems.length > 0
+				: next.calendarCard.weeks.flatMap((week) => week.cells).find((cell) => cell.isoDate === isoDate)?.variant?.includes('Detail') || false
+		};
+	});
+	clearDates.forEach((isoDate) => {
+		overrides[isoDate] = {
+			isPeriod: false,
+			isDetailRecorded: isoDate === selectedDate
+				? next.selectedDatePanel.summaryItems.length > 0
+				: next.calendarCard.weeks.flatMap((week) => week.cells).find((cell) => cell.isoDate === isoDate)?.variant?.includes('Detail') || false
+		};
+	});
+
+	const { periodDates } = patchCalendarCells(next, overrides);
+	const chip = deriveChipFromPeriodDates(selectedDate, periodDates);
+	next.selectedDatePanel.periodChipText = chip.text;
+	next.selectedDatePanel.periodChipSelected = chip.selected;
+	return next;
+}
+
+export function applyBatchPeriodDraftToPageModel(pageModel, { selectedKeys, batchDraft, activeDate }) {
+	const next = clonePageModel(pageModel);
+	next.selectedDateKey = activeDate || next.selectedDateKey;
+	next.selectedDatePanel.title = formatHumanDate(next.selectedDateKey);
+	next.selectedDatePanel.note = next.selectedDatePanel.note || '';
+	next.selectedDatePanel.summaryItems = createSummaryItems({
+		flowLevel: batchDraft.flowLevel ?? null,
+		painLevel: batchDraft.painLevel ?? null,
+		colorLevel: batchDraft.colorLevel ?? null
+	});
+	next.selectedDatePanel.attributeRows = createOptionRows({
+		flowLevel: batchDraft.flowLevel ?? null,
+		painLevel: batchDraft.painLevel ?? null,
+		colorLevel: batchDraft.colorLevel ?? null
+	});
+	next.selectedDatePanel.initialPeriodMarked = Boolean(batchDraft.isPeriod);
+	if (next.selectedDatePanel.badge !== '今日') {
+		next.selectedDatePanel.badge = (
+			Boolean(batchDraft.isPeriod)
+			|| next.selectedDatePanel.summaryItems.length > 0
+			|| Boolean(next.selectedDatePanel.note)
+		) ? '已记录' : '点击记录';
+	}
+
+	const selectedSet = new Set(selectedKeys || []);
+	const overrides = {};
+	next.calendarCard.weeks.flatMap((week) => week.cells).forEach((cell) => {
+		if (!selectedSet.has(cell.key)) return;
+		overrides[cell.isoDate] = {
+			isPeriod: Boolean(batchDraft.isPeriod),
+			isDetailRecorded: cell.isoDate === next.selectedDateKey
+				? next.selectedDatePanel.summaryItems.length > 0
+				: cell.variant?.includes('Detail') || false
+		};
+	});
+
+	const { periodDates } = patchCalendarCells(next, overrides);
+	const chip = deriveChipFromPeriodDates(next.selectedDateKey, periodDates);
+	next.selectedDatePanel.periodChipText = chip.text;
+	next.selectedDatePanel.periodChipSelected = chip.selected;
 	return next;
 }
 

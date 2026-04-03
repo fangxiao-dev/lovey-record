@@ -113,6 +113,14 @@ test('home batch selection keeps a continuous inclusive range from the anchor to
 	assert.equal(selectedBatchKeys.includes('2026-03-08'), true);
 });
 
+test('home forwards page scroll invalidation to CalendarGrid so stale rect caches are not reused after layout shifts', () => {
+	const source = fs.readFileSync(path.resolve(repoRoot, 'frontend/pages/menstrual/home.vue'), 'utf8');
+
+	assert.match(source, /ref="calendarGrid"/);
+	assert.match(source, /onPageScroll\(\)\s*\{/);
+	assert.match(source, /this\.\$refs\.calendarGrid\?\.invalidateCellRects\?\.\(\)/);
+});
+
 test('home batch selection updates the active single-day context to the latest dragged date', () => {
 	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
 		CalendarGrid: {},
@@ -235,6 +243,7 @@ test('home applyBatchAction exits batch mode and keeps the latest dragged day as
 		SelectedDatePanel: {},
 		SegmentedControl: {},
 		applyClearAttributesToPageModel: () => {},
+		applyBatchPeriodDraftToPageModel: (page) => ({ ...page, id: 'optimistic-batch-page' }),
 		applySelectedDateNoteToPageModel: () => {},
 		applyToggleAttributeOptionToPageModel: () => {},
 		applyTogglePeriodToPageModel: () => {},
@@ -257,6 +266,7 @@ test('home applyBatchAction exits batch mode and keeps the latest dragged day as
 	});
 
 	const ctx = {
+		page: { id: 'previous-page' },
 		selectedBatchKeys: ['2026-03-16', '2026-03-18'],
 		allCalendarCells: [
 			{ key: '2026-03-16', isoDate: '2026-03-16', selectable: true },
@@ -280,8 +290,16 @@ test('home applyBatchAction exits batch mode and keeps the latest dragged day as
 		panelMode: 'batch',
 		batchStartKey: '2026-03-16',
 		batchEndKey: '2026-03-18',
+		batchHoveredKey: '2026-03-18',
+		batchSelectedKeysState: ['2026-03-16', '2026-03-18'],
 		buildBatchRanges: home.methods.buildBatchRanges,
-		runCommand(command) {
+		runOptimisticBatchMutation(nextPage, command) {
+			this.page = nextPage;
+			this.panelMode = 'single-day';
+			this.batchStartKey = null;
+			this.batchEndKey = null;
+			this.batchHoveredKey = null;
+			this.batchSelectedKeysState = [];
 			return command();
 		},
 		cancelBatchMode: home.methods.cancelBatchMode
@@ -291,6 +309,7 @@ test('home applyBatchAction exits batch mode and keeps the latest dragged day as
 
 	assert.equal(ctx.panelMode, 'single-day');
 	assert.equal(ctx.activeDate, '2026-03-18');
+	assert.equal(ctx.page.id, 'optimistic-batch-page');
 	assert.equal(ctx.batchStartKey, null);
 	assert.equal(ctx.batchEndKey, null);
 	assert.equal(ctx.batchAction, 'clear-record');
@@ -313,6 +332,7 @@ test('home applyBatchAction keeps the latest batch-hovered day instead of the pr
 		SelectedDatePanel: {},
 		SegmentedControl: {},
 		applyClearAttributesToPageModel: () => {},
+		applyBatchPeriodDraftToPageModel: (page) => page,
 		applySelectedDateNoteToPageModel: () => {},
 		applyToggleAttributeOptionToPageModel: () => {},
 		applyTogglePeriodToPageModel: () => {},
@@ -354,8 +374,16 @@ test('home applyBatchAction keeps the latest batch-hovered day instead of the pr
 		panelMode: 'batch',
 		batchStartKey: '2026-03-23',
 		batchEndKey: '2026-03-24',
+		batchHoveredKey: '2026-03-24',
+		batchSelectedKeysState: ['2026-03-23', '2026-03-24'],
 		buildBatchRanges: home.methods.buildBatchRanges,
-		runCommand(command) {
+		runOptimisticBatchMutation(nextPage, command) {
+			this.page = nextPage;
+			this.panelMode = 'single-day';
+			this.batchStartKey = null;
+			this.batchEndKey = null;
+			this.batchHoveredKey = null;
+			this.batchSelectedKeysState = [];
 			return command();
 		},
 		cancelBatchMode: home.methods.cancelBatchMode
@@ -370,7 +398,7 @@ test('home applyBatchAction keeps the latest batch-hovered day instead of the pr
 	assert.equal(persistCalls[0].endDate, '2026-03-24');
 });
 
-test('home applyBatchAction exits batch mode even while runCommand keeps the page in mutating state', async () => {
+test('home applyBatchAction exits batch mode even while optimistic batch mutation keeps the page in mutating state', async () => {
 	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
 		CalendarGrid: {},
 		CalendarLegend: {},
@@ -379,8 +407,10 @@ test('home applyBatchAction exits batch mode even while runCommand keeps the pag
 		SelectedDatePanel: {},
 		SegmentedControl: {},
 		applyClearAttributesToPageModel: () => {},
+		applyBatchPeriodDraftToPageModel: (page) => ({ ...page, id: 'optimistic-batch-page' }),
 		applySelectedDateNoteToPageModel: () => {},
 		applyToggleAttributeOptionToPageModel: () => {},
+		applySingleDayPeriodActionToPageModel: () => ({}),
 		resolveJumpTargetDate: () => null,
 		shiftFocusDate: () => null,
 		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
@@ -395,6 +425,7 @@ test('home applyBatchAction exits batch mode even while runCommand keeps the pag
 	});
 
 	const ctx = {
+		page: { id: 'previous-page' },
 		selectedBatchKeys: ['2026-03-23', '2026-03-24'],
 		allCalendarCells: [
 			{ key: '2026-03-23', isoDate: '2026-03-23', selectable: true },
@@ -416,10 +447,18 @@ test('home applyBatchAction exits batch mode even while runCommand keeps the pag
 		panelMode: 'batch',
 		batchStartKey: '2026-03-23',
 		batchEndKey: '2026-03-24',
+		batchHoveredKey: '2026-03-24',
+		batchSelectedKeysState: ['2026-03-23', '2026-03-24'],
 		buildBatchRanges: home.methods.buildBatchRanges,
 		cancelBatchMode: home.methods.cancelBatchMode,
 		isMutating: false,
-		runCommand: async function(command) {
+		runOptimisticBatchMutation: async function(nextPage, command) {
+			this.page = nextPage;
+			this.panelMode = 'single-day';
+			this.batchStartKey = null;
+			this.batchEndKey = null;
+			this.batchHoveredKey = null;
+			this.batchSelectedKeysState = [];
 			this.isMutating = true;
 			try {
 				await command();
@@ -432,8 +471,138 @@ test('home applyBatchAction exits batch mode even while runCommand keeps the pag
 	await home.methods.applyBatchAction.call(ctx);
 
 	assert.equal(ctx.panelMode, 'single-day');
+	assert.equal(ctx.page.id, 'optimistic-batch-page');
 	assert.equal(ctx.batchStartKey, null);
 	assert.equal(ctx.batchEndKey, null);
+});
+
+test('home handleTogglePeriod uses optimistic mutation immediately when no confirmation is required', async () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applyBatchPeriodDraftToPageModel: () => ({}),
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		applySingleDayPeriodActionToPageModel: (pageModel) => ({ ...pageModel, id: 'optimistic-period-page' }),
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({}),
+		applySingleDayPeriodAction: async () => ({ affectedScopes: ['calendar', 'dayDetail', 'prediction'] })
+	});
+
+	const calls = [];
+	const ctx = {
+		page: { id: 'previous-page' },
+		contractContext: {
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		activeDate: '2026-03-23',
+		rawContracts: {
+			singleDayPeriodAction: {
+				resolvedAction: {
+					action: 'mark-start',
+					prompt: null,
+					effect: {
+						action: 'mark-start',
+						writeDates: ['2026-03-23'],
+						clearDates: []
+					}
+				}
+			}
+		},
+		runOptimisticMutation(nextPage, command) {
+			calls.push({ type: 'optimistic', nextPage });
+			return command();
+		}
+	};
+
+	await home.methods.handleTogglePeriod.call(ctx, true);
+
+	assert.equal(calls.length, 1);
+	assert.equal(calls[0].nextPage.id, 'optimistic-period-page');
+});
+
+test('home handleTogglePeriod waits for confirmation before optimistic commit when prompt is required', async () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applyBatchPeriodDraftToPageModel: () => ({}),
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		applySingleDayPeriodActionToPageModel: (pageModel) => ({ ...pageModel, id: 'optimistic-period-page' }),
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({}),
+		applySingleDayPeriodAction: async () => ({ affectedScopes: ['calendar', 'dayDetail', 'prediction'] }),
+		uni: {
+			showModal({ success }) {
+				success({ confirm: false });
+			}
+		}
+	});
+
+	const calls = [];
+	const ctx = {
+		page: { id: 'previous-page' },
+		contractContext: {
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		activeDate: '2026-03-23',
+		rawContracts: {
+			singleDayPeriodAction: {
+				resolvedAction: {
+					action: 'bridge',
+					prompt: {
+						required: true,
+						message: 'confirm'
+					},
+					effect: {
+						action: 'bridge',
+						writeDates: ['2026-03-23'],
+						clearDates: []
+					}
+				}
+			}
+		},
+		runOptimisticMutation(nextPage, command) {
+			calls.push({ type: 'optimistic', nextPage });
+			return command();
+		}
+	};
+
+	await home.methods.handleTogglePeriod.call(ctx, true);
+
+	assert.equal(calls.length, 0);
 });
 
 test('calendar grid does not extend batch selection into a future-muted cell', () => {
@@ -592,6 +761,10 @@ test('home single-day period tap routes directly to applySingleDayPeriodAction w
 		applyClearAttributesToPageModel: () => {},
 		applySelectedDateNoteToPageModel: () => {},
 		applyToggleAttributeOptionToPageModel: () => {},
+		applySingleDayPeriodActionToPageModel: (pageModel) => ({
+			...pageModel,
+			id: 'optimistic-single-day-page'
+		}),
 		applyTogglePeriodToPageModel: () => {
 			throw new Error('legacy toggle helper should not be used for single-day smart period editing');
 		},
@@ -627,11 +800,17 @@ test('home single-day period tap routes directly to applySingleDayPeriodAction w
 			singleDayPeriodAction: {
 				resolvedAction: {
 					action: 'end-here',
-					prompt: null
+					prompt: null,
+					effect: {
+						action: 'end-here',
+						writeDates: ['2026-03-29'],
+						clearDates: []
+					}
 				}
 			}
 		},
-		runCommand(command) {
+		runOptimisticMutation(nextPage, command) {
+			assert.equal(nextPage.id, 'optimistic-single-day-page');
 			return command();
 		}
 	};
@@ -662,6 +841,9 @@ test('home single-day bridge cancel shows confirmation and does not mutate', asy
 		applyClearAttributesToPageModel: () => {},
 		applySelectedDateNoteToPageModel: () => {},
 		applyToggleAttributeOptionToPageModel: () => {},
+		applySingleDayPeriodActionToPageModel: () => ({
+			id: 'optimistic-single-day-page'
+		}),
 		applyTogglePeriodToPageModel: () => {
 			throw new Error('legacy toggle helper should not be used for single-day smart period editing');
 		},
@@ -704,11 +886,16 @@ test('home single-day bridge cancel shows confirmation and does not mutate', asy
 						message: '已在 03/24 标记了经期开始，要提前到 03/22 吗？',
 						confirmLabel: '确认',
 						cancelLabel: '取消'
+					},
+					effect: {
+						action: 'start',
+						writeDates: ['2026-03-22'],
+						clearDates: []
 					}
 				}
 			}
 		},
-		runCommand(command) {
+		runOptimisticMutation(command) {
 			return command();
 		}
 	};
@@ -734,6 +921,9 @@ test('home single-day bridge confirm calls applySingleDayPeriodAction with confi
 		applyClearAttributesToPageModel: () => {},
 		applySelectedDateNoteToPageModel: () => {},
 		applyToggleAttributeOptionToPageModel: () => {},
+		applySingleDayPeriodActionToPageModel: () => ({
+			id: 'optimistic-single-day-page'
+		}),
 		applyTogglePeriodToPageModel: () => {
 			throw new Error('legacy toggle helper should not be used for single-day smart period editing');
 		},
@@ -775,11 +965,17 @@ test('home single-day bridge confirm calls applySingleDayPeriodAction with confi
 						message: '已在 03/24 标记了经期开始，要提前到 03/22 吗？',
 						confirmLabel: '确认',
 						cancelLabel: '取消'
+					},
+					effect: {
+						action: 'start',
+						writeDates: ['2026-03-22'],
+						clearDates: []
 					}
 				}
 			}
 		},
-		runCommand(command) {
+		runOptimisticMutation(nextPage, command) {
+			assert.equal(nextPage.id, 'optimistic-single-day-page');
 			return command();
 		}
 	};
