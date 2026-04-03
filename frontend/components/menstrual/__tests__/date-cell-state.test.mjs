@@ -28,6 +28,14 @@ test('futureMuted state uses muted text without extra fill', () => {
   assert.equal(presentation.usesDetailMarker, false);
 });
 
+test('futurePeriod keeps the same readable contrast text as a normal period cell', () => {
+  const presentation = getDateCellPresentation('futurePeriod');
+
+  assert.equal(presentation.backgroundToken, 'accent.period');
+  assert.equal(presentation.textToken, 'accent.period.contrast');
+  assert.equal(presentation.usesDetailMarker, false);
+});
+
 test('todayPeriod keeps today outline while switching to period contrast text', () => {
   const presentation = getDateCellPresentation('todayPeriod');
 
@@ -166,6 +174,8 @@ test('dateCellVariants exposes the full approved variant matrix', () => {
   assert.deepEqual(dateCellVariants, [
     'default',
     'futureMuted',
+    'futurePrediction',
+    'futurePeriod',
     'today',
     'detail',
     'prediction',

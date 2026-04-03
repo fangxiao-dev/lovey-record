@@ -105,6 +105,24 @@ test('loadMenstrualHomePageModel requests getCalendarWindow using the resolved f
 			return;
 		}
 
+		if (options.url.includes('/queries/getModuleSettings')) {
+			options.success({
+				statusCode: 200,
+				data: {
+					ok: true,
+					data: {
+						moduleInstanceId: 'seed-home-module',
+						moduleSettings: {
+							defaultPeriodDurationDays: 6,
+							defaultPredictionTermDays: 22
+						}
+					},
+					error: null
+				}
+			});
+			return;
+		}
+
 		if (options.url.includes('/queries/getDayRecordDetail')) {
 			options.success({
 				statusCode: 200,
@@ -181,6 +199,7 @@ test('loadMenstrualHomePageModel requests getCalendarWindow using the resolved f
 	assert.match(requests[1].url, /\/queries\/getCalendarWindow\?_ts=\d+$/);
 	assert.match(requests[2].url, /\/queries\/getDayRecordDetail\?_ts=\d+$/);
 	assert.match(requests[3].url, /\/queries\/getSingleDayPeriodAction\?_ts=\d+$/);
+	assert.match(requests[4].url, /\/queries\/getModuleSettings\?_ts=\d+$/);
 	assert.deepEqual(requests[1].data, {
 		moduleInstanceId: 'seed-home-module',
 		profileId: 'seed-home-profile',
@@ -190,6 +209,9 @@ test('loadMenstrualHomePageModel requests getCalendarWindow using the resolved f
 	assert.deepEqual(requests[3].data, {
 		moduleInstanceId: 'seed-home-module',
 		date: '2026-03-29'
+	});
+	assert.deepEqual(requests[4].data, {
+		moduleInstanceId: 'seed-home-module'
 	});
 	assert.equal(requests[1].header['x-wx-openid'], 'seed-home-openid');
 });
@@ -220,11 +242,12 @@ test('loadMenstrualHomePageModel throws by default when live queries fail', asyn
 	);
 });
 
-test('loadMenstrualHomePageModel starts calendar and detail queries in parallel after home view resolves', async () => {
+test('loadMenstrualHomePageModel starts calendar, detail, action, and settings queries in parallel after home view resolves', async () => {
 	const startedPaths = [];
 	let resolveCalendar;
 	let resolveDetail;
 	let resolveAction;
+	let resolveSettings;
 	const calendarResolved = new Promise((resolve) => {
 		resolveCalendar = resolve;
 	});
@@ -233,6 +256,9 @@ test('loadMenstrualHomePageModel starts calendar and detail queries in parallel 
 	});
 	const actionResolved = new Promise((resolve) => {
 		resolveAction = resolve;
+	});
+	const settingsResolved = new Promise((resolve) => {
+		resolveSettings = resolve;
 	});
 
 	installUniRequestMock((options) => {
@@ -348,6 +374,27 @@ test('loadMenstrualHomePageModel starts calendar and detail queries in parallel 
 					}
 				});
 			});
+			return;
+		}
+
+		if (options.url.includes('/queries/getModuleSettings')) {
+			startedPaths.push('settings');
+			settingsResolved.then(() => {
+				options.success({
+					statusCode: 200,
+					data: {
+						ok: true,
+						data: {
+							moduleInstanceId: 'seed-home-module',
+							moduleSettings: {
+								defaultPeriodDurationDays: 6,
+								defaultPredictionTermDays: 22
+							}
+						},
+						error: null
+					}
+				});
+			});
 		}
 	});
 
@@ -364,15 +411,154 @@ test('loadMenstrualHomePageModel starts calendar and detail queries in parallel 
 
 	await new Promise((resolve) => setTimeout(resolve, 0));
 
-	assert.equal(startedPaths.length, 3);
+	assert.equal(startedPaths.length, 4);
 	assert.equal(startedPaths[0], 'calendar');
 	assert.equal(startedPaths[1], 'detail');
 	assert.equal(startedPaths[2], 'action');
+	assert.equal(startedPaths[3], 'settings');
 
 	resolveCalendar();
 	resolveDetail();
 	resolveAction();
+	resolveSettings();
 	await loading;
+});
+
+test('loadMenstrualHomePageModel uses module settings to expand the hero next frame into a predicted range', async () => {
+	installUniRequestMock((options) => {
+		if (options.url.includes('/queries/getModuleHomeView')) {
+			options.success({
+				statusCode: 200,
+				data: {
+					ok: true,
+					data: {
+						moduleInstanceId: 'seed-home-module',
+						sharingStatus: 'private',
+						currentStatusSummary: {
+							status: 'out_of_period',
+							anchorDate: '2026-03-29',
+							currentCycle: {
+								startDate: '2026-03-24',
+								endDate: '2026-03-29',
+								durationDays: 6
+							}
+						},
+						visibleWindow: null,
+						calendarMarks: [{ date: '2026-04-20', kind: 'prediction_start' }],
+						selectedDay: null,
+						predictionSummary: {
+							predictedStartDate: '2026-04-20',
+							predictionWindowStart: '2026-04-18',
+							predictionWindowEnd: '2026-04-24',
+							basedOnCycleCount: 3
+						}
+					},
+					error: null
+				}
+			});
+			return;
+		}
+
+		if (options.url.includes('/queries/getCalendarWindow')) {
+			options.success({
+				statusCode: 200,
+				data: {
+					ok: true,
+					data: {
+						moduleInstanceId: 'seed-home-module',
+						window: {
+							startDate: '2026-03-16',
+							endDate: '2026-04-05'
+						},
+						days: [],
+						marks: []
+					},
+					error: null
+				}
+			});
+			return;
+		}
+
+		if (options.url.includes('/queries/getDayRecordDetail')) {
+			options.success({
+				statusCode: 200,
+				data: {
+					ok: true,
+					data: {
+						moduleInstanceId: 'seed-home-module',
+						profileId: 'seed-home-profile',
+						dayRecord: {
+							date: '2026-03-29',
+							isPeriod: false,
+							painLevel: null,
+							flowLevel: null,
+							colorLevel: null,
+							note: null,
+							source: null,
+							isExplicit: false,
+							isDetailRecorded: false
+						}
+					},
+					error: null
+				}
+			});
+			return;
+		}
+
+		if (options.url.includes('/queries/getSingleDayPeriodAction')) {
+			options.success({
+				statusCode: 200,
+				data: {
+					ok: true,
+					data: {
+						selectedDate: '2026-03-29',
+						role: 'not-period',
+						chip: {
+							text: '月经',
+							selected: false
+						},
+						resolvedAction: null
+					},
+					error: null
+				}
+			});
+			return;
+		}
+
+		if (options.url.includes('/queries/getModuleSettings')) {
+			options.success({
+				statusCode: 200,
+				data: {
+					ok: true,
+					data: {
+						moduleInstanceId: 'seed-home-module',
+						moduleSettings: {
+							defaultPeriodDurationDays: 6,
+							defaultPredictionTermDays: 22
+						}
+					},
+					error: null
+				}
+			});
+		}
+	});
+
+	const result = await loadMenstrualHomePageModel({
+		apiBaseUrl: 'http://localhost:3000/api',
+		openid: 'seed-home-openid',
+		moduleInstanceId: 'seed-home-module',
+		profileId: 'seed-home-profile',
+		today: '2026-03-29',
+		activeDate: '2026-03-29',
+		focusDate: '2026-03-29',
+		viewMode: 'three-week'
+	});
+
+	assert.equal(result.page.heroCard.nextFrame.value, '04.20 - 04.25');
+	assert.deepEqual(result.raw.moduleSettings, {
+		defaultPeriodDurationDays: 6,
+		defaultPredictionTermDays: 22
+	});
 });
 
 test('loadMenstrualCalendarWindow only requests the calendar window query for the requested focus date and view mode', async () => {

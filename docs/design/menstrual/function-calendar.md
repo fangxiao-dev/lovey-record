@@ -57,13 +57,15 @@ Date cell states follow the axes defined in `date-state-spec.md`:
 
 Forbidden combinations from `date-state-spec.md`:
 - Future dates are read-only; user cannot mark them as `period`.
+- System-driven auto-fill may still render a future date as `period`.
 - Future dates should not carry the detail-recorded eye marker.
 - `prediction + detail recorded` is not a supported product combination.
 
 ## Tap Interaction
 
 - Tap any past or today date cell → opens `SelectedDatePanel` for that date (inline, below the calendar).
-- Tap a future date → no action (read-only, cell appears `future muted`).
+- Tap a future date → no action.
+- A future auto-filled period date reuses the same readable `period` treatment as a normal period cell, but still remains read-only.
 - Only one date can be active in single-day edit mode at a time. Tapping a different date switches the panel to that date and collapses the attribute grid.
 
 ## Batch Selection Interaction
@@ -79,6 +81,13 @@ Forbidden combinations from `date-state-spec.md`:
 
 - Past dates and today are selectable. Future dates are not.
 - If the drag reaches a future date boundary, the selection stops at today.
+
+## Hero / Prediction Boundary
+
+- Calendar prediction styling is still mark-driven and only applies to `prediction_start`.
+- The rest of the prediction window is supporting read-model context, not a calendar highlight instruction.
+- Hero `下次` shows the predicted period range `predictedStartDate ~ predictedStartDate + defaultPeriodDurationDays - 1`.
+- `下次预测` shortcut still jumps to `prediction_start`.
 
 ### During Selection
 

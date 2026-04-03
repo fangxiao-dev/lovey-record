@@ -14,11 +14,12 @@ import {
 } from '../home-contract-adapter.js';
 
 test('home contract adapter maps query responses into the formal menstrual home page model', () => {
-	const { homeView, dayDetail } = createSeededHomeContracts();
+	const { homeView, dayDetail, moduleSettings } = createSeededHomeContracts();
 
 	const model = createMenstrualHomePageModel({
 		homeView,
 		dayDetail,
+		moduleSettings,
 		today: homeView.currentStatusSummary.anchorDate  // Use seed's actual date
 	});
 
@@ -38,7 +39,7 @@ test('home contract adapter maps query responses into the formal menstrual home 
 	);
 	assert.equal(model.heroCard.nextFrame.label, '下次');
 	// Should have prediction
-	assert.equal(model.heroCard.nextFrame.value, homeView.predictionSummary.predictedStartDate.slice(5).replace('-', '.'));
+	assert.equal(model.heroCard.nextFrame.value, '04.20 - 04.25');
 	assert.equal(model.viewModeControl.value, 'three-week');
 	assert.deepEqual(
 		model.jumpTabs.items.map((item) => [item.key, item.label, item.disabled]),
@@ -63,7 +64,7 @@ test('home contract adapter maps query responses into the formal menstrual home 
 });
 
 test('home contract adapter shows "上次" from currentSegment when out_of_period', () => {
-	const { homeView, dayDetail } = createSeededHomeContracts();
+	const { homeView, dayDetail, moduleSettings } = createSeededHomeContracts();
 	// Seed already has out_of_period with currentSegment, so test the display
 	assert.equal(homeView.currentStatusSummary.currentStatus, 'out_of_period');
 	assert.ok(homeView.currentStatusSummary.currentSegment, 'seed should have currentSegment');
@@ -71,6 +72,7 @@ test('home contract adapter shows "上次" from currentSegment when out_of_perio
 	const model = createMenstrualHomePageModel({
 		homeView,
 		dayDetail,
+		moduleSettings,
 		today: homeView.currentStatusSummary.anchorDate  // Use the seed's period date as "today" reference
 	});
 
@@ -141,6 +143,10 @@ test('home contract adapter builds the calendar from getCalendarWindow and prese
 	const model = createMenstrualHomePageModel({
 		homeView: staticHomeView,
 		dayDetail: staticDayDetail,
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 22
+		},
 		calendarWindow,
 		today: '2026-03-29',
 		focusDate: '2026-03-29',
@@ -162,10 +168,11 @@ test('home contract adapter builds the calendar from getCalendarWindow and prese
 });
 
 test('home contract adapter can build a month-view calendar locally from homeView marks when calendarWindow is unavailable', () => {
-	const { homeView } = createSeededHomeContracts();
+	const { homeView, moduleSettings } = createSeededHomeContracts();
 
 	const model = createMenstrualHomePageModel({
 		homeView,
+		moduleSettings,
 		dayDetail: createEmptyDayDetail({
 			moduleInstanceId: 'seed-home-module',
 			profileId: 'seed-home-profile',
@@ -216,6 +223,10 @@ test('home contract adapter renders only prediction_start as prediction instead 
 
 	const localModel = createMenstrualHomePageModel({
 		homeView,
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 22
+		},
 		dayDetail: createEmptyDayDetail({
 			moduleInstanceId: 'seed-home-module',
 			profileId: 'seed-home-profile',
@@ -232,6 +243,10 @@ test('home contract adapter renders only prediction_start as prediction instead 
 
 	const windowModel = createMenstrualHomePageModel({
 		homeView,
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 22
+		},
 		dayDetail: createEmptyDayDetail({
 			moduleInstanceId: 'seed-home-module',
 			profileId: 'seed-home-profile',
@@ -262,25 +277,26 @@ test('home contract adapter renders only prediction_start as prediction instead 
 	assert.equal(windowByDate['2026-04-03'], 'selectedPrediction');
 });
 
-test('home contract adapter uses predictedStartDate for the hero next frame and prediction jump target', () => {
-	const { homeView, dayDetail } = createSeededHomeContracts();
+test('home contract adapter uses predictedStartDate for the prediction jump target and defaultPeriodDurationDays for the hero next range', () => {
+	const { homeView, dayDetail, moduleSettings } = createSeededHomeContracts();
 
 	const model = createMenstrualHomePageModel({
 		homeView,
 		dayDetail,
+		moduleSettings,
 		today: '2026-03-29'
 	});
 
 	assert.equal(
 		model.heroCard.nextFrame.value,
-		homeView.predictionSummary.predictedStartDate.slice(5).replace('-', '.')
+		'04.20 - 04.25'
 	);
 	assert.equal(model.jumpTabs.items.find((item) => item.key === 'prediction')?.disabled, false);
 	assert.equal(resolveJumpTargetDate(homeView, 'prediction', '2026-03-29'), homeView.predictionSummary.predictedStartDate);
 });
 
 test('home contract adapter supports implicit non-period day detail without leaking stale selections', () => {
-	const { homeView } = createSeededHomeContracts();
+	const { homeView, moduleSettings } = createSeededHomeContracts();
 	const implicitDayDetail = {
 		moduleInstanceId: 'seed-home-module',
 		profileId: 'seed-home-profile',
@@ -299,6 +315,7 @@ test('home contract adapter supports implicit non-period day detail without leak
 
 	const model = createMenstrualHomePageModel({
 		homeView,
+		moduleSettings,
 		dayDetail: implicitDayDetail,
 		today: '2026-03-29'
 	});
@@ -316,7 +333,7 @@ test('home contract adapter supports implicit non-period day detail without leak
 });
 
 test('home contract adapter keeps note-only days recorded without adding an eye marker', () => {
-	const { homeView } = createSeededHomeContracts();
+	const { homeView, moduleSettings } = createSeededHomeContracts();
 	const noteOnlyDayDetail = {
 		moduleInstanceId: 'seed-home-module',
 		profileId: 'seed-home-profile',
@@ -335,6 +352,7 @@ test('home contract adapter keeps note-only days recorded without adding an eye 
 
 	const model = createMenstrualHomePageModel({
 		homeView,
+		moduleSettings,
 		dayDetail: noteOnlyDayDetail,
 		today: '2026-03-29'
 	});
@@ -349,7 +367,7 @@ test('home contract adapter keeps note-only days recorded without adding an eye 
 });
 
 test('home contract adapter keeps period-only days recorded without adding an eye marker', () => {
-	const { homeView } = createSeededHomeContracts();
+	const { homeView, moduleSettings } = createSeededHomeContracts();
 	const periodOnlyDayDetail = {
 		moduleInstanceId: 'seed-home-module',
 		profileId: 'seed-home-profile',
@@ -368,6 +386,7 @@ test('home contract adapter keeps period-only days recorded without adding an ey
 
 	const model = createMenstrualHomePageModel({
 		homeView,
+		moduleSettings,
 		dayDetail: periodOnlyDayDetail,
 		today: '2026-03-29'
 	});
@@ -387,7 +406,7 @@ test('home contract adapter keeps period-only days recorded without adding an ey
 });
 
 test('home contract adapter keeps the eye marker when today has detail and prediction starts on a later date', () => {
-	const { homeView } = createSeededHomeContracts();
+	const { homeView, moduleSettings } = createSeededHomeContracts();
 	const todayPredictionDetail = {
 		moduleInstanceId: 'seed-home-module',
 		profileId: 'seed-home-profile',
@@ -428,6 +447,7 @@ test('home contract adapter keeps the eye marker when today has detail and predi
 				basedOnCycleCount: 2
 			}
 		},
+		moduleSettings,
 		dayDetail: todayPredictionDetail,
 		calendarWindow,
 		today: '2026-03-29',
@@ -440,13 +460,13 @@ test('home contract adapter keeps the eye marker when today has detail and predi
 		true
 	);
 	assert.equal(
-		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-03-31' && cell.variant === 'futureMuted'),
+		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-03-31' && cell.variant === 'futurePrediction'),
 		true
 	);
 });
 
 test('home contract adapter adds the eye marker to the selected calendar day once attributes are recorded', () => {
-	const { homeView } = createSeededHomeContracts();
+	const { homeView, moduleSettings } = createSeededHomeContracts();
 	const dayDetail = {
 		moduleInstanceId: 'seed-home-module',
 		profileId: 'seed-home-profile',
@@ -480,7 +500,7 @@ test('home contract adapter adds the eye marker to the selected calendar day onc
 });
 
 test('home contract adapter applies attribute option toggles to both matrix state and summary bar', () => {
-	const { homeView } = createSeededHomeContracts();
+	const { homeView, moduleSettings } = createSeededHomeContracts();
 	const dayDetail = {
 		moduleInstanceId: 'seed-home-module',
 		profileId: 'seed-home-profile',
@@ -499,6 +519,7 @@ test('home contract adapter applies attribute option toggles to both matrix stat
 	const model = createMenstrualHomePageModel({
 		homeView,
 		dayDetail,
+		moduleSettings,
 		today: '2026-03-28'
 	});
 
@@ -526,10 +547,11 @@ test('home contract adapter applies attribute option toggles to both matrix stat
 });
 
 test('home contract adapter clears all attribute selections and removes summary chips', () => {
-	const { homeView, dayDetail } = createSeededHomeContracts();
+	const { homeView, dayDetail, moduleSettings } = createSeededHomeContracts();
 	const model = createMenstrualHomePageModel({
 		homeView,
 		dayDetail,
+		moduleSettings,
 		today: '2026-03-29'
 	});
 
@@ -543,15 +565,16 @@ test('home contract adapter clears all attribute selections and removes summary 
 });
 
 test('home contract adapter optimistically marks a non-period day as period using the resolved action effect', () => {
-	const { homeView } = createSeededHomeContracts();
+	const { homeView, moduleSettings } = createSeededHomeContracts();
 	const dayDetail = createEmptyDayDetail({
 		moduleInstanceId: 'seed-home-module',
 		profileId: 'seed-home-profile',
-		date: '2026-03-23'
+		date: '2026-03-28'
 	});
 	const model = createMenstrualHomePageModel({
 		homeView,
 		dayDetail,
+		moduleSettings,
 		today: '2026-03-29'
 	});
 
@@ -560,13 +583,13 @@ test('home contract adapter optimistically marks a non-period day as period usin
 			action: 'mark-start',
 			effect: {
 				action: 'mark-start',
-				writeDates: ['2026-03-23', '2026-03-24', '2026-03-25'],
+				writeDates: ['2026-03-28', '2026-03-29', '2026-03-30'],
 				clearDates: []
 			}
 		}
 	});
 
-	const selectedCell = next.calendarCard.weeks.flatMap((week) => week.cells).find((cell) => cell.key === '2026-03-23');
+	const selectedCell = next.calendarCard.weeks.flatMap((week) => week.cells).find((cell) => cell.key === '2026-03-28');
 	assert.equal(selectedCell.variant, 'selectedPeriod');
 	assert.equal(next.selectedDatePanel.periodChipSelected, true);
 	assert.equal(next.selectedDatePanel.periodChipText, '月经开始');
@@ -610,6 +633,10 @@ test('home contract adapter optimistically truncates later period dates using th
 	const model = createMenstrualHomePageModel({
 		homeView,
 		dayDetail,
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 22
+		},
 		today: '2026-03-29'
 	});
 
@@ -633,7 +660,7 @@ test('home contract adapter optimistically truncates later period dates using th
 });
 
 test('home contract adapter applies batch draft to the visible calendar and selected day panel without touching hero', () => {
-	const { homeView } = createSeededHomeContracts();
+	const { homeView, moduleSettings } = createSeededHomeContracts();
 	const dayDetail = createEmptyDayDetail({
 		moduleInstanceId: 'seed-home-module',
 		profileId: 'seed-home-profile',
@@ -642,6 +669,7 @@ test('home contract adapter applies batch draft to the visible calendar and sele
 	const model = createMenstrualHomePageModel({
 		homeView,
 		dayDetail,
+		moduleSettings,
 		today: '2026-03-29'
 	});
 	const originalHero = structuredClone(model.heroCard);
@@ -666,7 +694,7 @@ test('home contract adapter applies batch draft to the visible calendar and sele
 });
 
 test('home contract adapter applies hero snapshot without mutating calendar or selected day panel state', () => {
-	const { homeView } = createSeededHomeContracts();
+	const { homeView, moduleSettings } = createSeededHomeContracts();
 	const dayDetail = createEmptyDayDetail({
 		moduleInstanceId: 'seed-home-module',
 		profileId: 'seed-home-profile',
@@ -675,6 +703,7 @@ test('home contract adapter applies hero snapshot without mutating calendar or s
 	const model = createMenstrualHomePageModel({
 		homeView,
 		dayDetail,
+		moduleSettings,
 		today: '2026-03-29',
 		focusDate: '2026-03-24',
 		viewMode: 'month'
@@ -706,16 +735,163 @@ test('home contract adapter applies hero snapshot without mutating calendar or s
 				basedOnCycleCount: 4
 			}
 		},
+		moduleSettings,
 		today: '2026-03-29'
 	});
 
 	assert.equal(next.topBar.statusLabel, '共享');
 	assert.equal(next.heroCard.statusFrame.state, 'in_period');
 	assert.equal(next.heroCard.statusFrame.text, '经期中');
-	assert.equal(next.heroCard.nextFrame.value, '04.21');
+	assert.equal(next.heroCard.nextFrame.value, '04.21 - 04.26');
 	assert.deepEqual(next.calendarCard, originalCalendar);
 	assert.deepEqual(next.selectedDatePanel, originalPanel);
 	assert.equal(next.selectedDateKey, model.selectedDateKey);
 	assert.equal(next.headerNav.monthLabel, model.headerNav.monthLabel);
 	assert.equal(next.viewModeControl.value, model.viewModeControl.value);
+});
+
+test('home contract adapter uses the refreshed module settings when rebuilding the hero next range', () => {
+	const model = createMenstrualHomePageModel({
+		homeView: {
+			moduleInstanceId: 'seed-home-module',
+			sharingStatus: 'private',
+			currentStatusSummary: {
+				currentStatus: 'out_of_period',
+				anchorDate: '2026-03-29',
+				currentSegment: {
+					startDate: '2026-03-24',
+					endDate: '2026-03-27',
+					durationDays: 4
+				},
+				statusCard: {
+					label: '非经期'
+				},
+				previousSegment: null
+			},
+			predictionSummary: {
+				predictedStartDate: '2026-04-03',
+				predictionWindowStart: '2026-04-01',
+				predictionWindowEnd: '2026-04-05',
+				basedOnCycleCount: 3
+			}
+		},
+		moduleSettings: {
+			defaultPeriodDurationDays: 4,
+			defaultPredictionTermDays: 22
+		},
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			date: '2026-03-29'
+		}),
+		today: '2026-03-29'
+	});
+
+	const next = applyHeroSnapshotToPageModel(model, {
+		homeView: {
+			moduleInstanceId: 'seed-home-module',
+			sharingStatus: 'private',
+			currentStatusSummary: {
+				currentStatus: 'out_of_period',
+				anchorDate: '2026-03-29',
+				currentSegment: {
+					startDate: '2026-03-24',
+					endDate: '2026-03-29',
+					durationDays: 6
+				},
+				statusCard: {
+					label: '非经期'
+				},
+				previousSegment: null
+			},
+			predictionSummary: {
+				predictedStartDate: '2026-04-03',
+				predictionWindowStart: '2026-04-01',
+				predictionWindowEnd: '2026-04-05',
+				basedOnCycleCount: 3
+			}
+		},
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 22
+		},
+		today: '2026-03-29'
+	});
+
+	assert.equal(model.heroCard.nextFrame.value, '04.03 - 04.06');
+	assert.equal(next.heroCard.nextFrame.value, '04.03 - 04.08');
+});
+
+test('home contract adapter renders future auto-filled period dates with period fill and no detail marker', () => {
+	const model = createMenstrualHomePageModel({
+		homeView: {
+			moduleInstanceId: 'seed-home-module',
+			sharingStatus: 'private',
+			currentStatusSummary: {
+				currentStatus: 'in_period',
+				anchorDate: '2026-03-29',
+				currentSegment: {
+					startDate: '2026-03-29',
+					endDate: '2026-04-02',
+					durationDays: 5
+				},
+				statusCard: {
+					label: '经期第1天'
+				},
+				previousSegment: null
+			},
+			predictionSummary: {
+				predictedStartDate: '2026-04-20',
+				predictionWindowStart: '2026-04-18',
+				predictionWindowEnd: '2026-04-22',
+				basedOnCycleCount: 3
+			}
+		},
+		moduleSettings: {
+			defaultPeriodDurationDays: 5,
+			defaultPredictionTermDays: 22
+		},
+		dayDetail: {
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			dayRecord: {
+				date: '2026-03-29',
+				isPeriod: true,
+				painLevel: null,
+				flowLevel: null,
+				colorLevel: null,
+				note: null,
+				source: 'manual',
+				isExplicit: true,
+				isDetailRecorded: false
+			}
+		},
+		calendarWindow: {
+			moduleInstanceId: 'seed-home-module',
+			window: {
+				startDate: '2026-03-23',
+				endDate: '2026-04-05'
+			},
+			days: [
+				{ date: '2026-03-29', isPeriod: true, source: 'manual', isExplicit: true, isDetailRecorded: false },
+				{ date: '2026-03-30', isPeriod: true, source: 'auto_filled', isExplicit: false, isDetailRecorded: false },
+				{ date: '2026-03-31', isPeriod: true, source: 'auto_filled', isExplicit: false, isDetailRecorded: false },
+				{ date: '2026-04-01', isPeriod: true, source: 'auto_filled', isExplicit: false, isDetailRecorded: false },
+				{ date: '2026-04-02', isPeriod: true, source: 'auto_filled', isExplicit: false, isDetailRecorded: false }
+			],
+			marks: [
+				{ date: '2026-03-29', kind: 'period_start' },
+				{ date: '2026-04-20', kind: 'prediction_start' }
+			]
+		},
+		today: '2026-03-29',
+		focusDate: '2026-03-29',
+		viewMode: 'month'
+	});
+
+	const byDate = Object.fromEntries(model.calendarCard.weeks.flatMap((week) => week.cells).map((cell) => [cell.key, cell.variant]));
+	assert.equal(byDate['2026-03-31'], 'futurePeriod');
+	assert.equal(byDate['2026-04-01'], 'futurePeriod');
+	assert.equal(byDate['2026-04-02'], 'futurePeriod');
+	assert.equal(byDate['2026-03-31'].includes('Detail'), false);
 });

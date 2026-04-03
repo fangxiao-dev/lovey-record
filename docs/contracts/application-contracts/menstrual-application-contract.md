@@ -1,7 +1,7 @@
 # Period Application Contract Draft
 
 **Created:** 2026-03-23
-**Last Updated:** 2026-04-03
+**Last Updated:** 2026-04-04
 
 ## Purpose
 
@@ -167,8 +167,11 @@ Rules:
 - `next` points to `predictionSummary`
 - if `previous` is missing, frontend should render `暂无记录`
 - if `next` is missing, frontend should render `暂无记录`
+- hero `next` renders the predicted period range, not just the start day
+- the predicted range end is derived as `predictionSummary.predictedStartDate + moduleSettings.defaultPeriodDurationDays - 1`
 - the home shortcut row should expose `上次` as a jump target and disable it when `previous` is missing
 - the home shortcut row may continue exposing `今天`
+- the `下次预测` shortcut still jumps to `predictionSummary.predictedStartDate`
 - the previous `本次` shortcut semantics are absorbed by the status card and no longer appear as a separate home shortcut
 
 ### Home Hero Status Source
@@ -647,6 +650,8 @@ Rules:
 
 - `predictedStartDate` is derived from the latest period segment start plus `defaultPredictionTermDays`
 - `basedOnCycleCount` remains a compatibility field and is not the prediction source of truth
+- `predictionWindowStart` / `predictionWindowEnd` remain supporting read-model context, not calendar highlight instructions
+- the hero-facing predicted period range end is derived from `predictedStartDate + defaultPeriodDurationDays - 1`; no separate `predictedEndDate` field is required
 ```
 
 ### `ModuleAccessReadModel`
@@ -1073,6 +1078,7 @@ Calendar prediction semantics:
 - visible calendar prediction styling is driven by `calendarMarks`
 - the current home calendar contract uses `kind: 'prediction_start'` as the visible prediction marker
 - frontend must not expand the whole prediction window into prediction-styled date cells unless a future contract explicitly adds such a mark type
+- future auto-filled period days remain valid `days[].isPeriod = true` results in calendar-oriented read models, but frontend keeps them read-only
 
 Suggested response shape:
 
@@ -1181,6 +1187,8 @@ Calendar rendering note:
 - `marks` is the visual-state source for calendar overlays
 - `prediction_start` identifies the single visible forecast start day in the calendar
 - `predictionSummary` may still expose a wider prediction window, but that window is not itself a calendar highlighting instruction
+- `days[].isPeriod = true` may legitimately appear on dates after `today` when auto-fill extends an anchored segment into the future
+- those future period rows are read-only in frontend interaction terms; they are not evidence that future dates became directly editable
 
 Suggested input:
 

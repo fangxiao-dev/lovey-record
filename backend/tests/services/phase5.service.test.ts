@@ -195,6 +195,83 @@ describe('phase5.service', () => {
     });
   });
 
+  it('keeps future auto-filled period days in the window rows while exposing only prediction_start as a calendar mark', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-03-29T00:00:00.000Z'));
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      ownerUserId: 'user-1',
+      profileId: 'profile-1',
+      sharingStatus: 'PRIVATE',
+    });
+    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
+      {
+        date: new Date('2026-03-29T00:00:00.000Z'),
+        isPeriod: true,
+        source: 'MANUAL',
+        painLevel: null,
+        flowLevel: null,
+        colorLevel: null,
+      },
+      {
+        date: new Date('2026-03-30T00:00:00.000Z'),
+        isPeriod: true,
+        source: 'AUTO_FILLED',
+        painLevel: null,
+        flowLevel: null,
+        colorLevel: null,
+      },
+      {
+        date: new Date('2026-03-31T00:00:00.000Z'),
+        isPeriod: true,
+        source: 'AUTO_FILLED',
+        painLevel: null,
+        flowLevel: null,
+        colorLevel: null,
+      },
+    ]);
+    (prisma.derivedCycle.findMany as jest.Mock).mockResolvedValue([
+      {
+        derivedFromDates: JSON.stringify(['2026-03-29', '2026-03-30', '2026-03-31']),
+      },
+    ]);
+    (prisma.prediction.findUnique as jest.Mock).mockResolvedValue({
+      predictedStartDate: new Date('2026-04-20T00:00:00.000Z'),
+      predictionWindowStart: new Date('2026-04-18T00:00:00.000Z'),
+      predictionWindowEnd: new Date('2026-04-24T00:00:00.000Z'),
+      basedOnCycleCount: 3,
+    });
+
+    const windowResult = await getCalendarWindow({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      profileId: 'profile-1',
+      startDate: '2026-03-29',
+      endDate: '2026-04-20',
+    });
+
+    expect(windowResult.days).toEqual(
+      expect.arrayContaining([
+        { date: '2026-03-30', isPeriod: true, source: 'auto_filled', isExplicit: true, isDetailRecorded: false },
+        { date: '2026-03-31', isPeriod: true, source: 'auto_filled', isExplicit: true, isDetailRecorded: false },
+      ]),
+    );
+    expect(windowResult.marks).toEqual(
+      expect.arrayContaining([
+        { date: '2026-03-29', kind: 'period_start' },
+        { date: '2026-03-30', kind: 'period' },
+        { date: '2026-03-31', kind: 'period' },
+        { date: '2026-04-20', kind: 'prediction_start' },
+      ]),
+    );
+    expect(windowResult.marks).not.toEqual(
+      expect.arrayContaining([
+        { date: '2026-04-18', kind: 'prediction_start' },
+        { date: '2026-04-24', kind: 'prediction_start' },
+      ]),
+    );
+    jest.useRealTimers();
+  });
+
   it('returns null prediction summary when the stored prediction is an empty sentinel', async () => {
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({ id: 'module-1', ownerUserId: 'user-1', profileId: 'profile-1', sharingStatus: 'PRIVATE' });
     (prisma.prediction.findUnique as jest.Mock).mockResolvedValue({

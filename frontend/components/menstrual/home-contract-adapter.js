@@ -50,6 +50,10 @@ function formatMonthDayDot(dateString) {
 	return `${String(date.getUTCMonth() + 1).padStart(2, '0')}.${String(date.getUTCDate()).padStart(2, '0')}`;
 }
 
+function formatMonthDayRange(startDate, endDate) {
+	return `${formatMonthDayDot(startDate)} - ${formatMonthDayDot(endDate)}`;
+}
+
 function formatHumanDate(dateString) {
 	const date = toDateOnly(dateString);
 	return `${date.getUTCMonth() + 1} 月 ${date.getUTCDate()} 日`;
@@ -85,6 +89,15 @@ function addDays(dateString, amount) {
 	const date = toDateOnly(dateString);
 	date.setUTCDate(date.getUTCDate() + amount);
 	return formatYMD(date);
+}
+
+function resolvePredictedSegmentEndDate(predictionSummary, moduleSettings) {
+	const predictedStartDate = predictionSummary?.predictedStartDate;
+	const durationDays = moduleSettings?.defaultPeriodDurationDays;
+	if (!predictedStartDate || !Number.isInteger(durationDays) || durationDays <= 0) {
+		return null;
+	}
+	return addDays(predictedStartDate, durationDays - 1);
 }
 
 function startOfMonth(dateString) {
@@ -235,7 +248,11 @@ function isDetailRecordedDay(dayRecord) {
 function composeCalendarVariant({ date, today, isPeriod, isPrediction, isDetailRecorded, isSelected }) {
 	let variant = 'default';
 
-	if (date > today && !isSelected) {
+	if (date > today && !isSelected && isPeriod) {
+		variant = 'futurePeriod';
+	} else if (date > today && !isSelected && isPrediction) {
+		variant = 'futurePrediction';
+	} else if (date > today && !isSelected) {
 		variant = 'futureMuted';
 	} else if (date === today && isPeriod) {
 		variant = 'todayPeriod';
@@ -428,7 +445,7 @@ function buildCalendarCardFromWindow(homeView, calendarWindow, selectedDate, tod
 					isoDate: date,
 					label: String(displayDate.getUTCDate()).padStart(2, '0'),
 					variant,
-					selectable: !isPrediction && date <= today
+					selectable: date <= today
 				};
 			})
 		});
@@ -445,7 +462,7 @@ const STATUS_ICON = {
 	out_of_period: '/static/icons/vacation_1.png'
 };
 
-function createHeroCard(homeView, today) {
+function createHeroCard(homeView, today, moduleSettings = null) {
 	const statusSummary = homeView.currentStatusSummary || {};
 	// Handle both old field names (status/currentCycle) and new ones (currentStatus/currentSegment)
 	const currentStatus = statusSummary.currentStatus || statusSummary.status || 'out_of_period';
@@ -455,8 +472,11 @@ function createHeroCard(homeView, today) {
 	const prediction = homeView.predictionSummary;
 
 	const statusText = statusCard.label || '非经期';
+	const predictedSegmentEndDate = resolvePredictedSegmentEndDate(prediction, moduleSettings);
 	const nextFrameValue = prediction
-		? formatMonthDayDot(prediction.predictedStartDate)
+		? predictedSegmentEndDate
+			? formatMonthDayRange(prediction.predictedStartDate, predictedSegmentEndDate)
+			: formatMonthDayDot(prediction.predictedStartDate)
 		: '暂无记录';
 
 	// When in period: "上次" refers to the previous segment
@@ -686,6 +706,7 @@ export function shiftFocusDate(focusDate, viewMode, direction) {
 
 export function createMenstrualHomePageModel({
 	homeView,
+	moduleSettings = null,
 	dayDetail,
 	calendarWindow = null,
 	singleDayPeriodAction = null,
@@ -701,7 +722,7 @@ export function createMenstrualHomePageModel({
 			title: '月经记录',
 			statusLabel: mapStatusLabel(homeView.sharingStatus)
 		},
-		heroCard: createHeroCard(homeView, today),
+		heroCard: createHeroCard(homeView, today, moduleSettings),
 		headerNav: {
 			monthLabel: formatMonthLabel(resolvedFocusDate),
 			leadingLabel: '‹',
@@ -739,11 +760,11 @@ export function createMenstrualHomePageModel({
 	};
 }
 
-export function applyHeroSnapshotToPageModel(pageModel, { homeView, today }) {
+export function applyHeroSnapshotToPageModel(pageModel, { homeView, moduleSettings = null, today }) {
 	const next = clonePageModel(pageModel);
 	const previousJumpValue = next.jumpTabs.value;
 	next.topBar.statusLabel = mapStatusLabel(homeView?.sharingStatus);
-	next.heroCard = createHeroCard(homeView || {}, today);
+	next.heroCard = createHeroCard(homeView || {}, today, moduleSettings);
 	next.jumpTabs.items = [
 		{ key: 'today', label: '今天', tone: 'outlined', disabled: false },
 		{
@@ -913,35 +934,18 @@ export function applySelectedDateNoteToPageModel(pageModel, note) {
 }
 
 export function createSeededHomeContracts() {
-	const today = new Date();
-	const todayStr = today.toISOString().slice(0, 10);
-
-	// Create a period that ended 3 days ago, for testing "上次" display
-	const periodEnd = new Date(today);
-	periodEnd.setDate(periodEnd.getDate() - 3);
-	const periodEndStr = periodEnd.toISOString().slice(0, 10);
-
-	const periodStart = new Date(periodEnd);
-	periodStart.setDate(periodStart.getDate() - 5);  // 6-day period
-	const periodStartStr = periodStart.toISOString().slice(0, 10);
-
-	// Prediction starts in ~22 days
-	const predictionStart = new Date(today);
-	predictionStart.setDate(predictionStart.getDate() + 22);
-	const predictionStartStr = predictionStart.toISOString().slice(0, 10);
-
-	const predictionWindowStart = new Date(predictionStart);
-	predictionWindowStart.setDate(predictionWindowStart.getDate() - 2);
-	const predictionWindowStartStr = predictionWindowStart.toISOString().slice(0, 10);
-
-	const predictionWindowEnd = new Date(predictionStart);
-	predictionWindowEnd.setDate(predictionWindowEnd.getDate() + 4);
-	const predictionWindowEndStr = predictionWindowEnd.toISOString().slice(0, 10);
+	const todayStr = '2026-03-29';
+	const periodStartStr = '2026-03-21';
+	const periodEndStr = '2026-03-26';
+	const predictionStartStr = '2026-04-20';
+	const predictionWindowStartStr = '2026-04-18';
+	const predictionWindowEndStr = '2026-04-24';
 
 	// Generate period marks between periodStart and periodEnd
 	const calendarMarks = [{ date: todayStr, kind: 'today' }];
-	const currentDate = new Date(periodStart);
+	const currentDate = toDateOnly(periodStartStr);
 	let isFirst = true;
+	const periodEnd = toDateOnly(periodEndStr);
 	while (currentDate <= periodEnd) {
 		const dateStr = currentDate.toISOString().slice(0, 10);
 		calendarMarks.push({
@@ -983,6 +987,10 @@ export function createSeededHomeContracts() {
 				predictionWindowEnd: predictionWindowEndStr,
 				basedOnCycleCount: 3
 			}
+		},
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 22
 		},
 		dayDetail: {
 			moduleInstanceId: 'seed-home-module',

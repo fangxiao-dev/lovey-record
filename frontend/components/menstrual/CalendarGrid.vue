@@ -57,6 +57,8 @@
 	const SELECT_VARIANT_MAP = Object.freeze({
 		default: 'selected',
 		futureMuted: 'futureMuted',
+		futurePrediction: 'futurePrediction',
+		futurePeriod: 'futurePeriod',
 		today: 'selectedToday',
 		detail: 'selectedDetail',
 		prediction: 'selectedPrediction',

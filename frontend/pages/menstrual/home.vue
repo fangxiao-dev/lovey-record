@@ -139,6 +139,7 @@
 		loadMenstrualCalendarWindow,
 		loadMenstrualDayDetail,
 		loadMenstrualHomeView,
+		loadMenstrualModuleSettings,
 		loadMenstrualHomePageModel
 	} from '../../services/menstrual/home-contract-service.js';
 	import {
@@ -260,6 +261,7 @@
 				}
 				return createMenstrualHomePageModel({
 					homeView: this.rawContracts.homeView,
+					moduleSettings: this.rawContracts.moduleSettings,
 					dayDetail: dayDetail || this.getSelectedDayDetail(selectedDate),
 					singleDayPeriodAction: this.getSelectedSingleDayPeriodAction(selectedDate),
 					calendarWindow: useCalendarWindow ? this.rawContracts.calendarWindow : null,
@@ -388,22 +390,27 @@
 				const requestId = backgroundRequestId || ++this.heroRefreshRequestId;
 				this.isRefreshingHero = true;
 				try {
-					const homeView = await loadMenstrualHomeView({
-						...this.contractContext,
-						activeDate,
-						focusDate,
-						viewMode
-					});
+					const [homeView, moduleSettings] = await Promise.all([
+						loadMenstrualHomeView({
+							...this.contractContext,
+							activeDate,
+							focusDate,
+							viewMode
+						}),
+						loadMenstrualModuleSettings(this.contractContext)
+					]);
 					if (requestId !== this.heroRefreshRequestId) {
 						return homeView;
 					}
 					this.rawContracts = {
 						...this.rawContracts,
-						homeView
+						homeView,
+						moduleSettings
 					};
 					if (this.page) {
 						this.page = applyHeroSnapshotToPageModel(this.page, {
 							homeView,
+							moduleSettings,
 							today: this.contractContext.today
 						});
 					}

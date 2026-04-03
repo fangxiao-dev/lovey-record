@@ -82,6 +82,7 @@ Notes:
 - stores the current default fill length for anchored period segments
 - stores the fixed term used to predict the next period start from the latest segment start
 - settings changes affect future auto-fill and derived read models
+- `default_period_duration_days` also defines the hero-facing predicted period range length once a `predicted_start_date` exists
 
 ### DayRecord
 
@@ -138,6 +139,7 @@ Notes:
 - derived object, not primary user-authored input
 - can be cached if needed
 - `predicted_start_date` is computed as `latest_period_segment_start + default_prediction_term_days`
+- the user-facing predicted period range ends at `predicted_start_date + default_period_duration_days - 1`
 
 ### ModuleHomeView
 
@@ -314,7 +316,9 @@ Default:
 - changing detail fields does not by itself turn a non-period day into a period day.
 - a deviation label is derived from detail variation, not chosen as a competing primary state.
 - `note` is attached to `day_record` and must obey a maximum length rule.
-- future dates are not recordable.
+- users cannot directly record future dates.
+- the system may still derive future `is_period = true` days when auto-fill extends a confirmed segment beyond `today`.
+- those future auto-filled period days are domain-valid period members even though the frontend keeps them read-only.
 - shared/private changes access scope, not data ownership.
 - private and shared entry points must resolve to the same `module instance`.
 - prediction must be computed from the latest anchored segment start date rather than user-authored end dates.

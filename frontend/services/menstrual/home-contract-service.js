@@ -117,6 +117,19 @@ export async function getSingleDayPeriodAction({ apiBaseUrl, openid, moduleInsta
 	});
 }
 
+export async function loadMenstrualModuleSettings(context = {}) {
+	const resolved = { ...DEFAULT_MENSTRUAL_HOME_CONTEXT, ...context };
+	const result = await queryEnvelope({
+		apiBaseUrl: resolved.apiBaseUrl,
+		openid: resolved.openid,
+		path: '/api/queries/getModuleSettings',
+		data: {
+			moduleInstanceId: resolved.moduleInstanceId
+		}
+	});
+	return result.moduleSettings;
+}
+
 export async function loadMenstrualCalendarWindow(context = {}) {
 	const resolved = { ...DEFAULT_MENSTRUAL_HOME_CONTEXT, ...context };
 	const viewMode = resolved.viewMode || 'three-week';
@@ -178,7 +191,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 			today: resolved.today
 		});
 
-		const [{ calendarWindow }, dayDetail, singleDayPeriodAction] = await Promise.all([
+		const [{ calendarWindow }, dayDetail, singleDayPeriodAction, moduleSettings] = await Promise.all([
 			loadMenstrualCalendarWindow({
 				...resolved,
 				focusDate,
@@ -193,12 +206,14 @@ export async function loadMenstrualHomePageModel(context = {}) {
 				openid: resolved.openid,
 				moduleInstanceId: resolved.moduleInstanceId,
 				date: activeDate
-			})
+			}),
+			loadMenstrualModuleSettings(resolved)
 		]);
 
 		return {
 			page: createMenstrualHomePageModel({
 				homeView,
+				moduleSettings,
 				calendarWindow,
 				dayDetail,
 				singleDayPeriodAction,
@@ -208,6 +223,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 			}),
 			raw: {
 				homeView,
+				moduleSettings,
 				dayDetail,
 				calendarWindow,
 				singleDayPeriodAction,
@@ -243,6 +259,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 		return {
 			page: createMenstrualHomePageModel({
 				homeView: fallback.homeView,
+				moduleSettings: fallback.moduleSettings,
 				dayDetail,
 				singleDayPeriodAction: null,
 				today: resolved.today,
@@ -251,6 +268,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 			}),
 			raw: {
 				homeView: fallback.homeView,
+				moduleSettings: fallback.moduleSettings,
 				dayDetail,
 				calendarWindow: null,
 				singleDayPeriodAction: null,

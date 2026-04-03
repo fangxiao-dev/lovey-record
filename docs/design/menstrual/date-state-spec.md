@@ -29,7 +29,7 @@ This spec does not define:
 ## Base State Rules
 
 - `default` should not add unnecessary background emphasis.
-- `future muted` is expressed through muted text, not a dedicated fill block.
+- `future muted` is expressed through muted text and may coexist with a business fill.
 - `today` uses a circular outline shape.
 - `detail recorded` is expressed through a small eye marker, not a large filled area.
 - date-number alignment must stay stable whether or not the eye marker is present.
@@ -93,7 +93,9 @@ These axes should be the design source of truth even when implementation still e
 ## Forbidden Combinations
 
 - `date > today` is currently read-only.
-- future dates may use `prediction`, but should not use user-edited `period`.
+- future dates may use `prediction`.
+- future dates may use system-derived `period` when auto-fill extends a confirmed segment beyond `today`.
+- future dates must remain read-only even when a system-derived `period` fill is visible.
 - future dates should not use the detail-recorded eye marker.
 - `prediction + detail recorded` should not be treated as a long-lived reusable product combination.
 - when a future date has no stronger business state, it falls back to `future muted`.
@@ -129,7 +131,8 @@ These axes should be the design source of truth even when implementation still e
 ### Future Muting
 
 - `future muted` is a time-position modifier, not a peer business fact.
-- on the current menstrual home calendar, unselected future dates remain `future muted` even when a later forecast window exists.
+- on the current menstrual home calendar, plain future dates keep muted number/text styling until a stronger business fill is present.
+- a future auto-filled period date uses the same `period` foreground/background pairing as a normal period cell so the state remains readable on the accent fill.
 - visible prediction styling in the calendar is mark-driven, not window-driven.
 - the current contract exposes `prediction_start` as the visible forecast day; the rest of the prediction window does not automatically become prediction-styled cells.
 - if a future prediction-start date is brought into an explicitly selected/focused state by a higher-level interaction contract, that interaction may layer selected emphasis on top of the forecast meaning.

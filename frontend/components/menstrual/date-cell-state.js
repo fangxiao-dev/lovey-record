@@ -17,6 +17,24 @@ const PRESENTATIONS = {
     shape: 'rounded',
     usesDetailMarker: false
   },
+  futurePrediction: {
+    backgroundToken: 'accent.period.soft',
+    borderToken: null,
+    textToken: 'text.muted',
+    markerToken: null,
+    shadowToken: null,
+    shape: 'rounded',
+    usesDetailMarker: false
+  },
+  futurePeriod: {
+    backgroundToken: 'accent.period',
+    borderToken: null,
+    textToken: 'accent.period.contrast',
+    markerToken: null,
+    shadowToken: null,
+    shape: 'rounded',
+    usesDetailMarker: false
+  },
   today: {
     backgroundToken: null,
     borderToken: 'border.today',

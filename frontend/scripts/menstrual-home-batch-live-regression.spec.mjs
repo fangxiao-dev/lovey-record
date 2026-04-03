@@ -89,6 +89,30 @@ async function getAccessState(openid = OPENID) {
 	return envelope.data;
 }
 
+async function getModuleHomeView(openid = OPENID) {
+	const params = new URLSearchParams({
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		today: '2026-03-29'
+	});
+	const response = await fetch(`${API_BASE_URL}/queries/getModuleHomeView?${params}`, {
+		headers: { 'x-wx-openid': openid }
+	});
+	const envelope = await response.json();
+	expect(response.ok).toBeTruthy();
+	expect(envelope.ok).toBeTruthy();
+	return envelope.data;
+}
+
+async function getModuleSettings(openid = OPENID) {
+	const response = await fetch(`${API_BASE_URL}/queries/getModuleSettings?moduleInstanceId=${MODULE_INSTANCE_ID}`, {
+		headers: { 'x-wx-openid': openid }
+	});
+	const envelope = await response.json();
+	expect(response.ok).toBeTruthy();
+	expect(envelope.ok).toBeTruthy();
+	return envelope.data.moduleSettings;
+}
+
 async function getCalendarWindow(startDate, endDate, openid = OPENID) {
 	const params = new URLSearchParams({
 		moduleInstanceId: MODULE_INSTANCE_ID,
@@ -193,6 +217,30 @@ async function getCellClasses(page, days) {
 			?.closest('.date-cell');
 		return { day: label, className: node?.className || null };
 	}), days);
+}
+
+async function getCellLabelClasses(page, days) {
+	return await page.evaluate((labels) => labels.map((label) => {
+		const node = [...document.querySelectorAll('.date-cell__label')]
+			.find((el) => el.textContent.trim() === label);
+		return { day: label, className: node?.className || null };
+	}), days);
+}
+
+function addIsoDays(dateString, amount) {
+	const date = new Date(`${dateString}T00:00:00.000Z`);
+	date.setUTCDate(date.getUTCDate() + amount);
+	return date.toISOString().slice(0, 10);
+}
+
+function formatMonthDayDot(dateString) {
+	const date = new Date(`${dateString}T00:00:00.000Z`);
+	return `${String(date.getUTCMonth() + 1).padStart(2, '0')}.${String(date.getUTCDate()).padStart(2, '0')}`;
+}
+
+function formatHumanDate(dateString) {
+	const date = new Date(`${dateString}T00:00:00.000Z`);
+	return `${date.getUTCMonth() + 1} 月 ${date.getUTCDate()} 日`;
 }
 
 async function waitForSelectionState(page, expected) {
@@ -558,6 +606,113 @@ test('single-day period tap stays immediate even when deferred hero refresh is s
 			startDate: TEST_FIRST_DAY,
 			endDate: TEST_WINDOW_END
 		});
+	}
+});
+
+test('future auto-filled period days stay read-only while hero next shows the predicted range', async ({ page }) => {
+	const TEST_FIRST_DAY = '2026-03-29';
+	const TEST_WINDOW_END = '2026-04-02';
+	const TEST_DURATION = 6;
+
+	await postJson('/commands/clearPeriodRange', {
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		startDate: TEST_FIRST_DAY,
+		endDate: TEST_WINDOW_END
+	});
+	await ensureDefaultPeriodDuration(TEST_DURATION);
+
+	try {
+		const [homeView, moduleSettings] = await Promise.all([
+			getModuleHomeView(),
+			getModuleSettings()
+		]);
+		const predictedStartDate = homeView.predictionSummary?.predictedStartDate;
+		expect(predictedStartDate).toBeTruthy();
+		const expectedHeroRange = `${formatMonthDayDot(predictedStartDate)} - ${formatMonthDayDot(addIsoDays(predictedStartDate, moduleSettings.defaultPeriodDurationDays - 1))}`;
+
+		await page.goto(FRONTEND_URL);
+		await page.waitForTimeout(1200);
+		await expect(page.locator('.menstrual-home__hero-info-frame--next .menstrual-home__hero-info-value')).toHaveText(expectedHeroRange);
+
+		await openDay(page, '29');
+		await expect(page.locator('.selected-date-panel__title')).toHaveText('3 月 29 日');
+		await getPeriodChip(page, '月经').click();
+		const confirmButton = page.getByText('确认');
+		if (await confirmButton.isVisible().catch(() => false)) {
+			await confirmButton.click();
+		}
+		await page.waitForTimeout(120);
+
+		const immediateClasses = await getCellClasses(page, ['29', '30', '31', '01']);
+		expect(immediateClasses.every((item) => item.className.includes('date-cell--bg-period'))).toBeTruthy();
+		const labelClasses = await getCellLabelClasses(page, ['30', '31', '01']);
+		expect(labelClasses.every((item) => item.className.includes('date-cell__label--period-contrast'))).toBeTruthy();
+		expect(labelClasses.every((item) => !item.className.includes('date-cell__label--muted'))).toBeTruthy();
+
+		await page.locator('.date-cell__label').filter({ hasText: '30' }).first().click();
+		await page.waitForTimeout(200);
+		await expect(page.locator('.selected-date-panel__title')).toHaveText('3 月 29 日');
+
+		const updatedHomeView = await getModuleHomeView();
+		const updatedPredictedStartDate = updatedHomeView.predictionSummary?.predictedStartDate;
+		expect(updatedPredictedStartDate).toBeTruthy();
+		await page.locator('.jump-tabs__item').filter({ hasText: '下次预测' }).click();
+		await page.waitForTimeout(1200);
+		await expect(page.locator('.selected-date-panel__title')).toHaveText(formatHumanDate(updatedPredictedStartDate));
+	} finally {
+		await postJson('/commands/clearPeriodRange', {
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			startDate: TEST_FIRST_DAY,
+			endDate: TEST_WINDOW_END
+		});
+		await ensureDefaultPeriodDuration(6);
+	}
+});
+
+test('deferred hero refresh picks up the updated default period duration before recomputing the next range chip', async ({ page }) => {
+	await ensureDefaultPeriodDuration(4);
+	await postJson('/commands/clearPeriodRange', {
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		startDate: '2026-03-23',
+		endDate: '2026-03-28'
+	});
+
+	try {
+		const [initialHomeView, initialModuleSettings] = await Promise.all([
+			getModuleHomeView(),
+			getModuleSettings()
+		]);
+		expect(initialModuleSettings.defaultPeriodDurationDays).toBe(4);
+		const initialPredictedStartDate = initialHomeView.predictionSummary?.predictedStartDate;
+		expect(initialPredictedStartDate).toBeTruthy();
+		const initialHeroRange = `${formatMonthDayDot(initialPredictedStartDate)} - ${formatMonthDayDot(addIsoDays(initialPredictedStartDate, initialModuleSettings.defaultPeriodDurationDays - 1))}`;
+
+		await page.goto(FRONTEND_URL);
+		await page.waitForTimeout(1200);
+		await expect(page.locator('.menstrual-home__hero-info-frame--next .menstrual-home__hero-info-value')).toHaveText(initialHeroRange);
+
+		await ensureDefaultPeriodDuration(6);
+		await openDay(page, '23');
+		await expect(getPeriodChip(page, '月经')).not.toHaveClass(/selected-date-panel__chip--accent/);
+		await getPeriodChip(page, '月经').click();
+		await page.waitForTimeout(1600);
+
+		const [homeView, moduleSettings] = await Promise.all([
+			getModuleHomeView(),
+			getModuleSettings()
+		]);
+		expect(moduleSettings.defaultPeriodDurationDays).toBe(6);
+		const predictedStartDate = homeView.predictionSummary?.predictedStartDate;
+		expect(predictedStartDate).toBeTruthy();
+		const expectedHeroRange = `${formatMonthDayDot(predictedStartDate)} - ${formatMonthDayDot(addIsoDays(predictedStartDate, moduleSettings.defaultPeriodDurationDays - 1))}`;
+		await expect(page.locator('.menstrual-home__hero-info-frame--next .menstrual-home__hero-info-value')).toHaveText(expectedHeroRange);
+	} finally {
+		await postJson('/commands/clearPeriodRange', {
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			startDate: '2026-03-23',
+			endDate: '2026-03-28'
+		});
+		await ensureDefaultPeriodDuration(6);
 	}
 });
 

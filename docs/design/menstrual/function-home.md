@@ -51,7 +51,16 @@ The home page must cover:
 - `上次` jumps to the previous segment `startDate`
 - `上次` is disabled when no previous segment exists
 - `下次预测` jumps to the prediction start when prediction exists
+- hero `下次` displays the predicted period range, derived as `predictedStartDate + defaultPeriodDurationDays - 1`
+- the `下次预测` shortcut still jumps to the predicted start date only; it does not jump to the whole range
 - the old `本次` shortcut semantics are absorbed by the hero status layer and should not remain as a separate shortcut
+
+## Future-Date Read-Only Rule
+
+- `date > today` remains read-only for direct user interaction.
+- the system may still surface future auto-filled period days after a confirmed start-day action extends across `today`.
+- those future auto-filled period days keep the same readable period surface treatment as normal period days, but remain interaction-blocked because they are still future dates.
+- tapping a future day, including a future auto-filled period day, remains a no-op.
 
 ## Related Docs
 
