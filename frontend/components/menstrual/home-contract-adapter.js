@@ -454,7 +454,7 @@ function createHeroCard(homeView, today) {
 	const previousSegment = statusSummary.previousSegment || null;
 	const prediction = homeView.predictionSummary;
 
-	const statusText = statusCard.label || '不在经期中';
+	const statusText = statusCard.label || '非经期';
 	const nextFrameValue = prediction
 		? `${formatMonthDayDot(prediction.predictionWindowStart)} - ${formatMonthDayDot(prediction.predictionWindowEnd)}`
 		: '暂无记录';
@@ -756,7 +756,7 @@ export function createSeededHomeContracts() {
 					durationDays: 6
 				},
 				statusCard: {
-					label: '不在经期中'
+					label: '非经期'
 				},
 				previousSegment: null
 			},

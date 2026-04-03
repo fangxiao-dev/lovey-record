@@ -23,7 +23,7 @@ test('home contract adapter maps query responses into the formal menstrual home 
 	assert.equal(model.heroCard.label, '当前状态');
 	assert.equal(model.heroCard.sharingLabel, '私人');
 	// Seed shows out_of_period with just-exited period as "上次"
-	assert.equal(model.heroCard.statusFrame.text, '不在经期中');
+	assert.equal(model.heroCard.statusFrame.text, '非经期');
 	assert.equal(model.heroCard.statusFrame.state, 'out_of_period');
 	assert.equal(model.heroCard.previousFrame.label, '上次');
 	// Should show currentSegment when out_of_period
@@ -70,7 +70,7 @@ test('home contract adapter shows "上次" from currentSegment when out_of_perio
 		today: homeView.currentStatusSummary.anchorDate  // Use the seed's period date as "today" reference
 	});
 
-	assert.equal(model.heroCard.statusFrame.text, '不在经期中');
+	assert.equal(model.heroCard.statusFrame.text, '非经期');
 	assert.equal(model.heroCard.statusFrame.state, 'out_of_period');
 	// When out of period, "上次" shows the segment we just exited (currentSegment)
 	const formattedSegment = `${homeView.currentStatusSummary.currentSegment.startDate.slice(5).replace('-', '.')} - ${homeView.currentStatusSummary.currentSegment.endDate.slice(5).replace('-', '.')}`;

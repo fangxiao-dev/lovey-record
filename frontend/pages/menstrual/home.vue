@@ -818,9 +818,9 @@
 		display: flex;
 		flex-direction: column;
 		width: 204rpx;
-		height: 90rpx;
-		gap: 2rpx;
-		padding: 16rpx 20rpx;
+		min-height: 90rpx;
+		gap: 6rpx;
+		padding: 12rpx 20rpx;
 		border-radius: 24rpx;
 		background: #F3EEE7;
 		justify-content: center;
@@ -833,13 +833,13 @@
 
 	.menstrual-home__hero-info-label {
 		font-size: 22rpx;
-		line-height: 1;
+		line-height: 1.15;
 		color: $text-muted;
 	}
 
 	.menstrual-home__hero-info-value {
 		font-size: 24rpx;
-		line-height: 1;
+		line-height: 1.15;
 		font-weight: $font-weight-medium;
 		color: $text-primary;
 	}
