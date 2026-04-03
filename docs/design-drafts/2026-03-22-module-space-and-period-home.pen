@@ -107,6 +107,7 @@
               "id": "pgIsk",
               "width": "fill_container",
               "justifyContent": "space_between",
+              "alignItems": "center",
               "children": [
                 {
                   "type": "text",
@@ -118,47 +119,10 @@
                   "fontWeight": "500"
                 },
                 {
-                  "type": "text",
-                  "id": "WuUX7",
-                  "fill": "$color.accent.today",
-                  "content": "今天",
-                  "fontFamily": "$font.family.base",
-                  "fontSize": "$font.size.meta",
-                  "fontWeight": "500"
-                }
-              ]
-            },
-            {
-              "type": "text",
-              "id": "4KfLx",
-              "fill": "$color.text.primary",
-              "content": "经期第 2 天",
-              "fontFamily": "$font.family.base",
-              "fontSize": 24,
-              "fontWeight": "600"
-            },
-            {
-              "type": "text",
-              "id": "3xCxX",
-              "fill": "$color.text.secondary",
-              "textGrowth": "fixed-width",
-              "width": "fill_container",
-              "content": "预计 4 天后结束，本月周期趋势稳定。",
-              "fontFamily": "$font.family.base",
-              "fontSize": "$font.size.caption",
-              "fontWeight": "normal"
-            },
-            {
-              "type": "frame",
-              "id": "UtDro",
-              "gap": 8,
-              "children": [
-                {
                   "type": "frame",
-                  "id": "liQPS",
-                  "fill": "$color.accent.period",
-                  "cornerRadius": "$radius.control",
-                  "layout": "vertical",
+                  "id": "LDDYz",
+                  "fill": "$color.bg.subtle",
+                  "cornerRadius": "$radius.pill",
                   "padding": [
                     8,
                     10
@@ -166,9 +130,76 @@
                   "children": [
                     {
                       "type": "text",
+                      "id": "WuUX7",
+                      "fill": "$color.text.secondary",
+                      "content": "私人",
+                      "fontFamily": "$font.family.base",
+                      "fontSize": "$font.size.meta",
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "3xCxX",
+              "fill": "#00000000",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DbOLz",
+                  "name": "coffeeIcon1",
+                  "width": 22,
+                  "height": 22,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "./assets/coffee.svg",
+                    "mode": "fit"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "4KfLx",
+                  "fill": "$color.text.primary",
+                  "content": "经期第 3 天",
+                  "fontFamily": "$font.family.base",
+                  "fontSize": 17,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "UtDro",
+              "width": "fill_container",
+              "gap": 10,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "liQPS",
+                  "width": 102,
+                  "height": 45,
+                  "fill": "$color.bg.subtle",
+                  "cornerRadius": "$radius.control",
+                  "layout": "vertical",
+                  "gap": 1,
+                  "padding": [
+                    8,
+                    10
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
                       "id": "BPER5",
-                      "fill": "$color.accent.period.contrast",
-                      "content": "本次开始",
+                      "fill": "$color.text.muted",
+                      "content": "上次",
                       "fontFamily": "$font.family.base",
                       "fontSize": "$font.size.meta",
                       "fontWeight": "normal"
@@ -176,30 +207,35 @@
                     {
                       "type": "text",
                       "id": "wtKyq",
-                      "fill": "$color.accent.period.contrast",
-                      "content": "03/20",
+                      "fill": "$color.text.primary",
+                      "content": "03.03 - 03.07",
                       "fontFamily": "$font.family.base",
-                      "fontSize": "$font.size.body",
+                      "fontSize": 12,
                       "fontWeight": "600"
                     }
                   ]
                 },
                 {
                   "type": "frame",
-                  "id": "LDDYz",
+                  "id": "nXtQ1",
+                  "width": 102,
+                  "height": 45,
                   "fill": "$color.accent.period.soft",
                   "cornerRadius": "$radius.control",
                   "layout": "vertical",
+                  "gap": 1,
                   "padding": [
                     8,
                     10
                   ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
                   "children": [
                     {
                       "type": "text",
                       "id": "oMKAe",
                       "fill": "$color.text.secondary",
-                      "content": "下次预测",
+                      "content": "下次",
                       "fontFamily": "$font.family.base",
                       "fontSize": "$font.size.meta",
                       "fontWeight": "normal"
@@ -207,13 +243,20 @@
                     {
                       "type": "text",
                       "id": "2tfa9",
-                      "fill": "$color.text.secondary",
-                      "content": "04/16",
+                      "fill": "$color.text.primary",
+                      "content": "04.16 - 04.20",
                       "fontFamily": "$font.family.base",
-                      "fontSize": "$font.size.body",
+                      "fontSize": 12,
                       "fontWeight": "600"
                     }
                   ]
+                },
+                {
+                  "type": "frame",
+                  "id": "yM8w2",
+                  "width": 102,
+                  "height": "fit_content(0)",
+                  "fill": "#00000000"
                 }
               ]
             }
@@ -376,8 +419,13 @@
             {
               "type": "frame",
               "id": "B1cCn",
-              "fill": "$color.accent.period",
+              "fill": "$color.bg.base",
               "cornerRadius": "$radius.pill",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "$color.border.subtle"
+              },
               "padding": [
                 8,
                 10
@@ -386,8 +434,8 @@
                 {
                   "type": "text",
                   "id": "6ePcO",
-                  "fill": "$color.accent.period.contrast",
-                  "content": "本次",
+                  "fill": "$color.text.muted",
+                  "content": "上次",
                   "fontFamily": "IBM Plex Sans",
                   "fontSize": "$font.size.meta",
                   "fontWeight": "500"
@@ -2641,10 +2689,10 @@
               "y": 21
             },
             "Z7Few": {
-              "width": "fit_content",
-              "height": "fit_content",
-              "x": 313,
-              "y": 17.5
+              "width": 0,
+              "height": 0,
+              "x": 358,
+              "y": 34
             },
             "IJedY": {
               "width": "fit_content",
@@ -3654,34 +3702,6 @@
       ],
       "children": [
         {
-          "id": "Yga6J",
-          "type": "ref",
-          "ref": "AkB3k",
-          "name": "homeTop",
-          "x": 16,
-          "descendants": {
-            "rRu9o": {
-              "content": "月经记录",
-              "y": 21
-            },
-            "Z7Few": {
-              "width": "fit_content",
-              "height": "fit_content",
-              "x": 313,
-              "y": 17.5
-            },
-            "IJedY": {
-              "width": "fit_content",
-              "height": "fit_content"
-            },
-            "4fFK5": {
-              "content": "共享",
-              "x": 10,
-              "y": 8
-            }
-          }
-        },
-        {
           "type": "text",
           "id": "HELeX",
           "name": "homeStateDefault",
@@ -3696,9 +3716,9 @@
           "type": "ref",
           "ref": "if9QJ",
           "name": "homeHero",
-          "height": "fit_content",
+          "height": 153,
           "x": 16,
-          "y": 118,
+          "y": 36,
           "effect": {
             "type": "shadow",
             "shadowType": "outer",
@@ -3709,59 +3729,155 @@
             },
             "blur": 4
           },
+          "justifyContent": "space_around",
+          "width": 358,
+          "flipX": false,
+          "flipY": false,
+          "alignItems": "start",
+          "gap": 6,
           "descendants": {
             "pgIsk": {
               "width": "fill_container",
               "height": "fit_content",
               "x": 16,
-              "y": 16
+              "y": 19.166666666666668,
+              "justifyContent": "space_between",
+              "alignItems": "center"
             },
-            "WuUX7": {
-              "x": 304
-            },
-            "4KfLx": {
-              "content": "经期第 2 天",
-              "x": 16,
-              "y": 44
-            },
-            "3xCxX": {
-              "content": "先看当前状态，再在下方 3 周视图里定位和记录。",
-              "width": "fill_container",
-              "x": 16,
-              "y": 91
-            },
-            "UtDro": {
-              "width": "fit_content",
-              "height": "fit_content",
-              "x": 16,
-              "y": 120
-            },
-            "liQPS": {
-              "width": "fit_content",
-              "height": "fit_content"
-            },
-            "BPER5": {
-              "x": 10,
-              "y": 8
-            },
-            "wtKyq": {
-              "content": "03/20",
-              "x": 10,
-              "y": 24
+            "AFNvl": {
+              "y": 8,
+              "x": 0
             },
             "LDDYz": {
               "width": "fit_content",
               "height": "fit_content",
-              "x": 72
+              "x": 284,
+              "y": 0
             },
-            "oMKAe": {
+            "WuUX7": {
+              "content": "共享",
               "x": 10,
               "y": 8
             },
-            "2tfa9": {
-              "content": "04/16",
-              "x": 10,
-              "y": 24
+            "3xCxX": {
+              "type": "frame",
+              "id": "qyCHM",
+              "name": "jkStatus",
+              "fill": "#00000000",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "4edaW",
+                  "name": "vacIcon",
+                  "width": 22,
+                  "height": 22,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "./assets/vacation_1.png",
+                    "mode": "fit"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "BQ7ni",
+                  "fill": "#2F2A26",
+                  "content": "非经期",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 17,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            "UtDro": {
+              "width": "fill_container",
+              "height": "fit_content",
+              "x": 16,
+              "y": 88.83333333333334,
+              "justifyContent": "start",
+              "alignItems": "center",
+              "gap": 10,
+              "layout": "horizontal"
+            },
+            "liQPS": {
+              "type": "frame",
+              "id": "3ObLr",
+              "name": "jkPrev",
+              "width": 102,
+              "height": 45,
+              "fill": "$color.bg.subtle",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 1,
+              "padding": [
+                8,
+                10
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "PFlSG",
+                  "fill": "#A29488",
+                  "content": "上次",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "bF4gJ",
+                  "fill": "#2F2A26",
+                  "content": "暂无记录",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            "nXtQ1": {
+              "type": "frame",
+              "id": "kmhMz",
+              "name": "jkNext",
+              "width": 102,
+              "height": 45,
+              "fill": "$color.accent.period.soft",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 1,
+              "padding": [
+                8,
+                10
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "MR2yL",
+                  "fill": "#72685F",
+                  "content": "下次",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "MSlGj",
+                  "fill": "#2F2A26",
+                  "content": "04.16 - 04.20",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            "yM8w2": {
+              "x": 224,
+              "y": 22.5
             }
           }
         },
@@ -3772,7 +3888,7 @@
           "name": "homeMode",
           "height": "fit_content",
           "x": 16,
-          "y": 324,
+          "y": 209,
           "descendants": {
             "WczQY": {
               "width": "fill_container",
@@ -3803,7 +3919,7 @@
           "name": "homeNav",
           "height": "fit_content",
           "x": 16,
-          "y": 385,
+          "y": 270,
           "descendants": {
             "6NAfW": {
               "width": "fit_content",
@@ -3835,7 +3951,7 @@
           "name": "homeTabs",
           "height": "fit_content",
           "x": 16,
-          "y": 439,
+          "y": 324,
           "descendants": {
             "5Znng": {
               "width": "fit_content",
@@ -4443,7 +4559,7 @@
           "name": "homeLegend",
           "height": "fit_content",
           "x": 16,
-          "y": 718,
+          "y": 603,
           "width": "fit_content",
           "descendants": {
             "B3pLP": {
@@ -4502,7 +4618,7 @@
           "name": "state1Default",
           "height": "fit_content",
           "x": 16,
-          "y": 790,
+          "y": 675,
           "descendants": {
             "clUNn": {
               "width": "fill_container",
@@ -4592,7 +4708,7 @@
           "name": "state2PeriodOnly",
           "height": "fit_content",
           "x": 16,
-          "y": 999,
+          "y": 884,
           "descendants": {
             "clUNn": {
               "width": "fill_container",
@@ -4680,7 +4796,7 @@
           "name": "state3AttrsCollapsed",
           "height": "fit_content",
           "x": 16,
-          "y": 1208,
+          "y": 1093,
           "descendants": {
             "clUNn": {
               "width": "fill_container",
@@ -4818,7 +4934,7 @@
           "name": "state4Full",
           "height": "fit_content",
           "x": 16,
-          "y": 1421,
+          "y": 1306,
           "descendants": {
             "clUNn": {
               "width": "fill_container",
@@ -5178,7 +5294,7 @@
           "name": "state5GridNoAttrs",
           "height": "fit_content",
           "x": 16,
-          "y": 1856,
+          "y": 1741,
           "descendants": {
             "clUNn": {
               "width": "fill_container",
@@ -5763,10 +5879,10 @@
               "y": 21
             },
             "Z7Few": {
-              "width": "fit_content",
-              "height": "fit_content",
-              "x": 313,
-              "y": 17.5
+              "width": 0,
+              "height": 0,
+              "x": 358,
+              "y": 34
             },
             "IJedY": {
               "width": "fit_content",
@@ -6954,41 +7070,15 @@
       ],
       "children": [
         {
-          "id": "pD2bj",
-          "type": "ref",
-          "ref": "AkB3k",
-          "name": "homeTop",
-          "x": 16,
-          "descendants": {
-            "rRu9o": {
-              "content": "月经记录",
-              "y": 21
-            },
-            "Z7Few": {
-              "width": "fit_content",
-              "height": "fit_content",
-              "x": 313,
-              "y": 17.5
-            },
-            "IJedY": {
-              "width": "fit_content",
-              "height": "fit_content"
-            },
-            "4fFK5": {
-              "content": "共享",
-              "x": 10,
-              "y": 8
-            }
-          }
-        },
-        {
           "id": "scRV9",
           "type": "ref",
           "ref": "if9QJ",
           "name": "homeHero",
           "height": "fit_content",
           "x": 16,
-          "y": 78,
+          "y": 0,
+          "justifyContent": "start",
+          "alignItems": "start",
           "descendants": {
             "pgIsk": {
               "width": "fill_container",
@@ -6996,52 +7086,137 @@
               "x": 16,
               "y": 16
             },
-            "WuUX7": {
-              "x": 304
-            },
-            "4KfLx": {
-              "content": "经期第 2 天",
-              "x": 16,
-              "y": 44
-            },
-            "3xCxX": {
-              "content": "先看当前状态，再在下方 3 周视图里定位和记录。",
-              "width": "fill_container",
-              "x": 16,
-              "y": 91
-            },
-            "UtDro": {
-              "width": "fit_content",
-              "height": "fit_content",
-              "x": 16,
-              "y": 120
-            },
-            "liQPS": {
-              "width": "fit_content",
-              "height": "fit_content"
-            },
-            "BPER5": {
-              "x": 10,
+            "AFNvl": {
               "y": 8
-            },
-            "wtKyq": {
-              "content": "03/20",
-              "x": 10,
-              "y": 24
             },
             "LDDYz": {
               "width": "fit_content",
               "height": "fit_content",
-              "x": 72
+              "x": 284
             },
-            "oMKAe": {
+            "WuUX7": {
+              "content": "私人",
               "x": 10,
               "y": 8
             },
-            "2tfa9": {
-              "content": "04/16",
-              "x": 10,
-              "y": 24
+            "3xCxX": {
+              "type": "frame",
+              "id": "WO0Ui",
+              "name": "scStatus",
+              "fill": "#00000000",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "VmCuG",
+                  "name": "coffeeIcon2",
+                  "width": 22,
+                  "height": 22,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "./assets/coffee.svg",
+                    "mode": "fit"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "HRGzx",
+                  "fill": "#2F2A26",
+                  "content": "经期第 3 天",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 17,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            "UtDro": {
+              "width": "fill_container",
+              "height": "fit_content",
+              "x": 16,
+              "y": 97,
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 10
+            },
+            "liQPS": {
+              "type": "frame",
+              "id": "sdoI5",
+              "name": "scPrev",
+              "width": 102,
+              "height": 45,
+              "fill": "$color.bg.subtle",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 1,
+              "padding": [
+                8,
+                10
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "i6N6i",
+                  "fill": "#A29488",
+                  "content": "上次",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "vhSZh",
+                  "fill": "#2F2A26",
+                  "content": "03.03 - 03.07",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            "nXtQ1": {
+              "type": "frame",
+              "id": "jf5gu",
+              "name": "scNext",
+              "width": 102,
+              "height": 45,
+              "fill": "$color.accent.period.soft",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 1,
+              "padding": [
+                8,
+                10
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "2WBHm",
+                  "fill": "#72685F",
+                  "content": "下次",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "EaAua",
+                  "fill": "#2F2A26",
+                  "content": "04.16 - 04.20",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            "yM8w2": {
+              "x": 224,
+              "y": 22.5
             }
           }
         },
@@ -7052,7 +7227,7 @@
           "name": "homeMode",
           "height": "fit_content",
           "x": 16,
-          "y": 280,
+          "y": 174,
           "descendants": {
             "WczQY": {
               "width": "fill_container",
@@ -7083,7 +7258,7 @@
           "name": "homeNav",
           "height": "fit_content",
           "x": 16,
-          "y": 337,
+          "y": 231,
           "descendants": {
             "6NAfW": {
               "width": "fit_content",
@@ -7115,7 +7290,7 @@
           "name": "homeTabs",
           "height": "fit_content",
           "x": 16,
-          "y": 387,
+          "y": 281,
           "descendants": {
             "5Znng": {
               "width": "fit_content",
@@ -7153,7 +7328,7 @@
           "width": 358,
           "height": "fit_content",
           "x": 16,
-          "y": 435,
+          "y": 329,
           "flipX": false,
           "flipY": false,
           "descendants": {
@@ -7503,7 +7678,7 @@
           "name": "homeLegend",
           "height": "fit_content",
           "x": 16,
-          "y": 658,
+          "y": 552,
           "width": "fit_content",
           "descendants": {
             "B3pLP": {
@@ -7551,7 +7726,7 @@
           "name": "homeSelected",
           "height": "fit_content",
           "x": 16,
-          "y": 690,
+          "y": 584,
           "justifyContent": "start",
           "alignItems": "start",
           "descendants": {
@@ -7867,17 +8042,17 @@
               "y": 21
             },
             "Z7Few": {
-              "width": "fit_content",
-              "height": "fit_content",
-              "x": 313,
-              "y": 17.5
+              "width": 0,
+              "height": 0,
+              "x": 358,
+              "y": 34
             },
             "IJedY": {
               "width": "fit_content",
               "height": "fit_content"
             },
             "4fFK5": {
-              "content": "共享",
+              "content": "",
               "x": 10,
               "y": 8
             }
@@ -7898,52 +8073,145 @@
               "x": 16,
               "y": 16
             },
-            "WuUX7": {
-              "x": 304
-            },
-            "4KfLx": {
-              "content": "经期第 2 天",
-              "x": 16,
-              "y": 44
-            },
-            "3xCxX": {
-              "content": "先看当前状态，再在下方 3 周视图里定位和记录。",
-              "width": "fill_container",
-              "x": 16,
-              "y": 91
-            },
-            "UtDro": {
-              "width": "fit_content",
-              "height": "fit_content",
-              "x": 16,
-              "y": 120
-            },
-            "liQPS": {
-              "width": "fit_content",
-              "height": "fit_content"
-            },
-            "BPER5": {
-              "x": 10,
+            "AFNvl": {
               "y": 8
-            },
-            "wtKyq": {
-              "content": "03/20",
-              "x": 10,
-              "y": 24
             },
             "LDDYz": {
               "width": "fit_content",
               "height": "fit_content",
-              "x": 72
+              "x": 284
             },
-            "oMKAe": {
+            "WuUX7": {
+              "content": "私人",
               "x": 10,
               "y": 8
             },
-            "2tfa9": {
-              "content": "04/16",
-              "x": 10,
-              "y": 24
+            "3xCxX": {
+              "type": "frame",
+              "id": "0Q5FL",
+              "name": "oStatus",
+              "fill": "#00000000",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "aWQNM",
+                  "fill": "#2F2A26",
+                  "content": "抱 经期中",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 17,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "PjyUl",
+                  "fill": "#F3EEE7",
+                  "cornerRadius": 999,
+                  "padding": [
+                    6,
+                    10
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Ny6dV",
+                      "fill": "#72685F",
+                      "content": "03.20 - 03.22",
+                      "fontFamily": "IBM Plex Sans",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            "UtDro": {
+              "width": "fill_container",
+              "height": "fit_content",
+              "x": 16,
+              "y": 98,
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 10
+            },
+            "liQPS": {
+              "type": "frame",
+              "id": "lplMc",
+              "name": "oPrev",
+              "width": 102,
+              "height": 45,
+              "fill": "#F3EEE7",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 1,
+              "padding": [
+                8,
+                10
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "cZGAx",
+                  "fill": "#A29488",
+                  "content": "上次",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "U0Yzx",
+                  "fill": "#2F2A26",
+                  "content": "03.03 - 03.07",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            "nXtQ1": {
+              "type": "frame",
+              "id": "sGlQw",
+              "name": "oNext",
+              "width": 102,
+              "height": 45,
+              "fill": "#F3D7D1",
+              "cornerRadius": 12,
+              "layout": "vertical",
+              "gap": 1,
+              "padding": [
+                8,
+                10
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Xa7Z2",
+                  "fill": "#72685F",
+                  "content": "下次",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "bZXE7",
+                  "fill": "#2F2A26",
+                  "content": "04.16 - 04.20",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            "yM8w2": {
+              "x": 224,
+              "y": 22.5
             }
           }
         },
@@ -7954,7 +8222,7 @@
           "name": "homeMode",
           "height": "fit_content",
           "x": 16,
-          "y": 280,
+          "y": 253,
           "descendants": {
             "WczQY": {
               "width": "fill_container",
@@ -7985,7 +8253,7 @@
           "name": "homeNav",
           "height": "fit_content",
           "x": 16,
-          "y": 337,
+          "y": 310,
           "descendants": {
             "6NAfW": {
               "width": "fit_content",
@@ -8017,7 +8285,7 @@
           "name": "homeTabs",
           "height": "fit_content",
           "x": 16,
-          "y": 387,
+          "y": 360,
           "descendants": {
             "5Znng": {
               "width": "fit_content",
@@ -8055,7 +8323,7 @@
           "width": 358,
           "height": "fit_content",
           "x": 16,
-          "y": 435,
+          "y": 408,
           "descendants": {
             "DLWfu": {
               "width": "fill_container",
@@ -8394,7 +8662,7 @@
           "name": "homeLegend",
           "height": "fit_content",
           "x": 16,
-          "y": 658,
+          "y": 631,
           "width": "fit_content",
           "descendants": {
             "B3pLP": {
@@ -8442,7 +8710,7 @@
           "name": "singlePanel",
           "height": "fit_content",
           "x": 16,
-          "y": 690,
+          "y": 663,
           "descendants": {
             "clUNn": {
               "width": "fill_container",

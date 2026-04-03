@@ -17,7 +17,25 @@ describe('Queries Integration', () => {
     (getModuleHomeView as jest.Mock).mockResolvedValue({
       moduleInstanceId: 'module-1',
       sharingStatus: 'private',
-      currentStatusSummary: null,
+      currentStatus: 'out_of_period',
+      statusCard: {
+        status: 'out_of_period',
+        label: '不在经期中',
+        rangeText: null,
+      },
+      currentSegment: null,
+      previousSegment: null,
+      currentStatusSummary: {
+        status: 'out_of_period',
+        anchorDate: null,
+        currentSegment: null,
+        statusCard: {
+          status: 'out_of_period',
+          label: '不在经期中',
+          rangeText: null,
+        },
+        previousSegment: null,
+      },
       visibleWindow: null,
       calendarMarks: [],
       selectedDay: null,
@@ -35,7 +53,25 @@ describe('Queries Integration', () => {
       data: {
         moduleInstanceId: 'module-1',
         sharingStatus: 'private',
-        currentStatusSummary: null,
+        currentStatus: 'out_of_period',
+        statusCard: {
+          status: 'out_of_period',
+          label: '不在经期中',
+          rangeText: null,
+        },
+        currentSegment: null,
+        previousSegment: null,
+        currentStatusSummary: {
+          status: 'out_of_period',
+          anchorDate: null,
+          currentSegment: null,
+          statusCard: {
+            status: 'out_of_period',
+            label: '不在经期中',
+            rangeText: null,
+          },
+          previousSegment: null,
+        },
         visibleWindow: null,
         calendarMarks: [],
         selectedDay: null,

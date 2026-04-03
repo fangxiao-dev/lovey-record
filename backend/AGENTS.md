@@ -44,6 +44,8 @@
 - `ModuleSettings.defaultPeriodDurationDays` is part of the active model and influences future auto-fill behavior.
 - Sharing always means access to the same `ModuleInstance`; do not model sharing as copied data.
 - Product semantics live in `docs/contracts/`, not inside Prisma naming or ad hoc controller logic.
+- Stable domain defaults should be defined once in a named backend constant module and reused from services, seed data, and tests.
+- When documenting or testing a default, prefer semantic placeholders or imports over repeating bare numeric literals unless the number is intentionally an example.
 
 ## Implementation Rules
 - Keep the public API surface aligned with the application contract before implementation.

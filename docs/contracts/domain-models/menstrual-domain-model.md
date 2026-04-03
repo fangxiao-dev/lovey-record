@@ -142,7 +142,10 @@ Notes:
 ### ModuleHomeView
 
 - `module_instance_id`
-- `current_status_summary`
+- `current_status`
+- `status_card`
+- `current_segment?`
+- `previous_segment?`
 - `visible_window`
 - `selected_date_state?`
 - `calendar_marks`
@@ -151,6 +154,10 @@ Notes:
 Notes:
 
 - application-level read model for the homepage
+- `current_status` answers whether `today` is inside the latest continuous period segment
+- `status_card` is the primary hero expression for `经期中 / 不在经期中`
+- `current_segment` always references the latest continuous period segment, even when `today` is outside it
+- `previous_segment` references the continuous period segment immediately before the latest one and may be absent
 - useful for query design
 
 ## Relationships

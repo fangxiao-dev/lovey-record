@@ -51,7 +51,7 @@ function getResolvedFocusDate({ homeView, activeDate, focusDate, today }) {
 	return focusDate
 		|| activeDate
 		|| homeView.selectedDay?.date
-		|| homeView.currentStatusSummary?.currentCycle?.startDate
+		|| homeView.currentStatusSummary?.currentSegment?.startDate
 		|| homeView.currentStatusSummary?.anchorDate
 		|| homeView.predictionSummary?.predictedStartDate
 		|| today;

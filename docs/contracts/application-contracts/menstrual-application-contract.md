@@ -182,37 +182,41 @@ Required behavior:
 
 ### Home Read Model Direction
 
-`getModuleHomeView` should stabilize around these additional home-facing fields:
+`getModuleHomeView` should stabilize around these top-level home-facing fields:
 
 ```json
 {
-  "currentStatusSummary": {
+  "currentStatus": "out_of_period",
+  "statusCard": {
     "status": "out_of_period",
-    "anchorDate": "2026-03-29",
-    "currentSegment": {
-      "startDate": "2026-03-29",
-      "endDate": "2026-03-30",
-      "durationDays": 2
-    },
-    "statusCard": {
-      "status": "out_of_period",
-      "label": "不在经期中",
-      "rangeText": null
-    },
-    "previousSegment": {
-      "startDate": "2026-03-01",
-      "endDate": "2026-03-05"
-    }
+    "label": "不在经期中",
+    "rangeText": null
+  },
+  "currentSegment": {
+    "startDate": "2026-03-29",
+    "endDate": "2026-03-30",
+    "durationDays": 2
+  },
+  "previousSegment": {
+    "startDate": "2026-03-01",
+    "endDate": "2026-03-05",
+    "durationDays": 5
   }
 }
 ```
 
 Rules:
 
+- `currentStatus` is the stable top-level status field for frontend consumption
 - `currentSegment` remains the latest actual segment even when `today` is outside it
+- `currentStatus = in_period` only when `today` is inside the latest segment's inclusive range
+- if the latest segment ends before `today`, `currentStatus` must be `out_of_period`
+- if later bridge or extension logic causes the recomputed latest segment to cover `today`, `currentStatus` must return to `in_period`
 - `statusCard` expresses whether that latest segment currently covers `today`
-- `previousSegment` is optional and should be omitted when unavailable
+- `previousSegment` is optional and should be `null` when unavailable
+- if no segment exists yet, `currentStatus` still returns `out_of_period`, `statusCard` returns `不在经期中`, and both segment references are `null`
 - frontend should treat these fields as the durable semantic contract once implemented, rather than recomputing previous/latest segment ranking locally
+- `currentStatusSummary` may remain temporarily as a compatibility wrapper during migration, but it is deprecated compatibility output rather than the primary contract surface
 
 ## Single-Day Smart Period Editing Contract
 
@@ -1056,12 +1060,11 @@ Returns:
 
 - module instance identity
 - sharing state
-- current status summary
+- current home hero/shortcut status fields
 - visible period/prediction window
 - calendar marks
 - selected day detail when applicable
 - prediction summary
-- module settings
 
 Suggested response shape:
 
@@ -1069,15 +1072,32 @@ Suggested response shape:
 {
   "moduleInstanceId": "mi_123",
   "sharingStatus": "private",
+  "currentStatus": "in_period",
+  "statusCard": {
+    "status": "in_period",
+    "label": "经期中",
+    "rangeText": "03.23 - 03.27"
+  },
+  "currentSegment": {
+    "startDate": "2026-03-23",
+    "endDate": "2026-03-27",
+    "durationDays": 5
+  },
+  "previousSegment": null,
   "currentStatusSummary": {
     "status": "in_period",
     "anchorDate": "2026-03-23",
     "currentSegment": {
-      "anchorDate": "2026-03-23",
+      "startDate": "2026-03-23",
       "endDate": "2026-03-27",
-      "durationDays": 5,
-      "defaultPeriodDurationDays": "<DEFAULT_PERIOD_DURATION_DAYS>"
-    }
+      "durationDays": 5
+    },
+    "statusCard": {
+      "status": "in_period",
+      "label": "经期中",
+      "rangeText": "03.23 - 03.27"
+    },
+    "previousSegment": null
   },
   "visibleWindow": {
     "kind": "segment_window",
@@ -1096,10 +1116,6 @@ Suggested response shape:
     "predictionWindowStart": "2026-04-10",
     "predictionWindowEnd": "2026-04-14",
     "basedOnCycleCount": 4
-  },
-  "moduleSettings": {
-    "defaultPeriodDurationDays": "<DEFAULT_PERIOD_DURATION_DAYS>",
-    "defaultPredictionTermDays": "<DEFAULT_PREDICTION_TERM_DAYS>"
   }
 }
 ```

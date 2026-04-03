@@ -87,6 +87,11 @@
 		background: #f3d7d1;
 	}
 
+	.jump-tabs__item--muted {
+		background: #ffffff;
+		border-color: #d8cec3;
+	}
+
 	.jump-tabs__label {
 		font-size: 22rpx;
 		line-height: 1;
@@ -97,6 +102,10 @@
 	.jump-tabs__label--accent,
 	.jump-tabs__label--active.jump-tabs__label--accent {
 		color: #ffffff;
+	}
+
+	.jump-tabs__label--muted {
+		color: #8e7c6d;
 	}
 
 	.jump-tabs__item--disabled {

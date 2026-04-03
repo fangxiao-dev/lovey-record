@@ -28,6 +28,10 @@ function formatDate(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
+function formatMonthDay(date: Date) {
+  return formatDate(date).slice(5).replace('-', '.');
+}
+
 function lower(value: string | null | undefined) {
   return value ? value.toLowerCase() : value;
 }
@@ -43,6 +47,47 @@ function hasUsablePrediction(prediction: {
 
 function isDetailRecorded(record: { painLevel: number | null; flowLevel: number | null; colorLevel: number | null }) {
   return [record.painLevel, record.flowLevel, record.colorLevel].some((value) => value !== null);
+}
+
+function getTodayDateOnly() {
+  return toDateOnly(formatDate(new Date()));
+}
+
+function isDateWithinSegment(date: Date, segment: { startDate: Date; endDate: Date } | null) {
+  if (!segment) {
+    return false;
+  }
+
+  return date >= segment.startDate && date <= segment.endDate;
+}
+
+function formatSegment(segment: { startDate: Date; endDate: Date; durationDays: number } | null) {
+  if (!segment) {
+    return null;
+  }
+
+  return {
+    startDate: formatDate(segment.startDate),
+    endDate: formatDate(segment.endDate),
+    durationDays: segment.durationDays,
+  };
+}
+
+function createStatusCard(
+  currentStatus: 'in_period' | 'out_of_period',
+  currentSegment: ReturnType<typeof formatSegment>,
+) {
+  return currentStatus === 'in_period' && currentSegment
+    ? {
+        status: 'in_period' as const,
+        label: '经期中',
+        rangeText: `${formatMonthDay(toDateOnly(currentSegment.startDate))} - ${formatMonthDay(toDateOnly(currentSegment.endDate))}`,
+      }
+    : {
+        status: 'out_of_period' as const,
+        label: '不在经期中',
+        rangeText: null,
+      };
 }
 
 async function requireAccess(moduleInstanceId: string, userId: string, profileId?: string) {
@@ -158,25 +203,26 @@ export async function getModuleHomeView(input: AccessInput) {
   });
   const usablePrediction = hasUsablePrediction(prediction) ? prediction : null;
 
-  const lastCycle = cycles.length > 0 ? cycles[cycles.length - 1] : null;
-  const today = new Date();
+  const latestSegment = cycles.length > 0 ? cycles[cycles.length - 1] : null;
+  const previousSegmentRecord = cycles.length > 1 ? cycles[cycles.length - 2] : null;
+  const today = getTodayDateOnly();
   const todayStr = formatDate(today);
-  const currentStatusSummary = lastCycle
-    ? {
-        status: today >= lastCycle.startDate && today <= lastCycle.endDate ? 'in_period' : 'out_of_period',
-        anchorDate: todayStr,
-        currentCycle: {
-          startDate: formatDate(lastCycle.startDate),
-          endDate: formatDate(lastCycle.endDate),
-          durationDays: lastCycle.durationDays,
-        },
-      }
-    : null;
+  const currentSegment = formatSegment(latestSegment);
+  const previousSegment = formatSegment(previousSegmentRecord);
+  const currentStatus = isDateWithinSegment(today, latestSegment) ? 'in_period' : 'out_of_period';
+  const statusCard = createStatusCard(currentStatus, currentSegment);
+  const currentStatusSummary = {
+    status: currentStatus,
+    anchorDate: currentSegment?.startDate ?? null,
+    currentSegment,
+    statusCard,
+    previousSegment,
+  };
 
   const calendarMarks: Array<{ date: string; kind: string }> = [];
-  if (lastCycle?.derivedFromDates) {
+  if (latestSegment?.derivedFromDates) {
     try {
-      const dates = JSON.parse(lastCycle.derivedFromDates) as string[];
+      const dates = JSON.parse(latestSegment.derivedFromDates) as string[];
       dates.forEach((date, index) => {
         calendarMarks.push({ date, kind: index === 0 ? 'period_start' : 'period' });
       });
@@ -192,11 +238,11 @@ export async function getModuleHomeView(input: AccessInput) {
     });
   }
 
-  const visibleWindow = lastCycle
+  const visibleWindow = latestSegment
     ? {
         kind: 'cycle_window',
-        startDate: formatDate(lastCycle.startDate),
-        endDate: formatDate(lastCycle.endDate),
+        startDate: formatDate(latestSegment.startDate),
+        endDate: formatDate(latestSegment.endDate),
       }
     : usablePrediction
       ? {
@@ -220,6 +266,10 @@ export async function getModuleHomeView(input: AccessInput) {
   return {
     moduleInstanceId: moduleInstance.id,
     sharingStatus: lower(moduleInstance.sharingStatus),
+    currentStatus,
+    statusCard,
+    currentSegment,
+    previousSegment,
     currentStatusSummary,
     visibleWindow,
     calendarMarks,

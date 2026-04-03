@@ -45,6 +45,11 @@ function formatMonthDay(dateString) {
 	return `${String(date.getUTCMonth() + 1).padStart(2, '0')}/${String(date.getUTCDate()).padStart(2, '0')}`;
 }
 
+function formatMonthDayDot(dateString) {
+	const date = toDateOnly(dateString);
+	return `${String(date.getUTCMonth() + 1).padStart(2, '0')}.${String(date.getUTCDate()).padStart(2, '0')}`;
+}
+
 function formatHumanDate(dateString) {
 	const date = toDateOnly(dateString);
 	return `${date.getUTCMonth() + 1} 月 ${date.getUTCDate()} 日`;
@@ -197,7 +202,7 @@ function mapStatusLabel(sharingStatus) {
 }
 
 function getCurrentSegment(homeView) {
-	return homeView.currentStatusSummary?.currentSegment || homeView.currentStatusSummary?.currentCycle || null;
+	return homeView.currentStatusSummary?.currentSegment || null;
 }
 
 function getFocusDate(homeView, dayDetail, today) {
@@ -209,9 +214,9 @@ function getFocusDate(homeView, dayDetail, today) {
 }
 
 function getJumpTabValue(homeView, today) {
-	const segment = getCurrentSegment(homeView);
-	if (segment && today >= segment.startDate && today <= segment.endDate) {
-		return 'current';
+	const previousSegment = homeView.currentStatusSummary?.previousSegment;
+	if (previousSegment && today === previousSegment.startDate) {
+		return 'previous';
 	}
 	if (homeView.predictionSummary?.predictedStartDate) {
 		return 'prediction';
@@ -436,22 +441,33 @@ function buildCalendarCardFromWindow(homeView, calendarWindow, selectedDate, tod
 }
 
 function createHeroCard(homeView, today) {
-	const segment = getCurrentSegment(homeView);
+	const statusSummary = homeView.currentStatusSummary || {};
+	const currentStatus = statusSummary.currentStatus || 'out_of_period';
+	const statusCard = statusSummary.statusCard || {};
+	const previousSegment = statusSummary.previousSegment || null;
 	const prediction = homeView.predictionSummary;
-	const inPeriod = homeView.currentStatusSummary?.status === 'in_period' && segment;
-	const currentDayNumber = inPeriod ? diffDays(segment.startDate, today) + 1 : null;
+
+	const statusText = statusCard.label || '不在经期中';
+	const nextFrameValue = prediction
+		? `${formatMonthDayDot(prediction.predictionWindowStart)} - ${formatMonthDayDot(prediction.predictionWindowEnd)}`
+		: '暂无记录';
 
 	return {
-		eyebrow: '当前状态',
-		title: inPeriod ? `经期第 ${currentDayNumber} 天` : (prediction ? '下一次经期预测' : '等待记录'),
-		copy: '先看当前状态，再在下方 3 周视图里定位和记录。',
-		currentRange: {
-			label: '本次经期',
-			value: segment ? `${formatMonthDay(segment.startDate)} - ${formatMonthDay(segment.endDate)}` : '--'
+		label: '当前状态',
+		sharingLabel: mapStatusLabel(homeView.sharingStatus),
+		statusFrame: {
+			state: currentStatus,
+			text: statusText
 		},
-		predictionRange: {
-			label: '下次预测',
-			value: prediction ? formatMonthDay(prediction.predictedStartDate) : '--'
+		previousFrame: {
+			label: '上次',
+			value: previousSegment
+				? `${formatMonthDayDot(previousSegment.startDate)} - ${formatMonthDayDot(previousSegment.endDate)}`
+				: '暂无记录'
+		},
+		nextFrame: {
+			label: '下次',
+			value: nextFrameValue
 		}
 	};
 }
@@ -504,8 +520,9 @@ function clonePageModel(pageModel) {
 		topBar: { ...pageModel.topBar },
 		heroCard: {
 			...pageModel.heroCard,
-			currentRange: { ...pageModel.heroCard.currentRange },
-			predictionRange: { ...pageModel.heroCard.predictionRange }
+			statusFrame: { ...pageModel.heroCard.statusFrame },
+			previousFrame: { ...pageModel.heroCard.previousFrame },
+			nextFrame: { ...pageModel.heroCard.nextFrame }
 		},
 		headerNav: { ...pageModel.headerNav },
 		jumpTabs: {
@@ -539,7 +556,7 @@ function clonePageModel(pageModel) {
 
 export function resolveJumpTargetDate(homeView, jumpKey, today) {
 	if (jumpKey === 'today') return today;
-	if (jumpKey === 'current') return getCurrentSegment(homeView)?.startDate || null;
+	if (jumpKey === 'previous') return homeView.currentStatusSummary?.previousSegment?.startDate || null;
 	if (jumpKey === 'prediction') return homeView.predictionSummary?.predictedStartDate || null;
 	return null;
 }
@@ -579,16 +596,16 @@ export function createMenstrualHomePageModel({
 		},
 		jumpTabs: {
 			value: (() => {
-				const currentTarget = resolveJumpTargetDate(homeView, 'current', today);
+				const previousTarget = resolveJumpTargetDate(homeView, 'previous', today);
 				const predictionTarget = resolveJumpTargetDate(homeView, 'prediction', today);
 				if (resolvedFocusDate === today) return 'today';
-				if (currentTarget && resolvedFocusDate === currentTarget) return 'current';
+				if (previousTarget && resolvedFocusDate === previousTarget) return 'previous';
 				if (predictionTarget && resolvedFocusDate === predictionTarget) return 'prediction';
 				return getJumpTabValue(homeView, today);
 			})(),
 			items: [
 				{ key: 'today', label: '今天', tone: 'outlined', disabled: false },
-				{ key: 'current', label: '本次', tone: 'accent', disabled: !getCurrentSegment(homeView) },
+				{ key: 'previous', label: '上次', tone: 'muted', disabled: !homeView.currentStatusSummary?.previousSegment },
 				{ key: 'prediction', label: '下次预测', tone: 'soft', disabled: !homeView.predictionSummary }
 			]
 		},
@@ -669,12 +686,19 @@ export function createSeededHomeContracts() {
 			moduleInstanceId: 'seed-home-module',
 			sharingStatus: 'private',
 			currentStatusSummary: {
-				status: 'in_period',
-				anchorDate: '2026-03-26',
-				currentCycle: {
+				currentStatus: 'in_period',
+				anchorDate: '2026-03-29',
+				currentSegment: {
 					startDate: '2026-03-26',
 					endDate: '2026-03-31',
 					durationDays: 6
+				},
+				statusCard: {
+					label: '经期第 3 天'
+				},
+				previousSegment: {
+					startDate: '2026-03-01',
+					endDate: '2026-03-05'
 				}
 			},
 			visibleWindow: {

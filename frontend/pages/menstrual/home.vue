@@ -2,24 +2,27 @@
 	<view class="menstrual-home u-page-shell">
 		<view v-if="page" class="menstrual-home__topbar">
 			<text class="menstrual-home__topbar-title">{{ page.topBar.title }}</text>
-			<view class="menstrual-home__topbar-status">
-				<text class="menstrual-home__topbar-status-label">{{ page.topBar.statusLabel }}</text>
-			</view>
 		</view>
 
 		<view v-if="page" class="menstrual-home__hero">
-			<text v-if="page.heroCard.eyebrow" class="menstrual-home__hero-eyebrow">{{ page.heroCard.eyebrow }}</text>
-			<text class="menstrual-home__hero-title">{{ page.heroCard.title }}</text>
-			<text v-if="page.heroCard.copy" class="menstrual-home__hero-copy">{{ page.heroCard.copy }}</text>
-			<text v-if="loadError" class="menstrual-home__hero-meta">联调刷新失败：{{ loadError }}</text>
-			<view class="menstrual-home__hero-ranges">
-				<view class="menstrual-home__hero-range">
-					<text class="menstrual-home__hero-range-label">{{ page.heroCard.currentRange.label }}</text>
-					<text class="menstrual-home__hero-range-value">{{ page.heroCard.currentRange.value }}</text>
+			<view class="menstrual-home__hero-header">
+				<text class="menstrual-home__hero-label">{{ page.heroCard.label }}</text>
+				<view class="menstrual-home__hero-sharing-chip">
+					<text class="menstrual-home__hero-sharing-chip-label">{{ page.heroCard.sharingLabel }}</text>
 				</view>
-				<view class="menstrual-home__hero-range">
-					<text class="menstrual-home__hero-range-label">{{ page.heroCard.predictionRange.label }}</text>
-					<text class="menstrual-home__hero-range-value">{{ page.heroCard.predictionRange.value }}</text>
+			</view>
+			<view class="menstrual-home__hero-status-frame" :class="`menstrual-home__hero-status-frame--${page.heroCard.statusFrame.state}`">
+				<text class="menstrual-home__hero-status-text">{{ page.heroCard.statusFrame.text }}</text>
+			</view>
+			<text v-if="loadError" class="menstrual-home__hero-meta">联调刷新失败：{{ loadError }}</text>
+			<view class="menstrual-home__hero-info-row">
+				<view class="menstrual-home__hero-info-frame">
+					<text class="menstrual-home__hero-info-label">{{ page.heroCard.previousFrame.label }}</text>
+					<text class="menstrual-home__hero-info-value">{{ page.heroCard.previousFrame.value }}</text>
+				</view>
+				<view class="menstrual-home__hero-info-frame menstrual-home__hero-info-frame--next">
+					<text class="menstrual-home__hero-info-label">{{ page.heroCard.nextFrame.label }}</text>
+					<text class="menstrual-home__hero-info-value">{{ page.heroCard.nextFrame.value }}</text>
 				</view>
 			</view>
 		</view>
@@ -740,7 +743,7 @@
 	.menstrual-home__topbar {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		justify-content: flex-start;
 		padding: 0 16rpx;
 	}
 
@@ -751,48 +754,65 @@
 		color: $text-primary;
 	}
 
-	.menstrual-home__topbar-status {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 40rpx;
-		padding: 0 12rpx;
-		border-radius: 999rpx;
-		background: #f3eee7;
-	}
-
-	.menstrual-home__topbar-status-label {
-		font-size: 18rpx;
-		line-height: 1;
-		color: $text-muted;
-	}
-
 	.menstrual-home__hero {
 		display: flex;
 		flex-direction: column;
-		gap: 10rpx;
-		padding: 14rpx 16rpx 16rpx;
+		gap: 12rpx;
+		padding: 16rpx;
 		border-radius: 32rpx;
 		background: #ffffff;
 	}
 
-	.menstrual-home__hero-eyebrow {
+	.menstrual-home__hero-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12rpx;
+	}
+
+	.menstrual-home__hero-label {
 		font-size: 18rpx;
 		line-height: 1;
 		color: $text-muted;
 	}
 
-	.menstrual-home__hero-title {
-		font-size: 40rpx;
+	.menstrual-home__hero-sharing-chip {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44rpx;
+		padding: 0 16rpx;
+		border-radius: 999rpx;
+		background: #f3eee7;
+	}
+
+	.menstrual-home__hero-sharing-chip-label {
+		font-size: 20rpx;
+		line-height: 1;
+		color: $text-secondary;
+	}
+
+	.menstrual-home__hero-status-frame {
+		display: flex;
+		align-items: center;
+		padding: 18rpx 20rpx;
+		border-radius: 24rpx;
+		background: #f6f0e8;
+	}
+
+	.menstrual-home__hero-status-frame--in_period {
+		background: #f4e6e1;
+	}
+
+	.menstrual-home__hero-status-frame--out_of_period {
+		background: #f6f0e8;
+	}
+
+	.menstrual-home__hero-status-text {
+		font-size: 36rpx;
 		line-height: 1;
 		font-weight: $font-weight-strong;
 		color: $text-primary;
-	}
-
-	.menstrual-home__hero-copy {
-		font-size: 20rpx;
-		line-height: 1.5;
-		color: $text-secondary;
 	}
 
 	.menstrual-home__hero-meta {
@@ -801,32 +821,37 @@
 		color: #b55d51;
 	}
 
-	.menstrual-home__hero-ranges {
+	.menstrual-home__hero-info-row {
 		display: flex;
-		align-items: center;
+		align-items: stretch;
 		gap: 8rpx;
 	}
 
-	.menstrual-home__hero-range {
+	.menstrual-home__hero-info-frame {
 		display: flex;
 		flex-direction: column;
+		flex: 1;
 		gap: 4rpx;
 		padding: 10rpx 14rpx;
 		border-radius: 24rpx;
-		background: #faf7f2;
+		background: #fbf7f2;
 	}
 
-	.menstrual-home__hero-range-label {
+	.menstrual-home__hero-info-frame--next {
+		background: #f3d7d1;
+	}
+
+	.menstrual-home__hero-info-label {
 		font-size: 18rpx;
 		line-height: 1;
 		color: $text-muted;
 	}
 
-	.menstrual-home__hero-range-value {
-		font-size: 24rpx;
+	.menstrual-home__hero-info-value {
+		font-size: 22rpx;
 		line-height: 1;
 		font-weight: $font-weight-medium;
-		color: $accent-period;
+		color: $text-primary;
 	}
 
 	.menstrual-home__content {

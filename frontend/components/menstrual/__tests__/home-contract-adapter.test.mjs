@@ -20,11 +20,23 @@ test('home contract adapter maps query responses into the formal menstrual home 
 
 	assert.equal(model.topBar.title, '月经记录');
 	assert.equal(model.topBar.statusLabel, '私人');
-	assert.equal(model.heroCard.eyebrow, '当前状态');
-	assert.equal(model.heroCard.title, '经期第 4 天');
-	assert.equal(model.heroCard.currentRange.value, '03/26 - 03/31');
-	assert.equal(model.heroCard.predictionRange.value, '04/25');
+	assert.equal(model.heroCard.label, '当前状态');
+	assert.equal(model.heroCard.sharingLabel, '私人');
+	assert.equal(model.heroCard.statusFrame.text, '经期第 3 天');
+	assert.equal(model.heroCard.statusFrame.state, 'in_period');
+	assert.equal(model.heroCard.previousFrame.label, '上次');
+	assert.equal(model.heroCard.previousFrame.value, '03.01 - 03.05');
+	assert.equal(model.heroCard.nextFrame.label, '下次');
+	assert.equal(model.heroCard.nextFrame.value, '04.23 - 04.27');
 	assert.equal(model.viewModeControl.value, 'three-week');
+	assert.deepEqual(
+		model.jumpTabs.items.map((item) => [item.key, item.label, item.disabled]),
+		[
+			['today', '今天', false],
+			['previous', '上次', false],
+			['prediction', '下次预测', false]
+		]
+	);
 	assert.equal(model.calendarCard.weeks.length, 3);
 	assert.equal(model.calendarCard.weeks.every((week) => week.cells.length === 7), true);
 	assert.equal(
@@ -37,6 +49,38 @@ test('home contract adapter maps query responses into the formal menstrual home 
 	assert.equal(model.selectedDatePanel.periodChipSelected, true);
 	assert.equal(model.selectedDatePanel.summaryItems.length, 3);
 	assert.equal(model.selectedDatePanel.attributeRows.length, 3);
+});
+
+test('home contract adapter maps out-of-period status and missing previous segment without falling back to old current shortcut semantics', () => {
+	const { homeView, dayDetail } = createSeededHomeContracts();
+	const model = createMenstrualHomePageModel({
+		homeView: {
+			...homeView,
+			currentStatusSummary: {
+				...homeView.currentStatusSummary,
+				currentStatus: 'out_of_period',
+				statusCard: {
+					label: '不在经期中'
+				},
+				previousSegment: null
+			}
+		},
+		dayDetail,
+		today: '2026-03-29'
+	});
+
+	assert.equal(model.heroCard.statusFrame.text, '不在经期中');
+	assert.equal(model.heroCard.statusFrame.state, 'out_of_period');
+	assert.equal(model.heroCard.previousFrame.value, '暂无记录');
+	assert.deepEqual(
+		model.jumpTabs.items.map((item) => [item.key, item.label, item.disabled]),
+		[
+			['today', '今天', false],
+			['previous', '上次', true],
+			['prediction', '下次预测', false]
+		]
+	);
+	assert.equal(model.jumpTabs.items.some((item) => item.key === 'current'), false);
 });
 
 test('home contract adapter builds the calendar from getCalendarWindow and preserves the requested view mode', () => {
