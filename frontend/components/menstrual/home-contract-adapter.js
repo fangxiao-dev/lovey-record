@@ -440,6 +440,11 @@ function buildCalendarCardFromWindow(homeView, calendarWindow, selectedDate, tod
 	};
 }
 
+const STATUS_ICON = {
+	in_period: '/static/icons/coffee.svg',
+	out_of_period: '/static/icons/vacation_1.png'
+};
+
 function createHeroCard(homeView, today) {
 	const statusSummary = homeView.currentStatusSummary || {};
 	const currentStatus = statusSummary.currentStatus || 'out_of_period';
@@ -457,7 +462,8 @@ function createHeroCard(homeView, today) {
 		sharingLabel: mapStatusLabel(homeView.sharingStatus),
 		statusFrame: {
 			state: currentStatus,
-			text: statusText
+			text: statusText,
+			iconUrl: STATUS_ICON[currentStatus] || STATUS_ICON.out_of_period
 		},
 		previousFrame: {
 			label: '上次',

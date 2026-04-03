@@ -1,9 +1,5 @@
 <template>
 	<view class="menstrual-home u-page-shell">
-		<view v-if="page" class="menstrual-home__topbar">
-			<text class="menstrual-home__topbar-title">{{ page.topBar.title }}</text>
-		</view>
-
 		<view v-if="page" class="menstrual-home__hero">
 			<view class="menstrual-home__hero-header">
 				<text class="menstrual-home__hero-label">{{ page.heroCard.label }}</text>
@@ -11,7 +7,8 @@
 					<text class="menstrual-home__hero-sharing-chip-label">{{ page.heroCard.sharingLabel }}</text>
 				</view>
 			</view>
-			<view class="menstrual-home__hero-status-frame" :class="`menstrual-home__hero-status-frame--${page.heroCard.statusFrame.state}`">
+			<view class="menstrual-home__hero-status-frame">
+				<image class="menstrual-home__hero-status-icon" :src="page.heroCard.statusFrame.iconUrl" mode="aspectFit" />
 				<text class="menstrual-home__hero-status-text">{{ page.heroCard.statusFrame.text }}</text>
 			</view>
 			<text v-if="loadError" class="menstrual-home__hero-meta">联调刷新失败：{{ loadError }}</text>
@@ -740,20 +737,6 @@
 		background: #faf7f2;
 	}
 
-	.menstrual-home__topbar {
-		display: flex;
-		align-items: center;
-		justify-content: flex-start;
-		padding: 0 16rpx;
-	}
-
-	.menstrual-home__topbar-title {
-		font-size: 32rpx;
-		line-height: 1;
-		font-weight: $font-weight-strong;
-		color: $text-primary;
-	}
-
 	.menstrual-home__hero {
 		display: flex;
 		flex-direction: column;
@@ -794,18 +777,17 @@
 
 	.menstrual-home__hero-status-frame {
 		display: flex;
+		flex-direction: row;
 		align-items: center;
+		gap: 8rpx;
 		padding: 18rpx 20rpx;
 		border-radius: 24rpx;
-		background: #f6f0e8;
 	}
 
-	.menstrual-home__hero-status-frame--in_period {
-		background: #f4e6e1;
-	}
-
-	.menstrual-home__hero-status-frame--out_of_period {
-		background: #f6f0e8;
+	.menstrual-home__hero-status-icon {
+		width: 44rpx;
+		height: 44rpx;
+		flex-shrink: 0;
 	}
 
 	.menstrual-home__hero-status-text {
@@ -834,7 +816,7 @@
 		gap: 4rpx;
 		padding: 10rpx 14rpx;
 		border-radius: 24rpx;
-		background: #fbf7f2;
+		background: #F3EEE7;
 	}
 
 	.menstrual-home__hero-info-frame--next {
@@ -842,13 +824,13 @@
 	}
 
 	.menstrual-home__hero-info-label {
-		font-size: 18rpx;
+		font-size: 22rpx;
 		line-height: 1;
 		color: $text-muted;
 	}
 
 	.menstrual-home__hero-info-value {
-		font-size: 22rpx;
+		font-size: 24rpx;
 		line-height: 1;
 		font-weight: $font-weight-medium;
 		color: $text-primary;

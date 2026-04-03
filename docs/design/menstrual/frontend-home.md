@@ -47,13 +47,9 @@ The primary hero frame is not a small chip. It is a dedicated status container.
 
 Current MVP states:
 
-- `经期中：MM.DD - MM.DD`
-- `不在经期中`
+- `经期第<N>天`
+- `非经期`
 
-Future expansion is reserved for states such as:
-
-- `黄体期`
-- `临近经期`
 
 Design rule:
 
@@ -126,8 +122,8 @@ This file defines the UI contract only.
 
 The durable logic for:
 
-- when the page is `经期中`
-- when it becomes `不在经期中`
+- when the page is `经期第<N>天`
+- when it becomes `非经期`
 - how `上次` is derived
 - when `暂无记录` appears
 
