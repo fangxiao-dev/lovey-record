@@ -122,7 +122,45 @@ export function scopeResponse<T>(data: T, scopes: AffectedScope[]) {
 **`applySingleDayPeriodActionHandler`**（当前第 88-102 行）：
 - 如果返回了 prompt（未执行实际操作）：`scopeResponse(result, [])`
 - 如果执行了操作：`scopeResponse(result, ['calendar', 'dayDetail', 'prediction'])`
-- 具体判断：检查 service 返回中是否有 `segmentChanged === true`，仅此时才包含 `'calendar'` 和 `'prediction'`
+- 具体判断：检查 service 返回中的 `result.confirmationRequired === true` 与
+  `result.recomputed?.segmentChanged === true`
+- 当前真实返回形态在 `backend/src/services/dayRecord.service.ts` 中是：
+
+```ts
+// prompt-only
+{
+  confirmationRequired: true,
+  prompt: ...,
+  effectPreview: ...
+}
+
+// command executed
+{
+  confirmationRequired: false,
+  effect: ...,
+  recomputed: {
+    segmentChanged: boolean,
+    predictionChanged: boolean
+  }
+}
+```
+
+- 因此 controller 里的判断应写成类似：
+
+```ts
+if (result.confirmationRequired) {
+  return res.json(scopeResponse(result, []))
+}
+
+if (result.recomputed?.segmentChanged) {
+  return res.json(scopeResponse(result, ['calendar', 'dayDetail', 'prediction']))
+}
+
+return res.json(scopeResponse(result, ['dayDetail']))
+```
+
+> 注：按当前 service 实现，`noop` 不会改日历或预测，但仍可能需要重拉当日详情；
+> 若确认 UI 永远不会触发 `noop` command，可把最后一支降为 `[]`，但这需要先在产品语义上明确。
 
 #### 5. module-shell controllers — moduleOverview
 
@@ -171,19 +209,15 @@ async function commandEnvelope({ apiBaseUrl, openid, path, data }) {
 
 **特殊处理：`applySingleDayPeriodAction`**
 
-该函数的返回值（action prompt 信息）在 `handleTogglePeriod` 中被读取，
-改动后返回值的 payload 在 `.data` 字段中，调用方需更新解构：
+当前 `home.vue` 中的 `handleTogglePeriod` 并**不会**直接消费该 command 的返回 payload；
+确认弹窗来自 `this.rawContracts.singleDayPeriodAction.resolvedAction.prompt`，真正的 command
+只是通过 `runCommand(() => applySingleDayPeriodAction(...))` 执行。
 
-```js
-// home.vue handleTogglePeriod 中（示意，需找到实际位置）
-// 改前：
-const actionResult = await applySingleDayPeriodAction({...})
-// 改后：
-const { data: actionResult } = await applySingleDayPeriodAction({...})
-```
+因此这次改动里：
 
-`runCommand` / `runOptimisticMutation` 从返回值中取 `affectedScopes`，
-`handleTogglePeriod` 本身不需要感知 scopes，由 `runCommand` 内部处理。
+- `handleTogglePeriod` 调用点**不需要**新增 `const { data } = ...` 之类的解构
+- 需要改的是 `runCommand` / `runOptimisticMutation`：它们要读取 command envelope 顶层的 `affectedScopes`
+- 只有未来若有别的调用方需要读取 command payload，才从返回值的 `.data` 中取业务结果
 
 #### 7. home.vue — 新增选择性刷新方法
 
@@ -224,12 +258,13 @@ async refreshByScopes(scopes) {
 async runOptimisticMutation(nextPage, command) {
   if (this.isMutating) return
   const previousPage = this.page
+  let affectedScopes = null
   this.page = nextPage
   this.loadError = ''
   this.isMutating = true
 
   try {
-    const { affectedScopes } = await command()  // ← 解构 affectedScopes
+    affectedScopes = (await command())?.affectedScopes ?? null
   } catch (error) {
     this.page = previousPage
     this.loadError = error instanceof Error ? error.message : 'Command failed'
@@ -300,9 +335,9 @@ async runCommand(command) {
 
 ---
 
-### 前端改动（module shell / index.vue）
+### 前端改动（module shell / `frontend/pages/index/index.vue`）
 
-#### 10. index.vue — settings 操作加乐观更新
+#### 10. `frontend/pages/index/index.vue` — settings 操作加乐观更新
 
 当前 `handleSettingsOptionSelect`（第 267-280 行）：
 ```js
@@ -314,6 +349,18 @@ async handleSettingsOptionSelect(days) {
 
 改为（命令失败和 reload 失败分离，各自处理）：
 ```js
+async retryInitialLoad({ rethrow = false } = {}) {
+  this.loadError = ''
+  try {
+    const result = await loadMenstrualModuleShellPageModel(this.context)
+    this.page = result.page
+  } catch (error) {
+    this.page = null
+    this.loadError = error instanceof Error ? error.message : '联调环境请求失败'
+    if (rethrow) throw error
+  }
+}
+
 async handleSettingsOptionSelect(days) {
   const nextPage = applySettingsOptionToPageModel(this.page, days)
   const prevPage = this.page
@@ -330,7 +377,7 @@ async handleSettingsOptionSelect(days) {
 
   // reload 失败不回滚（服务器已提交，保持乐观值，提示用户）
   try {
-    await this.retryInitialLoad()
+    await this.retryInitialLoad({ rethrow: true })
   } catch (e) {
     this.loadError = `写入成功，但刷新失败：${e instanceof Error ? e.message : ''}`
   }
@@ -338,6 +385,9 @@ async handleSettingsOptionSelect(days) {
 ```
 
 > 注：`applySettingsOptionToPageModel` 是新增的纯函数，在现有 module-shell view model 文件中添加。
+> 当前实际页面文件位于 `frontend/pages/index/index.vue`，不是 `frontend/pages/menstrual/index.vue`。
+> 关键前提：当前 `retryInitialLoad()` 会吞掉异常；若不先让它支持 `rethrow`（或返回显式 success/failure），
+> `handleSettingsOptionSelect` 外层的第二个 `catch` 永远不会触发，无法正确区分“写入成功但刷新失败”。
 
 ---
 
@@ -362,10 +412,10 @@ async handleSettingsOptionSelect(days) {
 5. 前端：`home.vue` 新增 `refreshByScopes`，修改 `runOptimisticMutation` 和 `runCommand`
 6. 验证：切换属性只触发 `refreshSelectedDayDetail`（网络面板确认）
 7. 后端：`dayRecord.controller.ts` 添加 scopes
-8. 前端：修复 `handleTogglePeriod` 中对 `applySingleDayPeriodAction` 返回值的解构
+8. 前端：确认 `handleTogglePeriod` 仍通过 `runCommand` 调用，无需直接消费 command payload
 9. 验证：经期操作仍走全量刷新
 10. 后端：module shell controllers 添加 scopes
-11. 前端：`index.vue` settings 加乐观更新
+11. 前端：`frontend/pages/index/index.vue` settings 加乐观更新
 
 ## 测试要点
 
@@ -374,7 +424,7 @@ async handleSettingsOptionSelect(days) {
 - [ ] 切换属性后，当日详情面板正确更新
 - [ ] 标记经期后，全量刷新仍然执行（日历格子变色、预测更新）
 - [ ] applySingleDayPeriodAction 仅返回 prompt 时，不触发任何刷新
-- [ ] applySingleDayPeriodAction 的 prompt 逻辑不受影响（handleTogglePeriod 解构正确）
+- [ ] applySingleDayPeriodAction 的 prompt 逻辑不受影响（`handleTogglePeriod` 仍以 `rawContracts.singleDayPeriodAction` 为准）
 - [ ] 乐观更新命令失败时，UI 正确回滚
 - [ ] 命令成功但刷新失败时，UI 保持乐观值，显示「写入成功，但刷新失败」
 - [ ] settings 写入成功但 reload 失败时，UI 保持新值（不回滚）

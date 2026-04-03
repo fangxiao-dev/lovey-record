@@ -149,7 +149,7 @@ $marker-svg-path: "M12 5C6.7 5 2.58 8.07 1 12c1.58 3.93 5.7 7 11 7s9.42-3.07 11-
 
 ---
 
-## 优化 2：CalendarGrid 批量选择 DOM rect 预缓存
+## 优化 2：CalendarGrid 批量选择 DOM rect 捕获与失效
 
 ### 问题分析
 
@@ -227,11 +227,16 @@ captureCellRects() {
 清除缓存，下次长按会重新计算：
 
 ```js
+methods: {
+  invalidateCellRects() {
+    this.cellRects = null
+  }
+},
 watch: {
   weeks: {
     handler() {
       // 日历数据变化后 DOM 重建，旧 rects 作废
-      this.cellRects = null
+      this.invalidateCellRects()
     }
   }
 },
@@ -239,13 +244,13 @@ mounted() {
   this.bindDesktopLongPressEvents()
   // 监听页面滚动和 resize，清除 rect 缓存
   // （小程序中通过 onPageScroll 传递，H5 中直接监听）
-  this._invalidateRects = () => { this.cellRects = null }
+  this._invalidateRects = () => { this.invalidateCellRects() }
   // #ifdef H5
   window.addEventListener('scroll', this._invalidateRects, { passive: true })
   window.addEventListener('resize', this._invalidateRects, { passive: true })
   // #endif
 },
-beforeDestroy() {
+beforeUnmount() {
   // #ifdef H5
   window.removeEventListener('scroll', this._invalidateRects)
   window.removeEventListener('resize', this._invalidateRects)
@@ -253,8 +258,10 @@ beforeDestroy() {
 },
 ```
 
-> 小程序端：在父页面的 `onPageScroll` 中调用 `this.$refs.calendarGrid.cellRects = null`，
-> 或通过 `uni.$on('pageScroll', ...)` 事件总线传递。
+> 小程序端不要直接写子组件内部字段 `cellRects`。改为：
+> 1. 给 `CalendarGrid` 加 `ref="calendarGrid"`
+> 2. 在父页面 `onPageScroll()` 里调用 `this.$refs.calendarGrid?.invalidateCellRects?.()`
+> 3. 若页面还有会改变布局的展开/收起 banner，也在对应回调里调用同一个公开方法
 
 #### 步骤 3：startBatchMode 保持「长按时捕获」
 
@@ -280,32 +287,36 @@ startBatchMode(initialKey) {
 
 ### 问题
 
-快速切换日期时，`handleDateCellTap` 会连续触发多次 `loadDayDetail`，
+快速切换日期时，当前页面里的 `handleCellTap` 会连续触发多次 `refreshSelectedDayDetail`，
 产生并发请求和竞态条件。当前有 requestId 机制，但不能减少请求数量。
 
 ### 方案（轻量）
 
-在 `home.vue` 的日期切换处加 debounce：
+在 `home.vue` 的 `handleCellTap` 上做轻量去重：
 
 ```js
-// 在 methods 中
-handleDateCellTap: debounce(function(key) {
-  this.focusDate = key
-  this.loadDayDetail()
-}, 100),
-```
+handleCellTap(cell) {
+  if (!cell?.isoDate) return
+  if (this.isBrowseBusy) return
+  if (this.panelMode === 'single-day' && cell.isoDate === this.activeDate) return
 
-或者更简单：检查 `focusDate` 是否真的发生了变化：
-
-```js
-handleDateCellTap(key) {
-  if (this.focusDate === key) return  // 同一天，跳过
-  this.focusDate = key
-  this.loadDayDetail()
+  this.panelMode = 'single-day'
+  this.applyLocalBrowseState({
+    selectedDate: cell.isoDate,
+    focusDate: this.focusDate,
+    viewMode: this.viewMode,
+    useCalendarWindow: true,
+    dayDetail: this.getSelectedDayDetail(cell.isoDate)
+  })
+  this.refreshSelectedDayDetail({
+    selectedDate: cell.isoDate,
+    focusDate: this.focusDate,
+    viewMode: this.viewMode
+  }).catch(() => {})
 }
 ```
 
-> 这个改动极小，顺手做即可。
+> 这个改动比 debounce 更稳妥：不会引入新的交互等待，也更贴合当前 `home.vue` 的真实方法名和状态流。
 
 ---
 
@@ -313,10 +324,11 @@ handleDateCellTap(key) {
 
 1. **优化 2（DOM 缓存）**：改动集中在 CalendarGrid.vue，风险低，收益明显
    - 新增 `captureCellRects()` 方法
-   - mounted 和 weeks watch 中调用
-   - 简化 startBatchMode
+   - 新增 `invalidateCellRects()` 公开方法
+   - weeks watch、H5 scroll/resize、父页面 `onPageScroll` 都接到同一失效入口
+   - `startBatchMode` 继续在长按开始时捕获 rects
 
-2. **优化 3（日期切换防抖）**：一行改动，顺手做
+2. **优化 3（日期切换去重）**：改动很小，顺手做
 
 3. **优化 1（image → CSS）**：需要验证 mask-image 小程序兼容性
    - 建议先在开发工具验证，再真机测试
