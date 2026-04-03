@@ -805,22 +805,26 @@
 
 	.menstrual-home__hero-info-row {
 		display: flex;
-		align-items: stretch;
-		gap: 8rpx;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 20rpx;
 	}
 
 	.menstrual-home__hero-info-frame {
 		display: flex;
 		flex-direction: column;
-		flex: 1;
-		gap: 4rpx;
-		padding: 10rpx 14rpx;
+		width: 204rpx;
+		height: 90rpx;
+		gap: 2rpx;
+		padding: 16rpx 20rpx;
 		border-radius: 24rpx;
 		background: #F3EEE7;
+		justify-content: center;
+		align-items: center;
 	}
 
 	.menstrual-home__hero-info-frame--next {
-		background: #f3d7d1;
+		background: #F3D7D1;
 	}
 
 	.menstrual-home__hero-info-label {
