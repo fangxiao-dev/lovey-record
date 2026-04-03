@@ -61,7 +61,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		justify-content: space-around;
+		justify-content: space-between;
 		gap: 16rpx;
 		padding: 0 20rpx;
 	}
