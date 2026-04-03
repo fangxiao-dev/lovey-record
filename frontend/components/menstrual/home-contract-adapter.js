@@ -579,7 +579,7 @@ export function resolveJumpTargetDate(homeView, jumpKey, today) {
 			: (statusSummary.currentSegment || statusSummary.currentCycle);
 		return lastSegment?.startDate || null;
 	}
-	if (jumpKey === 'prediction') return homeView.predictionSummary?.predictedStartDate || null;
+	if (jumpKey === 'prediction') return homeView.predictionSummary?.predictionWindowStart || null;
 	return null;
 }
 
