@@ -449,6 +449,7 @@ function createHeroCard(homeView, today) {
 	const statusSummary = homeView.currentStatusSummary || {};
 	const currentStatus = statusSummary.currentStatus || 'out_of_period';
 	const statusCard = statusSummary.statusCard || {};
+	const currentSegment = statusSummary.currentSegment || null;
 	const previousSegment = statusSummary.previousSegment || null;
 	const prediction = homeView.predictionSummary;
 
@@ -456,6 +457,10 @@ function createHeroCard(homeView, today) {
 	const nextFrameValue = prediction
 		? `${formatMonthDayDot(prediction.predictionWindowStart)} - ${formatMonthDayDot(prediction.predictionWindowEnd)}`
 		: '暂无记录';
+
+	// When in period: "上次" refers to the previous segment
+	// When out of period: "上次" refers to the segment we just exited (current segment)
+	const lastSegment = currentStatus === 'in_period' ? previousSegment : currentSegment;
 
 	return {
 		label: '当前状态',
@@ -467,8 +472,8 @@ function createHeroCard(homeView, today) {
 		},
 		previousFrame: {
 			label: '上次',
-			value: previousSegment
-				? `${formatMonthDayDot(previousSegment.startDate)} - ${formatMonthDayDot(previousSegment.endDate)}`
+			value: lastSegment
+				? `${formatMonthDayDot(lastSegment.startDate)} - ${formatMonthDayDot(lastSegment.endDate)}`
 				: '暂无记录'
 		},
 		nextFrame: {
@@ -562,7 +567,16 @@ function clonePageModel(pageModel) {
 
 export function resolveJumpTargetDate(homeView, jumpKey, today) {
 	if (jumpKey === 'today') return today;
-	if (jumpKey === 'previous') return homeView.currentStatusSummary?.previousSegment?.startDate || null;
+	if (jumpKey === 'previous') {
+		const statusSummary = homeView.currentStatusSummary || {};
+		const currentStatus = statusSummary.currentStatus || 'out_of_period';
+		// When in period: "上次" refers to previousSegment
+		// When out of period: "上次" refers to the segment we just exited (currentSegment)
+		const lastSegment = currentStatus === 'in_period'
+			? statusSummary.previousSegment
+			: statusSummary.currentSegment;
+		return lastSegment?.startDate || null;
+	}
 	if (jumpKey === 'prediction') return homeView.predictionSummary?.predictedStartDate || null;
 	return null;
 }
@@ -611,7 +625,7 @@ export function createMenstrualHomePageModel({
 			})(),
 			items: [
 				{ key: 'today', label: '今天', tone: 'outlined', disabled: false },
-				{ key: 'previous', label: '上次', tone: 'muted', disabled: !homeView.currentStatusSummary?.previousSegment },
+				{ key: 'previous', label: '上次', tone: 'muted', disabled: (() => { const s = homeView.currentStatusSummary || {}; const cs = s.currentStatus || 'out_of_period'; const ls = cs === 'in_period' ? s.previousSegment : s.currentSegment; return !ls; })() },
 				{ key: 'prediction', label: '下次预测', tone: 'soft', disabled: !homeView.predictionSummary }
 			]
 		},

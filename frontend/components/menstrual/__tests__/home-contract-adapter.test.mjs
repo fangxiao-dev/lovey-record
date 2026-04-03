@@ -51,7 +51,7 @@ test('home contract adapter maps query responses into the formal menstrual home 
 	assert.equal(model.selectedDatePanel.attributeRows.length, 3);
 });
 
-test('home contract adapter maps out-of-period status and missing previous segment without falling back to old current shortcut semantics', () => {
+test('home contract adapter maps out-of-period status and shows the just-exited period as "上次"', () => {
 	const { homeView, dayDetail } = createSeededHomeContracts();
 	const model = createMenstrualHomePageModel({
 		homeView: {
@@ -63,6 +63,7 @@ test('home contract adapter maps out-of-period status and missing previous segme
 					label: '不在经期中'
 				},
 				previousSegment: null
+				// currentSegment still exists (just exited)
 			}
 		},
 		dayDetail,
@@ -71,12 +72,13 @@ test('home contract adapter maps out-of-period status and missing previous segme
 
 	assert.equal(model.heroCard.statusFrame.text, '不在经期中');
 	assert.equal(model.heroCard.statusFrame.state, 'out_of_period');
-	assert.equal(model.heroCard.previousFrame.value, '暂无记录');
+	// When out of period, "上次" shows the segment we just exited (currentSegment)
+	assert.equal(model.heroCard.previousFrame.value, '03.26 - 03.31');
 	assert.deepEqual(
 		model.jumpTabs.items.map((item) => [item.key, item.label, item.disabled]),
 		[
 			['today', '今天', false],
-			['previous', '上次', true],
+			['previous', '上次', false],
 			['prediction', '下次预测', false]
 		]
 	);
