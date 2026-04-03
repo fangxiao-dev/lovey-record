@@ -1,0 +1,95 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - generic [ref=e6]:
+    - img [ref=e9] [cursor=pointer]
+    - generic [ref=e12]: 月经记录
+  - generic [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]: 当前状态
+        - generic [ref=e21]: 共享
+      - generic [ref=e22]:
+        - img [ref=e25]
+        - generic [ref=e26]: 经期中
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]: 上次
+          - generic [ref=e30]: 暂无记录
+        - generic [ref=e31]:
+          - generic [ref=e32]: 下次
+          - generic [ref=e33]: 04.21 - 04.25
+    - generic [ref=e34]:
+      - generic [ref=e35]:
+        - generic [ref=e37]: 3 周
+        - generic [ref=e39]: 月览
+      - generic [ref=e40]:
+        - generic [ref=e42]: ‹
+        - generic [ref=e43]: "2026.04"
+        - generic [ref=e45]: ›
+      - generic [ref=e47]:
+        - generic [ref=e49]: 今天
+        - generic [ref=e51]: 上次
+        - generic [ref=e53]: 下次预测
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e56]: M
+          - generic [ref=e57]: T
+          - generic [ref=e58]: W
+          - generic [ref=e59]: T
+          - generic [ref=e60]: F
+          - generic [ref=e61]: S
+          - generic [ref=e62]: S
+        - generic [ref=e64]:
+          - generic [ref=e67] [cursor=pointer]: "23"
+          - generic [ref=e72] [cursor=pointer]: "24"
+          - generic [ref=e77] [cursor=pointer]: "25"
+          - generic [ref=e81] [cursor=pointer]:
+            - generic [ref=e82]: "26"
+            - img [ref=e87]
+          - generic [ref=e89] [cursor=pointer]:
+            - generic [ref=e90]: "27"
+            - img [ref=e95]
+          - generic [ref=e97] [cursor=pointer]:
+            - generic [ref=e98]: "28"
+            - img [ref=e103]
+          - generic [ref=e106] [cursor=pointer]: "29"
+        - generic [ref=e111]:
+          - generic [ref=e114]: "30"
+          - generic [ref=e119]: "31"
+          - generic [ref=e124]: "01"
+          - generic [ref=e129]: "02"
+          - generic [ref=e134]: "03"
+          - generic [ref=e139]: "04"
+          - generic [ref=e144]: "05"
+        - generic [ref=e149]:
+          - generic [ref=e152]: "06"
+          - generic [ref=e157]: "07"
+          - generic [ref=e162]: "08"
+          - generic [ref=e167]: "09"
+          - generic [ref=e172]: "10"
+          - generic [ref=e177]: "11"
+          - generic [ref=e182]: "12"
+      - generic [ref=e185]:
+        - generic [ref=e188]: 本次经期
+        - generic [ref=e191]: 经期预测
+        - generic [ref=e192]:
+          - img [ref=e196]
+          - generic [ref=e197]: 属性已记录
+      - generic [ref=e198]:
+        - generic [ref=e199]:
+          - generic [ref=e200]: 4 月 3 日
+          - generic [ref=e201]: 点击记录
+        - generic [ref=e202]:
+          - generic [ref=e204] [cursor=pointer]: 月经
+          - generic [ref=e206] [cursor=pointer]: + 记录详情
+        - generic [ref=e208]: 选择属性后将显示在这里
+        - generic [ref=e209]:
+          - generic [ref=e210]:
+            - generic [ref=e211]: 当天备注
+            - generic [ref=e212]: 0/500
+          - generic [ref=e214]:
+            - generic [ref=e215]: 写一句今天的状态、事件或提醒
+            - textbox [ref=e216]
+```

@@ -1,0 +1,90 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - generic [ref=e6]:
+    - img [ref=e9] [cursor=pointer]
+    - generic [ref=e12]: 月经记录
+  - generic [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]: 当前状态
+        - generic [ref=e21]: 私人
+      - generic [ref=e22]:
+        - img [ref=e25]
+        - generic [ref=e26]: 经期中
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]: 上次
+          - generic [ref=e30]: 暂无记录
+        - generic [ref=e31]:
+          - generic [ref=e32]: 下次
+          - generic [ref=e33]: 04.21 - 04.25
+    - generic [ref=e34]:
+      - generic [ref=e35]:
+        - generic [ref=e37]: 3 周
+        - generic [ref=e39]: 月览
+      - generic [ref=e40]:
+        - generic [ref=e42]: ‹
+        - generic [ref=e43]: "2026.04"
+        - generic [ref=e45]: ›
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - generic [ref=e49]: 今天
+          - generic [ref=e51]: 上次
+          - generic [ref=e53]: 下次预测
+        - generic [ref=e54]:
+          - generic [ref=e56]: 保存
+          - generic [ref=e58]: 取消
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - generic [ref=e61]: M
+          - generic [ref=e62]: T
+          - generic [ref=e63]: W
+          - generic [ref=e64]: T
+          - generic [ref=e65]: F
+          - generic [ref=e66]: S
+          - generic [ref=e67]: S
+        - generic [ref=e69]:
+          - generic [ref=e72] [cursor=pointer]: "23"
+          - generic [ref=e77] [cursor=pointer]: "24"
+          - generic [ref=e82] [cursor=pointer]: "25"
+          - generic [ref=e86] [cursor=pointer]:
+            - generic [ref=e87]: "26"
+            - img [ref=e92]
+          - generic [ref=e94] [cursor=pointer]:
+            - generic [ref=e95]: "27"
+            - img [ref=e100]
+          - generic [ref=e102] [cursor=pointer]:
+            - generic [ref=e103]: "28"
+            - img [ref=e108]
+          - generic [ref=e111] [cursor=pointer]: "29"
+        - generic [ref=e116]:
+          - generic [ref=e119]: "30"
+          - generic [ref=e124]: "31"
+          - generic [ref=e129]: "01"
+          - generic [ref=e134]: "02"
+          - generic [ref=e139]: "03"
+          - generic [ref=e144]: "04"
+          - generic [ref=e149]: "05"
+        - generic [ref=e154]:
+          - generic [ref=e157]: "06"
+          - generic [ref=e162]: "07"
+          - generic [ref=e167]: "08"
+          - generic [ref=e172]: "09"
+          - generic [ref=e177]: "10"
+          - generic [ref=e182]: "11"
+          - generic [ref=e187]: "12"
+      - generic [ref=e190]:
+        - generic [ref=e193]: 本次经期
+        - generic [ref=e196]: 经期预测
+        - generic [ref=e197]:
+          - img [ref=e201]
+          - generic [ref=e202]: 属性已记录
+      - generic [ref=e203]:
+        - generic [ref=e205]: 批量记录 03/23-03/24
+        - generic [ref=e206]:
+          - generic [ref=e208] [cursor=pointer]: 经期
+          - generic [ref=e210] [cursor=pointer]: + 记录详情
+        - generic [ref=e212]: 选择属性后将显示在这里
+```
