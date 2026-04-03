@@ -4,7 +4,9 @@
   "scripts": {
     "test:menstrual:live": "cross-env MENSTRUAL_FRONTEND_BASE_URL=http://localhost:5173 MENSTRUAL_API_BASE_URL=http://localhost:3004/api playwright test ./frontend/scripts/menstrual-home-batch-live-regression.spec.mjs --reporter=line",
     "test:menstrual:live:h5": "npm run test:menstrual:live",
-    "test:menstrual:live:boot": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\run-menstrual-live-regression.ps1"
+    "test:menstrual:live:boot": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\run-menstrual-live-regression.ps1",
+    "launch:mp": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\launch-miniprogram.ps1 -Action launch",
+    "publish:mp": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\launch-miniprogram.ps1 -Action publish"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

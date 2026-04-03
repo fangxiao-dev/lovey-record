@@ -2,7 +2,8 @@
   "name": "lovey-record-frontend",
   "version": "0.1.0",
   "scripts": {
-    "dev:h5": "cross-env UNI_PLATFORM=h5 UNI_INPUT_DIR=./ uni"
+    "dev:h5": "cross-env UNI_PLATFORM=h5 UNI_INPUT_DIR=./ uni",
+    "dev:mp-weixin": "cross-env UNI_PLATFORM=mp-weixin UNI_INPUT_DIR=./ uni"
   },
   "devDependencies": {
     "@dcloudio/uni-app": "3.0.0-5000620260331001",
