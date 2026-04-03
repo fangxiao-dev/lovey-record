@@ -177,41 +177,17 @@ async startBatchMode(initialKey) {
 **问题：** 用户长按触发 `startBatchMode` 时，如果 `cellRects` 还没缓存，
 需要等 `uni.createSelectorQuery` 异步回调，这段时间内拖动无响应。
 
-### 方案：在 `mounted` + 数据变化时预缓存
+### 方案：长按时捕获 + 布局变化时失效缓存
 
-#### 步骤 1：在 mounted 时主动缓存
+> **设计约束**：`boundingClientRect` 返回视口相对坐标。如果在 mounted 时预缓存，
+> 后续任何滚动、软键盘弹出、banner 展开等布局变化都会导致缓存坐标过期，
+> 拖选时命中错误的日期——这是数据完整性风险，不可接受。
+>
+> 因此**不在 mounted 时预缓存**，继续保留「长按时捕获」的核心逻辑，
+> 仅做两项改进：① 抽取方法减少重复代码 ② 引入缓存失效机制以便
+> 同一次手势内复用（避免重复查询），但布局一旦变化立即作废。
 
-**CalendarGrid.vue**，在 `mounted()`（第 128-131 行）中增加：
-
-```js
-mounted() {
-  this.bindDesktopLongPressEvents()
-  // 预缓存 cell rects，避免首次批量选择时的异步等待
-  this.$nextTick(() => {
-    this.captureCellRects()
-  })
-},
-```
-
-#### 步骤 2：数据变化时刷新缓存
-
-当 props 中的 weeks 数据发生变化（日历切换月份/周）时，清除缓存并重建：
-
-```js
-watch: {
-  weeks: {
-    handler() {
-      // 日历数据变化后，DOM 重新渲染，需要刷新 rect 缓存
-      this.cellRects = null
-      this.$nextTick(() => {
-        this.captureCellRects()
-      })
-    }
-  }
-}
-```
-
-#### 步骤 3：抽取 captureCellRects 方法
+#### 步骤 1：抽取 captureCellRects 方法
 
 将当前散落在 `startBatchMode` 里的查询逻辑，抽成独立方法：
 
@@ -245,13 +221,48 @@ captureCellRects() {
 > 注意：`uni.createSelectorQuery().in(this)` 中加 `.in(this)` 是关键，
 > 在组件内使用时必须传入组件实例，否则在真机上无法找到元素。
 
-#### 步骤 4：简化 startBatchMode
+#### 步骤 2：布局变化时失效缓存
 
-改造后，`startBatchMode` 里不再需要查询 DOM：
+当 weeks 变化（月份/周切换导致 DOM 重建）或页面滚动/resize 时，
+清除缓存，下次长按会重新计算：
+
+```js
+watch: {
+  weeks: {
+    handler() {
+      // 日历数据变化后 DOM 重建，旧 rects 作废
+      this.cellRects = null
+    }
+  }
+},
+mounted() {
+  this.bindDesktopLongPressEvents()
+  // 监听页面滚动和 resize，清除 rect 缓存
+  // （小程序中通过 onPageScroll 传递，H5 中直接监听）
+  this._invalidateRects = () => { this.cellRects = null }
+  // #ifdef H5
+  window.addEventListener('scroll', this._invalidateRects, { passive: true })
+  window.addEventListener('resize', this._invalidateRects, { passive: true })
+  // #endif
+},
+beforeDestroy() {
+  // #ifdef H5
+  window.removeEventListener('scroll', this._invalidateRects)
+  window.removeEventListener('resize', this._invalidateRects)
+  // #endif
+},
+```
+
+> 小程序端：在父页面的 `onPageScroll` 中调用 `this.$refs.calendarGrid.cellRects = null`，
+> 或通过 `uni.$on('pageScroll', ...)` 事件总线传递。
+
+#### 步骤 3：startBatchMode 保持「长按时捕获」
+
+`startBatchMode` 仍在长按时重新计算 rects（如果缓存已失效）：
 
 ```js
 startBatchMode(initialKey) {
-  // 如果缓存不存在（极少情况），同步触发一次
+  // 每次长按开始时，如果缓存已被失效，重新捕获当前视口坐标
   if (!this.cellRects) {
     this.captureCellRects()
   }
@@ -259,6 +270,9 @@ startBatchMode(initialKey) {
   // ...
 }
 ```
+
+> **关键不变量**：hit-testing 永远使用手势开始时（或之后）捕获的、
+> 与当前视口坐标一致的 rects，而不是挂载时的历史快照。
 
 ---
 
