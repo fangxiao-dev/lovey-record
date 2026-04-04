@@ -251,6 +251,60 @@ describe('query.service', () => {
     jest.useRealTimers();
   });
 
+  it('returns prediction that follows the latest recomputed segment start even when earlier segments still exist', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-04-06T00:00:00.000Z'));
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+      sharingStatus: 'PRIVATE',
+    });
+    (prisma.derivedCycle.findMany as jest.Mock).mockResolvedValue([
+      {
+        startDate: new Date('2026-03-29T00:00:00.000Z'),
+        endDate: new Date('2026-03-31T00:00:00.000Z'),
+        durationDays: 3,
+        derivedFromDates: JSON.stringify(['2026-03-29', '2026-03-30', '2026-03-31']),
+      },
+      {
+        startDate: new Date('2026-04-03T00:00:00.000Z'),
+        endDate: new Date('2026-04-04T00:00:00.000Z'),
+        durationDays: 2,
+        derivedFromDates: JSON.stringify(['2026-04-03', '2026-04-04']),
+      },
+    ]);
+    (prisma.prediction.findUnique as jest.Mock).mockResolvedValue({
+      predictedStartDate: new Date('2026-05-01T00:00:00.000Z'),
+      predictionWindowStart: new Date('2026-04-29T00:00:00.000Z'),
+      predictionWindowEnd: new Date('2026-05-03T00:00:00.000Z'),
+      basedOnCycleCount: 2,
+    });
+
+    const result = await getModuleHomeView({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+    });
+
+    expect(result.currentSegment).toEqual({
+      startDate: '2026-04-03',
+      endDate: '2026-04-04',
+      durationDays: 2,
+    });
+    expect(result.predictionSummary).toEqual({
+      predictedStartDate: '2026-05-01',
+      predictionWindowStart: '2026-04-29',
+      predictionWindowEnd: '2026-05-03',
+      basedOnCycleCount: 2,
+    });
+    expect(result.calendarMarks).toEqual(
+      expect.arrayContaining([
+        { date: '2026-04-03', kind: 'period_start' },
+        { date: '2026-05-01', kind: 'prediction_start' },
+      ]),
+    );
+    jest.useRealTimers();
+  });
+
   it('expands the visible window to include prediction range when present', async () => {
     jest.useFakeTimers().setSystemTime(new Date('2026-03-23T00:00:00.000Z'));
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({

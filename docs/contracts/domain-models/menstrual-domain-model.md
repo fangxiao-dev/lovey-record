@@ -138,7 +138,8 @@ Notes:
 
 - derived object, not primary user-authored input
 - can be cached if needed
-- `predicted_start_date` is computed as `latest_period_segment_start + default_prediction_term_days`
+- `predicted_start_date` is computed as `latest_recomputed_period_segment_start + default_prediction_term_days`
+- if the latest recomputed segment start moves earlier, later, or disappears after a revoke, prediction must move with that newest segment result
 - the user-facing predicted period range ends at `predicted_start_date + default_period_duration_days - 1`
 
 ### ModuleHomeView
@@ -321,7 +322,7 @@ Default:
 - those future auto-filled period days are domain-valid period members even though the frontend keeps them read-only.
 - shared/private changes access scope, not data ownership.
 - private and shared entry points must resolve to the same `module instance`.
-- prediction must be computed from the latest anchored segment start date rather than user-authored end dates.
+- prediction must be computed from the latest recomputed continuous segment start date rather than user-authored end dates.
 
 ## Derived Data
 

@@ -194,7 +194,7 @@ test('home contract adapter can build a month-view calendar locally from homeVie
 	assert.equal(model.selectedDatePanel.badge, '点击记录');
 });
 
-test('home contract adapter renders only prediction_start as prediction instead of the whole prediction window', () => {
+test('home contract adapter renders the full predicted period range instead of only prediction_start', () => {
 	const homeView = {
 		moduleInstanceId: 'seed-home-module',
 		sharingStatus: 'private',
@@ -237,9 +237,13 @@ test('home contract adapter renders only prediction_start as prediction instead 
 		viewMode: 'month'
 	});
 	const localByDate = Object.fromEntries(localModel.calendarCard.weeks.flatMap((week) => week.cells).map((cell) => [cell.key, cell.variant]));
-	assert.equal(localByDate['2026-04-01'], 'default');
-	assert.equal(localByDate['2026-04-02'], 'default');
 	assert.equal(localByDate['2026-04-03'], 'selectedPrediction');
+	assert.equal(localByDate['2026-04-04'], 'prediction');
+	assert.equal(localByDate['2026-04-05'], 'prediction');
+	assert.equal(localByDate['2026-04-06'], 'todayPrediction');
+	assert.equal(localByDate['2026-04-07'], 'futurePrediction');
+	assert.equal(localByDate['2026-04-08'], 'futurePrediction');
+	assert.equal(localByDate['2026-04-02'], 'default');
 
 	const windowModel = createMenstrualHomePageModel({
 		homeView,
@@ -256,12 +260,15 @@ test('home contract adapter renders only prediction_start as prediction instead 
 			moduleInstanceId: 'seed-home-module',
 			window: {
 				startDate: '2026-03-30',
-				endDate: '2026-04-05'
+				endDate: '2026-04-08'
 			},
 			days: [
-				{ date: '2026-04-01', isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false },
-				{ date: '2026-04-02', isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false },
-				{ date: '2026-04-03', isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false }
+				{ date: '2026-04-03', isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false },
+				{ date: '2026-04-04', isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false },
+				{ date: '2026-04-05', isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false },
+				{ date: '2026-04-06', isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false },
+				{ date: '2026-04-07', isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false },
+				{ date: '2026-04-08', isPeriod: false, source: null, isExplicit: false, isDetailRecorded: false }
 			],
 			marks: [
 				{ date: '2026-04-03', kind: 'prediction_start' }
@@ -272,9 +279,13 @@ test('home contract adapter renders only prediction_start as prediction instead 
 		viewMode: 'month'
 	});
 	const windowByDate = Object.fromEntries(windowModel.calendarCard.weeks.flatMap((week) => week.cells).map((cell) => [cell.key, cell.variant]));
-	assert.equal(windowByDate['2026-04-01'], 'default');
-	assert.equal(windowByDate['2026-04-02'], 'default');
 	assert.equal(windowByDate['2026-04-03'], 'selectedPrediction');
+	assert.equal(windowByDate['2026-04-04'], 'prediction');
+	assert.equal(windowByDate['2026-04-05'], 'prediction');
+	assert.equal(windowByDate['2026-04-06'], 'todayPrediction');
+	assert.equal(windowByDate['2026-04-07'], 'futurePrediction');
+	assert.equal(windowByDate['2026-04-08'], 'futurePrediction');
+	assert.equal(windowByDate['2026-04-02'], 'default');
 });
 
 test('home contract adapter uses predictedStartDate for the prediction jump target and defaultPeriodDurationDays for the hero next range', () => {
@@ -693,7 +704,7 @@ test('home contract adapter applies batch draft to the visible calendar and sele
 	assert.deepEqual(next.heroCard, originalHero);
 });
 
-test('home contract adapter applies hero snapshot without mutating calendar or selected day panel state', () => {
+test('home contract adapter applies hero snapshot while preserving selected day panel state and refreshing prediction overlays', () => {
 	const { homeView, moduleSettings } = createSeededHomeContracts();
 	const dayDetail = createEmptyDayDetail({
 		moduleInstanceId: 'seed-home-module',
@@ -705,12 +716,12 @@ test('home contract adapter applies hero snapshot without mutating calendar or s
 		dayDetail,
 		moduleSettings,
 		today: '2026-03-29',
-		focusDate: '2026-03-24',
+		focusDate: '2026-04-24',
 		viewMode: 'month'
 	});
 
-	const originalCalendar = structuredClone(model.calendarCard);
 	const originalPanel = structuredClone(model.selectedDatePanel);
+	const originalByDate = Object.fromEntries(model.calendarCard.weeks.flatMap((week) => week.cells).map((cell) => [cell.key, cell.variant]));
 	const next = applyHeroSnapshotToPageModel(model, {
 		homeView: {
 			...homeView,
@@ -743,7 +754,15 @@ test('home contract adapter applies hero snapshot without mutating calendar or s
 	assert.equal(next.heroCard.statusFrame.state, 'in_period');
 	assert.equal(next.heroCard.statusFrame.text, '经期中');
 	assert.equal(next.heroCard.nextFrame.value, '04.21 - 04.26');
-	assert.deepEqual(next.calendarCard, originalCalendar);
+	const nextByDate = Object.fromEntries(next.calendarCard.weeks.flatMap((week) => week.cells).map((cell) => [cell.key, cell.variant]));
+	assert.equal(originalByDate['2026-04-20'], 'futurePrediction');
+	assert.equal(nextByDate['2026-04-20'], 'futureMuted');
+	assert.equal(nextByDate['2026-04-21'], 'futurePrediction');
+	assert.equal(nextByDate['2026-04-22'], 'futurePrediction');
+	assert.equal(nextByDate['2026-04-23'], 'futurePrediction');
+	assert.equal(nextByDate['2026-04-24'], 'futurePrediction');
+	assert.equal(nextByDate['2026-04-25'], 'futurePrediction');
+	assert.equal(nextByDate['2026-04-26'], 'futurePrediction');
 	assert.deepEqual(next.selectedDatePanel, originalPanel);
 	assert.equal(next.selectedDateKey, model.selectedDateKey);
 	assert.equal(next.headerNav.monthLabel, model.headerNav.monthLabel);

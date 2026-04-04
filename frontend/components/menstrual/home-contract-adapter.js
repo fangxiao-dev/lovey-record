@@ -100,6 +100,20 @@ function resolvePredictedSegmentEndDate(predictionSummary, moduleSettings) {
 	return addDays(predictedStartDate, durationDays - 1);
 }
 
+function createPredictionDateSet(predictionSummary, moduleSettings, marks = []) {
+	const predictedStartDate = predictionSummary?.predictedStartDate;
+	const predictedSegmentEndDate = resolvePredictedSegmentEndDate(predictionSummary, moduleSettings);
+	if (predictedStartDate && predictedSegmentEndDate) {
+		return new Set(createDateRange(predictedStartDate, predictedSegmentEndDate));
+	}
+
+	return new Set(
+		(marks || [])
+			.filter((mark) => mark.kind === 'prediction_start')
+			.map((mark) => mark.date)
+	);
+}
+
 function startOfMonth(dateString) {
 	const date = toDateOnly(dateString);
 	date.setUTCDate(1);
@@ -341,16 +355,16 @@ function createCalendarDatesForViewMode({ focusDate, viewMode }) {
 	return createDateRange(startDate, addDays(startDate, 20));
 }
 
-function buildCalendarCard(homeView, dayDetail, selectedDate, focusDate, viewMode, today) {
+function buildCalendarCard(homeView, moduleSettings, dayDetail, selectedDate, focusDate, viewMode, today) {
 	const periodDates = new Set(
 		(homeView.calendarMarks || [])
 			.filter((mark) => mark.kind === 'period' || mark.kind === 'period_start')
 			.map((mark) => mark.date)
 	);
-	const predictionDates = new Set(
-		(homeView.calendarMarks || [])
-			.filter((mark) => mark.kind === 'prediction_start')
-			.map((mark) => mark.date)
+	const predictionDates = createPredictionDateSet(
+		homeView.predictionSummary,
+		moduleSettings,
+		homeView.calendarMarks
 	);
 
 	const resolvedFocusDate = focusDate || getFocusDate(homeView, { dayRecord: { date: selectedDate } }, today);
@@ -411,12 +425,12 @@ export function createEmptyDayDetail({ moduleInstanceId, profileId, date }) {
 	};
 }
 
-function buildCalendarCardFromWindow(homeView, calendarWindow, selectedDate, today) {
+function buildCalendarCardFromWindow(homeView, moduleSettings, calendarWindow, selectedDate, today) {
 	const dayMap = new Map((calendarWindow.days || []).map((day) => [day.date, day]));
-	const predictionDates = new Set(
-		(calendarWindow.marks || homeView.calendarMarks || [])
-			.filter((mark) => mark.kind === 'prediction_start')
-			.map((mark) => mark.date)
+	const predictionDates = createPredictionDateSet(
+		homeView.predictionSummary,
+		moduleSettings,
+		calendarWindow.marks || homeView.calendarMarks || []
 	);
 	const dates = createDateRange(calendarWindow.window.startDate, calendarWindow.window.endDate);
 	const weeks = [];
@@ -637,6 +651,34 @@ function patchCalendarCells(pageModel, overrides = {}) {
 	return { periodDates, detailRecordedDates };
 }
 
+function refreshCalendarPredictionOverlays(pageModel, homeView, moduleSettings) {
+	const predictionDates = createPredictionDateSet(
+		homeView?.predictionSummary,
+		moduleSettings,
+		homeView?.calendarMarks || []
+	);
+
+	pageModel.calendarCard.weeks = pageModel.calendarCard.weeks.map((week) => ({
+		...week,
+		cells: week.cells.map((cell) => {
+			const variantLower = String(cell.variant || '').toLowerCase();
+			const isPeriod = variantLower.includes('period') && !variantLower.includes('prediction');
+			const isDetailRecorded = String(cell.variant || '').includes('Detail');
+			return {
+				...cell,
+				variant: composeCalendarVariant({
+					date: cell.isoDate,
+					today: pageModel.todayKey,
+					isPeriod,
+					isPrediction: predictionDates.has(cell.isoDate),
+					isDetailRecorded,
+					isSelected: cell.key === pageModel.selectedDateKey
+				})
+			};
+		})
+	}));
+}
+
 function clonePageModel(pageModel) {
 	return {
 		...pageModel,
@@ -751,8 +793,8 @@ export function createMenstrualHomePageModel({
 			]
 		},
 		calendarCard: calendarWindow
-			? buildCalendarCardFromWindow(homeView, calendarWindow, activeDate, today)
-			: buildCalendarCard(homeView, dayDetail, activeDate, resolvedFocusDate, viewMode, today),
+			? buildCalendarCardFromWindow(homeView, moduleSettings, calendarWindow, activeDate, today)
+			: buildCalendarCard(homeView, moduleSettings, dayDetail, activeDate, resolvedFocusDate, viewMode, today),
 		legend: createCalendarLegendItems(),
 		selectedDatePanel: createSelectedDatePanel(homeView, dayDetail, today, singleDayPeriodAction),
 		selectedDateKey: activeDate,
@@ -765,6 +807,7 @@ export function applyHeroSnapshotToPageModel(pageModel, { homeView, moduleSettin
 	const previousJumpValue = next.jumpTabs.value;
 	next.topBar.statusLabel = mapStatusLabel(homeView?.sharingStatus);
 	next.heroCard = createHeroCard(homeView || {}, today, moduleSettings);
+	refreshCalendarPredictionOverlays(next, homeView || {}, moduleSettings);
 	next.jumpTabs.items = [
 		{ key: 'today', label: '今天', tone: 'outlined', disabled: false },
 		{

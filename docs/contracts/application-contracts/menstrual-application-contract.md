@@ -648,7 +648,8 @@ Rules:
 
 Rules:
 
-- `predictedStartDate` is derived from the latest period segment start plus `defaultPredictionTermDays`
+- `predictedStartDate` is derived from the latest recomputed continuous period segment start plus `defaultPredictionTermDays`
+- whenever the latest recomputed segment start changes because of period recording, bridging, batch writes, or revokes, `predictedStartDate` must move with that new start
 - `basedOnCycleCount` remains a compatibility field and is not the prediction source of truth
 - `predictionWindowStart` / `predictionWindowEnd` remain supporting read-model context, not calendar highlight instructions
 - the hero-facing predicted period range end is derived from `predictedStartDate + defaultPeriodDurationDays - 1`; no separate `predictedEndDate` field is required
@@ -1074,10 +1075,10 @@ Returns:
 
 Calendar prediction semantics:
 
-- `predictionSummary.predictionWindowStart` / `predictionWindowEnd` describe the forecast window for hero and supporting read models
-- visible calendar prediction styling is driven by `calendarMarks`
-- the current home calendar contract uses `kind: 'prediction_start'` as the visible prediction marker
-- frontend must not expand the whole prediction window into prediction-styled date cells unless a future contract explicitly adds such a mark type
+- `predictionSummary.predictionWindowStart` / `predictionWindowEnd` remain supporting read-model context
+- visible calendar prediction styling uses the predicted period range derived from `predictedStartDate + defaultPeriodDurationDays - 1`
+- `calendarMarks.kind = 'prediction_start'` still identifies the first day of that visible prediction range
+- that `prediction_start` always represents the prediction derived from the latest recomputed period segment start
 - future auto-filled period days remain valid `days[].isPeriod = true` results in calendar-oriented read models, but frontend keeps them read-only
 
 Suggested response shape:
@@ -1184,9 +1185,9 @@ Returns:
 
 Calendar rendering note:
 
-- `marks` is the visual-state source for calendar overlays
-- `prediction_start` identifies the single visible forecast start day in the calendar
-- `predictionSummary` may still expose a wider prediction window, but that window is not itself a calendar highlighting instruction
+- `marks` still identify anchor days such as `period_start`, `period`, `today`, and `prediction_start`
+- the visible prediction surface is the full predicted period range derived from `predictedStartDate + defaultPeriodDurationDays - 1`
+- `prediction_start` remains the first day of that visible range and the shortcut/jump target
 - `days[].isPeriod = true` may legitimately appear on dates after `today` when auto-fill extends an anchored segment into the future
 - those future period rows are read-only in frontend interaction terms; they are not evidence that future dates became directly editable
 

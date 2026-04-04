@@ -84,10 +84,11 @@ Forbidden combinations from `date-state-spec.md`:
 
 ## Hero / Prediction Boundary
 
-- Calendar prediction styling is still mark-driven and only applies to `prediction_start`.
-- The rest of the prediction window is supporting read-model context, not a calendar highlight instruction.
-- Hero `下次` shows the predicted period range `predictedStartDate ~ predictedStartDate + defaultPeriodDurationDays - 1`.
-- `下次预测` shortcut still jumps to `prediction_start`.
+- Calendar prediction styling now follows the same predicted period range that hero `下次` displays.
+- The visible range is derived as `predictedStartDate ~ predictedStartDate + defaultPeriodDurationDays - 1`.
+- `prediction_start` still anchors the shortcut target and remains the first day of that visible prediction range.
+- `prediction_start` always follows the latest recomputed real period segment start; if the latest segment start changes, the visible prediction range changes with it.
+- `下次预测` shortcut still jumps only to `prediction_start`.
 
 ### During Selection
 

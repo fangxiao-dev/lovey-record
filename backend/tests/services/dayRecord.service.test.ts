@@ -676,6 +676,41 @@ describe('dayRecord.service', () => {
     );
   });
 
+  it('moves prediction forward when a newer latest segment start is recorded', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.moduleSettings.upsert as jest.Mock).mockResolvedValue({
+      defaultPeriodDurationDays: DEFAULT_PERIOD_DURATION_DAYS,
+      defaultPredictionTermDays: DEFAULT_PREDICTION_TERM_DAYS,
+    });
+    (prisma.dayRecord.upsert as jest.Mock).mockResolvedValue({});
+    (prisma.dayRecord.findMany as jest.Mock).mockResolvedValue([
+      { date: new Date('2026-03-29T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-03-30T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-04-03T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+      { date: new Date('2026-04-04T00:00:00.000Z'), isPeriod: true, source: 'MANUAL' },
+    ]);
+
+    await recordPeriodDay({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      date: '2026-04-04',
+    });
+
+    expect(prisma.prediction.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({
+          predictedStartDate: new Date('2026-05-01T00:00:00.000Z'),
+          predictionWindowStart: new Date('2026-04-29T00:00:00.000Z'),
+          predictionWindowEnd: new Date('2026-05-03T00:00:00.000Z'),
+        }),
+      }),
+    );
+  });
+
   it('re-validates the current action before mutating and rejects stale decisions', async () => {
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
       id: 'module-1',

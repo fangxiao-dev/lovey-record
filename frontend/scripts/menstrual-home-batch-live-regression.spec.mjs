@@ -299,7 +299,13 @@ test('menstrual home batch live regression', async ({ page }) => {
 		await page.waitForTimeout(1600);
 		await expect(page.locator('.selected-date-panel__title')).toHaveText('3 月 23 日');
 
-		await page.goto(FRONTEND_URL);
+		await page.goto(buildFrontendUrl(HOME_ROUTE, {
+			apiBaseUrl: API_BASE_URL,
+			openid: OPENID,
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			profileId: PROFILE_ID,
+			today: '2026-04-03'
+		}));
 		await page.waitForTimeout(1200);
 		const classes = await getCellClasses(page, ['23', '24', '25']);
 		expect(classes[0].className.includes('date-cell--bg-period')).toBeTruthy();
@@ -713,6 +719,145 @@ test('deferred hero refresh picks up the updated default period duration before 
 			endDate: '2026-03-28'
 		});
 		await ensureDefaultPeriodDuration(6);
+	}
+});
+
+test('calendar prediction visually covers the same range that hero next displays while jump still lands on prediction start', async ({ page }) => {
+	const [homeView, moduleSettings] = await Promise.all([
+		getModuleHomeView(),
+		getModuleSettings()
+	]);
+	const predictedStartDate = homeView.predictionSummary?.predictedStartDate;
+	expect(predictedStartDate).toBeTruthy();
+	const predictedRangeDates = Array.from(
+		{ length: moduleSettings.defaultPeriodDurationDays },
+		(_, index) => addIsoDays(predictedStartDate, index)
+	);
+	const expectedHeroRange = `${formatMonthDayDot(predictedRangeDates[0])} - ${formatMonthDayDot(predictedRangeDates[predictedRangeDates.length - 1])}`;
+	const expectedDayLabels = predictedRangeDates.map((date) => date.slice(8, 10));
+
+	await page.goto(FRONTEND_URL);
+	await page.waitForTimeout(1200);
+
+	await expect(page.locator('.menstrual-home__hero-info-frame--next .menstrual-home__hero-info-value')).toHaveText(expectedHeroRange);
+	await page.locator('.jump-tabs__item').filter({ hasText: '下次预测' }).click();
+	await page.waitForTimeout(1200);
+	const predictionClasses = await getCellClasses(page, expectedDayLabels);
+	expect(predictionClasses.every((item) => item.className.includes('date-cell--bg-period-soft'))).toBeTruthy();
+	expect(predictionClasses[0].className.includes('date-cell--selected')).toBeTruthy();
+
+	await expect(page.locator('.selected-date-panel__title')).toHaveText(formatHumanDate(predictedStartDate));
+});
+
+test('prediction jump and hero next follow the latest recorded period start, then revert after revoke', async ({ page }) => {
+	const EARLIER_START = '2026-03-29';
+	const LATER_START = '2026-04-03';
+
+	await postJson('/commands/clearPeriodRange', {
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		startDate: '2026-03-29',
+		endDate: '2026-04-06'
+	});
+
+	try {
+		await recordRange(EARLIER_START, '2026-03-31');
+		const initialHomeView = await getModuleHomeView();
+		const initialModuleSettings = await getModuleSettings();
+		const initialPredictedStartDate = initialHomeView.predictionSummary?.predictedStartDate;
+		expect(initialPredictedStartDate).toBeTruthy();
+		const initialHeroRange = `${formatMonthDayDot(initialPredictedStartDate)} - ${formatMonthDayDot(addIsoDays(initialPredictedStartDate, initialModuleSettings.defaultPeriodDurationDays - 1))}`;
+
+		await page.goto(FRONTEND_URL);
+		await page.waitForTimeout(1200);
+		await expect(page.locator('.menstrual-home__hero-info-frame--next .menstrual-home__hero-info-value')).toHaveText(initialHeroRange);
+		await page.locator('.jump-tabs__item').filter({ hasText: '下次预测' }).click();
+		await page.waitForTimeout(1200);
+		await expect(page.locator('.selected-date-panel__title')).toHaveText(formatHumanDate(initialPredictedStartDate));
+
+		await recordRange(LATER_START, '2026-04-04');
+		await page.reload();
+		await page.waitForTimeout(1200);
+
+		const movedHomeView = await getModuleHomeView();
+		const movedPredictedStartDate = movedHomeView.predictionSummary?.predictedStartDate;
+		expect(movedPredictedStartDate).toBeTruthy();
+		expect(movedPredictedStartDate).not.toBe(initialPredictedStartDate);
+		const movedHeroRange = `${formatMonthDayDot(movedPredictedStartDate)} - ${formatMonthDayDot(addIsoDays(movedPredictedStartDate, initialModuleSettings.defaultPeriodDurationDays - 1))}`;
+		await expect(page.locator('.menstrual-home__hero-info-frame--next .menstrual-home__hero-info-value')).toHaveText(movedHeroRange);
+		await page.locator('.jump-tabs__item').filter({ hasText: '下次预测' }).click();
+		await page.waitForTimeout(1200);
+		await expect(page.locator('.selected-date-panel__title')).toHaveText(formatHumanDate(movedPredictedStartDate));
+
+		await postJson('/commands/clearPeriodRange', {
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			startDate: LATER_START,
+			endDate: '2026-04-04'
+		});
+		await page.reload();
+		await page.waitForTimeout(1200);
+
+		const revertedHomeView = await getModuleHomeView();
+		const revertedPredictedStartDate = revertedHomeView.predictionSummary?.predictedStartDate;
+		expect(revertedPredictedStartDate).toBe(initialPredictedStartDate);
+		await expect(page.locator('.menstrual-home__hero-info-frame--next .menstrual-home__hero-info-value')).toHaveText(initialHeroRange);
+		await page.locator('.jump-tabs__item').filter({ hasText: '下次预测' }).click();
+		await page.waitForTimeout(1200);
+		await expect(page.locator('.selected-date-panel__title')).toHaveText(formatHumanDate(initialPredictedStartDate));
+	} finally {
+		await postJson('/commands/clearPeriodRange', {
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			startDate: '2026-03-29',
+			endDate: '2026-04-06'
+		});
+	}
+});
+
+test('revoking the latest period segment restores prediction highlights without requiring calendar navigation', async ({ page }) => {
+	await postJson('/commands/clearPeriodRange', {
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		startDate: '2026-03-15',
+		endDate: '2026-04-06'
+	});
+
+	try {
+		await recordRange('2026-03-15', '2026-03-18');
+		await recordRange('2026-04-03', '2026-04-06');
+
+		await page.goto(buildFrontendUrl(HOME_ROUTE, {
+			apiBaseUrl: API_BASE_URL,
+			openid: OPENID,
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			profileId: PROFILE_ID,
+			today: '2026-04-03'
+		}));
+		await page.waitForTimeout(1200);
+		await page.locator('.calendar-grid__cell').filter({ hasText: '03' }).first().click();
+		await page.waitForTimeout(400);
+		await expect(page.locator('.selected-date-panel__title')).toHaveText('4 月 3 日');
+		await expect(getPeriodChip(page, '月经开始')).toHaveClass(/selected-date-panel__chip--accent/);
+
+		await getPeriodChip(page, '月经开始').click();
+		await page.waitForTimeout(1600);
+
+		const revertedHomeView = await getModuleHomeView();
+		const revertedSettings = await getModuleSettings();
+		const revertedPredictedStartDate = revertedHomeView.predictionSummary?.predictedStartDate;
+		expect(revertedPredictedStartDate).toBeTruthy();
+		const visiblePredictionCount = await page.evaluate(() => {
+			return [...document.querySelectorAll('.date-cell')]
+				.filter((node) => node.className.includes('date-cell--bg-period-soft'))
+				.length;
+		});
+		expect(visiblePredictionCount).toBeGreaterThan(0);
+		await expect(page.locator('.menstrual-home__hero-info-frame--next .menstrual-home__hero-info-value')).toHaveText(
+			`${formatMonthDayDot(revertedPredictedStartDate)} - ${formatMonthDayDot(addIsoDays(revertedPredictedStartDate, revertedSettings.defaultPeriodDurationDays - 1))}`
+		);
+	} finally {
+		await postJson('/commands/clearPeriodRange', {
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			startDate: '2026-03-15',
+			endDate: '2026-04-06'
+		});
 	}
 });
 

@@ -978,9 +978,9 @@
 		display: flex;
 		flex-direction: column;
 		width: 204rpx;
-		min-height: 102rpx;
-		gap: 8rpx;
-		padding: 14rpx 20rpx;
+		min-height: 78rpx;
+		gap: 6rpx;
+		padding: 10rpx 20rpx;
 		border-radius: 24rpx;
 		background: #F3EEE7;
 		justify-content: center;

@@ -51,7 +51,9 @@ The home page must cover:
 - `上次` jumps to the previous segment `startDate`
 - `上次` is disabled when no previous segment exists
 - `下次预测` jumps to the prediction start when prediction exists
+- prediction always follows the latest recomputed period segment `startDate`; if the latest real segment moves because of new records or revokes, the shortcut target moves with it
 - hero `下次` displays the predicted period range, derived as `predictedStartDate + defaultPeriodDurationDays - 1`
+- CalendarGrid uses that same predicted period range as the visible prediction highlight span
 - the `下次预测` shortcut still jumps to the predicted start date only; it does not jump to the whole range
 - the old `本次` shortcut semantics are absorbed by the hero status layer and should not remain as a separate shortcut
 

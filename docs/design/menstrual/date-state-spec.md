@@ -133,9 +133,9 @@ These axes should be the design source of truth even when implementation still e
 - `future muted` is a time-position modifier, not a peer business fact.
 - on the current menstrual home calendar, plain future dates keep muted number/text styling until a stronger business fill is present.
 - a future auto-filled period date uses the same `period` foreground/background pairing as a normal period cell so the state remains readable on the accent fill.
-- visible prediction styling in the calendar is mark-driven, not window-driven.
-- the current contract exposes `prediction_start` as the visible forecast day; the rest of the prediction window does not automatically become prediction-styled cells.
-- if a future prediction-start date is brought into an explicitly selected/focused state by a higher-level interaction contract, that interaction may layer selected emphasis on top of the forecast meaning.
+- visible prediction styling in the calendar follows the same predicted period range as hero `下次`.
+- that visible range is derived from `predictedStartDate + defaultPeriodDurationDays - 1`; `prediction_start` remains only the first day of the visible forecast span and the shortcut target.
+- if a future predicted-range date is brought into an explicitly selected/focused state by a higher-level interaction contract, that interaction may layer selected emphasis on top of the forecast meaning.
 
 ## High-Value Overlay Cases
 
