@@ -56,7 +56,9 @@ function isDetailRecorded(record: { painLevel: number | null; flowLevel: number 
 }
 
 function getTodayDateOnly() {
-  return toDateOnly(formatDate(new Date()));
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return toDateOnly(formatDate(new Date(now.getTime() - offset)));
 }
 
 function isDateWithinSegment(date: Date, segment: { startDate: Date; endDate: Date } | null) {
