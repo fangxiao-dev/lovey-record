@@ -13,7 +13,7 @@
 		</view>
 
 		<!-- 加载中 -->
-		<view v-if="modules === null && !loadError" class="dashboard__state-card ui-card u-page-section">
+		<view v-if="isLoading" class="dashboard__state-card ui-card u-page-section">
 			<text class="dashboard__state-text u-text-body-secondary">正在加载...</text>
 		</view>
 
@@ -93,6 +93,7 @@
 			return {
 				modules: null,
 				loadError: '',
+				isLoading: false,
 				context: { ...DEFAULT_MODULE_SHELL_CONTEXT }
 			};
 		},
@@ -132,6 +133,7 @@
 		},
 		methods: {
 			async retryLoad() {
+				this.isLoading = true;
 				this.loadError = '';
 				try {
 					const result = await loadMenstrualModuleShellPageModel(this.context);
@@ -139,6 +141,8 @@
 						...result.page.privateZone.modules,
 						...result.page.sharedZone.modules
 					];
+					// NOTE: activePartners is global (one module instance per user). If multiple module types
+					// are added in the future, each module's participants should be sourced per-module.
 					const activePartners = result.raw.accessState.activePartners || [];
 					this.modules = allModules.map(mod => ({
 						...mod,
@@ -150,6 +154,8 @@
 				} catch (error) {
 					this.modules = [];
 					this.loadError = error instanceof Error ? error.message : '加载失败';
+				} finally {
+					this.isLoading = false;
 				}
 			},
 			goToManagement() {
@@ -245,7 +251,7 @@
 	}
 
 	.module-card__name {
-		font-weight: $font-weight-semibold;
+		font-weight: $font-weight-title;
 		color: $text-primary;
 	}
 
