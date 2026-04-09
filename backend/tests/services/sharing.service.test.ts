@@ -146,26 +146,39 @@ describe('sharing.service', () => {
 
   describe('leaveModule', () => {
     it('revokes caller access and sets sharingStatus PRIVATE when no members remain', async () => {
-      (prisma.moduleAccess.findFirst as jest.Mock).mockResolvedValue({ id: 'access-1', userId: 'user-2', role: 'VIEWER', moduleInstanceId: 'mod-1' });
-      (prisma.moduleAccess.update as jest.Mock).mockResolvedValue({});
-      (prisma.moduleAccess.findMany as jest.Mock).mockResolvedValue([]);
-      (prisma.moduleInstance.update as jest.Mock).mockResolvedValue({});
+      const txModuleAccess = { findFirst: jest.fn(), update: jest.fn(), findMany: jest.fn() };
+      const txModuleInstance = { update: jest.fn() };
+      (prisma.$transaction as jest.Mock).mockImplementation((fn: any) =>
+        fn({ moduleAccess: txModuleAccess, moduleInstance: txModuleInstance })
+      );
+      txModuleAccess.findFirst.mockResolvedValue({ id: 'access-1', userId: 'user-2', role: 'VIEWER', moduleInstanceId: 'mod-1' });
+      txModuleAccess.update.mockResolvedValue({});
+      txModuleAccess.findMany.mockResolvedValue([]);
+      txModuleInstance.update.mockResolvedValue({});
       const result = await leaveModule({ moduleInstanceId: 'mod-1', userId: 'user-2' });
-      expect(prisma.moduleAccess.update).toHaveBeenCalledWith(expect.objectContaining({
+      expect(txModuleAccess.update).toHaveBeenCalledWith(expect.objectContaining({
         data: expect.objectContaining({ accessStatus: 'REVOKED', revokedAt: expect.any(Date) }),
       }));
-      expect(prisma.moduleInstance.update).toHaveBeenCalledWith(expect.objectContaining({ data: { sharingStatus: 'PRIVATE' } }));
+      expect(txModuleInstance.update).toHaveBeenCalledWith(expect.objectContaining({ data: { sharingStatus: 'PRIVATE' } }));
       expect(result.moduleInstanceId).toBe('mod-1');
     });
 
     it('throws MODULE_ACCESS_DENIED when caller is the owner', async () => {
-      (prisma.moduleAccess.findFirst as jest.Mock).mockResolvedValue({ id: 'access-1', userId: 'owner-1', role: 'OWNER', moduleInstanceId: 'mod-1' });
+      const txModuleAccess = { findFirst: jest.fn(), update: jest.fn(), findMany: jest.fn() };
+      (prisma.$transaction as jest.Mock).mockImplementation((fn: any) =>
+        fn({ moduleAccess: txModuleAccess, moduleInstance: { update: jest.fn() } })
+      );
+      txModuleAccess.findFirst.mockResolvedValue({ id: 'access-1', userId: 'owner-1', role: 'OWNER', moduleInstanceId: 'mod-1' });
       await expect(leaveModule({ moduleInstanceId: 'mod-1', userId: 'owner-1' }))
         .rejects.toMatchObject({ code: 'MODULE_ACCESS_DENIED' });
     });
 
     it('throws MODULE_ACCESS_DENIED when caller has no active access', async () => {
-      (prisma.moduleAccess.findFirst as jest.Mock).mockResolvedValue(null);
+      const txModuleAccess = { findFirst: jest.fn(), update: jest.fn(), findMany: jest.fn() };
+      (prisma.$transaction as jest.Mock).mockImplementation((fn: any) =>
+        fn({ moduleAccess: txModuleAccess, moduleInstance: { update: jest.fn() } })
+      );
+      txModuleAccess.findFirst.mockResolvedValue(null);
       await expect(leaveModule({ moduleInstanceId: 'mod-1', userId: 'user-2' }))
         .rejects.toMatchObject({ code: 'MODULE_ACCESS_DENIED' });
     });

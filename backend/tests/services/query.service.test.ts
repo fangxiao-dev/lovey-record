@@ -152,6 +152,7 @@ describe('query.service', () => {
       moduleInstanceId: 'module-1',
       sharingStatus: 'shared',
       ownerUserId: 'user-owner',
+      callerRole: 'owner',
       activePartners: [
         { userId: 'user-partner', role: 'partner', accessStatus: 'active' },
       ],
@@ -178,8 +179,33 @@ describe('query.service', () => {
       moduleInstanceId: 'module-1',
       sharingStatus: 'private',
       ownerUserId: 'user-owner',
+      callerRole: 'owner',
       activePartners: [],
     });
+  });
+
+  it('returns the caller role as viewer when caller has VIEWER access', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'mod-1', ownerUserId: 'owner-1',
+    });
+    (prisma.moduleAccess.findMany as jest.Mock).mockResolvedValue([
+      { userId: 'user-2', role: 'VIEWER', accessStatus: 'ACTIVE' },
+    ]);
+
+    const result = await getModuleAccessState({ moduleInstanceId: 'mod-1', userId: 'user-2' });
+
+    expect(result.callerRole).toBe('viewer');
+  });
+
+  it('returns the caller role as owner when caller is the module owner', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'mod-1', ownerUserId: 'owner-1',
+    });
+    (prisma.moduleAccess.findMany as jest.Mock).mockResolvedValue([]);
+
+    const result = await getModuleAccessState({ moduleInstanceId: 'mod-1', userId: 'owner-1' });
+
+    expect(result.callerRole).toBe('owner');
   });
 
   it('returns module home view using derived cycles and prediction', async () => {

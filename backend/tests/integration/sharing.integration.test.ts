@@ -17,108 +17,203 @@ describe('Sharing Integration', () => {
     jest.clearAllMocks();
   });
 
-  it('POST /api/commands/createInviteToken returns token', async () => {
-    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+  it('POST /api/commands/createInviteToken returns 200 with token', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      openid: 'openid-1',
+    });
     (createInviteToken as jest.Mock).mockResolvedValue({
-      token: 'abc',
-      expiresAt: '2026-04-10T00:00:00.000Z',
+      token: 'token-abc123xyz',
+      expiresAt: '2026-04-10T12:00:00.000Z',
     });
 
-    const res = await request(app)
+    const response = await request(app)
       .post('/api/commands/createInviteToken')
       .set('x-wx-openid', 'openid-1')
-      .send({ moduleInstanceId: 'mod-1' });
+      .send({ moduleInstanceId: 'module-1' });
 
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
       ok: true,
-      data: { token: 'abc', expiresAt: '2026-04-10T00:00:00.000Z' },
+      data: {
+        token: 'token-abc123xyz',
+        expiresAt: '2026-04-10T12:00:00.000Z',
+      },
       error: null,
     });
+    expect(createInviteToken).toHaveBeenCalledWith({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+    });
   });
 
-  it('GET /api/queries/validateInviteToken returns module info', async () => {
-    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-2', openid: 'openid-2' });
+  it('GET /api/queries/validateInviteToken returns 200 with accessRole', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({
+      id: 'user-2',
+      openid: 'openid-2',
+    });
     (validateInviteToken as jest.Mock).mockResolvedValue({
-      moduleInstanceId: 'mod-1',
+      moduleInstanceId: 'module-1',
       moduleType: 'menstrual',
       accessRole: 'VIEWER',
-      expiresAt: '2026-04-10T00:00:00.000Z',
+      expiresAt: '2026-04-10T12:00:00.000Z',
     });
 
-    const res = await request(app)
-      .get('/api/queries/validateInviteToken?token=abc')
+    const response = await request(app)
+      .get('/api/queries/validateInviteToken?token=token-abc123xyz')
       .set('x-wx-openid', 'openid-2');
 
-    expect(res.status).toBe(200);
-    expect(res.body.data.accessRole).toBe('VIEWER');
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        moduleInstanceId: 'module-1',
+        moduleType: 'menstrual',
+        accessRole: 'VIEWER',
+        expiresAt: '2026-04-10T12:00:00.000Z',
+      },
+      error: null,
+    });
+    expect(validateInviteToken).toHaveBeenCalledWith({
+      token: 'token-abc123xyz',
+      userId: 'user-2',
+    });
   });
 
-  it('GET /api/queries/validateInviteToken returns 404 for invalid token', async () => {
-    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-2', openid: 'openid-2' });
-    (validateInviteToken as jest.Mock).mockRejectedValue(
-      Object.assign(new Error('Invite token not found'), {
+  it('GET /api/queries/validateInviteToken returns 404 with INVALID_TOKEN error code', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({
+      id: 'user-3',
+      openid: 'openid-3',
+    });
+    const error = Object.assign(new Error('Invite token not found'), {
+      code: 'INVALID_TOKEN',
+      statusCode: 404,
+    });
+    (validateInviteToken as jest.Mock).mockRejectedValue(error);
+
+    const response = await request(app)
+      .get('/api/queries/validateInviteToken?token=invalid-token')
+      .set('x-wx-openid', 'openid-3');
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({
+      ok: false,
+      data: null,
+      error: {
         code: 'INVALID_TOKEN',
-        statusCode: 404,
-      }),
-    );
-
-    const res = await request(app)
-      .get('/api/queries/validateInviteToken?token=bad')
-      .set('x-wx-openid', 'openid-2');
-
-    expect(res.status).toBe(404);
-    expect(res.body.error.code).toBe('INVALID_TOKEN');
+        message: 'Invite token not found',
+      },
+    });
   });
 
-  it('POST /api/commands/acceptInvite returns VIEWER role', async () => {
-    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-2', openid: 'openid-2' });
+  it('POST /api/commands/acceptInvite returns 200 with VIEWER accessRole', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({
+      id: 'user-2',
+      openid: 'openid-2',
+    });
     (acceptInvite as jest.Mock).mockResolvedValue({
-      moduleInstanceId: 'mod-1',
+      moduleInstanceId: 'module-1',
       accessRole: 'VIEWER',
     });
 
-    const res = await request(app)
+    const response = await request(app)
       .post('/api/commands/acceptInvite')
       .set('x-wx-openid', 'openid-2')
-      .send({ token: 'abc' });
+      .send({ token: 'token-abc123xyz' });
 
-    expect(res.status).toBe(200);
-    expect(res.body.data.accessRole).toBe('VIEWER');
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        moduleInstanceId: 'module-1',
+        accessRole: 'VIEWER',
+      },
+      error: null,
+    });
+    expect(acceptInvite).toHaveBeenCalledWith({
+      token: 'token-abc123xyz',
+      userId: 'user-2',
+    });
   });
 
-  it('POST /api/commands/leaveModule returns moduleInstanceId', async () => {
-    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-2', openid: 'openid-2' });
-    (leaveModule as jest.Mock).mockResolvedValue({ moduleInstanceId: 'mod-1' });
+  it('POST /api/commands/leaveModule returns 200 with moduleInstanceId', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({
+      id: 'user-2',
+      openid: 'openid-2',
+    });
+    (leaveModule as jest.Mock).mockResolvedValue({
+      moduleInstanceId: 'module-1',
+    });
 
-    const res = await request(app)
+    const response = await request(app)
       .post('/api/commands/leaveModule')
       .set('x-wx-openid', 'openid-2')
-      .send({ moduleInstanceId: 'mod-1' });
+      .send({ moduleInstanceId: 'module-1' });
 
-    expect(res.status).toBe(200);
-    expect(res.body.data.moduleInstanceId).toBe('mod-1');
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        moduleInstanceId: 'module-1',
+      },
+      error: null,
+    });
+    expect(leaveModule).toHaveBeenCalledWith({
+      moduleInstanceId: 'module-1',
+      userId: 'user-2',
+    });
   });
 
-  it('GET /api/queries/getModuleMembers returns members list', async () => {
-    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+  it('GET /api/queries/getModuleMembers returns 200 with 2-member array', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({
+      id: 'user-1',
+      openid: 'openid-1',
+    });
     (getModuleMembers as jest.Mock).mockResolvedValue({
       members: [
-        { userId: 'user-1', role: 'owner', accessStatus: 'active', grantedAt: null },
+        {
+          userId: 'user-1',
+          role: 'owner',
+          accessStatus: 'active',
+          grantedAt: null,
+        },
         {
           userId: 'user-2',
           role: 'viewer',
           accessStatus: 'active',
-          grantedAt: '2026-04-09T00:00:00.000Z',
+          grantedAt: '2026-04-09T10:00:00.000Z',
         },
       ],
     });
 
-    const res = await request(app)
-      .get('/api/queries/getModuleMembers?moduleInstanceId=mod-1')
+    const response = await request(app)
+      .get('/api/queries/getModuleMembers?moduleInstanceId=module-1')
       .set('x-wx-openid', 'openid-1');
 
-    expect(res.status).toBe(200);
-    expect(res.body.data.members).toHaveLength(2);
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        members: [
+          {
+            userId: 'user-1',
+            role: 'owner',
+            accessStatus: 'active',
+            grantedAt: null,
+          },
+          {
+            userId: 'user-2',
+            role: 'viewer',
+            accessStatus: 'active',
+            grantedAt: '2026-04-09T10:00:00.000Z',
+          },
+        ],
+      },
+      error: null,
+    });
+    expect(getModuleMembers).toHaveBeenCalledWith({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+    });
   });
 });

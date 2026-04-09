@@ -29,10 +29,7 @@ function handleError(res: Response, error: unknown) {
 
 export async function createInviteTokenHandler(req: Request, res: Response) {
   try {
-    const result = await createInviteToken({
-      moduleInstanceId: req.body.moduleInstanceId,
-      userId: req.user.id,
-    });
+    const result = await createInviteToken({ ...req.body, userId: req.user.id });
     res.json({ ok: true, data: result, error: null });
   } catch (error) {
     handleError(res, error);
@@ -41,10 +38,7 @@ export async function createInviteTokenHandler(req: Request, res: Response) {
 
 export async function validateInviteTokenHandler(req: Request, res: Response) {
   try {
-    const result = await validateInviteToken({
-      token: req.query.token as string,
-      userId: req.user.id,
-    });
+    const result = await validateInviteToken({ token: req.query.token as string, userId: req.user.id });
     res.json({ ok: true, data: result, error: null });
   } catch (error) {
     handleError(res, error);
@@ -53,10 +47,7 @@ export async function validateInviteTokenHandler(req: Request, res: Response) {
 
 export async function acceptInviteHandler(req: Request, res: Response) {
   try {
-    const result = await acceptInvite({
-      token: req.body.token,
-      userId: req.user.id,
-    });
+    const result = await acceptInvite({ ...req.body, userId: req.user.id });
     res.json({ ok: true, data: result, error: null });
   } catch (error) {
     handleError(res, error);
@@ -65,10 +56,7 @@ export async function acceptInviteHandler(req: Request, res: Response) {
 
 export async function leaveModuleHandler(req: Request, res: Response) {
   try {
-    const result = await leaveModule({
-      moduleInstanceId: req.body.moduleInstanceId,
-      userId: req.user.id,
-    });
+    const result = await leaveModule({ ...req.body, userId: req.user.id });
     res.json({ ok: true, data: result, error: null });
   } catch (error) {
     handleError(res, error);

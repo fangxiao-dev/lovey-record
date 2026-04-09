@@ -191,7 +191,7 @@ export async function loadMenstrualHomePageModel(context = {}) {
 			today: resolved.today
 		});
 
-		const [{ calendarWindow }, dayDetail, singleDayPeriodAction, moduleSettings] = await Promise.all([
+		const [{ calendarWindow }, dayDetail, singleDayPeriodAction, moduleSettings, accessState] = await Promise.all([
 			loadMenstrualCalendarWindow({
 				...resolved,
 				focusDate,
@@ -207,7 +207,13 @@ export async function loadMenstrualHomePageModel(context = {}) {
 				moduleInstanceId: resolved.moduleInstanceId,
 				date: activeDate
 			}),
-			loadMenstrualModuleSettings(resolved)
+			loadMenstrualModuleSettings(resolved),
+			queryEnvelope({
+				apiBaseUrl: resolved.apiBaseUrl,
+				openid: resolved.openid,
+				path: '/api/queries/getModuleAccessState',
+				data: { moduleInstanceId: resolved.moduleInstanceId }
+			})
 		]);
 
 		return {
@@ -228,7 +234,8 @@ export async function loadMenstrualHomePageModel(context = {}) {
 				calendarWindow,
 				singleDayPeriodAction,
 				focusDate,
-				viewMode
+				viewMode,
+				callerRole: accessState?.callerRole || 'owner'
 			},
 			source: 'live',
 			context: resolved

@@ -8,7 +8,10 @@ import {
 } from '../controllers/query.controller';
 import { getCalendarWindowHandler, getPredictionSummaryHandler } from '../controllers/phase5.controller';
 import { getMyModuleInstanceHandler } from '../controllers/moduleInstance.controller';
-import { validateInviteTokenHandler, getModuleMembersHandler } from '../controllers/sharing.controller';
+import {
+  validateInviteTokenHandler,
+  getModuleMembersHandler,
+} from '../controllers/sharing.controller';
 
 const router = Router();
 
