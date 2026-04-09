@@ -50,6 +50,7 @@ model ModuleInstance {
   settings     ModuleSettings?
   cycles       DerivedCycle[]
   prediction   Prediction?
+  inviteTokens InviteToken[]
 
   @@index([ownerUserId])
   @@index([profileId])
@@ -144,6 +145,21 @@ model Prediction {
   @@map("predictions")
 }
 
+model InviteToken {
+  id               String    @id @default(cuid())
+  token            String    @unique
+  moduleInstanceId String    @map("module_instance_id")
+  createdByUserId  String    @map("created_by_user_id")
+  expiresAt        DateTime  @map("expires_at")
+  usedAt           DateTime? @map("used_at")
+  usedByUserId     String?   @map("used_by_user_id")
+
+  moduleInstance ModuleInstance @relation(fields: [moduleInstanceId], references: [id], onDelete: Cascade)
+
+  @@index([moduleInstanceId])
+  @@map("invite_tokens")
+}
+
 // ===== Enums =====
 
 enum SharingStatus {
@@ -158,6 +174,7 @@ enum DayRecordSource {
 
 enum AccessRole {
   OWNER
+  VIEWER
   PARTNER
 }
 
