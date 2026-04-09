@@ -16,6 +16,11 @@ import {
   updateDefaultPeriodDurationHandler,
   updateDefaultPredictionTermHandler,
 } from '../controllers/phase5.controller';
+import {
+  createInviteTokenHandler,
+  acceptInviteHandler,
+  leaveModuleHandler,
+} from '../controllers/sharing.controller';
 
 const router = Router();
 
@@ -32,5 +37,8 @@ router.post('/updateDefaultPeriodDuration', updateDefaultPeriodDurationHandler);
 router.post('/updateDefaultPredictionTerm', updateDefaultPredictionTermHandler);
 router.post('/shareModuleInstance', shareModuleInstanceHandler);
 router.post('/revokeModuleAccess', revokeModuleAccessHandler);
+router.post('/createInviteToken', createInviteTokenHandler);
+router.post('/acceptInvite', acceptInviteHandler);
+router.post('/leaveModule', leaveModuleHandler);
 
 export default router;
