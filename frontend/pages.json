@@ -3,7 +3,13 @@
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "记录空间"
+				"navigationBarTitleText": "模块管理"
+			}
+		},
+		{
+			"path": "pages/management/index",
+			"style": {
+				"navigationBarTitleText": "模块管理"
 			}
 		},
 		{

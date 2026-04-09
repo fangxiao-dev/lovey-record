@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
 	DEFAULT_MODULE_SHELL_CONTEXT,
+	createDemoMenstrualModuleShellPageModel,
 	createMenstrualHomeEntryUrl,
 	loadMenstrualModuleShellPageModel
 } from '../module-shell-service.js';
@@ -62,28 +63,68 @@ test('loadMenstrualModuleShellPageModel maps a private module into the private z
 		moduleInstanceId: 'seed-home-module'
 	});
 
-	assert.equal(result.page.privateZone.modules.length, 1);
-	assert.equal(result.page.sharedZone.modules.length, 0);
-	assert.equal(result.page.summaryCard.sharingStatus.value, '未共享');
-	assert.equal(result.page.summaryCard.activePartners.value, '0 人');
-	assert.equal(result.page.summaryCard.defaultPeriodDuration.label, '经期时长');
-	assert.equal(result.page.summaryCard.defaultPeriodDuration.value, `${DEFAULT_PERIOD_DURATION_DAYS} 天`);
-	assert.equal(result.page.summaryCard.defaultPredictionTerm.label, '月经周期');
-	assert.equal(result.page.summaryCard.defaultPredictionTerm.value, `${DEFAULT_PREDICTION_TERM_DAYS} 天`);
-	assert.equal(result.page.summaryCard.settingsControl.label, '设置时长');
+	assert.equal(result.page.title, '模块空间');
+	assert.match(result.page.helperText, /点击卡片查看下方摘要和操作/);
+	assert.equal(result.page.moduleBoard.title, '功能模块');
+	assert.deepEqual(result.page.moduleBoard.legendItems, [
+		{ key: 'shared', label: '共享模块', tone: 'shared' }
+	]);
+	assert.equal(result.page.moduleBoard.modules.length, 1);
+	assert.equal(result.page.moduleBoard.modules[0].ownershipTone, 'private');
+	assert.equal(result.page.moduleBoard.modules[0].selected, true);
+	assert.equal(result.page.managementCard.title, '模块管理');
+	assert.equal(result.page.managementCard.moduleName, '月经记录');
+	assert.equal(result.page.managementCard.sharingStatus.value, '未共享');
+	assert.equal(result.page.managementCard.sharingStatus.tone, 'private');
+	assert.equal(result.page.managementCard.defaultPeriodDuration.label, '经期时长');
+	assert.equal(result.page.managementCard.defaultPeriodDuration.value, `${DEFAULT_PERIOD_DURATION_DAYS} 天`);
+	assert.equal(result.page.managementCard.defaultPredictionTerm.label, '月经周期');
+	assert.equal(result.page.managementCard.defaultPredictionTerm.value, `${DEFAULT_PREDICTION_TERM_DAYS} 天`);
+	assert.equal(result.page.managementCard.settingsControl.label, '设置时长');
 	assert.deepEqual(
-		result.page.summaryCard.settingsControl.options.map((option) => option.value),
+		result.page.managementCard.settingsControl.options.map((option) => option.value),
 		PERIOD_DURATION_OPTIONS
 	);
-	assert.equal(result.page.summaryCard.predictionSettingsControl.label, '设置周期');
 	assert.deepEqual(
-		result.page.summaryCard.predictionSettingsControl.options.map((option) => option.value),
+		result.page.managementCard.settingsControl.options.map((option) => option.label),
+		['5', '6', '7']
+	);
+	assert.deepEqual(
+		result.page.managementCard.settingsControl.customPickerOptions.slice(0, 3).map((option) => option.value),
+		[1, 2, 3]
+	);
+	assert.deepEqual(
+		result.page.managementCard.settingsControl.customPickerOptions.slice(0, 3).map((option) => option.label),
+		['1', '2', '3']
+	);
+	assert.deepEqual(
+		result.page.managementCard.settingsControl.customPickerOptions.slice(-3).map((option) => option.value),
+		[13, 14, 15]
+	);
+	assert.equal(result.page.managementCard.predictionSettingsControl.label, '设置周期');
+	assert.deepEqual(
+		result.page.managementCard.predictionSettingsControl.options.map((option) => option.value),
 		PREDICTION_TERM_OPTIONS
 	);
-	assert.equal(result.page.primaryEntry.url, createMenstrualHomeEntryUrl({
+	assert.deepEqual(
+		result.page.managementCard.predictionSettingsControl.options.map((option) => option.label),
+		['27', '28', '29']
+	);
+	assert.deepEqual(
+		result.page.managementCard.predictionSettingsControl.customPickerOptions.slice(0, 3).map((option) => option.value),
+		[20, 21, 22]
+	);
+	assert.deepEqual(
+		result.page.managementCard.predictionSettingsControl.customPickerOptions.slice(-3).map((option) => option.value),
+		[43, 44, 45]
+	);
+	assert.equal(result.page.managementCard.primaryAction.label, '进入');
+	assert.equal(result.page.managementCard.primaryAction.url, createMenstrualHomeEntryUrl({
 		...DEFAULT_MODULE_SHELL_CONTEXT,
 		moduleInstanceId: 'seed-home-module'
 	}));
+	assert.equal(result.page.managementCard.secondaryAction.label, '共享');
+	assert.equal(result.page.managementCard.destructiveAction.label, '删除');
 });
 
 test('loadMenstrualModuleShellPageModel maps a shared module into the shared zone and does not duplicate it in private zone', async () => {
@@ -136,13 +177,17 @@ test('loadMenstrualModuleShellPageModel maps a shared module into the shared zon
 		profileId: 'seed-shared-profile'
 	});
 
-	assert.equal(result.page.privateZone.modules.length, 0);
-	assert.equal(result.page.sharedZone.modules.length, 1);
-	assert.equal(result.page.sharedZone.modules[0].statusText, '已共享 · 1 位伙伴');
-	assert.equal(result.page.summaryCard.sharingStatus.value, '共享中');
-	assert.equal(result.page.summaryCard.activePartners.value, '1 人');
-	assert.equal(result.page.summaryCard.defaultPeriodDuration.value, '7 天');
-	assert.equal(result.page.summaryCard.defaultPredictionTerm.value, '29 天');
+	assert.equal(result.page.moduleBoard.modules.length, 1);
+	assert.deepEqual(result.page.moduleBoard.legendItems, [
+		{ key: 'shared', label: '共享模块', tone: 'shared' }
+	]);
+	assert.equal(result.page.moduleBoard.modules[0].ownershipTone, 'shared');
+	assert.equal(result.page.moduleBoard.modules[0].statusText, '已共享 · 1 位伙伴');
+	assert.equal(result.page.managementCard.sharingStatus.value, '共享中');
+	assert.equal(result.page.managementCard.sharingStatus.tone, 'shared');
+	assert.equal(result.page.managementCard.defaultPeriodDuration.value, '7 天');
+	assert.equal(result.page.managementCard.defaultPredictionTerm.value, '29 天');
+	assert.equal(result.page.managementCard.secondaryAction.label, '共享');
 });
 
 test('loadMenstrualModuleShellPageModel requests live access and settings queries with shell context auth', async () => {
@@ -204,6 +249,28 @@ test('createMenstrualHomeEntryUrl preserves the shell live context for navigatio
 			today: '2026-03-29'
 		}),
 		'/pages/menstrual/home?apiBaseUrl=http%3A%2F%2Flocalhost%3A3000%2Fapi&openid=seed-shared-openid&moduleInstanceId=seed-shared-module&profileId=seed-shared-profile&today=2026-03-29'
+	);
+});
+
+test('createDemoMenstrualModuleShellPageModel exposes a local seed page for H5 visual verification', () => {
+	const result = createDemoMenstrualModuleShellPageModel({
+		moduleInstanceId: 'demo-module',
+		profileId: 'demo-profile'
+	});
+
+	assert.equal(result.source, 'demo');
+	assert.equal(result.page.moduleBoard.modules[0].id, 'demo-module');
+	assert.equal(result.page.managementCard.defaultPeriodDuration.value, '5 天');
+	assert.equal(result.page.managementCard.defaultPredictionTerm.value, '28 天');
+	assert.equal(result.page.managementCard.settingsControl.customLabel, '自定义');
+	assert.equal(result.page.managementCard.predictionSettingsControl.customLabel, '自定义');
+	assert.deepEqual(
+		result.page.managementCard.settingsControl.options.map((option) => option.label),
+		['5', '6', '7']
+	);
+	assert.deepEqual(
+		result.page.managementCard.predictionSettingsControl.options.map((option) => option.label),
+		['27', '28', '29']
 	);
 });
 

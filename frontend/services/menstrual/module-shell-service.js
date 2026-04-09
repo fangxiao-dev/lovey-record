@@ -34,7 +34,20 @@ function getSharingLabel(sharingStatus) {
 	return sharingStatus === 'shared' ? '共享中' : '未共享';
 }
 
-function getZoneModule({
+function buildNumericOptions(from, to) {
+	const options = [];
+
+	for (let value = from; value <= to; value += 1) {
+		options.push({
+			value,
+			label: `${value}`
+		});
+	}
+
+	return options;
+}
+
+function getModuleTile({
 	moduleInstanceId,
 	sharingStatus,
 	activePartners,
@@ -48,12 +61,13 @@ function getZoneModule({
 	return {
 		id: moduleInstanceId,
 		moduleName: '月经记录',
-		entryLabel: '进入月经记录',
 		entryUrl,
 		statusText: isShared ? `已共享 · ${partnerCount} 位伙伴` : '仅自己可见',
-		durationText: `默认经期 ${defaultPeriodDurationDays} 天 · 预测 ${defaultPredictionTermDays} 天`,
-		badgeText: isShared ? '共享' : '私人',
-		zoneTone: isShared ? 'shared' : 'private'
+		summaryText: `默认经期 ${defaultPeriodDurationDays} 天 · 预测 ${defaultPredictionTermDays} 天`,
+		ownershipTone: isShared ? 'shared' : 'private',
+		ownershipLabel: isShared ? '共享模块' : '私人模块',
+		iconSrc: '/static/management/menstruation.svg',
+		selected: true
 	};
 }
 
@@ -78,7 +92,7 @@ export function createModuleShellPageModel({
 	const defaultPeriodDurationDays = settings?.moduleSettings?.defaultPeriodDurationDays ?? 0;
 	const defaultPredictionTermDays = settings?.moduleSettings?.defaultPredictionTermDays ?? 28;
 	const entryUrl = createMenstrualHomeEntryUrl(context);
-	const moduleCard = getZoneModule({
+	const moduleCard = getModuleTile({
 		moduleInstanceId: accessState.moduleInstanceId,
 		sharingStatus,
 		activePartners,
@@ -88,30 +102,23 @@ export function createModuleShellPageModel({
 	});
 
 	return {
-		hero: {
-			title: '记录空间'
+		title: '模块空间',
+		helperText: '点击卡片查看下方摘要和操作。',
+		moduleBoard: {
+			title: '功能模块',
+			legendItems: [
+				{ key: 'shared', label: '共享模块', tone: 'shared' }
+			],
+			modules: [moduleCard],
+			continuationText: '更多模块会继续出现在这里。'
 		},
-		privateZone: {
-			title: '私人',
-			caption: 'owner 视角',
-			modules: sharingStatus === 'private' ? [moduleCard] : [],
-			emptyText: '当前没有仅自己可见的月经模块。'
-		},
-		sharedZone: {
-			title: '共享',
-			caption: 'same-instance shared',
-			modules: sharingStatus === 'shared' ? [moduleCard] : [],
-			emptyText: '当前还没有共享中的月经模块。'
-		},
-		summaryCard: {
-			title: '模块摘要',
+		managementCard: {
+			title: '模块管理',
+			moduleName: moduleCard.moduleName,
 			sharingStatus: {
 				label: '共享状态',
-				value: getSharingLabel(sharingStatus)
-			},
-			activePartners: {
-				label: '当前伙伴',
-				value: `${activePartners.length} 人`
+				value: getSharingLabel(sharingStatus),
+				tone: sharingStatus === 'shared' ? 'shared' : 'private'
 			},
 			defaultPeriodDuration: {
 				label: '经期时长',
@@ -126,31 +133,80 @@ export function createModuleShellPageModel({
 				value: defaultPeriodDurationDays,
 				options: [5, 6, 7].map((days) => ({
 					value: days,
-					label: `${days} 天`,
+					label: `${days}`,
 					selected: days === defaultPeriodDurationDays
-				}))
+				})),
+				customLabel: '自定义',
+				customPickerOptions: buildNumericOptions(1, 15)
 			},
 			predictionSettingsControl: {
 				label: '设置周期',
 				value: defaultPredictionTermDays,
 				options: [27, 28, 29].map((days) => ({
 					value: days,
-					label: `${days} 天`,
+					label: `${days}`,
 					selected: days === defaultPredictionTermDays
-				}))
+				})),
+				customLabel: '自定义',
+				customPickerOptions: buildNumericOptions(20, 45)
 			},
-			shareAction: {
-				label: activePartners.length ? '撤回共享' : '共享给伙伴',
+			secondaryAction: {
+				label: '共享',
 				helperText: activePartners.length
 					? `当前目标：${activePartners[0].userId}`
 					: `当前目标：${context.partnerUserId}`,
 				action: activePartners.length ? 'revoke' : 'share'
+			},
+			primaryAction: {
+				label: '进入',
+				url: entryUrl
+			},
+			destructiveAction: {
+				label: '删除',
+				disabled: true,
+				helperText: '删除能力将在后续模块管理阶段接入。'
+			}
+		}
+	};
+}
+
+export function createDemoMenstrualModuleShellPageModel(context = {}) {
+	const resolved = { ...DEFAULT_MODULE_SHELL_CONTEXT, ...context };
+
+	return {
+		page: createModuleShellPageModel({
+			context: resolved,
+			accessState: {
+				moduleInstanceId: resolved.moduleInstanceId,
+				sharingStatus: 'private',
+				ownerUserId: 'seed-home-owner',
+				activePartners: []
+			},
+			settings: {
+				moduleInstanceId: resolved.moduleInstanceId,
+				moduleSettings: {
+					defaultPeriodDurationDays: 5,
+					defaultPredictionTermDays: 28
+				}
+			}
+		}),
+		raw: {
+			accessState: {
+				moduleInstanceId: resolved.moduleInstanceId,
+				sharingStatus: 'private',
+				ownerUserId: 'seed-home-owner',
+				activePartners: []
+			},
+			settings: {
+				moduleInstanceId: resolved.moduleInstanceId,
+				moduleSettings: {
+					defaultPeriodDurationDays: 5,
+					defaultPredictionTermDays: 28
+				}
 			}
 		},
-		primaryEntry: {
-			label: '进入月经记录',
-			url: entryUrl
-		}
+		context: resolved,
+		source: 'demo'
 	};
 }
 

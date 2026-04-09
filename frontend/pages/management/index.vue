@@ -6,7 +6,7 @@
 	import ModuleManagementPage from '../../components/management/ModuleManagementPage.vue';
 
 	export default {
-		name: 'ModuleManagementHomePage',
+		name: 'ModuleManagementAliasPage',
 		components: {
 			ModuleManagementPage
 		},
