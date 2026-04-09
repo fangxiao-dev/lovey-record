@@ -30,7 +30,9 @@ artifacts
 
 # Local agent/runtime state
 .claude/settings.local.json
+.claude/worktrees/
 .playwright-mcp/
+.superpowers/
 
 # OS
 .DS_Store
