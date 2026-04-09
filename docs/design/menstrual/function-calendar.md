@@ -72,8 +72,11 @@ Forbidden combinations from `date-state-spec.md`:
 
 ### Entry
 
-- **Long-press + drag** is the primary batch-edit entry path.
-- Long-press a past date cell, then drag to extend the selection range.
+- Batch edit now supports two entry paths:
+  - **Long-press + drag** on a past date cell
+  - tap the explicit `批量选择` button in the jump row
+- Long-press a past date cell still enters batch mode directly from that cell and then drags to extend the selection range.
+- Tapping `批量选择` enters an empty batch mode first.
 - The selection range is always a contiguous sequence of dates.
 - Dragging to an earlier date is allowed; the range should normalize to the earlier start and later end.
 
@@ -94,7 +97,10 @@ Forbidden combinations from `date-state-spec.md`:
 
 - Selected date cells display the `selected` overlay state (drop shadow, stroke cue).
 - Batch mode does not open a separate bottom panel.
-- Instead, two compact action buttons appear on the right side of the jump-tab row:
+- Instead, the jump row's right-side action area switches by mode:
+  - default mode: `批量选择`
+  - batch mode: `保存 / 取消`
+- In batch mode, two compact action buttons appear on the right side of the jump-tab row:
   - `保存` uses the `period` accent treatment
   - `取消` uses a neutral, non-accent treatment
 - The `CalendarGrid` remains visible and fully interactive during selection.
@@ -105,14 +111,20 @@ Forbidden combinations from `date-state-spec.md`:
 ```
 JumpTabs Row
 ├── JumpTabs           ← 今天 / 上次 / 下次预测
-└── Batch Actions      ← visible only in batch mode
-    ├── 保存           ← period-accent small button
-    └── 取消           ← neutral small button
+└── Right Action Area
+    ├── 批量选择       ← default mode entry button
+    └── 保存 / 取消    ← visible only in batch mode
 ```
 
 ### Batch Toggle Rules
 
 - Batch selection follows path-based toggle semantics instead of a simple start/end range.
+- Tapping `批量选择` enters batch mode with no selected dates.
+- In empty batch mode:
+  - `保存` is disabled
+  - `取消` exits batch mode without any write
+  - tapping the first selectable date creates the batch start and immediately selects that date
+- After the first date is selected, tapping another selectable date or dragging continues the same batch-selection flow.
 - Entering a date cell toggles that cell's selected state.
 - Re-entering a previously selected cell toggles it back off.
 - This means a path like `25 -> 27 -> 25` should leave `25` unselected again.
@@ -136,7 +148,7 @@ The calendar panel operates in two mutually exclusive modes:
 | Batch edit | Long-press + drag | Jump row save/cancel buttons | Drag toggles selection along the path |
 
 Switching between modes:
-- Entering batch mode (long-press drag) collapses `SelectedDatePanel`.
+- Entering batch mode through either entry path collapses `SelectedDatePanel`.
 - `取消` exits batch mode without persistence and returns to the latest single-day context reached during the batch gesture.
 - `保存` commits the current selected dates, then returns to single-day edit mode focused on the latest dragged day.
 

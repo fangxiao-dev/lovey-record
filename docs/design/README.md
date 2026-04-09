@@ -42,6 +42,8 @@ Current examples:
 - [2026-03-23-ui-visual-language-guide.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-23-ui-visual-language-guide.md)
 - [2026-03-22-tokenize-collaboration-rule.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-22-tokenize-collaboration-rule.md)
 - [2026-03-28-ui-collaboration-lessons.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/2026-03-28-ui-collaboration-lessons.md)
+- [frontend-design-spec.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/frontend-design-spec.md)
+- [frontend-prototype-harness.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/frontend-prototype-harness.md)
 - [pencil/README.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/pencil/README.md)
 
 ### Module Directories

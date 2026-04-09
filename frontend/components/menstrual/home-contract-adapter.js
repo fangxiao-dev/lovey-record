@@ -61,7 +61,7 @@ function formatHumanDate(dateString) {
 
 function formatMonthLabel(dateString) {
 	const date = toDateOnly(dateString);
-	return `${date.getUTCFullYear()}.${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+	return `${date.getUTCFullYear()} · ${date.getUTCMonth() + 1}月`;
 }
 
 function createDateRange(startDate, endDate) {

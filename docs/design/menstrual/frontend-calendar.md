@@ -60,6 +60,10 @@ UI rules:
 
 - disabled shortcuts remain visible
 - disabled shortcuts should use muted treatment rather than disappearing
+- the right side of this row is a fixed action area
+- default mode shows a compact `批量选择` entry button in that area
+- batch mode swaps that same area to inline `保存 / 取消`
+- the three states must read as the same button family rather than unrelated controls
 - batch-mode save/cancel actions continue to appear inline on the right side of this row, not in a bottom sheet
 
 ## CalendarLegend
@@ -88,6 +92,7 @@ UI rules:
 
 - single-day mode keeps the page visually calm and reading-first
 - batch-edit mode adds inline action controls without changing the page's overall structure
+- empty batch mode is allowed as a visible transitional state before the first date is selected
 - month view stays browse-first and should not expose edit affordances
 
 ## UI Dependency

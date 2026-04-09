@@ -10,56 +10,38 @@ function toDateOnly(value: string) {
   return new Date(`${value}T00:00:00.000Z`);
 }
 
+async function ensureUserId(
+  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  user: SeedScenario['ownerUser'],
+) {
+  const existing = await tx.user.findUnique({
+    where: { openid: user.openid },
+    select: { id: true },
+  });
+
+  if (existing) {
+    return existing.id;
+  }
+
+  const created = await tx.user.create({
+    data: {
+      id: user.id,
+      openid: user.openid,
+    },
+    select: { id: true },
+  });
+
+  return created.id;
+}
+
 async function seedScenario(scenario: SeedScenario) {
   await prisma.$transaction(async (tx) => {
-    await tx.user.upsert({
-      where: { openid: scenario.ownerUser.openid },
-      create: {
-        id: scenario.ownerUser.id,
-        openid: scenario.ownerUser.openid,
-      },
-      update: {},
-    });
+    const ownerUserId = await ensureUserId(tx, scenario.ownerUser);
+    const partnerUserIds = new Map<string, string>();
 
     for (const partner of scenario.partnerUsers) {
-      await tx.user.upsert({
-        where: { openid: partner.openid },
-        create: {
-          id: partner.id,
-          openid: partner.openid,
-        },
-        update: {},
-      });
+      partnerUserIds.set(partner.id, await ensureUserId(tx, partner));
     }
-
-    await tx.profile.upsert({
-      where: { ownerUserId: scenario.profile.ownerUserId },
-      create: {
-        id: scenario.profile.id,
-        ownerUserId: scenario.profile.ownerUserId,
-        displayName: scenario.profile.displayName,
-      },
-      update: {
-        displayName: scenario.profile.displayName,
-      },
-    });
-
-    await tx.moduleInstance.upsert({
-      where: { id: scenario.moduleInstance.id },
-      create: {
-        id: scenario.moduleInstance.id,
-        moduleType: scenario.moduleInstance.moduleType,
-        ownerUserId: scenario.moduleInstance.ownerUserId,
-        profileId: scenario.moduleInstance.profileId,
-        sharingStatus: scenario.moduleInstance.sharingStatus,
-      },
-      update: {
-        moduleType: scenario.moduleInstance.moduleType,
-        ownerUserId: scenario.moduleInstance.ownerUserId,
-        profileId: scenario.moduleInstance.profileId,
-        sharingStatus: scenario.moduleInstance.sharingStatus,
-      },
-    });
 
     await tx.moduleAccess.deleteMany({
       where: { moduleInstanceId: scenario.moduleInstance.id },
@@ -76,35 +58,57 @@ async function seedScenario(scenario: SeedScenario) {
     await tx.moduleSettings.deleteMany({
       where: { moduleInstanceId: scenario.moduleInstance.id },
     });
-
-    await tx.moduleSettings.upsert({
-      where: { moduleInstanceId: scenario.moduleSettings.moduleInstanceId },
-      create: {
-        moduleInstanceId: scenario.moduleSettings.moduleInstanceId,
-        defaultPeriodDurationDays: scenario.moduleSettings.defaultPeriodDurationDays,
-        defaultPredictionTermDays: scenario.moduleSettings.defaultPredictionTermDays,
+    await tx.moduleInstance.deleteMany({
+      where: { id: scenario.moduleInstance.id },
+    });
+    await tx.profile.deleteMany({
+      where: {
+        OR: [
+          { id: scenario.profile.id },
+          { ownerUserId },
+        ],
       },
-      update: {
+    });
+
+    await tx.profile.create({
+      data: {
+        id: scenario.profile.id,
+        ownerUserId,
+        displayName: scenario.profile.displayName,
+      },
+    });
+
+    await tx.moduleInstance.create({
+      data: {
+        id: scenario.moduleInstance.id,
+        moduleType: scenario.moduleInstance.moduleType,
+        ownerUserId,
+        profileId: scenario.moduleInstance.profileId,
+        sharingStatus: scenario.moduleInstance.sharingStatus,
+      },
+    });
+
+    await tx.moduleSettings.create({
+      data: {
+        moduleInstanceId: scenario.moduleSettings.moduleInstanceId,
         defaultPeriodDurationDays: scenario.moduleSettings.defaultPeriodDurationDays,
         defaultPredictionTermDays: scenario.moduleSettings.defaultPredictionTermDays,
       },
     });
 
     for (const access of scenario.moduleAccesses) {
-      await tx.moduleAccess.upsert({
-        where: {
-          moduleInstanceId_userId: {
-            moduleInstanceId: access.moduleInstanceId,
-            userId: access.userId,
-          },
-        },
-        create: {
+      const resolvedUserId = access.role === 'OWNER'
+        ? ownerUserId
+        : partnerUserIds.get(access.userId);
+
+      if (!resolvedUserId) {
+        throw new Error(`Missing seeded partner user for ${access.userId}`);
+      }
+
+      await tx.moduleAccess.create({
+        data: {
           moduleInstanceId: access.moduleInstanceId,
-          userId: access.userId,
-          role: access.role,
-          accessStatus: access.accessStatus,
-        },
-        update: {
+          userId: resolvedUserId,
           role: access.role,
           accessStatus: access.accessStatus,
           revokedAt: access.accessStatus === 'REVOKED' ? new Date() : null,

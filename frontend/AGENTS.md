@@ -12,6 +12,7 @@
 4. Read [../docs/design/2026-03-23-ui-visual-language-guide.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-23-ui-visual-language-guide.md) before changing visual tone, component styling, or semantic color usage.
 5. Read [../docs/design/2026-03-22-tokenize-collaboration-rule.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-22-tokenize-collaboration-rule.md) before changing tokens, component-library visuals, or page composition.
 6. Read [../docs/design/pencil/README.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/pencil/README.md) before editing `.pen` files or using Pencil MCP tools.
+7. When a task is already approved to skip a fresh Pencil pass and go from structure sketch directly into coded prototype, read [../docs/design/frontend-prototype-harness.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/frontend-prototype-harness.md) and follow it as the execution harness.
 
 ## Frontend Boundaries
 - Treat `frontend/` as a uni-app app, not a standard Vue Router SPA.

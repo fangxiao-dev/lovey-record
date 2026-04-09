@@ -77,6 +77,17 @@ async function postJson(path, body, openid = OPENID) {
 	return envelope.data;
 }
 
+async function resetDevFixtures() {
+	const resetUrl = `${API_BASE_URL.replace(/\/api\/?$/, '')}/api/dev/reset`;
+	const response = await fetch(resetUrl, {
+		method: 'POST'
+	});
+	const envelope = await response.json();
+	expect(response.ok).toBeTruthy();
+	expect(envelope.ok).toBeTruthy();
+	return envelope.data;
+}
+
 async function getAccessState(openid = OPENID) {
 	const response = await fetch(`${API_BASE_URL}/queries/getModuleAccessState?moduleInstanceId=${MODULE_INSTANCE_ID}`, {
 		headers: {
@@ -88,6 +99,10 @@ async function getAccessState(openid = OPENID) {
 	expect(envelope.ok).toBeTruthy();
 	return envelope.data;
 }
+
+test.beforeEach(async () => {
+	await resetDevFixtures();
+});
 
 async function getModuleHomeView(openid = OPENID) {
 	const params = new URLSearchParams({
@@ -205,6 +220,7 @@ async function getCellCenter(page, day) {
 			.find((el) => el.textContent.trim() === label)
 			?.closest('.date-cell');
 		if (!node) return null;
+		node.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
 		const rect = node.getBoundingClientRect();
 		return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 	}, day);
@@ -316,6 +332,37 @@ test('menstrual home batch live regression', async ({ page }) => {
 	}
 });
 
+test('explicit batch toggle enters empty batch mode and saves after the first tapped date', async ({ page }) => {
+	await resetRange();
+
+	try {
+		await page.goto(FRONTEND_URL);
+		await page.waitForTimeout(1200);
+
+		await expect(page.locator('.menstrual-home__batch-btn').filter({ hasText: '批量选择' })).toHaveCount(1);
+		await page.locator('.menstrual-home__batch-btn').filter({ hasText: '批量选择' }).click();
+
+		const saveButton = page.locator('.menstrual-home__batch-btn').filter({ hasText: '保存' });
+		await expect(saveButton).toHaveCount(1);
+		await expect(saveButton).toHaveClass(/menstrual-home__batch-btn--disabled/);
+
+		await page.locator('.date-cell__label').filter({ hasText: '23' }).first().click();
+		await waitForSelectionState(page, { '23': true, '24': false });
+
+		await expect(saveButton).not.toHaveClass(/menstrual-home__batch-btn--disabled/);
+		await saveButton.click();
+		await page.waitForTimeout(120);
+
+		const immediateClasses = await getCellClasses(page, ['23', '24']);
+		expect(immediateClasses[0].className.includes('date-cell--bg-period')).toBeTruthy();
+		expect(immediateClasses[1].className.includes('date-cell--bg-period')).toBeFalsy();
+		await page.waitForTimeout(1600);
+		await expect(page.locator('.selected-date-panel__title')).toHaveText('3 月 23 日');
+	} finally {
+		await resetRange();
+	}
+});
+
 test('batch drag still hits the correct cells after page scroll invalidates cached rects', async ({ page }) => {
 	await postJson('/commands/clearPeriodRange', {
 		moduleInstanceId: MODULE_INSTANCE_ID,
@@ -342,12 +389,12 @@ test('batch drag still hits the correct cells after page scroll invalidates cach
 			window.scrollTo({ top: 120, behavior: 'instant' });
 		});
 		await page.waitForTimeout(250);
+		await expect.poll(async () => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
 
 		const p23 = await getCellCenter(page, '23');
 		const p24 = await getCellCenter(page, '24');
 		expect(p23).toBeTruthy();
 		expect(p24).toBeTruthy();
-		expect(p23.y).not.toBe(firstP23.y);
 
 		await page.mouse.move(p23.x, p23.y);
 		await page.mouse.down();

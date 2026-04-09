@@ -174,6 +174,7 @@
 		persistModulePredictionTerm,
 		persistModuleSharingState
 	} from '../../services/menstrual/module-shell-command-service.js';
+	import { mergeH5RouteQuery } from '../../utils/h5-route-query.js';
 
 	export default {
 		name: 'ModuleSpacePage',
@@ -189,18 +190,19 @@
 			};
 		},
 		async onLoad(options) {
-			const openid = options.openid || DEFAULT_MODULE_SHELL_CONTEXT.openid;
+			const runtimeOptions = mergeH5RouteQuery(options || {});
+			const openid = runtimeOptions.openid || DEFAULT_MODULE_SHELL_CONTEXT.openid;
 			this.context = {
 				...DEFAULT_MODULE_SHELL_CONTEXT,
-				apiBaseUrl: options.apiBaseUrl || DEFAULT_MODULE_SHELL_CONTEXT.apiBaseUrl,
+				apiBaseUrl: runtimeOptions.apiBaseUrl || DEFAULT_MODULE_SHELL_CONTEXT.apiBaseUrl,
 				openid,
-				moduleInstanceId: options.moduleInstanceId || DEFAULT_MODULE_SHELL_CONTEXT.moduleInstanceId,
-				profileId: options.profileId || DEFAULT_MODULE_SHELL_CONTEXT.profileId,
-				partnerUserId: options.partnerUserId || DEFAULT_MODULE_SHELL_CONTEXT.partnerUserId,
-				today: options.today || DEFAULT_MODULE_SHELL_CONTEXT.today
+				moduleInstanceId: runtimeOptions.moduleInstanceId || DEFAULT_MODULE_SHELL_CONTEXT.moduleInstanceId,
+				profileId: runtimeOptions.profileId || DEFAULT_MODULE_SHELL_CONTEXT.profileId,
+				partnerUserId: runtimeOptions.partnerUserId || DEFAULT_MODULE_SHELL_CONTEXT.partnerUserId,
+				today: runtimeOptions.today || DEFAULT_MODULE_SHELL_CONTEXT.today
 			};
 
-			if (!options.moduleInstanceId) {
+			if (!runtimeOptions.moduleInstanceId) {
 				try {
 					const resolved = await resolveModuleContext(openid);
 					this.context = {

@@ -41,23 +41,35 @@
 			/>
 			<view class="menstrual-home__jump-row">
 				<JumpTabs :items="page.jumpTabs.items" :value="page.jumpTabs.value" :busy="isBrowseBusy" @jump="handleJump" />
-				<view v-if="panelMode === 'batch'" class="menstrual-home__batch-actions">
+				<view class="menstrual-home__batch-actions">
 					<view
-						class="menstrual-home__batch-btn menstrual-home__batch-btn--save"
+						v-if="panelMode !== 'batch'"
+						class="menstrual-home__batch-btn menstrual-home__batch-btn--toggle"
 						hover-class="ui-pressable-hover"
 						:hover-stay-time="70"
-						@tap="applyBatchAction"
+						@tap="handleBatchToggleTap"
 					>
-						<text class="menstrual-home__batch-btn-label menstrual-home__batch-btn-label--save">保存</text>
+						<text class="menstrual-home__batch-btn-label menstrual-home__batch-btn-label--toggle">批量选择</text>
 					</view>
-					<view
-						class="menstrual-home__batch-btn menstrual-home__batch-btn--cancel"
-						hover-class="ui-pressable-hover"
-						:hover-stay-time="70"
-						@tap="cancelBatchMode"
-					>
-						<text class="menstrual-home__batch-btn-label">取消</text>
-					</view>
+					<template v-else>
+						<view
+							class="menstrual-home__batch-btn menstrual-home__batch-btn--save"
+							:class="{ 'menstrual-home__batch-btn--disabled': !selectedBatchKeys.length || isMutating }"
+							hover-class="ui-pressable-hover"
+							:hover-stay-time="70"
+							@tap="handleBatchSaveTap"
+						>
+							<text class="menstrual-home__batch-btn-label menstrual-home__batch-btn-label--save">保存</text>
+						</view>
+						<view
+							class="menstrual-home__batch-btn menstrual-home__batch-btn--cancel"
+							:hover-stay-time="70"
+							hover-class="ui-pressable-hover"
+							@tap="cancelBatchMode"
+						>
+							<text class="menstrual-home__batch-btn-label">取消</text>
+						</view>
+					</template>
 				</view>
 			</view>
 			<CalendarGrid
@@ -150,6 +162,7 @@
 		persistSelectedDateDetails
 	} from '../../services/menstrual/home-command-service.js';
 	import { resolveRefreshPlan } from '../../services/menstrual/home-refresh-scope.js';
+	import { mergeH5RouteQuery } from '../../utils/h5-route-query.js';
 
 	export default {
 		name: 'MenstrualHomePage',
@@ -224,15 +237,18 @@
 			}
 		},
 		onLoad(options) {
+			const runtimeOptions = mergeH5RouteQuery(options || {});
 			const d = v => v ? decodeURIComponent(v) : v;
 			this.contractContext = {
 				...DEFAULT_MENSTRUAL_HOME_CONTEXT,
-				apiBaseUrl: d(options.apiBaseUrl) || DEFAULT_MENSTRUAL_HOME_CONTEXT.apiBaseUrl,
-				openid: d(options.openid) || DEFAULT_MENSTRUAL_HOME_CONTEXT.openid,
-				moduleInstanceId: d(options.moduleInstanceId) || DEFAULT_MENSTRUAL_HOME_CONTEXT.moduleInstanceId,
-				profileId: d(options.profileId) || DEFAULT_MENSTRUAL_HOME_CONTEXT.profileId,
-				today: d(options.today) || DEFAULT_MENSTRUAL_HOME_CONTEXT.today
+				apiBaseUrl: d(runtimeOptions.apiBaseUrl) || DEFAULT_MENSTRUAL_HOME_CONTEXT.apiBaseUrl,
+				openid: d(runtimeOptions.openid) || DEFAULT_MENSTRUAL_HOME_CONTEXT.openid,
+				moduleInstanceId: d(runtimeOptions.moduleInstanceId) || DEFAULT_MENSTRUAL_HOME_CONTEXT.moduleInstanceId,
+				profileId: d(runtimeOptions.profileId) || DEFAULT_MENSTRUAL_HOME_CONTEXT.profileId,
+				today: d(runtimeOptions.today) || DEFAULT_MENSTRUAL_HOME_CONTEXT.today
 			};
+			this.activeDate = this.contractContext.today;
+			this.focusDate = this.contractContext.today;
 			this.retryInitialLoad();
 		},
 		onPageScroll() {
@@ -501,6 +517,15 @@
 			handleCellTap(cell) {
 				if (!cell?.isoDate) return;
 				if (this.isBrowseBusy) return;
+				if (this.panelMode === 'batch') {
+					if (cell.selectable === false) return;
+					if (!this.batchStartKey) {
+						this.enterBatchMode(cell);
+						return;
+					}
+					this.handleBatchExtend(cell);
+					return;
+				}
 				this.panelMode = 'single-day';
 				this.applyLocalBrowseState({
 					selectedDate: cell.isoDate,
@@ -587,6 +612,25 @@
 						viewMode: this.viewMode
 					})
 				]).catch(() => {});
+			},
+			createEmptyBatchDraft() {
+				return {
+					isPeriod: true,
+					flowLevel: null,
+					painLevel: null,
+					colorLevel: null
+				};
+			},
+			enterBatchMode(startCell = null) {
+				this.panelMode = 'batch';
+				this.batchDraft = this.createEmptyBatchDraft();
+				this.batchStartKey = startCell?.key || null;
+				this.batchEndKey = startCell?.key || null;
+				this.batchHoveredKey = startCell?.key || null;
+				this.syncBatchSelectionRange();
+				if (startCell?.isoDate) {
+					this.activeDate = startCell.isoDate;
+				}
 			},
 			async runOptimisticMutation(nextPage, command) {
 				if (this.isMutating) return;
@@ -765,18 +809,15 @@
 			},
 			handleBatchStart(cell) {
 				if (!cell?.key) return;
-				this.panelMode = 'batch';
-				this.batchDraft = { isPeriod: true, flowLevel: null, painLevel: null, colorLevel: null };
-				this.batchStartKey = cell.key;
-				this.batchEndKey = cell.key;
-				this.batchHoveredKey = cell.key;
-				this.syncBatchSelectionRange();
-				if (cell.isoDate) {
-					this.activeDate = cell.isoDate;
-				}
+				this.enterBatchMode(cell);
 			},
 			handleBatchExtend(cell) {
 				if (!cell?.key) return;
+				if (cell.selectable === false) return;
+				if (!this.batchStartKey) {
+					this.enterBatchMode(cell);
+					return;
+				}
 				if (cell.key === this.batchHoveredKey) return;
 				this.batchEndKey = cell.key;
 				this.batchHoveredKey = cell.key;
@@ -797,6 +838,14 @@
 				this.batchEndKey = null;
 				this.batchHoveredKey = null;
 				this.batchSelectedKeysState = [];
+			},
+			handleBatchToggleTap() {
+				if (this.isBrowseBusy) return;
+				this.enterBatchMode();
+			},
+			handleBatchSaveTap() {
+				if (!this.selectedBatchKeys.length || this.isMutating) return;
+				return this.applyBatchAction();
 			},
 			applyBatchAction() {
 				if (!this.selectedBatchKeys.length) return;
@@ -1029,8 +1078,11 @@
 		align-items: center;
 		justify-content: center;
 		min-height: 56rpx;
-		padding: 0 18rpx;
+		padding: 0 20rpx;
 		border-radius: 20rpx;
+		border-width: 2rpx;
+		border-style: solid;
+		border-color: transparent;
 	}
 
 	.menstrual-home__batch-btn--save {
@@ -1039,6 +1091,15 @@
 
 	.menstrual-home__batch-btn--cancel {
 		background: $bg-subtle;
+	}
+
+	.menstrual-home__batch-btn--toggle {
+		background: #fffdf9;
+		border-color: #e9ddd1;
+	}
+
+	.menstrual-home__batch-btn--disabled {
+		opacity: 0.45;
 	}
 
 	.menstrual-home__batch-btn-label {
@@ -1050,6 +1111,10 @@
 
 	.menstrual-home__batch-btn-label--save {
 		color: $accent-period-contrast;
+	}
+
+	.menstrual-home__batch-btn-label--toggle {
+		color: $text-primary;
 	}
 
 	.menstrual-home__state-card {

@@ -32,6 +32,8 @@ Legacy reference repo (only reference when it comes to frontend code, not for UI
 ## Useful Reference
 
 - `docs/design/` - open the relevant module or cross-module design doc only when the design contract itself matters.
+- `docs/design/frontend-design-spec.md` - open when you need a short, maintained entry point for the repo's current frontend design baseline.
+- `docs/design/frontend-prototype-harness.md` - open when the team has already chosen direct structure-sketch-to-prototype work and the agent needs a stable way to reuse existing design resources.
 - `docs/checklists/` - open when you need maintained QA or release-verification procedures, not product semantics.
 - `docs/design-drafts/` - open when you need to inspect current Pencil drafts or exported design artifacts.
 - `docs/plans/` - use for active sequencing, migration, or handoff context; do not scan it exhaustively.

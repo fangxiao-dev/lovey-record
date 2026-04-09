@@ -77,6 +77,8 @@ test('home batch selection keeps a continuous inclusive range from the anchor to
 		batchEndKey: null,
 		batchHoveredKey: null,
 		batchSelectedKeysState: [],
+		createEmptyBatchDraft: home.methods.createEmptyBatchDraft,
+		enterBatchMode: home.methods.enterBatchMode,
 		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
 		activeDate: '2026-03-25',
 		allCalendarCells: [
@@ -151,6 +153,8 @@ test('home batch selection updates the active single-day context to the latest d
 		batchEndKey: null,
 		batchHoveredKey: null,
 		batchSelectedKeysState: [],
+		createEmptyBatchDraft: home.methods.createEmptyBatchDraft,
+		enterBatchMode: home.methods.enterBatchMode,
 		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
 		activeDate: '2026-03-25',
 		allCalendarCells: [
@@ -199,6 +203,8 @@ test('home batch selection recomputes the full range even when drag jumps across
 		batchEndKey: null,
 		batchHoveredKey: null,
 		batchSelectedKeysState: [],
+		createEmptyBatchDraft: home.methods.createEmptyBatchDraft,
+		enterBatchMode: home.methods.enterBatchMode,
 		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
 		activeDate: '2026-03-01',
 		allCalendarCells: [
@@ -231,6 +237,176 @@ test('home batch selection recomputes the full range even when drag jumps across
 		'2026-03-09'
 	]);
 	assert.equal(ctx.batchEndKey, '2026-03-09');
+});
+
+test('home template shows a batch toggle button when not already in batch mode', () => {
+	const source = fs.readFileSync(path.resolve(repoRoot, 'frontend/pages/menstrual/home.vue'), 'utf8');
+
+	assert.match(source, /panelMode !== 'batch'/);
+	assert.match(source, /批量选择/);
+});
+
+test('home enterBatchMode activates an empty batch state without changing the active date', () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({})
+	});
+
+	const ctx = {
+		panelMode: 'single-day',
+		activeDate: '2026-03-25',
+		batchStartKey: '2026-03-20',
+		batchEndKey: '2026-03-21',
+		batchHoveredKey: '2026-03-21',
+		batchSelectedKeysState: ['2026-03-20', '2026-03-21'],
+		batchDraft: {
+			isPeriod: false,
+			flowLevel: 2,
+			painLevel: 4,
+			colorLevel: 5
+		},
+		createEmptyBatchDraft: home.methods.createEmptyBatchDraft,
+		syncBatchSelectionRange: home.methods.syncBatchSelectionRange
+	};
+
+	home.methods.enterBatchMode.call(ctx);
+
+	assert.equal(ctx.panelMode, 'batch');
+	assert.equal(ctx.activeDate, '2026-03-25');
+	assert.equal(ctx.batchStartKey, null);
+	assert.equal(ctx.batchEndKey, null);
+	assert.equal(ctx.batchHoveredKey, null);
+	assert.deepEqual(normalize(ctx.batchSelectedKeysState), []);
+	assert.deepEqual(normalize(ctx.batchDraft), {
+		isPeriod: true,
+		flowLevel: null,
+		painLevel: null,
+		colorLevel: null
+	});
+});
+
+test('home handleCellTap starts batch selection from the tapped day when batch mode is empty', () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({})
+	});
+
+	const ctx = {
+		panelMode: 'batch',
+		activeDate: '2026-03-25',
+		batchStartKey: null,
+		batchEndKey: null,
+		batchHoveredKey: null,
+		batchSelectedKeysState: [],
+		allCalendarCells: [
+			{ key: '2026-03-23', isoDate: '2026-03-23', selectable: true },
+			{ key: '2026-03-24', isoDate: '2026-03-24', selectable: true }
+		],
+		isBrowseBusy: false,
+		createEmptyBatchDraft: home.methods.createEmptyBatchDraft,
+		enterBatchMode: home.methods.enterBatchMode,
+		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
+		refreshSelectedDayDetail() {
+			throw new Error('single-day refresh should not run while starting empty batch selection');
+		},
+		applyLocalBrowseState() {
+			throw new Error('single-day browse state should not run while starting empty batch selection');
+		}
+	};
+
+	home.methods.handleCellTap.call(ctx, {
+		key: '2026-03-23',
+		isoDate: '2026-03-23',
+		selectable: true
+	});
+
+	assert.equal(ctx.panelMode, 'batch');
+	assert.equal(ctx.activeDate, '2026-03-23');
+	assert.equal(ctx.batchStartKey, '2026-03-23');
+	assert.equal(ctx.batchEndKey, '2026-03-23');
+	assert.equal(ctx.batchHoveredKey, '2026-03-23');
+	assert.deepEqual(home.computed.selectedBatchKeys.call(ctx), ['2026-03-23']);
+});
+
+test('home handleCellTap ignores future-muted dates while batch mode is empty', () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({})
+	});
+
+	const ctx = {
+		panelMode: 'batch',
+		activeDate: '2026-03-25',
+		batchStartKey: null,
+		batchEndKey: null,
+		batchHoveredKey: null,
+		batchSelectedKeysState: [],
+		allCalendarCells: [{ key: '2026-03-30', isoDate: '2026-03-30', selectable: false }],
+		isBrowseBusy: false,
+		enterBatchMode: home.methods.enterBatchMode,
+		syncBatchSelectionRange: home.methods.syncBatchSelectionRange
+	};
+
+	home.methods.handleCellTap.call(ctx, {
+		key: '2026-03-30',
+		isoDate: '2026-03-30',
+		selectable: false
+	});
+
+	assert.equal(ctx.activeDate, '2026-03-25');
+	assert.equal(ctx.batchStartKey, null);
+	assert.deepEqual(home.computed.selectedBatchKeys.call(ctx), []);
 });
 
 test('home applyBatchAction exits batch mode and keeps the latest dragged day as the selected single-day date', async () => {
@@ -690,6 +866,7 @@ test('home refreshHeroSnapshot ignores stale hero responses and applies only the
 			}
 			resolveSecond = () => resolve({ sharingStatus: 'shared', currentStatusSummary: { statusCard: { label: '新' } } });
 		}),
+		loadMenstrualModuleSettings: async () => ({}),
 		applyHeroSnapshotToPageModel: (page, { homeView }) => ({
 			...page,
 			heroCard: {
