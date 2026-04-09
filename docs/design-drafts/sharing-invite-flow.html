@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>共享邀请流程 — lovey-record</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #fff;
+    color: #111;
+    padding: 32px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .meta { font-size: 13px; color: #6b7280; margin-bottom: 28px; }
+  h2 { font-size: 16px; margin: 28px 0 12px; }
+  .subtitle { color: #6b7280; font-size: 14px; margin-bottom: 20px; }
+
+  .box {
+    background: #f3f4f6;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+  }
+  .box.creator { background: #fef3c7; border-color: #f59e0b; }
+  .box.participant { background: #dbeafe; border-color: #3b82f6; }
+  .box.system { background: #f0fdf4; border-color: #22c55e; }
+  .box.error { background: #fee2e2; border-color: #ef4444; }
+  .box.page { background: #fae8ff; border-color: #a855f7; }
+  .arrow { font-size: 16px; color: #9ca3af; font-weight: bold; margin: 0 4px; }
+  .note { font-size: 11px; color: #6b7280; font-style: italic; margin-left: 4px; }
+  .badge { display: inline-block; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 600; }
+  .badge.ok { background: #dcfce7; color: #16a34a; }
+
+  .lane-section {
+    background: #f9fafb;
+    border-radius: 10px;
+    margin: 12px 0;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+  }
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    padding: 6px 12px;
+    background: #f3f4f6;
+    border-bottom: 1px solid #e5e7eb;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .lane-rows { padding: 8px 0; }
+  .row {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .row-label {
+    font-size: 11px;
+    color: #9ca3af;
+    width: 56px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .row-content { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    font-size: 12px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid;
+  }
+</style>
+</head>
+<body>
+
+<h1>共享邀请流程</h1>
+<div class="meta">lovey-record · 设计资产 · 最后更新：2026-04-09</div>
+
+<h2>流程总览</h2>
+<p class="subtitle">创建人 → 参与人 → 数据库状态变化</p>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#fef3c7;border-color:#f59e0b"></div> 创建人操作</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#dbeafe;border-color:#3b82f6"></div> 参与人操作</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f0fdf4;border-color:#22c55e"></div> 系统 / 后端</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fae8ff;border-color:#a855f7"></div> 前端页面</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fee2e2;border-color:#ef4444"></div> 错误状态</div>
+</div>
+
+<div class="lane-section">
+  <div class="section-title">① 创建人发起邀请</div>
+  <div class="lane-rows">
+    <div class="row">
+      <div class="row-label">操作</div>
+      <div class="row-content">
+        <div class="box creator">模块管理页 点击「分享」</div>
+        <div class="arrow">→</div>
+        <div class="box system">POST /createInviteToken</div>
+        <div class="arrow">→</div>
+        <div class="box system">DB 写入 InviteToken<span class="note">token、过期时间(24h)、moduleInstanceId</span></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="row-label">触发</div>
+      <div class="row-content">
+        <div class="box page">wx.shareAppMessage<span class="note">path: pages/join/index?token=xxx</span></div>
+        <div class="arrow">→</div>
+        <div class="box">微信聊天中出现小程序卡片</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lane-section">
+  <div class="section-title">② 参与人打开卡片</div>
+  <div class="lane-rows">
+    <div class="row">
+      <div class="row-label">进入</div>
+      <div class="row-content">
+        <div class="box participant">pages/join/index</div>
+        <div class="arrow">→</div>
+        <div class="box system">GET /validateInviteToken?token=xxx</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="row-label">校验</div>
+      <div class="row-content">
+        <div class="box error">token 无效 / 已使用 / 已过期</div>
+        <div class="arrow">→</div>
+        <div class="box error">展示错误页，引导回首页</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="row-label"></div>
+      <div class="row-content">
+        <div class="box system">token 有效</div>
+        <div class="arrow">→</div>
+        <div class="box participant">展示确认页<span class="note">模块名称 + 「只读」权限说明 + 「加入」按钮</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lane-section">
+  <div class="section-title">③ 参与人确认加入</div>
+  <div class="lane-rows">
+    <div class="row">
+      <div class="row-label">操作</div>
+      <div class="row-content">
+        <div class="box participant">点击「加入」</div>
+        <div class="arrow">→</div>
+        <div class="box system">POST /acceptInvite { token }</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="row-label">DB</div>
+      <div class="row-content">
+        <div class="box system">InviteToken.usedAt = now()</div>
+        <div class="arrow">+</div>
+        <div class="box system">ModuleAccess 写入<span class="note">role: VIEWER, status: ACTIVE</span></div>
+        <div class="arrow">+</div>
+        <div class="box system">ModuleInstance.sharingStatus = SHARED</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="row-label">跳转</div>
+      <div class="row-content">
+        <div class="box participant">进入共享模块（只读）</div>
+        <span class="badge ok">加入成功</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lane-section">
+  <div class="section-title">④ 退出 / 移除</div>
+  <div class="lane-rows">
+    <div class="row">
+      <div class="row-label">创建人</div>
+      <div class="row-content">
+        <div class="box creator">模块管理 → 移除参与人</div>
+        <div class="arrow">→</div>
+        <div class="box system">POST /revokeModuleAccess<span class="note">已有接口</span></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="row-label">参与人</div>
+      <div class="row-content">
+        <div class="box participant">模块管理 → 退出共享</div>
+        <div class="arrow">→</div>
+        <div class="box system">POST /leaveModule<span class="note">新接口（自己标记 REVOKED）</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr style="margin:32px 0;border:none;border-top:1px solid #e5e7eb">
+
+<h2>待补充区域</h2>
+<p style="font-size:13px;color:#6b7280">后续开发共同编辑模式时，在此补充 ② 中权限选择分支、③ 中 role: PARTNER 的写入路径。</p>
+
+</body>
+</html>
