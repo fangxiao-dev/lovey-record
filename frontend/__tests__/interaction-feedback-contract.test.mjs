@@ -18,7 +18,7 @@ test('foundation exposes the shared pressable hover utility class', () => {
 
 test('menstrual and shell hotspots wire hover-class feedback on tappable view controls', () => {
 	const menstrualHome = read('pages/menstrual/home.vue');
-	const shellHome = read('pages/index/index.vue');
+	const shellHome = read('components/management/ModuleManagementPage.vue');
 	const segmentedControl = read('components/menstrual/SegmentedControl.vue');
 	const jumpTabs = read('components/menstrual/JumpTabs.vue');
 	const headerNav = read('components/menstrual/HeaderNav.vue');
