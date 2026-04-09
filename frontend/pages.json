@@ -29,6 +29,12 @@
 			"style": {
 				"navigationBarTitleText": "SelectedDatePanel Showcase"
 			}
+		},
+		{
+			"path": "pages/join/index",
+			"style": {
+				"navigationBarTitleText": "加入共享"
+			}
 		}
 	],
 	"globalStyle": {
