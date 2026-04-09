@@ -177,7 +177,6 @@ export async function getModuleAccessState(input: AccessInput) {
   const accesses = await prisma.moduleAccess.findMany({
     where: {
       moduleInstanceId: input.moduleInstanceId,
-      accessStatus: 'ACTIVE',
     },
   });
   const activePartners = accesses
