@@ -118,6 +118,30 @@ describe('sharing.service', () => {
       await expect(acceptInvite({ token: 'tok', userId: 'user-2' }))
         .rejects.toMatchObject({ code: 'INVALID_TOKEN' });
     });
+
+    it('throws TOKEN_ALREADY_USED when token is already used inside transaction', async () => {
+      const txInviteToken = { findFirst: jest.fn(), update: jest.fn() };
+      (prisma.$transaction as jest.Mock).mockImplementation((fn: any) =>
+        fn({ inviteToken: txInviteToken, moduleAccess: { create: jest.fn() }, moduleInstance: { update: jest.fn() } })
+      );
+      txInviteToken.findFirst.mockResolvedValue({
+        token: 'tok', moduleInstanceId: 'mod-1', expiresAt: new Date('2099-01-01'), usedAt: new Date(),
+      });
+      await expect(acceptInvite({ token: 'tok', userId: 'user-2' }))
+        .rejects.toMatchObject({ code: 'TOKEN_ALREADY_USED' });
+    });
+
+    it('throws TOKEN_EXPIRED when token is expired inside transaction', async () => {
+      const txInviteToken = { findFirst: jest.fn(), update: jest.fn() };
+      (prisma.$transaction as jest.Mock).mockImplementation((fn: any) =>
+        fn({ inviteToken: txInviteToken, moduleAccess: { create: jest.fn() }, moduleInstance: { update: jest.fn() } })
+      );
+      txInviteToken.findFirst.mockResolvedValue({
+        token: 'tok', moduleInstanceId: 'mod-1', expiresAt: new Date('2000-01-01'), usedAt: null,
+      });
+      await expect(acceptInvite({ token: 'tok', userId: 'user-2' }))
+        .rejects.toMatchObject({ code: 'TOKEN_EXPIRED' });
+    });
   });
 
   describe('leaveModule', () => {
@@ -158,6 +182,12 @@ describe('sharing.service', () => {
       expect(result.members).toHaveLength(2);
       expect(result.members[0].role).toBe('owner');
       expect(result.members[1].role).toBe('viewer');
+    });
+
+    it('throws MODULE_ACCESS_DENIED when caller is not a member', async () => {
+      (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue(null);
+      await expect(getModuleMembers({ moduleInstanceId: 'mod-1', userId: 'outsider' }))
+        .rejects.toMatchObject({ code: 'MODULE_ACCESS_DENIED' });
     });
   });
 });
