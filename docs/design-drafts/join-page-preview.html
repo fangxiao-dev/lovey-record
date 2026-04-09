@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390px, initial-scale=1">
+<title>Join Page — 设计预览</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ── 设计 Token（与 app 对齐） ─────────────────────────── */
+  :root {
+    --color-bg:        #faf7f2;
+    --color-surface:   #ffffff;
+    --color-warm-100:  #f3eee7;
+    --color-warm-200:  #e6ded5;
+    --color-warm-300:  #d6cabd;
+
+    --color-brown-900: #2f2a26;
+    --color-brown-700: #72685f;
+    --color-brown-500: #a29488;
+
+    --color-rose:      #c9786a;
+    --color-rose-soft: #f3d7d1;
+    --color-rose-muted:#e8c4bc;
+
+    --color-secondary-bg:   #f3eee7;
+    --color-secondary-text: #72685f;
+
+    --radius-card:  24px;
+    --radius-pill:  999px;
+    --radius-badge: 12px;
+
+    --font: "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: #ede7de;
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 48px 32px;
+    min-height: 100vh;
+  }
+
+  /* ── 手机壳 ─────────────────────────────────────────────── */
+  .phone {
+    width: 390px;
+    min-height: 720px;
+    background: var(--color-bg);
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,.08),
+      0 24px 64px rgba(0,0,0,.18),
+      0 4px 12px rgba(0,0,0,.1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* nav bar 占位 */
+  .nav-bar {
+    height: 44px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-warm-200);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-brown-900);
+    letter-spacing: .3px;
+  }
+  .nav-bar .back {
+    margin-right: 8px;
+    font-size: 18px;
+    color: var(--color-brown-700);
+  }
+
+  /* ── 页面主体 ─────────────────────────────────────────────── */
+  .page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px 48px;
+    gap: 0;
+  }
+
+  /* 装饰环 */
+  .deco-ring {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--color-rose-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .deco-ring::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-rose-muted);
+    opacity: .5;
+  }
+  .deco-ring-icon {
+    font-size: 32px;
+    line-height: 1;
+  }
+
+  /* 卡片 */
+  .card {
+    width: 100%;
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+    padding: 28px 24px 24px;
+    box-shadow: 0 2px 12px rgba(47,42,38,.06);
+  }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--color-brown-500);
+    margin-bottom: 10px;
+  }
+
+  .card-module-name {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--color-brown-900);
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--color-warm-200);
+    margin: 16px 0;
+  }
+
+  /* 权限说明行 */
+  .perm-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .perm-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .perm-icon--ok  { background: #ecf5e9; color: #5a8a4a; }
+  .perm-icon--no  { background: #faeae9; color: #b96858; }
+  .perm-text {
+    font-size: 13px;
+    color: var(--color-brown-700);
+    line-height: 1.5;
+  }
+  .perm-text strong {
+    font-weight: 600;
+    color: var(--color-brown-900);
+  }
+
+  /* 只读徽章 */
+  .badge-readonly {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fdf3e9;
+    border: 1px solid #e8c99a;
+    color: #8a5e28;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .4px;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    margin-bottom: 20px;
+  }
+  .badge-readonly .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #c6914b;
+  }
+
+  /* 按튼 영역 */
+  .actions {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px 24px;
+    border-radius: var(--radius-pill);
+    border: none;
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s;
+    letter-spacing: .2px;
+  }
+  .btn:active { opacity: .85; }
+
+  .btn--primary {
+    background: var(--color-rose);
+    color: #fff;
+  }
+  .btn--secondary {
+    background: var(--color-secondary-bg);
+    color: var(--color-secondary-text);
+  }
+
+  /* ── Loading state ─────────────────────────────────────── */
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border: 2.5px solid var(--color-warm-200);
+    border-top-color: var(--color-rose);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-size: 14px;
+    color: var(--color-brown-500);
+  }
+
+  /* ── Error state ───────────────────────────────────────── */
+  .error-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #faeae9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    margin-bottom: 28px;
+  }
+  .error-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-brown-900);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .error-desc {
+    font-size: 13px;
+    color: var(--color-brown-500);
+    text-align: center;
+    line-height: 1.6;
+    padding: 0 8px;
+    margin-bottom: 28px;
+  }
+
+  /* ── 状态标签 ──────────────────────────────────────────── */
+  .state-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-brown-500);
+    text-align: center;
+    margin-bottom: 16px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ① Valid state -->
+<div class="phone">
+  <div class="nav-bar">
+    <span class="back">‹</span>加入共享
+  </div>
+  <div class="page">
+    <p class="state-label">状态：待加入</p>
+
+    <div class="deco-ring">
+      <span class="deco-ring-icon">🌸</span>
+    </div>
+
+    <div class="badge-readonly">
+      <span class="dot"></span>
+      只读权限
+    </div>
+
+    <div class="card">
+      <p class="card-label">邀请你加入</p>
+      <p class="card-module-name">月经记录</p>
+
+      <div class="divider"></div>
+
+      <div class="perm-row">
+        <div class="perm-icon perm-icon--ok">✓</div>
+        <span class="perm-text"><strong>可以查看</strong>所有周期记录、日历和统计数据</span>
+      </div>
+      <div class="perm-row">
+        <div class="perm-icon perm-icon--no">✕</div>
+        <span class="perm-text"><strong>无法编辑</strong>任何数据，仅供阅读</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn--primary">加入</button>
+      <button class="btn btn--secondary">暂不加入</button>
+    </div>
+  </div>
+</div>
+
+<!-- ② Loading state -->
+<div class="phone">
+  <div class="nav-bar">
+    <span class="back">‹</span>加入共享
+  </div>
+  <div class="page">
+    <p class="state-label">状态：验证中</p>
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p class="loading-text">正在验证邀请链接…</p>
+    </div>
+  </div>
+</div>
+
+<!-- ③ Error state -->
+<div class="phone">
+  <div class="nav-bar">
+    <span class="back">‹</span>加入共享
+  </div>
+  <div class="page">
+    <p class="state-label">状态：链接失效</p>
+    <div class="error-icon">🔗</div>
+    <p class="error-title">邀请链接已失效</p>
+    <p class="error-desc">该链接已过期或被使用过了，请联系对方重新发送邀请。</p>
+    <button class="btn btn--secondary" style="max-width:240px">回到首页</button>
+  </div>
+</div>
+
+</body>
+</html>

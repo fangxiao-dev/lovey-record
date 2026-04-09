@@ -10,9 +10,9 @@
 			<view v-if="userRole === 'viewer'" class="menstrual-home__readonly-badge">
 				<text class="menstrual-home__readonly-label">只读</text>
 			</view>
-			<view v-if="userRole === 'owner'" class="menstrual-home__share-btn" @tap="handleShareTap">
-				<text>邀请</text>
-			</view>
+			<button v-if="userRole === 'owner'" open-type="share" class="menstrual-home__share-btn">邀请</button>
+			<!-- DEV ONLY: 生成 token 供手动测试 join 流程，上线前删除 -->
+			<view v-if="userRole === 'owner'" class="menstrual-home__share-btn menstrual-home__share-btn--debug" @tap="handleDebugCopyToken">🔗</view>
 			<view v-if="userRole === 'viewer'" class="menstrual-home__leave-btn" @tap="handleLeaveTap">
 				<text>退出共享</text>
 			</view>
@@ -246,6 +246,21 @@
 			batchPanelSummaryItems() {
 				return createSummaryItems(this.batchDraft);
 			}
+		},
+		// 小程序分享钩子：用户点击 open-type="share" 按钮时触发
+		// 返回 Promise 以支持异步生成 token（基础库 2.12.0+）
+		onShareAppMessage() {
+			return createInviteToken({
+				apiBaseUrl: this.contractContext.apiBaseUrl,
+				openid: this.contractContext.openid,
+				moduleInstanceId: this.contractContext.moduleInstanceId,
+			}).then((result) => ({
+				title: '邀请你查看月经记录',
+				path: `pages/join/index?token=${encodeURIComponent(result?.data?.token)}&openid=${encodeURIComponent(this.contractContext.openid)}&apiBaseUrl=${encodeURIComponent(this.contractContext.apiBaseUrl)}`,
+			})).catch((err) => {
+				console.error('[onShareAppMessage] token 生成失败:', err);
+				return { title: '月经记录' };
+			});
 		},
 		onLoad(options) {
 			const runtimeOptions = mergeH5RouteQuery(options || {});
@@ -941,7 +956,9 @@
 
 				return ranges;
 			},
-			async handleShareTap() {
+			// handleShareTap 已移除：小程序分享必须通过 onShareAppMessage 钩子 + open-type="share" 按钮触发
+			// DEV ONLY: 生成 token 并弹窗显示，用于在未认证环境手动测试 join 流程
+			async handleDebugCopyToken() {
 				try {
 					const result = await createInviteToken({
 						apiBaseUrl: this.contractContext.apiBaseUrl,
@@ -949,12 +966,17 @@
 						moduleInstanceId: this.contractContext.moduleInstanceId,
 					});
 					const token = result?.data?.token;
-					wx.shareAppMessage({
-						title: '邀请你查看月经记录',
-						path: `pages/join/index?token=${encodeURIComponent(token)}&openid=${encodeURIComponent(this.contractContext.openid)}&apiBaseUrl=${encodeURIComponent(this.contractContext.apiBaseUrl)}`,
+					const joinPath = `/pages/join/index?token=${token}&openid=${this.contractContext.openid}`;
+					uni.showModal({
+						title: '[DEV] Join 页测试链接',
+						content: joinPath,
+						showCancel: false,
+						confirmText: '好的',
 					});
+					console.log('[DEV] join path:', joinPath);
 				} catch (err) {
-					uni.showToast({ title: '生成邀请失败', icon: 'none' });
+					console.error('[handleDebugCopyToken]', err);
+					uni.showToast({ title: '生成失败', icon: 'none' });
 				}
 			},
 			async handleLeaveTap() {
@@ -976,7 +998,7 @@
 						moduleInstanceId: this.contractContext.moduleInstanceId,
 					});
 					uni.showToast({ title: '已退出共享', icon: 'success' });
-					setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 1000);
+					setTimeout(() => uni.reLaunch({ url: '/pages/index/index' }), 1000);
 				} catch (err) {
 					uni.showToast({ title: '退出失败', icon: 'none' });
 				}
@@ -1231,6 +1253,10 @@
 		border-radius: 8px;
 		font-size: 13px;
 		color: #374151;
+		// 重置 button 默认样式
+		line-height: normal;
+		margin: 0;
+		&::after { border: none; }
 	}
 
 	.menstrual-home__leave-btn {
