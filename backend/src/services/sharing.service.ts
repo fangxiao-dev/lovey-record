@@ -74,25 +74,27 @@ export async function acceptInvite(input: { token: string; userId: string }) {
 }
 
 export async function leaveModule(input: { moduleInstanceId: string; userId: string }) {
-  const access = await prisma.moduleAccess.findFirst({
-    where: { moduleInstanceId: input.moduleInstanceId, userId: input.userId, accessStatus: 'ACTIVE' },
-  });
-  if (!access) throw createAccessError();
-  if (access.role === 'OWNER') throw createAccessError();
-  await prisma.moduleAccess.update({
-    where: { id: access.id },
-    data: { accessStatus: 'REVOKED', revokedAt: new Date() },
-  });
-  const remaining = await prisma.moduleAccess.findMany({
-    where: { moduleInstanceId: input.moduleInstanceId, accessStatus: 'ACTIVE', NOT: { role: 'OWNER' } },
-  });
-  if (remaining.length === 0) {
-    await prisma.moduleInstance.update({
-      where: { id: input.moduleInstanceId },
-      data: { sharingStatus: 'PRIVATE' },
+  return prisma.$transaction(async (tx) => {
+    const access = await tx.moduleAccess.findFirst({
+      where: { moduleInstanceId: input.moduleInstanceId, userId: input.userId, accessStatus: 'ACTIVE' },
     });
-  }
-  return { moduleInstanceId: input.moduleInstanceId };
+    if (!access) throw createAccessError();
+    if (access.role === 'OWNER') throw createAccessError();
+    await tx.moduleAccess.update({
+      where: { id: access.id },
+      data: { accessStatus: 'REVOKED', revokedAt: new Date() },
+    });
+    const remaining = await tx.moduleAccess.findMany({
+      where: { moduleInstanceId: input.moduleInstanceId, accessStatus: 'ACTIVE', NOT: { role: 'OWNER' } },
+    });
+    if (remaining.length === 0) {
+      await tx.moduleInstance.update({
+        where: { id: input.moduleInstanceId },
+        data: { sharingStatus: 'PRIVATE' },
+      });
+    }
+    return { moduleInstanceId: input.moduleInstanceId };
+  });
 }
 
 function lower(s: string) {

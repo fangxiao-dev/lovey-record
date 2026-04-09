@@ -902,7 +902,7 @@
 					const token = result?.data?.token;
 					wx.shareAppMessage({
 						title: '邀请你查看月经记录',
-						path: `pages/join/index?token=${token}&openid=${this.contractContext.openid}`,
+						path: `pages/join/index?token=${encodeURIComponent(token)}&openid=${encodeURIComponent(this.contractContext.openid)}&apiBaseUrl=${encodeURIComponent(this.contractContext.apiBaseUrl)}`,
 					});
 				} catch (err) {
 					uni.showToast({ title: '生成邀请失败', icon: 'none' });

@@ -13,7 +13,10 @@ async function queryEnvelope({ apiBaseUrl, openid, path, data }) {
 	});
 
 	if (response.statusCode !== 200 || !response.data?.ok) {
-		throw new Error(response.data?.error?.message || `Query failed: ${path}`);
+		const apiError = response.data?.error;
+		const e = new Error(apiError?.message || `Query failed: ${path}`);
+		e.code = apiError?.code;
+		throw e;
 	}
 
 	return response.data.data;
