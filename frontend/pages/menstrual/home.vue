@@ -7,6 +7,15 @@
 					<text class="menstrual-home__hero-sharing-chip-label">{{ page.heroCard.sharingLabel }}</text>
 				</view>
 			</view>
+			<view v-if="userRole === 'viewer'" class="menstrual-home__readonly-badge">
+				<text class="menstrual-home__readonly-label">只读</text>
+			</view>
+			<view v-if="userRole === 'owner'" class="menstrual-home__share-btn" @tap="handleShareTap">
+				<text>邀请</text>
+			</view>
+			<view v-if="userRole === 'viewer'" class="menstrual-home__leave-btn" @tap="handleLeaveTap">
+				<text>退出共享</text>
+			</view>
 			<view class="menstrual-home__hero-status-frame">
 				<image class="menstrual-home__hero-status-icon" :src="page.heroCard.statusFrame.iconUrl" mode="aspectFit" />
 				<text class="menstrual-home__hero-status-text">{{ page.heroCard.statusFrame.text }}</text>
@@ -41,7 +50,7 @@
 			/>
 			<view class="menstrual-home__jump-row">
 				<JumpTabs :items="page.jumpTabs.items" :value="page.jumpTabs.value" :busy="isBrowseBusy" @jump="handleJump" />
-				<view v-if="panelMode === 'batch'" class="menstrual-home__batch-actions">
+				<view v-if="panelMode === 'batch' && userRole !== 'viewer'" class="menstrual-home__batch-actions">
 					<view
 						class="menstrual-home__batch-btn menstrual-home__batch-btn--save"
 						hover-class="ui-pressable-hover"
@@ -75,7 +84,7 @@
 			/>
 			<CalendarLegend :items="page.legend" />
 			<SelectedDatePanel
-				v-if="page"
+				v-if="page && userRole !== 'viewer'"
 				:title="panelMode === 'batch' ? batchPanelTitle : page.selectedDatePanel.title"
 				:badge="panelMode === 'batch' ? '' : page.selectedDatePanel.badge"
 				:summary-items="panelMode === 'batch' ? batchPanelSummaryItems : page.selectedDatePanel.summaryItems"
@@ -150,6 +159,7 @@
 		persistSelectedDateDetails
 	} from '../../services/menstrual/home-command-service.js';
 	import { resolveRefreshPlan } from '../../services/menstrual/home-refresh-scope.js';
+	import { createInviteToken, leaveModule } from '../../services/sharing/sharing-command-service.js';
 
 	export default {
 		name: 'MenstrualHomePage',
@@ -189,7 +199,8 @@
 					colorLevel: null
 				},
 				contractContext: { ...DEFAULT_MENSTRUAL_HOME_CONTEXT },
-				rawContracts: null
+				rawContracts: null,
+				userRole: 'owner'
 			};
 		},
 		computed: {
@@ -299,6 +310,7 @@
 				this.page = result.page;
 				this.loadError = result.error || '';
 				this.rawContracts = result.raw;
+				this.userRole = this.rawContracts?.callerRole || 'owner';
 				this.activeDate = result.raw?.dayDetail?.dayRecord?.date || activeDate || this.activeDate;
 				this.focusDate = result.raw?.focusDate || nextFocusDate;
 				this.viewMode = result.raw?.viewMode || nextViewMode;
@@ -880,6 +892,46 @@
 
 				return ranges;
 			},
+			async handleShareTap() {
+				try {
+					const result = await createInviteToken({
+						apiBaseUrl: this.contractContext.apiBaseUrl,
+						openid: this.contractContext.openid,
+						moduleInstanceId: this.contractContext.moduleInstanceId,
+					});
+					const token = result?.data?.token;
+					wx.shareAppMessage({
+						title: '邀请你查看月经记录',
+						path: `pages/join/index?token=${token}&openid=${this.contractContext.openid}`,
+					});
+				} catch (err) {
+					uni.showToast({ title: '生成邀请失败', icon: 'none' });
+				}
+			},
+			async handleLeaveTap() {
+				const confirmed = await new Promise((resolve) => {
+					uni.showModal({
+						title: '退出共享',
+						content: '退出后将无法继续查看这个模块的数据。',
+						confirmText: '退出',
+						confirmColor: '#dc2626',
+						success: (res) => resolve(res.confirm),
+					});
+				});
+				if (!confirmed) return;
+
+				try {
+					await leaveModule({
+						apiBaseUrl: this.contractContext.apiBaseUrl,
+						openid: this.contractContext.openid,
+						moduleInstanceId: this.contractContext.moduleInstanceId,
+					});
+					uni.showToast({ title: '已退出共享', icon: 'success' });
+					setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 1000);
+				} catch (err) {
+					uni.showToast({ title: '退出失败', icon: 'none' });
+				}
+			},
 			formatBatchDateLabel(cellKey) {
 				if (!cellKey) return '';
 				const cell = this.allCalendarCells.find((item) => item.key === cellKey);
@@ -1090,5 +1142,37 @@
 		line-height: 1;
 		font-weight: $font-weight-strong;
 		color: $accent-period-contrast;
+	}
+
+	.menstrual-home__readonly-badge {
+		display: inline-flex;
+		align-items: center;
+		background: #fef3c7;
+		border-radius: 6px;
+		padding: 2px 8px;
+		margin-bottom: 8px;
+	}
+
+	.menstrual-home__readonly-label {
+		font-size: 12px;
+		color: #92400e;
+		font-weight: 600;
+	}
+
+	.menstrual-home__share-btn {
+		padding: 4px 12px;
+		background: #faf7f2;
+		border: 1px solid #d1d5db;
+		border-radius: 8px;
+		font-size: 13px;
+		color: #374151;
+	}
+
+	.menstrual-home__leave-btn {
+		padding: 4px 12px;
+		background: #fee2e2;
+		border-radius: 8px;
+		font-size: 13px;
+		color: #dc2626;
 	}
 </style>
