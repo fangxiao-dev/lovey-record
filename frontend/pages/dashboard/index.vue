@@ -45,7 +45,7 @@
 					<view class="module-card__meta">
 						<view class="module-card__title-row">
 							<text class="module-card__name u-text-body">{{ mod.moduleName }}</text>
-							<text class="module-card__badge ui-badge__text">{{ mod.badgeText }}</text>
+							<text class="module-card__badge ui-badge__text">{{ mod.ownershipLabel }}</text>
 						</view>
 						<text class="module-card__status u-text-caption">{{ mod.statusText }}</text>
 					</view>
@@ -137,10 +137,7 @@
 				this.loadError = '';
 				try {
 					const result = await loadMenstrualModuleShellPageModel(this.context);
-					const allModules = [
-						...result.page.privateZone.modules,
-						...result.page.sharedZone.modules
-					];
+					const allModules = result.page.moduleBoard.modules;
 					// NOTE: activePartners is global (one module instance per user). If multiple module types
 					// are added in the future, each module's participants should be sourced per-module.
 					const activePartners = result.raw.accessState.activePartners || [];
