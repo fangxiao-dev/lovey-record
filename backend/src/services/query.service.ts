@@ -188,10 +188,14 @@ export async function getModuleAccessState(input: AccessInput) {
       accessStatus: lower(access.accessStatus),
     }));
 
+  const callerAccess = accesses.find((a) => a.userId === input.userId);
+  const callerRole = callerAccess ? lower(callerAccess.role) : 'owner';
+
   return {
     moduleInstanceId: moduleInstance.id,
     sharingStatus: activePartners.length ? 'shared' : 'private',
     ownerUserId: moduleInstance.ownerUserId,
+    callerRole,
     activePartners,
   };
 }
