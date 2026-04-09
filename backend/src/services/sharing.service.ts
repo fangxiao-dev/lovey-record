@@ -38,14 +38,15 @@ export async function validateInviteToken(input: { token: string; userId: string
   if (record.usedAt) throw createSharingError('TOKEN_ALREADY_USED', 'This invite has already been used');
   if (record.expiresAt < new Date()) throw createSharingError('TOKEN_EXPIRED', 'This invite has expired');
   const moduleInstance = await prisma.moduleInstance.findFirst({ where: { id: record.moduleInstanceId } });
-  if (moduleInstance!.ownerUserId === input.userId) throw createSharingError('IS_OWNER', 'You are the owner of this module');
+  if (!moduleInstance) throw createSharingError('INVALID_TOKEN', 'Module not found', 404);
+  if (moduleInstance.ownerUserId === input.userId) throw createSharingError('IS_OWNER', 'You are the owner of this module');
   const existingAccess = await prisma.moduleAccess.findFirst({
     where: { moduleInstanceId: record.moduleInstanceId, userId: input.userId, accessStatus: 'ACTIVE' },
   });
   if (existingAccess) throw createSharingError('ALREADY_MEMBER', 'You are already a member of this module');
   return {
     moduleInstanceId: record.moduleInstanceId,
-    moduleType: moduleInstance!.moduleType,
+    moduleType: moduleInstance.moduleType,
     accessRole: 'VIEWER' as const,
     expiresAt: record.expiresAt.toISOString(),
   };
