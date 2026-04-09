@@ -8,6 +8,7 @@ import {
 } from '../controllers/query.controller';
 import { getCalendarWindowHandler, getPredictionSummaryHandler } from '../controllers/phase5.controller';
 import { getMyModuleInstanceHandler } from '../controllers/moduleInstance.controller';
+import { validateInviteTokenHandler, getModuleMembersHandler } from '../controllers/sharing.controller';
 
 const router = Router();
 
@@ -19,5 +20,7 @@ router.get('/getModuleAccessState', getModuleAccessStateHandler);
 router.get('/getModuleSettings', getModuleSettingsHandler);
 router.get('/getCalendarWindow', getCalendarWindowHandler);
 router.get('/getPredictionSummary', getPredictionSummaryHandler);
+router.get('/validateInviteToken', validateInviteTokenHandler);
+router.get('/getModuleMembers', getModuleMembersHandler);
 
 export default router;
