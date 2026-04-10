@@ -25,6 +25,12 @@
 			}
 		},
 		{
+			"path": "pages/menstrual/report",
+			"style": {
+				"navigationBarTitleText": "周期记录"
+			}
+		},
+		{
 			"path": "pages/menstrual/calendar-grid-showcase",
 			"style": {
 				"navigationBarTitleText": "CalendarGrid Showcase"
