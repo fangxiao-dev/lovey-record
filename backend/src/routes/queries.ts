@@ -3,6 +3,7 @@ import {
   getDayRecordDetailHandler,
   getModuleAccessStateHandler,
   getModuleHomeViewHandler,
+  getModuleReportViewHandler,
   getModuleSettingsHandler,
   getSingleDayPeriodActionHandler,
 } from '../controllers/query.controller';
@@ -17,6 +18,7 @@ const router = Router();
 
 router.get('/getMyModuleInstance', getMyModuleInstanceHandler);
 router.get('/getModuleHomeView', getModuleHomeViewHandler);
+router.get('/getModuleReportView', getModuleReportViewHandler);
 router.get('/getSingleDayPeriodAction', getSingleDayPeriodActionHandler);
 router.get('/getDayRecordDetail', getDayRecordDetailHandler);
 router.get('/getModuleAccessState', getModuleAccessStateHandler);

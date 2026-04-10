@@ -1,6 +1,6 @@
 import { DEFAULT_PERIOD_DURATION_DAYS, DEFAULT_PREDICTION_TERM_DAYS } from '../../src/domain/menstrualDefaults';
 import prisma from '../../src/db/prisma';
-import { getDayRecordDetail, getModuleAccessState, getModuleHomeView, getModuleSettings } from '../../src/services/query.service';
+import { getDayRecordDetail, getModuleAccessState, getModuleHomeView, getModuleReportView, getModuleSettings } from '../../src/services/query.service';
 
 jest.mock('../../src/db/prisma', () => ({
   __esModule: true,
@@ -275,6 +275,48 @@ describe('query.service', () => {
       ]),
     );
     jest.useRealTimers();
+  });
+
+  it('returns module report view as ascending cycle records for the adapter layer', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+      sharingStatus: 'PRIVATE',
+    });
+    (prisma.derivedCycle.findMany as jest.Mock).mockResolvedValue([
+      {
+        startDate: new Date('2026-03-10T00:00:00.000Z'),
+        endDate: new Date('2026-03-14T00:00:00.000Z'),
+        durationDays: 5,
+      },
+      {
+        startDate: new Date('2026-04-12T00:00:00.000Z'),
+        endDate: new Date('2026-04-17T00:00:00.000Z'),
+        durationDays: 6,
+      },
+    ]);
+
+    const result = await getModuleReportView({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+    });
+
+    expect(result).toEqual({
+      moduleInstanceId: 'module-1',
+      records: [
+        {
+          startDate: '2026-03-10',
+          endDate: '2026-03-14',
+          durationDays: 5,
+        },
+        {
+          startDate: '2026-04-12',
+          endDate: '2026-04-17',
+          durationDays: 6,
+        },
+      ],
+    });
   });
 
   it('returns prediction that follows the latest recomputed segment start even when earlier segments still exist', async () => {

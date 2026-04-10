@@ -3,6 +3,7 @@ import {
   getDayRecordDetail,
   getModuleAccessState,
   getModuleHomeView,
+  getModuleReportView,
   getModuleSettings,
   getSingleDayPeriodAction,
 } from '../services/query.service';
@@ -51,6 +52,19 @@ export async function getDayRecordDetailHandler(req: Request, res: Response) {
       moduleInstanceId,
       profileId,
       date,
+      userId: req.user.id,
+    });
+    return res.json({ ok: true, data: result, error: null });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function getModuleReportViewHandler(req: Request, res: Response) {
+  try {
+    const moduleInstanceId = req.query.moduleInstanceId as string;
+    const result = await getModuleReportView({
+      moduleInstanceId,
       userId: req.user.id,
     });
     return res.json({ ok: true, data: result, error: null });

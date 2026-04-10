@@ -2,7 +2,7 @@ import { DEFAULT_PERIOD_DURATION_DAYS, DEFAULT_PREDICTION_TERM_DAYS } from '../.
 import request from 'supertest';
 import app from '../../src/app';
 import { findOrCreateUser } from '../../src/services/auth.service';
-import { getDayRecordDetail, getModuleAccessState, getModuleHomeView, getModuleSettings } from '../../src/services/query.service';
+import { getDayRecordDetail, getModuleAccessState, getModuleHomeView, getModuleReportView, getModuleSettings } from '../../src/services/query.service';
 
 jest.mock('../../src/services/auth.service');
 jest.mock('../../src/services/query.service');
@@ -254,6 +254,51 @@ describe('Queries Integration', () => {
             },
           },
         },
+      },
+      error: null,
+    });
+  });
+
+  it('returns module report view', async () => {
+    (findOrCreateUser as jest.Mock).mockResolvedValue({ id: 'user-1', openid: 'openid-1' });
+    (getModuleReportView as jest.Mock).mockResolvedValue({
+      moduleInstanceId: 'module-1',
+      records: [
+        {
+          startDate: '2026-03-10',
+          endDate: '2026-03-14',
+          durationDays: 5,
+        },
+        {
+          startDate: '2026-04-12',
+          endDate: '2026-04-17',
+          durationDays: 6,
+        },
+      ],
+    });
+
+    const response = await request(app)
+      .get('/api/queries/getModuleReportView')
+      .set('x-wx-openid', 'openid-1')
+      .query({ moduleInstanceId: 'module-1' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        moduleInstanceId: 'module-1',
+        records: [
+          {
+            startDate: '2026-03-10',
+            endDate: '2026-03-14',
+            durationDays: 5,
+          },
+          {
+            startDate: '2026-04-12',
+            endDate: '2026-04-17',
+            durationDays: 6,
+          },
+        ],
       },
       error: null,
     });

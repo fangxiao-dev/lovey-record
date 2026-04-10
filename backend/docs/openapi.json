@@ -603,6 +603,65 @@
         }
       }
     },
+    "/api/queries/getModuleReportView": {
+      "get": {
+        "summary": "Get module report view",
+        "parameters": [
+          {
+            "name": "x-wx-openid",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "moduleInstanceId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report view returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "moduleInstanceId": {
+                      "type": "string"
+                    },
+                    "records": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "startDate": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "endDate": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "durationDays": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/queries/getSingleDayPeriodAction": {
       "get": {
         "summary": "Resolve contextual single-day period action",

@@ -20,6 +20,12 @@ type SingleDayPeriodActionInput = {
   userId: string;
 };
 
+type ReportViewRecord = {
+  startDate: string;
+  endDate: string;
+  durationDays: number;
+};
+
 function toDateOnly(value: string) {
   return new Date(`${value}T00:00:00.000Z`);
 }
@@ -291,6 +297,28 @@ export async function getModuleHomeView(input: AccessInput & { today?: string })
           basedOnCycleCount: usablePrediction.basedOnCycleCount,
         }
       : null,
+  };
+}
+
+export async function getModuleReportView(input: AccessInput) {
+  const moduleInstance = await requireAccess(input.moduleInstanceId, input.userId);
+  const cycles = await prisma.derivedCycle.findMany({
+    where: {
+      moduleInstanceId: input.moduleInstanceId,
+      profileId: moduleInstance.profileId,
+    },
+    orderBy: { startDate: 'asc' },
+  });
+
+  const records: ReportViewRecord[] = cycles.map((cycle) => ({
+    startDate: formatDate(cycle.startDate),
+    endDate: formatDate(cycle.endDate),
+    durationDays: cycle.durationDays,
+  }));
+
+  return {
+    moduleInstanceId: moduleInstance.id,
+    records,
   };
 }
 

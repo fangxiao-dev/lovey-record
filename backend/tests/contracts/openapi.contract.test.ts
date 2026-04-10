@@ -26,6 +26,7 @@ describe('openapi contract', () => {
     expect(spec.paths['/api/commands/revokeModuleAccess'].post).toBeTruthy();
 
     expect(spec.paths['/api/queries/getModuleHomeView'].get).toBeTruthy();
+    expect(spec.paths['/api/queries/getModuleReportView'].get).toBeTruthy();
     expect(spec.paths['/api/queries/getSingleDayPeriodAction'].get).toBeTruthy();
     expect(spec.paths['/api/queries/getDayRecordDetail'].get).toBeTruthy();
     expect(spec.paths['/api/queries/getCalendarWindow'].get).toBeTruthy();
