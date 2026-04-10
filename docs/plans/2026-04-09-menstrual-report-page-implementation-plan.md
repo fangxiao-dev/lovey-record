@@ -421,19 +421,35 @@ git add docs/plans/2026-04-09-menstrual-report-page-implementation-plan.md docs/
 git commit -m "docs: finalize menstrual report page plan notes"
 ```
 
+## Runtime Verification Notes (2026-04-10)
+
+H5 verified against worktree dev servers (backend 3007, frontend 5175):
+
+- Home → report entry tap navigation ✅
+- Weak header (`周期记录`) renders ✅
+- Summary card: two rows, `时长5.0 天`, `波动 -` (single-record placeholder) ✅
+- Trend empty state: `记录 3 次后开始有图` on both tabs ✅
+- History list: seed record renders as first (and only) row with `-` cycle ✅
+- Back navigation returns to home ✅
+
+One spec correction during H5 run: `toContainText('时长 5.0 天')` → `toContainText('时长5.0 天')`.
+Adjacent `<text>` spans in uni-app H5 produce no whitespace in text content; CSS `gap` handles visual spacing.
+
+Mini Program path not H5-testable (requires WeChat runtime). No other surprises.
+
 ## Completion Criteria
 
-- [ ] home page exposes the chosen report entry card
-- [ ] `pages/menstrual/report` is registered in `pages.json`
-- [ ] report page uses a weak header
-- [ ] summary card renders exactly two rows
-- [ ] each summary row keeps average and fluctuation on the same line
-- [ ] average uses one decimal place
-- [ ] fluctuation uses integer-day `-x ~ +y`
-- [ ] fluctuation is based on historical average
-- [ ] trend card supports `Cycle | Duration` switching
-- [ ] trend card hides chart when valid points are below 3
-- [ ] insufficient-data copy is `记录 3 次后开始有图`
-- [ ] history list renders latest first
-- [ ] history list shows `-` for missing cycle
-- [ ] H5 runtime regression passes
+- [x] home page exposes the chosen report entry card
+- [x] `pages/menstrual/report` is registered in `pages.json`
+- [x] report page uses a weak header
+- [x] summary card renders exactly two rows
+- [x] each summary row keeps average and fluctuation on the same line
+- [x] average uses one decimal place
+- [x] fluctuation uses integer-day `-x ~ +y`
+- [x] fluctuation is based on historical average
+- [x] trend card supports `Cycle | Duration` switching
+- [x] trend card hides chart when valid points are below 3
+- [x] insufficient-data copy is `记录 3 次后开始有图`
+- [x] history list renders latest first
+- [x] history list shows `-` for missing cycle
+- [x] H5 runtime regression passes
