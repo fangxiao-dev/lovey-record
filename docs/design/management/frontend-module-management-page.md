@@ -63,7 +63,7 @@ Each module tile should remain visually compact and quiet.
 The tile should show:
 
 - centered module name
-- top-right status dot using the calm green marker tone from node `ZYPE8`
+- top-right status dot using the calm green marker tone from node `ZYPE8`, only when the module is actually shared
 - module icon
 
 The tile should not show:
@@ -120,6 +120,11 @@ The action row should keep a clear hierarchy:
 - `进入` is the primary action
 - `共享` is secondary and uses the calm-green button style sourced from token node `qD9vb`
 - `删除` is destructive but visually contained inside the same card
+
+Interaction rule:
+
+- the `共享` button navigates into the same join/acceptance surface used by other sharing entry points
+- it should not visually toggle the card into a fake `已共享` state before real shared status is returned
 
 Layout rule:
 

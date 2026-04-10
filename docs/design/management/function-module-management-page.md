@@ -74,6 +74,12 @@ For the current menstrual module it must support:
 - starting or continuing sharing flow
 - deleting the module
 
+Current sharing-entry rule:
+
+- the `共享` action opens the same join/acceptance surface used by other sharing entry points
+- the action is a navigation into the sharing flow, not an inline toggle on this page
+- real shared state is still determined by module access state, not by whether the user has opened the sharing surface
+
 ## Quick Setting Flow
 
 The quick setting area is a two-column control surface that keeps the summary cards above it unchanged:
@@ -99,6 +105,7 @@ Rules:
 - private/shared meaning stays understandable without splitting the page into ownership sections
 - selected-module actions operate on the same module instance shown in the top list
 - the summary cards stay horizontal and separate from the custom picker flow
+- the module tile shared marker appears only after real shared state is established
 
 ## Must Avoid
 
