@@ -82,6 +82,15 @@ export function createMenstrualHomeEntryUrl(context = {}) {
 	return `/pages/menstrual/home?${query}`;
 }
 
+export function createJoinPageUrl(context = {}) {
+	const resolved = { ...DEFAULT_MODULE_SHELL_CONTEXT, ...context };
+	const query = 'token=' + encodeURIComponent(resolved.token || '')
+		+ '&openid=' + encodeURIComponent(resolved.openid || '')
+		+ '&apiBaseUrl=' + encodeURIComponent(resolved.apiBaseUrl || '');
+
+	return `/pages/join/index?${query}`;
+}
+
 export function createModuleShellPageModel({
 	context,
 	accessState,
@@ -155,7 +164,8 @@ export function createModuleShellPageModel({
 				helperText: activePartners.length
 					? `当前目标：${activePartners[0].userId}`
 					: `当前目标：${context.partnerUserId}`,
-				action: activePartners.length ? 'revoke' : 'share'
+				action: 'open-join',
+				url: null
 			},
 			primaryAction: {
 				label: '进入',

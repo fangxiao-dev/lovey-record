@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
 	DEFAULT_MODULE_SHELL_CONTEXT,
 	createDemoMenstrualModuleShellPageModel,
+	createJoinPageUrl,
 	createMenstrualHomeEntryUrl,
 	loadMenstrualModuleShellPageModel
 } from '../module-shell-service.js';
@@ -124,6 +125,8 @@ test('loadMenstrualModuleShellPageModel maps a private module into the private z
 		moduleInstanceId: 'seed-home-module'
 	}));
 	assert.equal(result.page.managementCard.secondaryAction.label, '共享');
+	assert.equal(result.page.managementCard.secondaryAction.action, 'open-join');
+	assert.equal(result.page.managementCard.secondaryAction.url, null);
 	assert.equal(result.page.managementCard.destructiveAction.label, '删除');
 });
 
@@ -188,6 +191,8 @@ test('loadMenstrualModuleShellPageModel maps a shared module into the shared zon
 	assert.equal(result.page.managementCard.defaultPeriodDuration.value, '7 天');
 	assert.equal(result.page.managementCard.defaultPredictionTerm.value, '29 天');
 	assert.equal(result.page.managementCard.secondaryAction.label, '共享');
+	assert.equal(result.page.managementCard.secondaryAction.action, 'open-join');
+	assert.equal(result.page.managementCard.secondaryAction.url, null);
 });
 
 test('loadMenstrualModuleShellPageModel requests live access and settings queries with shell context auth', async () => {
@@ -249,6 +254,17 @@ test('createMenstrualHomeEntryUrl preserves the shell live context for navigatio
 			today: '2026-03-29'
 		}),
 		'/pages/menstrual/home?apiBaseUrl=http%3A%2F%2Flocalhost%3A3000%2Fapi&openid=seed-shared-openid&moduleInstanceId=seed-shared-module&profileId=seed-shared-profile&today=2026-03-29'
+	);
+});
+
+test('createJoinPageUrl preserves invite token and live context for navigation into the join page', () => {
+	assert.equal(
+		createJoinPageUrl({
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-shared-openid',
+			token: 'token-123'
+		}),
+		'/pages/join/index?token=token-123&openid=seed-shared-openid&apiBaseUrl=http%3A%2F%2Flocalhost%3A3000%2Fapi'
 	);
 });
 

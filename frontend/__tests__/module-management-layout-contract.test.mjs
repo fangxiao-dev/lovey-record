@@ -93,13 +93,14 @@ test('module management page keeps only the shared-module legend while preservin
 	assert.match(actionRowSource, /\$management-shared-soft:\s*#eaf7f0;/i);
 	assert.match(legendSource, /management-legend-chip__dot--shared/);
 	assert.match(tileSource, /module-tile__status-dot--shared/);
-	assert.match(tileSource, /module-tile__status-dot--private\s*\{\s*background:\s*\$management-shared-green;/);
 	assert.match(tileSource, /module-tile__status-dot--shared\s*\{\s*background:\s*\$management-shared-green;/);
 	assert.match(legendSource, /management-legend-chip__dot--shared\s*\{\s*background:\s*\$management-shared-green;/);
 	assert.match(actionRowSource, /management-action--share/);
 	assert.match(actionRowSource, /management-action__text--share/);
 	assert.match(actionRowSource, /management-action--share\s*\{\s*background:\s*\$management-shared-soft;/i);
 	assert.match(actionRowSource, /management-action__text--share\s*\{\s*color:\s*\$management-shared-green;/i);
+	assert.match(tileSource, /v-if="showSharedDot"/);
+	assert.match(tileSource, /showSharedDot\(\)\s*\{\s*return this\.ownershipTone === 'shared';\s*\}/);
 	assert.match(tileSource, /width:\s*24rpx;\s*height:\s*24rpx;\s*border-radius:\s*999rpx;/);
 	assert.doesNotMatch(legendSource, /management-legend-chip__dot--private/);
 	assert.doesNotMatch(pageSource, /私人模块/);
@@ -108,6 +109,11 @@ test('module management page keeps only the shared-module legend while preservin
 	assert.match(serviceSource, /customLabel:\s*'自定义'/);
 	assert.match(serviceSource, /customPickerOptions:\s*buildNumericOptions\(1,\s*15\)/);
 	assert.match(serviceSource, /customPickerOptions:\s*buildNumericOptions\(20,\s*45\)/);
+	assert.match(pageSource, /createInviteToken/);
+	assert.match(pageSource, /createJoinPageUrl/);
+	assert.match(pageSource, /uni\.navigateTo\(\{\s*url\s*\}\)/);
+	assert.doesNotMatch(pageSource, /persistModuleSharingState/);
+	assert.match(actionRowSource, /@tap="\$emit\('share'\)"/);
 });
 
 test('module management page composes extracted management primitives and removes inline sharing-state text', () => {

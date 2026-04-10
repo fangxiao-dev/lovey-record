@@ -118,15 +118,16 @@
 	import ModuleSettingStrip from './ModuleSettingStrip.vue';
 	import {
 		DEFAULT_MODULE_SHELL_CONTEXT,
+		createJoinPageUrl,
 		createDemoMenstrualModuleShellPageModel,
 		loadMenstrualModuleShellPageModel,
 		resolveModuleContext
 	} from '../../services/menstrual/module-shell-service.js';
 	import {
 		persistModuleSettings,
-		persistModulePredictionTerm,
-		persistModuleSharingState
+		persistModulePredictionTerm
 	} from '../../services/menstrual/module-shell-command-service.js';
+	import { createInviteToken } from '../../services/sharing/sharing-command-service.js';
 	import { mergeH5RouteQuery } from '../../utils/h5-route-query.js';
 
 	export default {
@@ -211,23 +212,6 @@
 
 				card.defaultPeriodDuration.value = `${days} 天`;
 				this.updateDemoSettingRow(card.settingsControl, days);
-			},
-			applyDemoShareToggle() {
-				const card = this.page?.managementCard;
-				const module = this.page?.moduleBoard?.modules?.[0];
-
-				if (!card || !module) return;
-
-				const nextAction = card.secondaryAction.action === 'share' ? 'revoke' : 'share';
-				const isShared = nextAction === 'revoke';
-
-				card.sharingStatus.value = isShared ? '共享中' : '未共享';
-				card.sharingStatus.tone = isShared ? 'shared' : 'private';
-				card.secondaryAction.action = nextAction;
-				card.secondaryAction.helperText = isShared
-					? `当前目标：${this.context.partnerUserId}`
-					: `当前目标：${this.context.partnerUserId}`;
-				module.ownershipTone = isShared ? 'shared' : 'private';
 			},
 			getSettingControlByKey(key) {
 				if (!this.page?.managementCard) return null;
@@ -362,20 +346,29 @@
 				if (this.isMutating || !this.page?.managementCard?.secondaryAction) return;
 
 				if (this.isDemoMode) {
-					this.applyDemoShareToggle();
+					uni.showToast({
+						title: 'Demo 模式暂不支持共享跳转',
+						icon: 'none'
+					});
 					return;
 				}
 
 				this.isMutating = true;
 				this.loadError = '';
 				try {
-					await persistModuleSharingState({
-						context: this.context,
-						action: this.page.managementCard.secondaryAction.action
+					const result = await createInviteToken({
+						apiBaseUrl: this.context.apiBaseUrl,
+						openid: this.context.openid,
+						moduleInstanceId: this.context.moduleInstanceId
 					});
-					await this.retryInitialLoad();
+					const url = createJoinPageUrl({
+						apiBaseUrl: this.context.apiBaseUrl,
+						openid: this.context.openid,
+						token: result?.data?.token
+					});
+					uni.navigateTo({ url });
 				} catch (error) {
-					this.loadError = error instanceof Error ? error.message : '共享状态更新失败';
+					this.loadError = error instanceof Error ? error.message : '共享邀请打开失败';
 				} finally {
 					this.isMutating = false;
 				}
