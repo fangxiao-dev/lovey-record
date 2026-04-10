@@ -36,6 +36,16 @@ test('frontend registers a formal menstrual home route instead of relying only o
   assert.match(pagesJson, /"path":\s*"pages\/menstrual\/home"/);
 });
 
+test('frontend vite config does not pin mini program builds to the h5 output directory', () => {
+  const viteConfig = fs.readFileSync(path.join(frontendRoot, 'vite.config.js'), 'utf8');
+
+  assert.doesNotMatch(
+    viteConfig,
+    /outputDir:\s*path\.resolve\(__dirname,\s*['"]\.\/unpackage\/dist\/dev\/h5['"]\)/,
+    'vite.config.js should not hardcode the h5 output directory for all platforms'
+  );
+});
+
 test('frontend typography tokens prefer IBM Plex Sans', () => {
   const primitives = fs.readFileSync(path.join(frontendRoot, 'styles', 'tokens', 'primitives.scss'), 'utf8');
 

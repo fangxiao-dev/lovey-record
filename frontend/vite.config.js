@@ -4,8 +4,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [uni({
-    inputDir: path.resolve(__dirname, './'),
-    outputDir: path.resolve(__dirname, './unpackage/dist/dev/h5')
+    inputDir: path.resolve(__dirname, './')
   })],
   server: {
     port: 5173,
