@@ -30,26 +30,38 @@
 		</view>
 
 		<view class="selected-date-panel__summary-row">
-			<text v-if="summaryItems.length === 0" class="selected-date-panel__summary-empty">选择属性后将显示在这里</text>
-			<view
-				v-for="item in summaryItems"
-				:key="item.key"
-				class="selected-date-panel__summary-item"
-				:class="`selected-date-panel__summary-item--${item.tone}`"
-			>
-				<image class="selected-date-panel__summary-icon" :src="summaryIcon(item.icon)" mode="aspectFit" />
-				<text class="selected-date-panel__summary-label">{{ item.label }}</text>
+			<view class="selected-date-panel__summary-items">
+				<text v-if="summaryItems.length === 0" class="selected-date-panel__summary-empty">选择属性后将显示在这里</text>
 				<view
-					class="selected-date-panel__summary-badge"
-					:class="`selected-date-panel__summary-badge--${item.tone}`"
+					v-for="item in summaryItems"
+					:key="item.key"
+					class="selected-date-panel__summary-item"
+					:class="`selected-date-panel__summary-item--${item.tone}`"
 				>
-					<text
-						class="selected-date-panel__summary-badge-label"
-						:class="`selected-date-panel__summary-badge-label--${item.tone}`"
+					<image class="selected-date-panel__summary-icon" :src="summaryIcon(item.icon)" mode="aspectFit" />
+					<text class="selected-date-panel__summary-label">{{ item.label }}</text>
+					<view
+						class="selected-date-panel__summary-badge"
+						:class="`selected-date-panel__summary-badge--${item.tone}`"
 					>
-						{{ item.value }}
-					</text>
+						<text
+							class="selected-date-panel__summary-badge-label"
+							:class="`selected-date-panel__summary-badge-label--${item.tone}`"
+						>
+							{{ item.value }}
+						</text>
+					</view>
 				</view>
+			</view>
+			<view
+				class="selected-date-panel__summary-clear-button"
+				:class="{ 'selected-date-panel__summary-clear-button--disabled': summaryItems.length === 0 || busy }"
+				:style="{ pointerEvents: summaryItems.length === 0 || busy ? 'none' : 'auto' }"
+				hover-class="ui-pressable-hover"
+				:hover-stay-time="70"
+				@tap="summaryItems.length > 0 && clearAttributes()"
+			>
+				<text class="selected-date-panel__summary-clear-button-label">清除</text>
 			</view>
 		</view>
 
@@ -86,17 +98,6 @@
 					</view>
 				</view>
 			</view>
-		</view>
-
-		<view
-			v-if="summaryItems.length > 0 && isEditorOpen"
-			class="selected-date-panel__clear-button"
-			:class="{ 'ui-pressable--busy': busy }"
-			hover-class="ui-pressable-hover"
-			:hover-stay-time="70"
-			@tap="clearAttributes"
-		>
-			<text class="selected-date-panel__clear-button-label">清空</text>
 		</view>
 
 		<view v-if="showNote" class="selected-date-panel__note-block">
@@ -169,6 +170,10 @@
 				type: Boolean,
 				default: true
 			},
+			isEditable: {
+				type: Boolean,
+				default: true
+			},
 			busy: {
 				type: Boolean,
 				default: false
@@ -199,26 +204,28 @@
 		},
 		methods: {
 			toggleEditor() {
-				if (this.busy) return;
+				if (this.busy || !this.isEditable) return;
 				this.isEditorOpen = !this.isEditorOpen;
 				this.$emit('toggle-editor', this.isEditorOpen);
 			},
 			togglePeriod() {
-				if (this.busy) return;
+				if (this.busy || !this.isEditable) return;
 				this.$emit('toggle-period', !this.isPeriodChipSelected);
 			},
 			toggleAttributeOption(rowKey, optionKey) {
-				if (this.busy) return;
+				if (this.busy || !this.isEditable) return;
 				this.$emit('toggle-attribute-option', { rowKey, optionKey });
 			},
 			clearAttributes() {
-				if (this.busy) return;
+				if (this.busy || !this.isEditable) return;
 				this.$emit('clear-attributes');
 			},
 			handleNoteInput(event) {
+				if (!this.isEditable) return;
 				this.noteDraft = event?.detail?.value || '';
 			},
 			commitNote(event) {
+				if (!this.isEditable) return;
 				const nextValue = event?.detail?.value ?? this.noteDraft;
 				this.noteDraft = nextValue;
 				if (nextValue === this.note) return;
@@ -295,11 +302,19 @@
 	.selected-date-panel__summary-row {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: space-between;
 		gap: 12rpx;
 		padding: 12rpx;
 		border-radius: 32rpx;
 		background: #faf3eb;
+	}
+
+	.selected-date-panel__summary-items {
+		display: flex;
+		align-items: center;
+		gap: 12rpx;
+		flex: 1;
+		min-width: 0;
 	}
 
 	.selected-date-panel__summary-empty {
@@ -307,8 +322,8 @@
 		line-height: 1;
 		color: $text-muted;
 		flex: 1;
-		text-align: center;
-		padding: 14rpx 0;
+		text-align: left;
+		padding: 14rpx 0 14rpx 16rpx;
 	}
 
 	.selected-date-panel__summary-item {
@@ -585,20 +600,28 @@
 		color: #d97f6c;
 	}
 
-	.selected-date-panel__clear-button {
-		display: flex;
+	.selected-date-panel__summary-clear-button {
+		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		min-height: 72rpx;
-		padding: 16rpx 24rpx;
-		border-radius: 24rpx;
-		background: $bg-subtle;
+		min-height: 60rpx;
+		padding: 14rpx 20rpx;
+		margin-right: 12rpx;
+		border-radius: 999rpx;
+		background: #faf7f2;
+		flex-shrink: 0;
+		cursor: pointer;
 	}
 
-	.selected-date-panel__clear-button-label {
-		font-size: 28rpx;
+	.selected-date-panel__summary-clear-button--disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.selected-date-panel__summary-clear-button-label {
+		font-size: 22rpx;
 		line-height: 1;
-		font-weight: $font-weight-strong;
+		font-weight: $font-weight-medium;
 		color: $text-secondary;
 		cursor: pointer;
 	}
@@ -628,7 +651,7 @@
 
 	.selected-date-panel__note-input {
 		width: 100%;
-		height: 154rpx;
+		height: 104rpx;
 		font-size: 24rpx;
 		line-height: 1.6;
 		color: $text-primary;

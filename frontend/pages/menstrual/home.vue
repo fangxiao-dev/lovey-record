@@ -10,9 +10,6 @@
 			<view v-if="userRole === 'viewer'" class="menstrual-home__readonly-badge">
 				<text class="menstrual-home__readonly-label">只读</text>
 			</view>
-			<button v-if="userRole === 'owner'" open-type="share" class="menstrual-home__share-btn">邀请</button>
-			<!-- DEV ONLY: 生成 token 供手动测试 join 流程，上线前删除 -->
-			<view v-if="userRole === 'owner'" class="menstrual-home__share-btn menstrual-home__share-btn--debug" @tap="handleDebugCopyToken">🔗</view>
 			<view v-if="userRole === 'viewer'" class="menstrual-home__leave-btn" @tap="handleLeaveTap">
 				<text>退出共享</text>
 			</view>
@@ -31,6 +28,24 @@
 					<text class="menstrual-home__hero-info-value">{{ page.heroCard.nextFrame.value }}</text>
 				</view>
 			</view>
+		</view>
+
+		<view
+			v-if="page?.reportEntryCard"
+			class="menstrual-home__report-entry"
+			hover-class="ui-pressable-hover"
+			:hover-stay-time="70"
+			@tap="handleReportEntryTap"
+		>
+			<view class="menstrual-home__report-entry-copy">
+				<text class="menstrual-home__report-entry-title">{{ page.reportEntryCard.title }}</text>
+				<text class="menstrual-home__report-entry-description">{{ page.reportEntryCard.description }}</text>
+			</view>
+			<image
+				class="menstrual-home__report-entry-icon"
+				:src="page.reportEntryCard.iconUrl"
+				mode="aspectFit"
+			/>
 		</view>
 
 		<view v-if="page" class="menstrual-home__content">
@@ -107,29 +122,13 @@
 				:initial-period-marked="panelMode === 'batch' ? batchDraft.isPeriod : page.selectedDatePanel.initialPeriodMarked"
 				:initial-editor-open="panelMode === 'batch' ? false : page.selectedDatePanel.initialEditorOpen"
 				:show-note="panelMode !== 'batch'"
+				:is-editable="panelMode === 'batch' ? true : page.selectedDatePanel.isEditable"
 				:busy="isMutating"
 				@toggle-attribute-option="handleToggleAttributeOption"
 				@clear-attributes="handleClearAttributes"
 				@toggle-period="handleTogglePeriod"
 				@note-change="handleNoteChange"
 			/>
-			<view
-				v-if="page?.reportEntryCard"
-				class="menstrual-home__report-entry"
-				hover-class="ui-pressable-hover"
-				:hover-stay-time="70"
-				@tap="handleReportEntryTap"
-			>
-				<view class="menstrual-home__report-entry-copy">
-					<text class="menstrual-home__report-entry-title">{{ page.reportEntryCard.title }}</text>
-					<text class="menstrual-home__report-entry-description">{{ page.reportEntryCard.description }}</text>
-				</view>
-				<image
-					class="menstrual-home__report-entry-icon"
-					:src="page.reportEntryCard.iconUrl"
-					mode="aspectFit"
-				/>
-			</view>
 		</view>
 
 		<view v-else class="menstrual-home__state-card">
@@ -190,6 +189,7 @@
 	import { resolveRefreshPlan } from '../../services/menstrual/home-refresh-scope.js';
 	import { mergeH5RouteQuery } from '../../utils/h5-route-query.js';
 	import { createInviteToken, leaveModule } from '../../services/sharing/sharing-command-service.js';
+	import { createJoinPageUrl } from '../../services/menstrual/module-shell-service.js';
 
 	export default {
 		name: 'MenstrualHomePage',
@@ -264,8 +264,7 @@
 				return createSummaryItems(this.batchDraft);
 			}
 		},
-		// 小程序分享钩子：用户点击 open-type="share" 按钮时触发
-		// 返回 Promise 以支持异步生成 token（基础库 2.12.0+）
+		// 小程序原生分享仍可通过右上角菜单触发，这里保持同一个 join 页目标
 		onShareAppMessage() {
 			return createInviteToken({
 				apiBaseUrl: this.contractContext.apiBaseUrl,
@@ -986,25 +985,22 @@
 			},
 			// handleShareTap 已移除：小程序分享必须通过 onShareAppMessage 钩子 + open-type="share" 按钮触发
 			// DEV ONLY: 生成 token 并弹窗显示，用于在未认证环境手动测试 join 流程
-			async handleDebugCopyToken() {
+			async handleOpenJoinPage() {
 				try {
 					const result = await createInviteToken({
 						apiBaseUrl: this.contractContext.apiBaseUrl,
 						openid: this.contractContext.openid,
 						moduleInstanceId: this.contractContext.moduleInstanceId,
 					});
-					const token = result?.data?.token;
-					const joinPath = `/pages/join/index?token=${token}&openid=${this.contractContext.openid}`;
-					uni.showModal({
-						title: '[DEV] Join 页测试链接',
-						content: joinPath,
-						showCancel: false,
-						confirmText: '好的',
+					const url = createJoinPageUrl({
+						apiBaseUrl: this.contractContext.apiBaseUrl,
+						openid: this.contractContext.openid,
+						token: result?.data?.token
 					});
-					console.log('[DEV] join path:', joinPath);
+					uni.navigateTo({ url });
 				} catch (err) {
-					console.error('[handleDebugCopyToken]', err);
-					uni.showToast({ title: '生成失败', icon: 'none' });
+					console.error('[handleOpenJoinPage]', err);
+					uni.showToast({ title: '打开共享失败', icon: 'none' });
 				}
 			},
 			async handleLeaveTap() {
@@ -1309,19 +1305,6 @@
 		font-size: 12px;
 		color: #92400e;
 		font-weight: 600;
-	}
-
-	.menstrual-home__share-btn {
-		padding: 4px 12px;
-		background: #faf7f2;
-		border: 1px solid #d1d5db;
-		border-radius: 8px;
-		font-size: 13px;
-		color: #374151;
-		// 重置 button 默认样式
-		line-height: normal;
-		margin: 0;
-		&::after { border: none; }
 	}
 
 	.menstrual-home__leave-btn {
