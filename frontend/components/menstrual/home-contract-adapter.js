@@ -797,6 +797,12 @@ export function createMenstrualHomePageModel({
 			: buildCalendarCard(homeView, moduleSettings, dayDetail, activeDate, resolvedFocusDate, viewMode, today),
 		legend: createCalendarLegendItems(),
 		selectedDatePanel: createSelectedDatePanel(homeView, dayDetail, today, singleDayPeriodAction),
+		reportEntryCard: {
+			title: '查看周期记录',
+			description: '看平均周期、波动和历史记录',
+			iconUrl: '/static/menstrual/report.svg',
+			targetUrl: '/pages/menstrual/report'
+		},
 		selectedDateKey: activeDate,
 		todayKey: today
 	};

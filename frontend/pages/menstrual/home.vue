@@ -113,6 +113,23 @@
 				@toggle-period="handleTogglePeriod"
 				@note-change="handleNoteChange"
 			/>
+			<view
+				v-if="page?.reportEntryCard"
+				class="menstrual-home__report-entry"
+				hover-class="ui-pressable-hover"
+				:hover-stay-time="70"
+				@tap="handleReportEntryTap"
+			>
+				<view class="menstrual-home__report-entry-copy">
+					<text class="menstrual-home__report-entry-title">{{ page.reportEntryCard.title }}</text>
+					<text class="menstrual-home__report-entry-description">{{ page.reportEntryCard.description }}</text>
+				</view>
+				<image
+					class="menstrual-home__report-entry-icon"
+					:src="page.reportEntryCard.iconUrl"
+					mode="aspectFit"
+				/>
+			</view>
 		</view>
 
 		<view v-else class="menstrual-home__state-card">
@@ -874,6 +891,17 @@
 				if (!this.selectedBatchKeys.length || this.isMutating) return;
 				return this.applyBatchAction();
 			},
+			handleReportEntryTap() {
+				if (!this.page?.reportEntryCard?.targetUrl) return;
+				const query = [
+					`apiBaseUrl=${encodeURIComponent(this.contractContext.apiBaseUrl)}`,
+					`openid=${encodeURIComponent(this.contractContext.openid)}`,
+					`moduleInstanceId=${encodeURIComponent(this.contractContext.moduleInstanceId)}`
+				].join('&');
+				uni.navigateTo({
+					url: `${this.page.reportEntryCard.targetUrl}?${query}`
+				});
+			},
 			applyBatchAction() {
 				if (!this.selectedBatchKeys.length) return;
 				const ranges = this.buildBatchRanges(this.selectedBatchKeys);
@@ -1211,6 +1239,43 @@
 		font-size: 22rpx;
 		line-height: 1.6;
 		color: $text-secondary;
+	}
+
+	.menstrual-home__report-entry {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 20rpx;
+		padding: 24rpx;
+		border-radius: 28rpx;
+		background: #fffdf9;
+		border: 2rpx solid #ece1d5;
+	}
+
+	.menstrual-home__report-entry-copy {
+		display: flex;
+		flex-direction: column;
+		gap: 8rpx;
+		min-width: 0;
+	}
+
+	.menstrual-home__report-entry-title {
+		font-size: 26rpx;
+		line-height: 1.2;
+		font-weight: $font-weight-medium;
+		color: $text-primary;
+	}
+
+	.menstrual-home__report-entry-description {
+		font-size: 22rpx;
+		line-height: 1.5;
+		color: $text-muted;
+	}
+
+	.menstrual-home__report-entry-icon {
+		width: 88rpx;
+		height: 88rpx;
+		flex-shrink: 0;
 	}
 
 	.menstrual-home__state-action {
