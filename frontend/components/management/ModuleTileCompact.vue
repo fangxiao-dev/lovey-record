@@ -6,7 +6,7 @@
 		:hover-stay-time="70"
 		@tap="$emit('select')"
 	>
-		<view class="module-tile__status-dot" :class="`module-tile__status-dot--${ownershipTone}`"></view>
+		<view v-if="showSharedDot" class="module-tile__status-dot" :class="`module-tile__status-dot--${ownershipTone}`"></view>
 		<image class="module-tile__icon" :src="iconSrc" mode="aspectFit" />
 		<text class="module-tile__title">{{ title }}</text>
 	</view>
@@ -32,6 +32,11 @@
 			selected: {
 				type: Boolean,
 				default: false
+			}
+		},
+		computed: {
+			showSharedDot() {
+				return this.ownershipTone === 'shared';
 			}
 		}
 	};
@@ -69,10 +74,6 @@
 		width: 24rpx;
 		height: 24rpx;
 		border-radius: 999rpx;
-	}
-
-	.module-tile__status-dot--private {
-		background: $management-shared-green;
 	}
 
 	.module-tile__status-dot--shared {
