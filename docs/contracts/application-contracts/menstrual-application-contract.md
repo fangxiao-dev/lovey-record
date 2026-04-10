@@ -86,6 +86,7 @@ The contract is expressed in application-service terms:
 ## Query Directions
 
 - `getModuleHomeView`
+- `getModuleReportView`
 - `getDayRecordDetail`
 - `getCalendarWindow`
 - `getPredictionSummary`
@@ -1134,6 +1135,49 @@ Suggested response shape:
   }
 }
 ```
+
+### `getModuleReportView`
+
+Returns:
+
+- module instance identity
+- report history records sorted ASC for calculation
+- exact historical start/end/duration facts only
+
+Suggested input:
+
+```json
+{
+  "moduleInstanceId": "mi_123"
+}
+```
+
+Suggested response shape:
+
+```json
+{
+  "moduleInstanceId": "mi_123",
+  "records": [
+    {
+      "startDate": "2026-03-10",
+      "endDate": "2026-03-14",
+      "durationDays": 5
+    },
+    {
+      "startDate": "2026-04-12",
+      "endDate": "2026-04-17",
+      "durationDays": 6
+    }
+  ]
+}
+```
+
+Rules:
+
+- records are returned in `startDate ASC`
+- response contains historical facts only
+- cycle length is intentionally omitted from the backend payload and derived by the frontend report adapter from adjacent `startDate` values
+- no prediction, recommendation, or settings guidance is included in this read model
 
 ### `getDayRecordDetail`
 
