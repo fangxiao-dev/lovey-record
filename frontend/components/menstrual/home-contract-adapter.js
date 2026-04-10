@@ -530,6 +530,7 @@ function createSelectedDatePanel(homeView, dayDetail, today, singleDayPeriodActi
 	));
 	const date = dayRecord?.date || today;
 	const periodChip = singleDayPeriodAction?.chip || deriveSingleDayPeriodChip({ homeView, dayRecord });
+	const isEditable = date <= today;
 
 	return {
 		title: formatHumanDate(date),
@@ -538,6 +539,7 @@ function createSelectedDatePanel(homeView, dayDetail, today, singleDayPeriodActi
 		periodChipSelected: periodChip.selected,
 		initialPeriodMarked: Boolean(dayRecord?.isPeriod),
 		initialEditorOpen: false,
+		isEditable,
 		note: dayRecord?.note || '',
 		summaryItems,
 		attributeRows: createOptionRows(dayRecord)
