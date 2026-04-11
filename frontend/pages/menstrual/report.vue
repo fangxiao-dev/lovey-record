@@ -9,7 +9,6 @@
 			>
 				<text class="report-page__back-label">返回</text>
 			</view>
-			<text class="report-page__title">周期记录</text>
 		</view>
 
 		<view v-if="loadError" class="report-page__state-card ui-card u-page-section">

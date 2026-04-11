@@ -1,5 +1,6 @@
 <template>
 	<view class="report-summary-card ui-card">
+		<text class="report-summary-card__title">摘要（平均值）</text>
 		<view
 			v-for="row in rows"
 			:key="row.key"
@@ -31,6 +32,16 @@
 		display: flex;
 		flex-direction: column;
 		padding: 24rpx;
+	}
+
+	.report-summary-card__title {
+		display: block;
+		text-align: center;
+		font-size: 22rpx;
+		color: $text-muted;
+		padding-bottom: 12rpx;
+		border-bottom: 2rpx solid #f1e7dc;
+		margin-bottom: 4rpx;
 	}
 
 	.report-summary-card__row {

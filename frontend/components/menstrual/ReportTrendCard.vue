@@ -10,15 +10,33 @@
 			/>
 		</view>
 
-		<view v-if="activeSeries.hasMinimumPoints" class="report-trend-card__chart">
-			<view class="report-trend-card__track">
-				<view
-					v-for="point in activeSeries.points"
-					:key="point.key"
-					class="report-trend-card__point-column"
-				>
-					<view class="report-trend-card__point" />
-					<text class="report-trend-card__point-label">{{ point.label }}</text>
+		<view v-if="activeSeries.hasMinimumPoints" class="report-trend-card__chart-wrapper">
+			<view class="report-trend-card__y-axis">
+				<text class="report-trend-card__y-label">{{ yAxisInfo.max }}</text>
+				<text class="report-trend-card__y-label">{{ yAxisInfo.mid }}</text>
+				<text class="report-trend-card__y-label">{{ yAxisInfo.min }}</text>
+			</view>
+			<view class="report-trend-card__chart-body">
+				<view class="report-trend-card__track">
+					<view
+						class="report-trend-card__baseline"
+						:style="{ bottom: (16 + averageBarHeight) + 'rpx' }"
+					/>
+					<view
+						v-for="point in normalizedPoints"
+						:key="point.key"
+						class="report-trend-card__point-column"
+					>
+						<view class="report-trend-card__bar" :style="{ height: point.barHeight + 'rpx' }" />
+						<view class="report-trend-card__point" />
+					</view>
+				</view>
+				<view class="report-trend-card__x-axis">
+					<text
+						v-for="point in normalizedPoints"
+						:key="point.key"
+						class="report-trend-card__point-label"
+					>{{ point.label }}</text>
 				</view>
 			</view>
 		</view>
@@ -58,12 +76,39 @@
 		computed: {
 			trendOptions() {
 				return [
-					{ key: 'cycle', label: 'Cycle' },
-					{ key: 'duration', label: 'Duration' }
+					{ key: 'cycle', label: '周期' },
+					{ key: 'duration', label: '时长' }
 				];
 			},
 			activeSeries() {
 				return this.activeKey === 'duration' ? this.durationSeries : this.cycleSeries;
+			},
+			yAxisInfo() {
+				const points = this.activeSeries.points;
+				if (!points.length) return { max: 0, mid: 0, min: 0 };
+				const values = points.map(p => p.value);
+				const min = Math.min(...values);
+				const max = Math.max(...values);
+				const mid = Math.round((min + max) / 2);
+				return { max, mid, min };
+			},
+			normalizedPoints() {
+				const { min, max } = this.yAxisInfo;
+				const range = max - min;
+				return this.activeSeries.points.map(point => ({
+					...point,
+					barHeight: range > 0
+						? Math.round(((point.value - min) / range) * 160 + 20)
+						: 100
+				}));
+			},
+			averageBarHeight() {
+				const points = this.activeSeries.points;
+				if (!points.length) return 100;
+				const avg = points.reduce((sum, p) => sum + p.value, 0) / points.length;
+				const { min, max } = this.yAxisInfo;
+				const range = max - min;
+				return range > 0 ? Math.round(((avg - min) / range) * 160 + 20) : 100;
 			}
 		}
 	};
@@ -93,19 +138,54 @@
 		width: 280rpx;
 	}
 
-	.report-trend-card__chart {
-		min-height: 240rpx;
-		padding: 16rpx 8rpx 0;
+	.report-trend-card__chart-wrapper {
+		display: flex;
+		gap: 8rpx;
+		padding-top: 8rpx;
+	}
+
+	.report-trend-card__y-axis {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		align-items: flex-end;
+		width: 44rpx;
+		height: 200rpx;
+		flex-shrink: 0;
+	}
+
+	.report-trend-card__y-label {
+		font-size: 18rpx;
+		color: $text-muted;
+		line-height: 1;
+	}
+
+	.report-trend-card__chart-body {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 8rpx;
 	}
 
 	.report-trend-card__track {
+		position: relative;
 		display: flex;
 		align-items: flex-end;
-		justify-content: space-between;
-		gap: 12rpx;
-		min-height: 220rpx;
-		padding-bottom: 8rpx;
+		justify-content: space-around;
+		gap: 8rpx;
+		height: 200rpx;
+		border-left: 2rpx solid #f1e7dc;
 		border-bottom: 2rpx solid #f1e7dc;
+		padding-left: 8rpx;
+	}
+
+	.report-trend-card__baseline {
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 2rpx;
+		background: rgba(217, 132, 119, 0.5);
+		pointer-events: none;
 	}
 
 	.report-trend-card__point-column {
@@ -114,7 +194,13 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: flex-end;
-		gap: 14rpx;
+		max-width: 60rpx;
+	}
+
+	.report-trend-card__bar {
+		width: 16rpx;
+		background: rgba(217, 132, 119, 0.22);
+		border-radius: 4rpx 4rpx 0 0;
 	}
 
 	.report-trend-card__point {
@@ -122,12 +208,22 @@
 		height: 16rpx;
 		border-radius: 999rpx;
 		background: #d98477;
-		box-shadow: 0 -84rpx 0 0 rgba(217, 132, 119, 0.22);
+		flex-shrink: 0;
+	}
+
+	.report-trend-card__x-axis {
+		display: flex;
+		justify-content: space-around;
+		gap: 8rpx;
+		padding-left: 8rpx;
 	}
 
 	.report-trend-card__point-label {
+		flex: 1;
 		font-size: 18rpx;
 		color: $text-muted;
+		text-align: center;
+		max-width: 60rpx;
 	}
 
 	.report-trend-card__empty {

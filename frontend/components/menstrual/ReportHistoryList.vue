@@ -1,10 +1,15 @@
 <template>
 	<view class="report-history-list ui-card">
 		<view class="report-history-list__header">
-			<text class="report-history-list__header-cell">开始</text>
-			<text class="report-history-list__header-cell">结束</text>
-			<text class="report-history-list__header-cell">时长</text>
-			<text class="report-history-list__header-cell">周期</text>
+			<text class="report-history-list__year-cell">年份</text>
+			<view class="report-history-list__dates-group">
+				<text class="report-history-list__header-cell">开始</text>
+				<text class="report-history-list__header-cell">结束</text>
+			</view>
+			<view class="report-history-list__metrics-group">
+				<text class="report-history-list__header-cell">周期</text>
+				<text class="report-history-list__header-cell">时长</text>
+			</view>
 		</view>
 
 		<view
@@ -12,10 +17,15 @@
 			:key="row.key"
 			class="report-history-list__row"
 		>
-			<text class="report-history-list__cell">{{ row.startLabel }}</text>
-			<text class="report-history-list__cell">{{ row.endLabel }}</text>
-			<text class="report-history-list__cell">{{ row.durationLabel }}</text>
-			<text class="report-history-list__cell">{{ row.cycleLabel || '-' }}</text>
+			<text class="report-history-list__year-cell">{{ row.yearLabel }}</text>
+			<view class="report-history-list__dates-group">
+				<text class="report-history-list__cell">{{ row.startLabel }}</text>
+				<text class="report-history-list__cell">{{ row.endLabel }}</text>
+			</view>
+			<view class="report-history-list__metrics-group">
+				<text class="report-history-list__cell">{{ row.cycleLabel || '-' }}</text>
+				<text class="report-history-list__cell">{{ row.durationLabel }}</text>
+			</view>
 		</view>
 	</view>
 </template>
@@ -41,10 +51,9 @@
 
 	.report-history-list__header,
 	.report-history-list__row {
-		display: grid;
-		grid-template-columns: 1fr 1fr 96rpx 96rpx;
-		column-gap: 12rpx;
+		display: flex;
 		align-items: center;
+		gap: 24rpx;
 	}
 
 	.report-history-list__header {
@@ -54,6 +63,37 @@
 	.report-history-list__row {
 		padding: 16rpx 0;
 		border-top: 2rpx solid #f4ece2;
+	}
+
+	.report-history-list__year-cell {
+		flex-shrink: 0;
+		width: 56rpx;
+		font-size: 20rpx;
+		color: $text-muted;
+	}
+
+	.report-history-list__dates-group {
+		flex-shrink: 0;
+		display: flex;
+		gap: 12rpx;
+	}
+
+	.report-history-list__dates-group > .report-history-list__header-cell,
+	.report-history-list__dates-group > .report-history-list__cell {
+		width: 76rpx;
+	}
+
+	.report-history-list__metrics-group {
+		margin-left: auto;
+		flex-shrink: 0;
+		display: flex;
+		gap: 12rpx;
+	}
+
+	.report-history-list__metrics-group > .report-history-list__header-cell,
+	.report-history-list__metrics-group > .report-history-list__cell {
+		width: 56rpx;
+		text-align: right;
 	}
 
 	.report-history-list__header-cell {

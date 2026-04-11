@@ -31,8 +31,11 @@ function formatMonthDay(dateString) {
 
 function formatHistoryDate(dateString) {
 	const date = toDateOnly(dateString);
-	const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.getUTCMonth()];
-	return `${month} ${String(date.getUTCDate()).padStart(2, '0')}`;
+	return `${String(date.getUTCMonth() + 1).padStart(2, '0')}.${String(date.getUTCDate()).padStart(2, '0')}`;
+}
+
+function formatHistoryYear(dateString) {
+	return String(toDateOnly(dateString).getUTCFullYear());
 }
 
 function normalizeRecords(records) {
@@ -84,7 +87,8 @@ function createTrendSeries(records, metricKey) {
 			date: record.startDate,
 			value: record[metricKey],
 			label: formatMonthDay(record.startDate)
-		}));
+		}))
+		.slice(-7);
 
 	return {
 		points,
@@ -97,6 +101,7 @@ function createHistoryRows(records) {
 		.sort((left, right) => right.startDate.localeCompare(left.startDate))
 		.map((record) => ({
 			key: record.startDate,
+			yearLabel: formatHistoryYear(record.startDate),
 			startLabel: formatHistoryDate(record.startDate),
 			endLabel: formatHistoryDate(record.endDate),
 			durationLabel: `${record.durationDays}d`,
