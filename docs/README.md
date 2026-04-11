@@ -41,19 +41,15 @@ Legacy reference repo (only reference when it comes to frontend code, not for UI
 - `docs/checklists/frontend-h5-live-regression.md` - use when you need the fixed H5 Playwright regression entry, local ports, or one-click startup flow.
 - `docs/checklists/playwright-mcp-browser-scenarios.md` - use when you need the AI-run browser scenario supplement for local H5 checks.
 
-## Automated Audits
+## Document Health
 
-Two automated systems help keep documentation correct:
+Check for orphaned or missing documents by running:
 
-1. **Document Audit** — Structural health (orphaned docs, missing files, stale commands)
-   - Report: `generated/doc-audit/latest-report.md`
-   - Run locally: `python scripts/run_doc_audit.py --mode daily`
+```bash
+bash docs/scripts/scan-orphans.sh
+```
 
-2. **Content Correctness Audit** — Semantic health (plan status, rule completeness, terminology consistency)
-   - Report: `generated/content-audit/latest-recommendations.md`
-   - Runs daily at 09:15 AM via Codex agent (Windows Task Scheduler)
-   - Policy: `governance/content-audit-policy.md`
-   - Data collection: `python scripts/content_audit/data_collector.py --repo-root .`
+This scans the docs/ directory for files not reachable from any entrypoint (AGENTS.md, README.md, docs/README.md, etc).
 
 ## What Is Here
 
@@ -63,9 +59,7 @@ Two automated systems help keep documentation correct:
 - `contracts/`: long-lived product and engineering contracts such as use cases, domain models, and application contracts
 - `plans/`: temporary execution plans, implementation sequencing, and handoff notes
 - `design-drafts/`: preserved visual draft artifacts that still inform the current mainline
-- `governance/`: durable rules for documentation health and release readiness — see [`governance/doc-audit-policy.md`](D:/CodeSpace/hbuilder-projects/lovey-record/docs/governance/doc-audit-policy.md), [`governance/release-gate.md`](D:/CodeSpace/hbuilder-projects/lovey-record/docs/governance/release-gate.md), and [`governance/content-audit-policy.md`](D:/CodeSpace/hbuilder-projects/lovey-record/docs/governance/content-audit-policy.md)
-- `generated/doc-audit/`: machine-generated structural audit reports and suggested patches; do not edit by hand
-- `generated/content-audit/`: machine-generated content correctness recommendations (plan status, rule completeness, terminology consistency); do not edit by hand
+- `governance/`: durable rules for documentation health and release readiness — see [`governance/release-gate.md`](D:/CodeSpace/hbuilder-projects/lovey-record/docs/governance/release-gate.md)
 - top-level markdown files: product, design, and model notes that continue to shape implementation decisions
 
 ## Important Rule

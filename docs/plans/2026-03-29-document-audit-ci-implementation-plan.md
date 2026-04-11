@@ -1,6 +1,6 @@
 # Document Audit CI Implementation Plan
 
-> **Status:** COMPLETED
+> **Status:** ARCHIVED — doc-audit system was removed in favor of simple manual `bash docs/scripts/scan-orphans.sh` script
 
 > **For Codex:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 

@@ -53,10 +53,3 @@ test('frontend typography tokens prefer IBM Plex Sans', () => {
   assert.match(primitives, /\$font-family-emphasis:\s*"IBM Plex Sans"/);
 });
 
-test('github workflow enumerates frontend node tests instead of passing a quoted glob literal', () => {
-  const workflow = fs.readFileSync(path.join(repoRoot, '.github', 'workflows', 'doc-audit.yml'), 'utf8');
-
-  assert.doesNotMatch(workflow, /node --test 'frontend\/\*\*\/__tests__\/\*\.test\.mjs'/);
-  assert.match(workflow, /find frontend/);
-  assert.match(workflow, /node --test/);
-});

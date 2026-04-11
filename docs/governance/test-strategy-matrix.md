@@ -62,7 +62,6 @@ Typical coverage:
 | Backend | API / middleware | P2 | Both | On-demand hygiene or regression diagnosis | `backend/tests/middleware/auth.middleware.test.ts`, `backend/tests/middleware/errorHandler.middleware.test.ts` |
 | Backend | API / unit | P2 | Both | On-demand hygiene or seed scenario checks | `backend/tests/unit/seedScenarios.test.ts` |
 | Public/shared | API / browser hybrid | P0 | Local-only | Local diagnostic regression for routing/auth behavior | `tests/cloud-request-verification.spec.mjs` |
-| Public/shared | Docs / audit | P2 | Both | GitHub path-based public lane or local on-demand audit run | `tests/doc_audit/test_classifier.py`, `tests/doc_audit/test_entrypoints.py`, `tests/doc_audit/test_graph.py`, `tests/doc_audit/test_init_mode.py`, `tests/doc_audit/test_reporting.py`, `tests/doc_audit/test_verification.py` |
 | Public/shared | Browser scenario supplement | P0 | Local-only | AI-run Playwright MCP supplement after automated gate | `docs/checklists/playwright-mcp-browser-scenarios.md` |
 | Public/shared | Manual browser visual | P0 | Local-only | After automated gate, before release signoff | `docs/checklists/frontend-h5-live-regression.md`, `docs/checklists/module-space-sharing-manual-qa.md` |
 
@@ -71,7 +70,6 @@ Typical coverage:
 - GitHub Actions currently covers:
   - P0 backend tests on every push / pull request
   - P0 frontend menstrual tests on every push / pull request
-  - P2 public doc-audit tests on path-based docs / scripts / shared-tooling changes
   - P1 backend and frontend broad unit / contract tests on manual `workflow_dispatch` with `tier: p1`
 - Local release gate currently covers:
   - backend `phase5.service.test.ts`
