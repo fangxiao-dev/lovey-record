@@ -1,5 +1,7 @@
 # Backend Period Model Alignment Plan
 
+> **Status:** COMPLETED
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Keep the backend documentation surface aligned to the new period model and remove legacy menstrual terminology from active docs.

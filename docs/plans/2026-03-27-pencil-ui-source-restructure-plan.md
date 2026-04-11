@@ -1,5 +1,7 @@
 # 2026-03-27 Pencil UI Source Restructure Plan
 
+> **Status:** COMPLETED
+
 ## Summary
 
 This plan covers only the frontend UI design source restructuring for the active Pencil workflow.

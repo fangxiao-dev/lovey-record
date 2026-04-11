@@ -1,5 +1,7 @@
 # Document Audit CI Implementation Plan
 
+> **Status:** COMPLETED
+
 > **For Codex:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Build a review-first document-audit CI that can map the routed markdown graph, classify findings, run lightweight verification for uncertain claims, and emit one report plus one suggested patch.

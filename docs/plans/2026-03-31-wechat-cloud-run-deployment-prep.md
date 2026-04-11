@@ -1,5 +1,7 @@
 # WeChat Cloud Run Deployment Prep
 
+> **Status:** COMPLETED
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Prepare the codebase for production deployment on WeChat Cloud Run + managed MySQL, addressing all code-level gaps identified in the deployment checklist.

@@ -1,5 +1,7 @@
 # Selected Date Panel — Pencil Update Plan
 
+> **Status:** COMPLETED
+
 ## Purpose
 
 This plan guides the Pencil design update for the `SelectedDatePanel` to match the new day-recording interaction contract.

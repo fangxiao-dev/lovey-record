@@ -1,5 +1,7 @@
 # Token Component Alignment Implementation Plan
 
+> **Status:** COMPLETED
+
 > **For Codex:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Align the current Pencil token draft with the real component/page baseline so the menstrual module can move into uni-app with a minimum viable, stable semantic token layer.

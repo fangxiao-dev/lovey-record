@@ -1,5 +1,7 @@
 # Three-Week Home Demo Implementation Plan
 
+> **Status:** COMPLETED
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Rebuild the menstrual frontend demo around the Pencil three-week home card so runtime validation follows the current design source of truth instead of the older month-calendar acceptance page.

@@ -1,5 +1,7 @@
 # Backend Period Model Runtime Snapshot
 
+> **Status:** COMPLETED
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Document the aligned backend period model so the active contract surface stays centered on `isPeriod`, `source`, anchored period segments, `ModuleSettings`, and derived `isDetailRecorded` labels.

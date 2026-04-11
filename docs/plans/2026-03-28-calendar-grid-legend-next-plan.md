@@ -1,5 +1,7 @@
 # 2026-03-28 CalendarGrid Legend Next Plan
 
+> **Status:** COMPLETED
+
 ## Summary
 
 This plan continues from commit `32032f7` and moves the menstrual frontend mainline from a baseline `CalendarGrid` showcase into a more realistic month-card acceptance page, then starts `CalendarLegend`.
