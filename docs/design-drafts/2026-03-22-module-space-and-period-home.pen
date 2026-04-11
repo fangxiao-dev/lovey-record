@@ -4,8 +4,8 @@
     {
       "type": "frame",
       "id": "bi8Au",
-      "x": 6,
-      "y": -79,
+      "x": 310,
+      "y": 0,
       "name": "Component Library / Active Source",
       "width": 447,
       "fill": "$color.bg.base",
@@ -8530,7 +8530,7 @@
     {
       "type": "frame",
       "id": "ED7Jd",
-      "x": 3197,
+      "x": 2779,
       "y": 1588,
       "name": "特殊标记差异 / 局部",
       "width": 390,
@@ -8599,7 +8599,7 @@
     {
       "type": "frame",
       "id": "R5Qfj",
-      "x": 3637,
+      "x": 3219,
       "y": 1588,
       "name": "未来日期差异 / 局部",
       "width": 390,
@@ -8665,8 +8665,8 @@
     {
       "type": "frame",
       "id": "hn53r",
-      "x": 4105,
-      "y": -79,
+      "x": 2799,
+      "y": -47,
       "name": "Component Library / Module Management",
       "width": 420,
       "fill": "#FAF7F2",

@@ -1,5 +1,5 @@
 {
-  "version": "2.9",
+  "version": "2.10",
   "children": [
     {
       "type": "frame",
@@ -7,13 +7,13 @@
       "x": 0,
       "y": -184,
       "name": "Token Foundations / Light",
-      "width": 960,
+      "width": 954,
       "height": 1347,
       "fill": "$color.bg.base",
       "layout": "vertical",
       "gap": 20,
       "padding": 24,
-      "justifyContent": "end",
+      "justifyContent": "space_between",
       "alignItems": "center",
       "children": [
         {
@@ -1812,7 +1812,7 @@
           "id": "f1wsn",
           "name": "Shape Tokens",
           "clip": true,
-          "width": 901,
+          "width": 867,
           "height": 219,
           "fill": "#FFFFFF",
           "layout": "vertical",
