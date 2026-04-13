@@ -43,6 +43,31 @@ describe('AuthService', () => {
       });
     });
 
+    it('should retry transient database errors before succeeding', async () => {
+      const restoreSetTimeout = jest
+        .spyOn(global, 'setTimeout')
+        .mockImplementation(((callback: (...args: any[]) => void, _ms?: number, ...args: any[]) => {
+          callback(...args);
+          return 0 as unknown as NodeJS.Timeout;
+        }) as typeof setTimeout);
+
+      const createdUser = { id: 'user-3', openid: 'retry-openid' };
+      (prisma.user.findUnique as jest.Mock)
+        .mockRejectedValueOnce({ code: 'P1001' })
+        .mockResolvedValueOnce(null);
+      (prisma.user.create as jest.Mock).mockResolvedValue(createdUser);
+
+      const result = await findOrCreateUser('retry-openid');
+
+      expect(result).toEqual(createdUser);
+      expect(prisma.user.findUnique).toHaveBeenCalledTimes(2);
+      expect(prisma.user.create).toHaveBeenCalledWith({
+        data: { openid: 'retry-openid' },
+      });
+
+      restoreSetTimeout.mockRestore();
+    });
+
     it('should throw error if database operation fails', async () => {
       const dbError = new Error('Database connection failed');
       (prisma.user.findUnique as jest.Mock).mockRejectedValue(dbError);

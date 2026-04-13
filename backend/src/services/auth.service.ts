@@ -1,15 +1,18 @@
 import prisma from '../db/prisma';
+import { withDatabaseRetry } from '../db/databaseRetry';
 
 export async function findOrCreateUser(openid: string) {
-  const user = await prisma.user.findUnique({
-    where: { openid },
-  });
+  return withDatabaseRetry(async () => {
+    const user = await prisma.user.findUnique({
+      where: { openid },
+    });
 
-  if (user) {
-    return user;
-  }
+    if (user) {
+      return user;
+    }
 
-  return prisma.user.create({
-    data: { openid },
+    return prisma.user.create({
+      data: { openid },
+    });
   });
 }
