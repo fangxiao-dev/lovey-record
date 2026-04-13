@@ -108,6 +108,51 @@
 				<text class="ui-button__text management-action__text management-action__text--primary">重新加载</text>
 			</view>
 		</view>
+
+		<!-- Share confirmation modal -->
+		<view v-if="showShareModal" class="share-modal-mask" @tap.self="showShareModal = false">
+			<view class="share-modal">
+				<view class="share-modal__header">
+					<text class="share-modal__title u-text-title-sm">共享模块</text>
+					<text class="share-modal__module-name u-text-body">{{ selectedModule && selectedModule.moduleName }}</text>
+				</view>
+
+				<view class="share-modal__badge">
+					<view class="share-modal__badge-dot" />
+					<text class="share-modal__badge-text">只读权限</text>
+				</view>
+
+				<view class="share-modal__perms">
+					<view class="share-modal__perm-row">
+						<view class="share-modal__perm-icon share-modal__perm-icon--ok">
+							<text class="share-modal__perm-icon-text">✓</text>
+						</view>
+						<text class="share-modal__perm-text"><text class="share-modal__perm-bold">可以查看</text>所有周期记录、日历和统计数据</text>
+					</view>
+					<view class="share-modal__perm-row">
+						<view class="share-modal__perm-icon share-modal__perm-icon--no">
+							<text class="share-modal__perm-icon-text">✕</text>
+						</view>
+						<text class="share-modal__perm-text"><text class="share-modal__perm-bold">无法编辑</text>任何数据，仅供阅读</text>
+					</view>
+				</view>
+
+				<view class="share-modal__actions">
+					<button
+						class="share-modal__btn share-modal__btn--primary"
+						open-type="share"
+					>发送邀请</button>
+					<view
+						class="share-modal__btn share-modal__btn--secondary"
+						hover-class="ui-pressable-hover"
+						:hover-stay-time="70"
+						@tap="showShareModal = false"
+					>
+						<text>取消</text>
+					</view>
+				</view>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -118,7 +163,7 @@
 	import ModuleSettingStrip from './ModuleSettingStrip.vue';
 	import {
 		DEFAULT_MODULE_SHELL_CONTEXT,
-		createJoinPageUrl,
+		createShareableJoinLink,
 		createDemoMenstrualModuleShellPageModel,
 		loadMenstrualModuleShellPageModel,
 		resolveModuleContext
@@ -127,8 +172,8 @@
 		persistModuleSettings,
 		persistModulePredictionTerm
 	} from '../../services/menstrual/module-shell-command-service.js';
-	import { createInviteToken } from '../../services/sharing/sharing-command-service.js';
 	import { mergeH5RouteQuery } from '../../utils/h5-route-query.js';
+	import { resolveRuntimeOpenid } from '../../utils/dev-openid.js';
 
 	export default {
 		name: 'ModuleManagementPage',
@@ -146,6 +191,7 @@
 				isResetting: false,
 				isDev: process.env.NODE_ENV !== 'production',
 				isDemoMode: false,
+				showShareModal: false,
 				selectedModuleId: '',
 				activeCustomPickerKey: '',
 				context: { ...DEFAULT_MODULE_SHELL_CONTEXT }
@@ -236,7 +282,10 @@
 			},
 			async initialize(options = {}) {
 				const runtimeOptions = mergeH5RouteQuery(options || {});
-				const openid = runtimeOptions.openid || DEFAULT_MODULE_SHELL_CONTEXT.openid;
+				const openid = resolveRuntimeOpenid({
+					explicitOpenid: runtimeOptions.openid,
+					fallbackOpenid: DEFAULT_MODULE_SHELL_CONTEXT.openid
+				});
 				const isDemoMode = runtimeOptions.demo === '1' || runtimeOptions.demo === 'true';
 				this.isDemoMode = isDemoMode;
 				this.page = null;
@@ -342,36 +391,15 @@
 					this.isMutating = false;
 				}
 			},
-			async handleShareAction() {
+			handleShareAction() {
 				if (this.isMutating || !this.page?.managementCard?.secondaryAction) return;
 
 				if (this.isDemoMode) {
-					uni.showToast({
-						title: 'Demo 模式暂不支持共享跳转',
-						icon: 'none'
-					});
+					uni.showToast({ title: 'Demo 模式暂不支持共享邀请', icon: 'none' });
 					return;
 				}
 
-				this.isMutating = true;
-				this.loadError = '';
-				try {
-					const result = await createInviteToken({
-						apiBaseUrl: this.context.apiBaseUrl,
-						openid: this.context.openid,
-						moduleInstanceId: this.context.moduleInstanceId
-					});
-					const url = createJoinPageUrl({
-						apiBaseUrl: this.context.apiBaseUrl,
-						openid: this.context.openid,
-						token: result?.data?.token
-					});
-					uni.navigateTo({ url });
-				} catch (error) {
-					this.loadError = error instanceof Error ? error.message : '共享邀请打开失败';
-				} finally {
-					this.isMutating = false;
-				}
+				this.showShareModal = true;
 			},
 			async handleDevReset() {
 				if (this.isResetting) return;
@@ -519,5 +547,156 @@
 
 	.management-page__state-action {
 		align-self: flex-start;
+	}
+
+	// ── Share confirmation modal ───────────────────────────────────
+	$modal-rose:         #c9786a;
+	$modal-amber-bg:     #fdf3e9;
+	$modal-amber-border: #e8c99a;
+	$modal-amber-text:   #8a5e28;
+	$modal-amber-dot:    #c6914b;
+	$modal-ok-bg:        #ecf5e9;
+	$modal-ok-text:      #5a8a4a;
+	$modal-err-bg:       #faeae9;
+	$modal-err-text:     #b96858;
+	$modal-brown-900:    #2f2a26;
+	$modal-brown-700:    #72685f;
+	$modal-brown-500:    #a29488;
+	$modal-warm-100:     #f3eee7;
+
+	.share-modal-mask {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.45);
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		z-index: 999;
+	}
+
+	.share-modal {
+		width: 100%;
+		background: #ffffff;
+		border-radius: 32rpx 32rpx 0 0;
+		padding: 36rpx 32rpx 48rpx;
+		display: flex;
+		flex-direction: column;
+		gap: 24rpx;
+	}
+
+	.share-modal__header {
+		display: flex;
+		flex-direction: column;
+		gap: 6rpx;
+	}
+
+	.share-modal__title {
+		color: $modal-brown-900;
+	}
+
+	.share-modal__module-name {
+		color: $modal-brown-500;
+	}
+
+	.share-modal__badge {
+		display: flex;
+		align-items: center;
+		gap: 8rpx;
+		align-self: flex-start;
+		background: $modal-amber-bg;
+		border: 1rpx solid $modal-amber-border;
+		border-radius: 999rpx;
+		padding: 6rpx 20rpx;
+	}
+
+	.share-modal__badge-dot {
+		width: 10rpx;
+		height: 10rpx;
+		border-radius: 50%;
+		background: $modal-amber-dot;
+	}
+
+	.share-modal__badge-text {
+		font-size: 22rpx;
+		font-weight: 600;
+		color: $modal-amber-text;
+	}
+
+	.share-modal__perms {
+		display: flex;
+		flex-direction: column;
+		gap: 16rpx;
+	}
+
+	.share-modal__perm-row {
+		display: flex;
+		align-items: flex-start;
+		gap: 16rpx;
+	}
+
+	.share-modal__perm-icon {
+		width: 32rpx;
+		height: 32rpx;
+		border-radius: 8rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		margin-top: 2rpx;
+
+		&--ok { background: $modal-ok-bg; }
+		&--no { background: $modal-err-bg; }
+	}
+
+	.share-modal__perm-icon-text {
+		font-size: 18rpx;
+		font-weight: 700;
+
+		.share-modal__perm-icon--ok & { color: $modal-ok-text; }
+		.share-modal__perm-icon--no & { color: $modal-err-text; }
+	}
+
+	.share-modal__perm-text {
+		font-size: 26rpx;
+		color: $modal-brown-700;
+		line-height: 1.6;
+	}
+
+	.share-modal__perm-bold {
+		font-weight: 600;
+		color: $modal-brown-900;
+	}
+
+	.share-modal__actions {
+		display: flex;
+		flex-direction: column;
+		gap: 16rpx;
+		margin-top: 8rpx;
+	}
+
+	.share-modal__btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		border-radius: 999rpx;
+		border: none;
+		font-size: 28rpx;
+		font-weight: 600;
+		padding: 28rpx 0;
+		line-height: 1;
+		box-sizing: border-box;
+
+		&::after { border: none; }
+
+		&--primary {
+			background: $modal-rose;
+			color: #ffffff;
+		}
+
+		&--secondary {
+			background: $modal-warm-100;
+			color: $modal-brown-700;
+		}
 	}
 </style>
