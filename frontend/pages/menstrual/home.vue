@@ -188,6 +188,7 @@
 	} from '../../services/menstrual/home-command-service.js';
 	import { resolveRefreshPlan } from '../../services/menstrual/home-refresh-scope.js';
 	import { mergeH5RouteQuery } from '../../utils/h5-route-query.js';
+	import { resolveRuntimeOpenid } from '../../utils/dev-openid.js';
 	import { createInviteToken, leaveModule } from '../../services/sharing/sharing-command-service.js';
 	import { createJoinPageUrl } from '../../services/menstrual/module-shell-service.js';
 
@@ -270,10 +271,17 @@
 				apiBaseUrl: this.contractContext.apiBaseUrl,
 				openid: this.contractContext.openid,
 				moduleInstanceId: this.contractContext.moduleInstanceId,
-			}).then((result) => ({
+			}).then((result) => {
+				const path = createJoinPageUrl({
+					apiBaseUrl: this.contractContext.apiBaseUrl,
+					token: result?.data?.token
+				}).replace(/^\//, '');
+
+				return ({
 				title: '邀请你查看月经记录',
-				path: `pages/join/index?token=${encodeURIComponent(result?.data?.token)}&openid=${encodeURIComponent(this.contractContext.openid)}&apiBaseUrl=${encodeURIComponent(this.contractContext.apiBaseUrl)}`,
-			})).catch((err) => {
+				path,
+				});
+			}).catch((err) => {
 				console.error('[onShareAppMessage] token 生成失败:', err);
 				return { title: '月经记录' };
 			});
@@ -281,10 +289,14 @@
 		onLoad(options) {
 			const runtimeOptions = mergeH5RouteQuery(options || {});
 			const d = v => v ? decodeURIComponent(v) : v;
+			const openid = resolveRuntimeOpenid({
+				explicitOpenid: d(runtimeOptions.openid),
+				fallbackOpenid: DEFAULT_MENSTRUAL_HOME_CONTEXT.openid
+			});
 			this.contractContext = {
 				...DEFAULT_MENSTRUAL_HOME_CONTEXT,
 				apiBaseUrl: d(runtimeOptions.apiBaseUrl) || DEFAULT_MENSTRUAL_HOME_CONTEXT.apiBaseUrl,
-				openid: d(runtimeOptions.openid) || DEFAULT_MENSTRUAL_HOME_CONTEXT.openid,
+				openid,
 				moduleInstanceId: d(runtimeOptions.moduleInstanceId) || DEFAULT_MENSTRUAL_HOME_CONTEXT.moduleInstanceId,
 				profileId: d(runtimeOptions.profileId) || DEFAULT_MENSTRUAL_HOME_CONTEXT.profileId,
 				today: d(runtimeOptions.today) || DEFAULT_MENSTRUAL_HOME_CONTEXT.today
@@ -983,8 +995,7 @@
 
 				return ranges;
 			},
-			// handleShareTap 已移除：小程序分享必须通过 onShareAppMessage 钩子 + open-type="share" 按钮触发
-			// DEV ONLY: 生成 token 并弹窗显示，用于在未认证环境手动测试 join 流程
+			// DEV ONLY: 复制邀请链接，避免 owner 直接打开接受页造成“分享自己”的误解。
 			async handleOpenJoinPage() {
 				try {
 					const result = await createInviteToken({
@@ -994,13 +1005,21 @@
 					});
 					const url = createJoinPageUrl({
 						apiBaseUrl: this.contractContext.apiBaseUrl,
-						openid: this.contractContext.openid,
 						token: result?.data?.token
 					});
-					uni.navigateTo({ url });
+
+					await new Promise((resolve, reject) => {
+						uni.setClipboardData({
+							data: url,
+							success: resolve,
+							fail: reject
+						});
+					});
+
+					uni.showToast({ title: '邀请链接已复制', icon: 'none' });
 				} catch (err) {
 					console.error('[handleOpenJoinPage]', err);
-					uni.showToast({ title: '打开共享失败', icon: 'none' });
+					uni.showToast({ title: '共享邀请生成失败', icon: 'none' });
 				}
 			},
 			async handleLeaveTap() {

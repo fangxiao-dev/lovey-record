@@ -50,6 +50,23 @@
 			</view>
 		</view>
 
+		<!-- Dev identity bootstrap -->
+		<view v-else-if="state === 'identity-required'" class="join-page__error">
+			<view class="join-page__error-icon">
+				<text class="join-page__error-icon-text">👤</text>
+			</view>
+			<text class="join-page__error-title">选择接收方身份</text>
+			<text class="join-page__error-desc">{{ errorMessage }}</text>
+			<view class="join-page__dev-options">
+				<button
+					v-for="option in devOpenidOptions"
+					:key="option.openid"
+					class="join-page__btn join-page__btn--secondary join-page__btn--dev"
+					@tap="handleDevIdentitySelect(option.openid)"
+				>{{ option.label }}</button>
+			</view>
+		</view>
+
 		<!-- Error -->
 		<view v-else class="join-page__error">
 			<view class="join-page__error-icon">
@@ -67,6 +84,11 @@
 import { validateInviteToken } from '../../services/sharing/sharing-query-service.js';
 import { acceptInvite } from '../../services/sharing/sharing-command-service.js';
 import { mergeH5RouteQuery } from '../../utils/h5-route-query.js';
+import {
+	DEV_OPENID_OPTIONS,
+	persistDevOpenid,
+	resolveRuntimeOpenid
+} from '../../utils/dev-openid.js';
 
 const ERROR_MESSAGES = {
 	INVALID_TOKEN: '邀请链接无效，请联系对方重新发送。',
@@ -74,6 +96,7 @@ const ERROR_MESSAGES = {
 	TOKEN_EXPIRED: '邀请链接已过期（有效期 24 小时），请联系对方重新发送。',
 	ALREADY_MEMBER: '你已经是这个模块的成员了。',
 	IS_OWNER: '这是你自己的模块。',
+	MISSING_OPENID: '当前环境无法识别接收方身份。请在微信内打开，或在本地调试时补充接收方 openid。',
 };
 
 const MODULE_ICON_MAP = {
@@ -84,7 +107,7 @@ export default {
 	name: 'JoinPage',
 	data() {
 		return {
-			state: 'loading',   // 'loading' | 'valid' | 'error'
+			state: 'loading',   // 'loading' | 'valid' | 'identity-required' | 'error'
 			token: null,
 			openid: null,
 			apiBaseUrl: null,
@@ -92,13 +115,17 @@ export default {
 			moduleType: null,
 			errorMessage: '',
 			joining: false,
+			devOpenidOptions: DEV_OPENID_OPTIONS,
 		};
 	},
 	onLoad(options) {
 		const runtimeOptions = mergeH5RouteQuery(options || {});
 		const d = v => v && v !== 'undefined' ? decodeURIComponent(v) : null;
 		this.token = d(runtimeOptions.token);
-		this.openid = d(runtimeOptions.openid);
+		this.openid = resolveRuntimeOpenid({
+			explicitOpenid: d(runtimeOptions.openid),
+			fallbackOpenid: null
+		});
 		this.apiBaseUrl = d(runtimeOptions.apiBaseUrl);
 
 		if (!this.token) {
@@ -106,6 +133,13 @@ export default {
 			this.errorMessage = ERROR_MESSAGES.INVALID_TOKEN;
 			return;
 		}
+
+		if (!this.openid) {
+			this.state = 'identity-required';
+			this.errorMessage = ERROR_MESSAGES.MISSING_OPENID;
+			return;
+		}
+
 		this.validate();
 	},
 	computed: {
@@ -146,6 +180,14 @@ export default {
 			} finally {
 				this.joining = false;
 			}
+		},
+		handleDevIdentitySelect(openid) {
+			if (!openid) return;
+			this.openid = openid;
+			persistDevOpenid(openid);
+			this.state = 'loading';
+			this.errorMessage = '';
+			this.validate();
 		},
 		handleGoHome() {
 			uni.reLaunch({ url: '/pages/index/index' });
@@ -430,6 +472,17 @@ $err-text:    #b96858;
 		line-height: 1.7;
 		padding: 0 8rpx;
 		margin-bottom: 40rpx;
+	}
+
+	&__dev-options {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 16rpx;
+	}
+
+	&__btn--dev {
+		width: 100%;
 	}
 }
 </style>

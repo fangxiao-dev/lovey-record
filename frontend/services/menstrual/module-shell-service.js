@@ -84,11 +84,29 @@ export function createMenstrualHomeEntryUrl(context = {}) {
 
 export function createJoinPageUrl(context = {}) {
 	const resolved = { ...DEFAULT_MODULE_SHELL_CONTEXT, ...context };
-	const query = 'token=' + encodeURIComponent(resolved.token || '')
-		+ '&openid=' + encodeURIComponent(resolved.openid || '')
-		+ '&apiBaseUrl=' + encodeURIComponent(resolved.apiBaseUrl || '');
+	const hasExplicitOpenid = Object.prototype.hasOwnProperty.call(context, 'openid');
+	const queryParts = [
+		'token=' + encodeURIComponent(resolved.token || ''),
+		'apiBaseUrl=' + encodeURIComponent(resolved.apiBaseUrl || '')
+	];
+
+	if (hasExplicitOpenid && resolved.openid) {
+		queryParts.push('openid=' + encodeURIComponent(resolved.openid));
+	}
+
+	const query = queryParts.join('&');
 
 	return `/pages/join/index?${query}`;
+}
+
+export function createShareableJoinLink(context = {}) {
+	const path = createJoinPageUrl(context);
+
+	if (typeof window !== 'undefined' && window.location?.origin) {
+		return `${window.location.origin}${window.location.pathname}#${path}`;
+	}
+
+	return path;
 }
 
 export function createModuleShellPageModel({

@@ -76,8 +76,9 @@ For the current menstrual module it must support:
 
 Current sharing-entry rule:
 
-- the `共享` action opens the same join/acceptance surface used by other sharing entry points
-- the action is a navigation into the sharing flow, not an inline toggle on this page
+- the `共享` action creates or reuses an invite token for the selected module and exposes a shareable invite artifact to the owner
+- the owner-side action must not open the recipient acceptance page in the current owner session
+- the recipient acceptance surface remains `pages/join/index`, but it is opened by the receiver after the invite is sent
 - real shared state is still determined by module access state, not by whether the user has opened the sharing surface
 
 ## Quick Setting Flow

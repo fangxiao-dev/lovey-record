@@ -257,14 +257,24 @@ test('createMenstrualHomeEntryUrl preserves the shell live context for navigatio
 	);
 });
 
-test('createJoinPageUrl preserves invite token and live context for navigation into the join page', () => {
+test('createJoinPageUrl builds a recipient-facing join path without leaking the owner openid by default', () => {
 	assert.equal(
 		createJoinPageUrl({
 			apiBaseUrl: 'http://localhost:3000/api',
-			openid: 'seed-shared-openid',
 			token: 'token-123'
 		}),
-		'/pages/join/index?token=token-123&openid=seed-shared-openid&apiBaseUrl=http%3A%2F%2Flocalhost%3A3000%2Fapi'
+		'/pages/join/index?token=token-123&apiBaseUrl=http%3A%2F%2Flocalhost%3A3000%2Fapi'
+	);
+});
+
+test('createJoinPageUrl can include an explicit recipient openid override for local debugging only', () => {
+	assert.equal(
+		createJoinPageUrl({
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-recipient-openid',
+			token: 'token-123'
+		}),
+		'/pages/join/index?token=token-123&apiBaseUrl=http%3A%2F%2Flocalhost%3A3000%2Fapi&openid=seed-recipient-openid'
 	);
 });
 

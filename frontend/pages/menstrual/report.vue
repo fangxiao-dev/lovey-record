@@ -49,6 +49,7 @@
 		loadMenstrualReportView
 	} from '../../services/menstrual/report-contract-service.js';
 	import { mergeH5RouteQuery } from '../../utils/h5-route-query.js';
+	import { resolveRuntimeOpenid } from '../../utils/dev-openid.js';
 
 	export default {
 		name: 'MenstrualReportPage',
@@ -68,10 +69,14 @@
 		onLoad(options) {
 			const runtimeOptions = mergeH5RouteQuery(options || {});
 			const decode = (value) => value ? decodeURIComponent(value) : value;
+			const openid = resolveRuntimeOpenid({
+				explicitOpenid: decode(runtimeOptions.openid),
+				fallbackOpenid: DEFAULT_MENSTRUAL_REPORT_CONTEXT.openid
+			});
 			this.contractContext = {
 				...DEFAULT_MENSTRUAL_REPORT_CONTEXT,
 				apiBaseUrl: decode(runtimeOptions.apiBaseUrl) || DEFAULT_MENSTRUAL_REPORT_CONTEXT.apiBaseUrl,
-				openid: decode(runtimeOptions.openid) || DEFAULT_MENSTRUAL_REPORT_CONTEXT.openid,
+				openid,
 				moduleInstanceId: decode(runtimeOptions.moduleInstanceId) || DEFAULT_MENSTRUAL_REPORT_CONTEXT.moduleInstanceId
 			};
 			this.loadReport();

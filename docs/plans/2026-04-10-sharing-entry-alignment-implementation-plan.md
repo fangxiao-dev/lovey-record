@@ -2,9 +2,9 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Align the frontend share entry so every visible `共享` / `邀请` / `链接` trigger reaches the same join page, and only show the module shared dot after real sharing is established.
+**Goal:** Align the frontend share entry so every visible `共享` / `邀请` / `链接` trigger creates a real invite token for the same recipient-facing join flow, and only show the module shared dot after real sharing is established.
 
-**Architecture:** Keep `pages/join/index` as the single acceptance surface. Generate invite tokens from owner-side entry points, navigate into the join page with one shared URL helper, and derive module-card shared state only from `sharingStatus === 'shared'`.
+**Architecture:** Keep `pages/join/index` as the single recipient acceptance surface. Owner-side entry points generate invite tokens, expose a shareable join link without leaking the owner `openid` by default, and never navigate the current owner session into the acceptance page. In local H5 debugging, add a dev-only recipient identity bootstrap so acceptance can still be exercised without WeChat gateway identity injection. Derive module-card shared state only from `sharingStatus === 'shared'`.
 
 **Tech Stack:** uni-app Vue 3 SFCs, frontend page-model services, node:test contract tests
 
@@ -20,9 +20,9 @@
 **Step 1: Write the failing tests**
 
 - Assert module-management secondary action becomes `open-join` instead of `share` / `revoke`.
-- Assert join-page URL generation preserves `token`, `openid`, and `apiBaseUrl`.
-- Assert management-page source uses token generation + `uni.navigateTo`.
-- Assert menstrual-home source routes both invite/link triggers through the join page and no longer depends on `open-type="share"` for the visible button path.
+- Assert join-page URL generation preserves `token` and `apiBaseUrl`, and only includes `openid` when explicitly provided as a debug override.
+- Assert management-page source uses token generation + clipboard/share artifact creation instead of `uni.navigateTo`.
+- Assert menstrual-home share payload targets the recipient join page without embedding the owner `openid`.
 - Assert module tile only renders the green dot when `ownershipTone === 'shared'`.
 
 **Step 2: Run test to verify it fails**
@@ -37,7 +37,7 @@ node --test frontend/__tests__/sharing-entry-contract.test.mjs
 
 Expected: failures showing missing `createJoinPageUrl`, still-present demo share toggle, visible private-state dot, and `open-type="share"` in the home page.
 
-### Task 2: Implement one shared join-page navigation path
+### Task 2: Implement one shared recipient invite path
 
 **Files:**
 - Modify: `frontend/services/menstrual/module-shell-service.js`
@@ -46,10 +46,10 @@ Expected: failures showing missing `createJoinPageUrl`, still-present demo share
 
 **Step 1: Add minimal implementation**
 
-- Export `createJoinPageUrl` from `module-shell-service.js`.
+- Export `createJoinPageUrl` from `module-shell-service.js` and keep owner `openid` out of the default recipient path.
 - Change module-management secondary action metadata to `open-join`.
-- In `ModuleManagementPage.vue`, remove the fake share toggle path and generate an invite token before `uni.navigateTo`.
-- In `pages/menstrual/home.vue`, route both visible owner-side entry controls through the same token-generation + join-page navigation helper.
+- In `ModuleManagementPage.vue`, remove the fake share toggle path and generate an invite token before exposing a shareable invite link.
+- In `pages/menstrual/home.vue`, make native share payloads target the same recipient join path without carrying the owner identity.
 
 **Step 2: Keep implementation minimal**
 
@@ -80,7 +80,7 @@ Expected: failures showing missing `createJoinPageUrl`, still-present demo share
 
 **Step 1: Update docs**
 
-- Clarify that module-management `共享` opens the same join/acceptance surface used by other share entry points.
+- Clarify that module-management `共享` generates a shareable invite artifact for the same recipient join flow instead of navigating the owner into the acceptance page.
 - Clarify that the green module-tile dot is shown only after real shared state is established.
 
 **Step 2: Run verification**

@@ -1,13 +1,15 @@
 import { cloudRequest } from '../cloud-request.js';
 
 async function commandEnvelope({ apiBaseUrl, openid, path, data }) {
+	const headers = openid
+		? { 'x-wx-openid': openid }
+		: {};
+
 	const response = await cloudRequest({
 		path,
 		method: 'POST',
 		data,
-		headers: {
-			'x-wx-openid': openid,
-		}
+		headers
 	});
 
 	if (response.statusCode !== 200 || !response.data?.ok) {

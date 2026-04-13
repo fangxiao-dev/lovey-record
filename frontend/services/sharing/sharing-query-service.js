@@ -2,14 +2,15 @@ import { cloudRequest } from '../cloud-request.js';
 
 async function queryEnvelope({ apiBaseUrl, openid, path, data }) {
 	const cacheBustedPath = path + (path.includes('?') ? '&' : '?') + '_ts=' + Date.now();
+	const headers = openid
+		? { 'x-wx-openid': openid }
+		: {};
 
 	const response = await cloudRequest({
 		path: cacheBustedPath,
 		method: 'GET',
 		data,
-		headers: {
-			'x-wx-openid': openid,
-		}
+		headers
 	});
 
 	if (response.statusCode !== 200 || !response.data?.ok) {

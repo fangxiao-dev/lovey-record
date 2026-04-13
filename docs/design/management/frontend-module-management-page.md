@@ -123,7 +123,8 @@ The action row should keep a clear hierarchy:
 
 Interaction rule:
 
-- the `共享` button navigates into the same join/acceptance surface used by other sharing entry points
+- the `共享` button generates an invite token and exposes a shareable invite link instead of navigating the owner into the recipient acceptance page
+- the generated recipient-facing join path must not embed the owner `openid` by default
 - it should not visually toggle the card into a fake `已共享` state before real shared status is returned
 
 Layout rule:
