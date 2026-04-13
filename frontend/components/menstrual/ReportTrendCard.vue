@@ -12,23 +12,26 @@
 
 		<view v-if="activeSeries.hasMinimumPoints" class="report-trend-card__chart-wrapper">
 			<view class="report-trend-card__y-axis">
-				<text class="report-trend-card__y-label">{{ yAxisInfo.max }}</text>
-				<text class="report-trend-card__y-label">{{ yAxisInfo.mid }}</text>
-				<text class="report-trend-card__y-label">{{ yAxisInfo.min }}</text>
+				<text
+					v-for="label in yAxisLabels"
+					:key="label.text"
+					class="report-trend-card__y-label"
+					:style="{ bottom: label.bottom + 'rpx' }"
+				>{{ label.text }}</text>
 			</view>
 			<view class="report-trend-card__chart-body">
 				<view class="report-trend-card__track">
 					<view
 						class="report-trend-card__baseline"
-						:style="{ bottom: (16 + averageBarHeight) + 'rpx' }"
+						:style="{ bottom: (8 + averageBarHeight) + 'rpx' }"
 					/>
 					<view
 						v-for="point in normalizedPoints"
 						:key="point.key"
 						class="report-trend-card__point-column"
 					>
-						<view class="report-trend-card__bar" :style="{ height: point.barHeight + 'rpx' }" />
 						<view class="report-trend-card__point" />
+						<view class="report-trend-card__bar" :style="{ height: point.barHeight + 'rpx' }" />
 					</view>
 				</view>
 				<view class="report-trend-card__x-axis">
@@ -87,10 +90,25 @@
 				const points = this.activeSeries.points;
 				if (!points.length) return { max: 0, mid: 0, min: 0 };
 				const values = points.map(p => p.value);
-				const min = Math.min(...values);
-				const max = Math.max(...values);
+				const rawMin = Math.min(...values);
+				const rawMax = Math.max(...values);
+				const min = rawMin === rawMax ? rawMin - 1 : rawMin;
+				const max = rawMin === rawMax ? rawMax + 1 : rawMax;
 				const mid = Math.round((min + max) / 2);
 				return { max, mid, min };
+			},
+			yAxisLabels() {
+				const { min, max, mid } = this.yAxisInfo;
+				const toBottom = (value) => {
+					const range = max - min;
+					if (range === 0) return 108;
+					return Math.round(((value - min) / range) * 160 + 20) + 8;
+				};
+				return [
+					{ text: max, bottom: toBottom(max) },
+					{ text: mid, bottom: toBottom(mid) },
+					{ text: min, bottom: toBottom(min) },
+				];
 			},
 			normalizedPoints() {
 				const { min, max } = this.yAxisInfo;
@@ -145,16 +163,16 @@
 	}
 
 	.report-trend-card__y-axis {
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-		align-items: flex-end;
+		position: relative;
 		width: 44rpx;
 		height: 200rpx;
 		flex-shrink: 0;
 	}
 
 	.report-trend-card__y-label {
+		position: absolute;
+		right: 0;
+		transform: translateY(50%);
 		font-size: 18rpx;
 		color: $text-muted;
 		line-height: 1;
