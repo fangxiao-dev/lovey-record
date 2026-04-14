@@ -17,17 +17,18 @@ async function requireOwner(moduleInstanceId: string, userId: string) {
   return moduleInstance;
 }
 
-export async function createInviteToken(input: { moduleInstanceId: string; userId: string }) {
+export async function createInviteToken(input: { moduleInstanceId: string; userId: string; accessRole?: 'VIEWER' | 'PARTNER' }) {
   await requireOwner(input.moduleInstanceId, input.userId);
+  const role = input.accessRole ?? 'VIEWER';
   const now = new Date();
   const existing = await prisma.inviteToken.findFirst({
-    where: { moduleInstanceId: input.moduleInstanceId, usedAt: null, expiresAt: { gt: now } },
+    where: { moduleInstanceId: input.moduleInstanceId, accessRole: role, usedAt: null, expiresAt: { gt: now } },
   });
   if (existing) return { token: existing.token, expiresAt: existing.expiresAt.toISOString() };
   const token = crypto.randomBytes(32).toString('hex');
   const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   const created = await prisma.inviteToken.create({
-    data: { token, moduleInstanceId: input.moduleInstanceId, createdByUserId: input.userId, expiresAt },
+    data: { token, moduleInstanceId: input.moduleInstanceId, createdByUserId: input.userId, expiresAt, accessRole: role },
   });
   return { token: created.token, expiresAt: created.expiresAt.toISOString() };
 }
@@ -47,7 +48,7 @@ export async function validateInviteToken(input: { token: string; userId: string
   return {
     moduleInstanceId: record.moduleInstanceId,
     moduleType: moduleInstance.moduleType,
-    accessRole: 'VIEWER' as const,
+    accessRole: record.accessRole,
     expiresAt: record.expiresAt.toISOString(),
   };
 }
@@ -59,7 +60,7 @@ export async function acceptInvite(input: { token: string; userId: string }) {
     if (record.usedAt) throw createSharingError('TOKEN_ALREADY_USED', 'This invite has already been used');
     if (record.expiresAt < new Date()) throw createSharingError('TOKEN_EXPIRED', 'This invite has expired');
     await tx.moduleAccess.create({
-      data: { moduleInstanceId: record.moduleInstanceId, userId: input.userId, role: 'VIEWER', accessStatus: 'ACTIVE' },
+      data: { moduleInstanceId: record.moduleInstanceId, userId: input.userId, role: record.accessRole, accessStatus: 'ACTIVE' },
     });
     await tx.inviteToken.update({
       where: { token: input.token },
@@ -69,7 +70,7 @@ export async function acceptInvite(input: { token: string; userId: string }) {
       where: { id: record.moduleInstanceId },
       data: { sharingStatus: 'SHARED' },
     });
-    return { moduleInstanceId: record.moduleInstanceId, accessRole: 'VIEWER' as const };
+    return { moduleInstanceId: record.moduleInstanceId, accessRole: record.accessRole };
   });
 }
 

@@ -27,9 +27,13 @@ function handleError(res: Response, error: unknown) {
   });
 }
 
+const VALID_ACCESS_ROLES = new Set(['VIEWER', 'PARTNER']);
+
 export async function createInviteTokenHandler(req: Request, res: Response) {
   try {
-    const result = await createInviteToken({ ...req.body, userId: req.user.id });
+    const { moduleInstanceId, accessRole } = req.body;
+    const resolvedRole = VALID_ACCESS_ROLES.has(accessRole) ? accessRole : 'VIEWER';
+    const result = await createInviteToken({ moduleInstanceId, accessRole: resolvedRole, userId: req.user.id });
     res.json({ ok: true, data: result, error: null });
   } catch (error) {
     handleError(res, error);
