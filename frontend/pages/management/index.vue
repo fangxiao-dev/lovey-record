@@ -21,25 +21,30 @@
 			this.$refs.managementPage?.initialize(this._loadOptions || {});
 		},
 		onShareAppMessage() {
-			const ctx = this.$refs.managementPage && this.$refs.managementPage.context;
+			const page = this.$refs.managementPage;
+			const ctx = page && page.context;
 
 			if (!ctx) {
 				return { title: '月经记录' };
 			}
 
+			const accessRole = (page && page.selectedPermission) || 'VIEWER';
+			const shareTitle = accessRole === 'PARTNER' ? '邀请你协作编辑月经记录' : '邀请你查看月经记录';
+
 			return createInviteToken({
 				apiBaseUrl: ctx.apiBaseUrl,
 				openid: ctx.openid,
 				moduleInstanceId: ctx.moduleInstanceId,
+				accessRole,
 			}).then((result) => {
-				this.$refs.managementPage && (this.$refs.managementPage.showShareModal = false);
+				page && (page.showShareModal = false);
 				const path = createJoinPageUrl({
 					apiBaseUrl: ctx.apiBaseUrl,
 					token: result?.data?.token,
 				}).replace(/^\//, '');
-				return { title: '邀请你查看月经记录', path };
+				return { title: shareTitle, path };
 			}).catch(() => {
-				this.$refs.managementPage && (this.$refs.managementPage.showShareModal = false);
+				page && (page.showShareModal = false);
 				return { title: '月经记录' };
 			});
 		},

@@ -117,9 +117,39 @@
 					<text class="share-modal__module-name u-text-body">{{ selectedModule && selectedModule.moduleName }}</text>
 				</view>
 
-				<view class="share-modal__badge">
+				<!-- 权限选择器 -->
+				<view class="share-modal__perm-selector">
+					<view
+						class="share-modal__perm-option"
+						:class="{ 'share-modal__perm-option--active': selectedPermission === 'VIEWER' }"
+						@tap="selectedPermission = 'VIEWER'"
+					>
+						<view class="share-modal__perm-option-radio">
+							<view v-if="selectedPermission === 'VIEWER'" class="share-modal__perm-option-radio-dot" />
+						</view>
+						<view class="share-modal__perm-option-body">
+							<text class="share-modal__perm-option-label">只读</text>
+							<text class="share-modal__perm-option-desc">可查看，不可编辑</text>
+						</view>
+					</view>
+					<view
+						class="share-modal__perm-option"
+						:class="{ 'share-modal__perm-option--active': selectedPermission === 'PARTNER' }"
+						@tap="selectedPermission = 'PARTNER'"
+					>
+						<view class="share-modal__perm-option-radio">
+							<view v-if="selectedPermission === 'PARTNER'" class="share-modal__perm-option-radio-dot" />
+						</view>
+						<view class="share-modal__perm-option-body">
+							<text class="share-modal__perm-option-label">可编辑</text>
+							<text class="share-modal__perm-option-desc">可查看并添加、编辑记录</text>
+						</view>
+					</view>
+				</view>
+
+				<view class="share-modal__badge" :class="{ 'share-modal__badge--partner': selectedPermission === 'PARTNER' }">
 					<view class="share-modal__badge-dot" />
-					<text class="share-modal__badge-text">只读权限</text>
+					<text class="share-modal__badge-text">{{ selectedPermission === 'PARTNER' ? '可编辑权限' : '只读权限' }}</text>
 				</view>
 
 				<view class="share-modal__perms">
@@ -130,10 +160,15 @@
 						<text class="share-modal__perm-text"><text class="share-modal__perm-bold">可以查看</text>所有周期记录、日历和统计数据</text>
 					</view>
 					<view class="share-modal__perm-row">
-						<view class="share-modal__perm-icon share-modal__perm-icon--no">
+						<view v-if="selectedPermission === 'PARTNER'" class="share-modal__perm-icon share-modal__perm-icon--ok">
+							<text class="share-modal__perm-icon-text">✓</text>
+						</view>
+						<view v-else class="share-modal__perm-icon share-modal__perm-icon--no">
 							<text class="share-modal__perm-icon-text">✕</text>
 						</view>
-						<text class="share-modal__perm-text"><text class="share-modal__perm-bold">无法编辑</text>任何数据，仅供阅读</text>
+						<text class="share-modal__perm-text">
+							<text class="share-modal__perm-bold">{{ selectedPermission === 'PARTNER' ? '可以添加和编辑' : '无法编辑' }}</text>{{ selectedPermission === 'PARTNER' ? '日记录和经期信息' : '任何数据，仅供阅读' }}
+						</text>
 					</view>
 				</view>
 
@@ -192,6 +227,7 @@
 				isDev: process.env.NODE_ENV !== 'production',
 				isDemoMode: false,
 				showShareModal: false,
+				selectedPermission: 'VIEWER',
 				selectedModuleId: '',
 				activeCustomPickerKey: '',
 				context: { ...DEFAULT_MODULE_SHELL_CONTEXT }
@@ -563,6 +599,7 @@
 	$modal-brown-700:    #72685f;
 	$modal-brown-500:    #a29488;
 	$modal-warm-100:     #f3eee7;
+	$modal-warm-200:     #e6ded5;
 
 	.share-modal-mask {
 		position: fixed;
@@ -697,6 +734,82 @@
 		&--secondary {
 			background: $modal-warm-100;
 			color: $modal-brown-700;
+		}
+	}
+
+	// ── 权限选择器 ─────────────────────────────────────────────
+	.share-modal__perm-selector {
+		display: flex;
+		flex-direction: column;
+		gap: 10rpx;
+	}
+
+	.share-modal__perm-option {
+		display: flex;
+		align-items: center;
+		gap: 20rpx;
+		padding: 20rpx 24rpx;
+		border-radius: 18rpx;
+		border: 2rpx solid $modal-warm-200;
+		background: #ffffff;
+		transition: border-color 0.15s;
+
+		&--active {
+			border-color: $modal-rose;
+			background: rgba(201, 120, 106, 0.04);
+		}
+	}
+
+	.share-modal__perm-option-radio {
+		width: 32rpx;
+		height: 32rpx;
+		border-radius: 50%;
+		border: 2rpx solid $modal-warm-200;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+
+		.share-modal__perm-option--active & {
+			border-color: $modal-rose;
+		}
+	}
+
+	.share-modal__perm-option-radio-dot {
+		width: 16rpx;
+		height: 16rpx;
+		border-radius: 50%;
+		background: $modal-rose;
+	}
+
+	.share-modal__perm-option-body {
+		display: flex;
+		flex-direction: column;
+		gap: 4rpx;
+	}
+
+	.share-modal__perm-option-label {
+		font-size: 28rpx;
+		font-weight: 600;
+		color: $modal-brown-900;
+	}
+
+	.share-modal__perm-option-desc {
+		font-size: 22rpx;
+		color: $modal-brown-500;
+	}
+
+	// badge partner variant
+	.share-modal__badge--partner {
+		background: #eaf7f0;
+		border-color: #b2dfc8;
+
+		.share-modal__badge-dot {
+			background: #4caf82;
+		}
+
+		.share-modal__badge-text {
+			color: #2e7d52;
 		}
 	}
 </style>

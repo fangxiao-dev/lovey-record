@@ -25,12 +25,12 @@ async function commandEnvelope({ apiBaseUrl, openid, path, data }) {
 	};
 }
 
-export async function createInviteToken({ apiBaseUrl, openid, moduleInstanceId }) {
+export async function createInviteToken({ apiBaseUrl, openid, moduleInstanceId, accessRole }) {
 	return commandEnvelope({
 		apiBaseUrl,
 		openid,
 		path: '/api/commands/createInviteToken',
-		data: { moduleInstanceId },
+		data: { moduleInstanceId, accessRole },
 	});
 }
 

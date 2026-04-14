@@ -14,9 +14,9 @@
 				<text v-else class="join-page__deco-icon join-page__deco-icon--emoji">🌸</text>
 			</view>
 
-			<view class="join-page__badge">
+			<view class="join-page__badge" :class="{ 'join-page__badge--partner': accessRole === 'PARTNER' }">
 				<view class="join-page__badge-dot" />
-				<text class="join-page__badge-text">只读权限</text>
+				<text class="join-page__badge-text">{{ accessRole === 'PARTNER' ? '可编辑权限' : '只读权限' }}</text>
 			</view>
 
 			<view class="join-page__card">
@@ -32,10 +32,15 @@
 					<text class="join-page__perm-text"><text class="join-page__perm-bold">可以查看</text>所有周期记录、日历和统计数据</text>
 				</view>
 				<view class="join-page__perm-row">
-					<view class="join-page__perm-icon join-page__perm-icon--no">
+					<view v-if="accessRole === 'PARTNER'" class="join-page__perm-icon join-page__perm-icon--ok">
+						<text class="join-page__perm-icon-text">✓</text>
+					</view>
+					<view v-else class="join-page__perm-icon join-page__perm-icon--no">
 						<text class="join-page__perm-icon-text">✕</text>
 					</view>
-					<text class="join-page__perm-text"><text class="join-page__perm-bold">无法编辑</text>任何数据，仅供阅读</text>
+					<text class="join-page__perm-text">
+						<text class="join-page__perm-bold">{{ accessRole === 'PARTNER' ? '可以添加和编辑' : '无法编辑' }}</text>{{ accessRole === 'PARTNER' ? '日记录和经期信息' : '任何数据，仅供阅读' }}
+					</text>
 				</view>
 			</view>
 
@@ -113,6 +118,7 @@ export default {
 			apiBaseUrl: null,
 			moduleInstanceId: null,
 			moduleType: null,
+			accessRole: null,   // 'VIEWER' | 'PARTNER', set from validateInviteToken response
 			errorMessage: '',
 			joining: false,
 			devOpenidOptions: DEV_OPENID_OPTIONS,
@@ -157,6 +163,7 @@ export default {
 				});
 				this.moduleInstanceId = data.moduleInstanceId;
 				this.moduleType = data.moduleType || null;
+				this.accessRole = data.accessRole || 'VIEWER';
 				this.state = 'valid';
 			} catch (err) {
 				this.state = 'error';
@@ -304,6 +311,14 @@ $err-text:    #b96858;
 		border-radius: 999rpx;
 		padding: 6rpx 20rpx;
 		margin-bottom: 32rpx;
+
+		&--partner {
+			background: #eaf7f0;
+			border-color: #b2dfc8;
+
+			.join-page__badge-dot { background: #4caf82; }
+			.join-page__badge-text { color: #2e7d52; }
+		}
 	}
 
 	&__badge-dot {

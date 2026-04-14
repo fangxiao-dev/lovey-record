@@ -47,7 +47,9 @@ test('management alias page defines onShareAppMessage for native WeChat forward'
 
 	assert.match(aliasSource, /onShareAppMessage/);
 	assert.match(aliasSource, /createInviteToken/);
-	assert.match(aliasSource, /managementPage\.context/);
+	// reads context from the child component ref (via $refs.managementPage or a local alias)
+	assert.match(aliasSource, /\$refs\.managementPage/);
+	assert.match(aliasSource, /\.context/);
 });
 
 test('join page exposes a dev-only recipient identity bootstrap instead of silently reusing the owner identity', () => {
