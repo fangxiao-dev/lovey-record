@@ -73,3 +73,33 @@
 - For Pencil-derived UI work, read [../docs/design/2026-03-28-ui-collaboration-lessons.md](/D:/CodeSpace/hbuilder-projects/lovey-record-backend/docs/design/2026-03-28-ui-collaboration-lessons.md) and use the named Pencil node as the source of truth before touching code.
 - For Pencil-driven pages, verify that the current runtime page is still the correct acceptance surface before changing code. If the latest named Pencil nodes imply a different page structure or demo baseline, re-read those nodes first and treat the old runtime output as stale until revalidated.
 - When writing closing statements for frontend work, follow the root `AGENTS.md` rule: `Current mainline progress` must stay at the higher-level delivery-line stage, while `Next-step recommendation` should carry the next concrete frontend action.
+
+## H5 Test Evidence Organization
+
+**Purpose**: Maintain a structured, auditable record of all H5 verification work.
+
+**Location**: All H5 test evidence is stored in `test-results/` following a standard subdirectory pattern.
+
+**Naming Convention**: Each test result lives in its own subdirectory named `YYYY-MM-DD-feature-name`:
+```
+test-results/
+├── README.md                          ← Specification and guidelines
+├── 2026-04-15-loading-screen/         ← Example: YYYY-MM-DD-feature-name
+│   ├── README.md                      ← Navigation index
+│   ├── h5-verification-report.md      ← Complete verification report
+│   ├── evidence-checklist.md          ← Evidence checklist
+│   ├── test-procedure.md              ← Reproducible steps
+│   ├── screenshots/                   ← Verification screenshots
+│   └── scripts/                       ← Related scripts (e.g. Playwright)
+└── YYYY-MM-DD-next-feature/           ← Next test
+```
+
+**What to include in each test directory**:
+- `README.md`: Quick navigation and feature overview
+- `h5-verification-report.md`: Detailed verification report with code changes, visual verification, and code review results
+- `evidence-checklist.md`: Systematic checklist of all verified items (code audit + browser validation)
+- `test-procedure.md`: Step-by-step procedure to reproduce the verification
+- `screenshots/`: All verification screenshots
+- `scripts/`: Any automation scripts (Playwright, etc.)
+
+**Reference**: Read `test-results/README.md` for full specification and best practices before creating new H5 test evidence.

@@ -93,25 +93,11 @@
 			</view>
 		</view>
 
-		<view v-else class="management-page__state-card ui-card">
-			<text class="management-page__state-title u-text-title-sm">{{ loadError ? '联调加载失败' : '正在连接模块管理' }}</text>
-			<text class="management-page__state-copy u-text-body-secondary">
-				{{ loadError || '正在读取模块访问状态和模块设置。' }}
-			</text>
-			<view
-				v-if="loadError"
-				class="management-page__state-action ui-button ui-button--primary"
-				:hover-stay-time="70"
-				hover-class="ui-pressable-hover"
-				@tap="retryInitialLoad"
-			>
-				<text class="ui-button__text management-action__text management-action__text--primary">重新加载</text>
-			</view>
-		</view>
+		<LoadingScreen v-else :error-message="loadError" @retry="retryInitialLoad" />
 
 		<!-- Share confirmation modal -->
-		<view v-if="showShareModal" class="share-modal-mask" @tap.self="showShareModal = false">
-			<view class="share-modal">
+		<view v-if="showShareModal" class="share-modal-mask" @tap="showShareModal = false">
+			<view class="share-modal" @tap.stop>
 				<view class="share-modal__header">
 					<text class="share-modal__title u-text-title-sm">共享模块</text>
 					<text class="share-modal__module-name u-text-body">{{ selectedModule && selectedModule.moduleName }}</text>
@@ -196,6 +182,7 @@
 	import ModuleTileCompact from './ModuleTileCompact.vue';
 	import ModuleActionRow from './ModuleActionRow.vue';
 	import ModuleSettingStrip from './ModuleSettingStrip.vue';
+	import LoadingScreen from '../common/LoadingScreen.vue';
 	import {
 		DEFAULT_MODULE_SHELL_CONTEXT,
 		createShareableJoinLink,
@@ -216,7 +203,8 @@
 			SharedLegendChip,
 			ModuleTileCompact,
 			ModuleActionRow,
-			ModuleSettingStrip
+			ModuleSettingStrip,
+			LoadingScreen
 		},
 		data() {
 			return {

@@ -131,21 +131,7 @@
 			/>
 		</view>
 
-		<view v-else class="menstrual-home__state-card">
-			<text class="menstrual-home__state-title">{{ loadError ? '联调加载失败' : '正在连接联调环境' }}</text>
-			<text class="menstrual-home__state-copy">
-				{{ loadError || '正在读取 getModuleHomeView、getCalendarWindow、getDayRecordDetail。' }}
-			</text>
-			<view
-				v-if="loadError"
-				class="menstrual-home__state-action"
-				hover-class="ui-pressable-hover"
-				:hover-stay-time="70"
-				@tap="retryInitialLoad"
-			>
-				<text class="menstrual-home__state-action-label">重新加载</text>
-			</view>
-		</view>
+		<LoadingScreen v-else :error-message="loadError" @retry="retryInitialLoad" />
 	</view>
 </template>
 
@@ -156,6 +142,7 @@
 	import JumpTabs from '../../components/menstrual/JumpTabs.vue';
 	import SelectedDatePanel from '../../components/menstrual/SelectedDatePanel.vue';
 	import SegmentedControl from '../../components/menstrual/SegmentedControl.vue';
+	import LoadingScreen from '../../components/common/LoadingScreen.vue';
 	import {
 		applyHeroSnapshotToPageModel,
 		applyBatchPeriodDraftToPageModel,
@@ -200,7 +187,8 @@
 			HeaderNav,
 			JumpTabs,
 			SelectedDatePanel,
-			SegmentedControl
+			SegmentedControl,
+			LoadingScreen
 		},
 		data() {
 			return {
