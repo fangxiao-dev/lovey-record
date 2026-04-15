@@ -116,7 +116,7 @@ describe('Commands Integration', () => {
         detailChanged: true,
         hasDeviation: true,
       },
-      affectedScopes: ['dayDetail'],
+      affectedScopes: ['calendar', 'dayDetail', 'prediction'],
       error: null,
     });
   });
@@ -138,7 +138,7 @@ describe('Commands Integration', () => {
       data: {
         noteChanged: true,
       },
-      affectedScopes: ['dayDetail'],
+      affectedScopes: ['calendar', 'dayDetail', 'prediction'],
       error: null,
     });
   });
@@ -184,7 +184,7 @@ describe('Commands Integration', () => {
     expect(response.body).toEqual({
       ok: true,
       data: { updatedCount: 3 },
-      affectedScopes: ['dayDetail'],
+      affectedScopes: ['calendar', 'dayDetail', 'prediction'],
       error: null,
     });
     expect(recordDayDetailsBatch).toHaveBeenCalledWith({
