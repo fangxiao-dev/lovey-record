@@ -152,6 +152,7 @@ describe('non-period recording integration', () => {
       data: {
         noteChanged: true,
       },
+      affectedScopes: ['calendar', 'dayDetail', 'prediction'],
       error: null,
     });
 
@@ -198,6 +199,57 @@ describe('non-period recording integration', () => {
           flowLevel: null,
           colorLevel: null,
           note: 'late sleep',
+          source: 'manual',
+          isExplicit: true,
+          isDetailRecorded: true,
+        },
+      },
+      error: null,
+    });
+  });
+
+  it('does not treat whitespace-only note as detail recorded', async () => {
+    const response = await request(app)
+      .post('/api/commands/recordDayNote')
+      .set('x-wx-openid', openid)
+      .send({
+        moduleInstanceId,
+        date: '2026-04-12',
+        note: '   ',
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      data: {
+        noteChanged: true,
+      },
+      affectedScopes: ['calendar', 'dayDetail', 'prediction'],
+      error: null,
+    });
+
+    const detailResponse = await request(app)
+      .get('/api/queries/getDayRecordDetail')
+      .set('x-wx-openid', openid)
+      .query({
+        moduleInstanceId,
+        profileId,
+        date: '2026-04-12',
+      });
+
+    expect(detailResponse.status).toBe(200);
+    expect(detailResponse.body).toEqual({
+      ok: true,
+      data: {
+        moduleInstanceId,
+        profileId,
+        dayRecord: {
+          date: '2026-04-12',
+          isPeriod: false,
+          painLevel: null,
+          flowLevel: null,
+          colorLevel: null,
+          note: '   ',
           source: 'manual',
           isExplicit: true,
           isDetailRecorded: false,
