@@ -251,11 +251,23 @@ function getJumpTabValue(homeView, today) {
 	return 'today';
 }
 
+function hasRecordedNote(note) {
+	return typeof note === 'string' && note.trim().length > 0;
+}
+
+function hasSelectedPanelDetailRecord(panel) {
+	return Boolean(panel && (
+		panel.summaryItems.length > 0
+		|| hasRecordedNote(panel.note)
+	));
+}
+
 function isDetailRecordedDay(dayRecord) {
 	return Boolean(dayRecord && (
 		dayRecord.flowLevel !== null
 		|| dayRecord.painLevel !== null
 		|| dayRecord.colorLevel !== null
+		|| hasRecordedNote(dayRecord.note)
 	));
 }
 
@@ -315,7 +327,7 @@ function updateSelectedCalendarCell(pageModel) {
 	const selectedDate = pageModel.selectedDateKey;
 	if (!selectedDate) return pageModel;
 
-	const isDetailRecorded = pageModel.selectedDatePanel.summaryItems.length > 0;
+	const isDetailRecorded = hasSelectedPanelDetailRecord(pageModel.selectedDatePanel);
 	pageModel.calendarCard.weeks = pageModel.calendarCard.weeks.map((week) => ({
 		...week,
 		cells: week.cells.map((cell) => {
@@ -876,7 +888,7 @@ export function applyTogglePeriodToPageModel(pageModel, isPeriodMarked) {
 	const next = clonePageModel(pageModel);
 	next.selectedDatePanel.initialPeriodMarked = isPeriodMarked;
 	if (next.selectedDatePanel.badge !== '今日') {
-		next.selectedDatePanel.badge = (isPeriodMarked || next.selectedDatePanel.summaryItems.length > 0 || Boolean(next.selectedDatePanel.note))
+		next.selectedDatePanel.badge = (isPeriodMarked || hasSelectedPanelDetailRecord(next.selectedDatePanel))
 			? '已记录'
 			: '点击记录';
 	}
@@ -896,8 +908,7 @@ export function applySingleDayPeriodActionToPageModel(pageModel, { resolvedActio
 	if (next.selectedDatePanel.badge !== '今日') {
 		next.selectedDatePanel.badge = (
 			selectedIsPeriod
-			|| next.selectedDatePanel.summaryItems.length > 0
-			|| Boolean(next.selectedDatePanel.note)
+			|| hasSelectedPanelDetailRecord(next.selectedDatePanel)
 		) ? '已记录' : '点击记录';
 	}
 
@@ -906,7 +917,7 @@ export function applySingleDayPeriodActionToPageModel(pageModel, { resolvedActio
 		overrides[isoDate] = {
 			isPeriod: true,
 			isDetailRecorded: isoDate === selectedDate
-				? next.selectedDatePanel.summaryItems.length > 0
+				? hasSelectedPanelDetailRecord(next.selectedDatePanel)
 				: next.calendarCard.weeks.flatMap((week) => week.cells).find((cell) => cell.isoDate === isoDate)?.variant?.includes('Detail') || false
 		};
 	});
@@ -914,7 +925,7 @@ export function applySingleDayPeriodActionToPageModel(pageModel, { resolvedActio
 		overrides[isoDate] = {
 			isPeriod: false,
 			isDetailRecorded: isoDate === selectedDate
-				? next.selectedDatePanel.summaryItems.length > 0
+				? hasSelectedPanelDetailRecord(next.selectedDatePanel)
 				: next.calendarCard.weeks.flatMap((week) => week.cells).find((cell) => cell.isoDate === isoDate)?.variant?.includes('Detail') || false
 		};
 	});
@@ -945,8 +956,7 @@ export function applyBatchPeriodDraftToPageModel(pageModel, { selectedKeys, batc
 	if (next.selectedDatePanel.badge !== '今日') {
 		next.selectedDatePanel.badge = (
 			Boolean(batchDraft.isPeriod)
-			|| next.selectedDatePanel.summaryItems.length > 0
-			|| Boolean(next.selectedDatePanel.note)
+			|| hasSelectedPanelDetailRecord(next.selectedDatePanel)
 		) ? '已记录' : '点击记录';
 	}
 
@@ -957,7 +967,7 @@ export function applyBatchPeriodDraftToPageModel(pageModel, { selectedKeys, batc
 		overrides[cell.isoDate] = {
 			isPeriod: Boolean(batchDraft.isPeriod),
 			isDetailRecorded: cell.isoDate === next.selectedDateKey
-				? next.selectedDatePanel.summaryItems.length > 0
+				? hasSelectedPanelDetailRecord(next.selectedDatePanel)
 				: cell.variant?.includes('Detail') || false
 		};
 	});
@@ -975,13 +985,12 @@ export function applySelectedDateNoteToPageModel(pageModel, note) {
 	if (next.selectedDatePanel.badge !== '今日') {
 		next.selectedDatePanel.badge = (
 			next.selectedDatePanel.initialPeriodMarked
-			|| next.selectedDatePanel.summaryItems.length > 0
-			|| Boolean(note)
+			|| hasSelectedPanelDetailRecord(next.selectedDatePanel)
 		)
 			? '已记录'
 			: '点击记录';
 	}
-	return next;
+	return updateSelectedCalendarCell(next);
 }
 
 export function createSeededHomeContracts() {
