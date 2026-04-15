@@ -605,7 +605,7 @@ Rules:
 ```
 
 - `source` is an internal behavior explanation field; user-visible semantics treat `manual` and `auto_filled` as equally valid period days
-- `isDetailRecorded` represents whether any of `painLevel`, `flowLevel`, or `colorLevel` is recorded for the day
+- `isDetailRecorded` represents whether any of `painLevel`, `flowLevel`, or `colorLevel` is recorded for the day, or whether `note` contains non-whitespace text
 
 ### `AnchoredPeriodSegmentReadModel`
 

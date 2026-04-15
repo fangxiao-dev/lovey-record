@@ -178,7 +178,7 @@ The domain model already supports this design with no changes needed:
 
 - `is_period` is independent of `pain_level` / `flow_level` / `color_level` — matches the two-chip independence.
 - Attributes have a default of `3` in the domain model, but this is a **persistence default**, not a UI default. The UI should treat "no selection" as "not recorded" and only write the default when the user explicitly taps level 3.
-- `isDetailRecorded` is derived from whether one or more attributes are recorded. If no attributes are recorded, no eye marker should appear. This is consistent.
+- `isDetailRecorded` is derived from whether one or more attributes are recorded, or whether `note` contains non-whitespace text. If neither attributes nor a non-empty note are recorded, no eye marker should appear.
 
 ## Related Documents
 
