@@ -12,8 +12,13 @@ function lower(value: string | null | undefined) {
   return value ? value.toLowerCase() : value;
 }
 
-function isDetailRecorded(record: { painLevel: number | null; flowLevel: number | null; colorLevel: number | null }) {
-  return [record.painLevel, record.flowLevel, record.colorLevel].some((value) => value !== null);
+function hasRecordedNote(note: string | null | undefined) {
+  return typeof note === 'string' && note.trim().length > 0;
+}
+
+function isDetailRecorded(record: { painLevel: number | null; flowLevel: number | null; colorLevel: number | null; note?: string | null }) {
+  return [record.painLevel, record.flowLevel, record.colorLevel].some((value) => value !== null)
+    || hasRecordedNote(record.note);
 }
 
 function hasUsablePrediction(prediction: {

@@ -37,7 +37,7 @@ function handleError(res: Response, error: unknown) {
 export async function recordDayDetailsHandler(req: Request, res: Response) {
   try {
     const result = await recordDayDetails({ ...req.body, userId: req.user.id });
-    res.json(scopeResponse(result, ['dayDetail']));
+    res.json(scopeResponse(result, ['calendar', 'dayDetail', 'prediction']));
   } catch (error) {
     handleError(res, error);
   }
@@ -46,7 +46,7 @@ export async function recordDayDetailsHandler(req: Request, res: Response) {
 export async function recordDayNoteHandler(req: Request, res: Response) {
   try {
     const result = await recordDayNote({ ...req.body, userId: req.user.id });
-    res.json(scopeResponse(result, ['dayDetail']));
+    res.json(scopeResponse(result, ['calendar', 'dayDetail', 'prediction']));
   } catch (error) {
     handleError(res, error);
   }
@@ -116,7 +116,7 @@ export async function recordDayDetailsBatchHandler(req: Request, res: Response) 
       painLevel: req.body.painLevel ?? null,
       colorLevel: req.body.colorLevel ?? null,
     });
-    res.json(scopeResponse(result, ['dayDetail']));
+    res.json(scopeResponse(result, ['calendar', 'dayDetail', 'prediction']));
   } catch (error) {
     handleError(res, error);
   }

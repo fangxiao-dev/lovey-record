@@ -195,6 +195,30 @@ describe('phase5.service', () => {
     });
   });
 
+  it('treats note-only write as detail-recorded semantic state', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({ id: 'module-1', profileId: 'profile-1', ownerUserId: 'user-1' });
+    (prisma.dayRecord.findUnique as jest.Mock).mockResolvedValue({ id: 'day-1' });
+    (prisma.dayRecord.update as jest.Mock).mockResolvedValue({ id: 'day-1' });
+
+    const detailResult = await recordDayDetails({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      date: '2026-03-23',
+      painLevel: null,
+      flowLevel: null,
+      colorLevel: null,
+    });
+    const noteResult = await recordDayNote({ moduleInstanceId: 'module-1', userId: 'user-1', date: '2026-03-23', note: 'late sleep' });
+
+    expect(detailResult).toEqual({
+      detailChanged: true,
+      isDetailRecorded: false,
+    });
+    expect(noteResult).toEqual({
+      noteChanged: true,
+    });
+  });
+
   it('keeps future auto-filled period days in the window rows while exposing only prediction_start as a calendar mark', async () => {
     jest.useFakeTimers().setSystemTime(new Date('2026-03-29T00:00:00.000Z'));
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
