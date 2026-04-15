@@ -68,7 +68,7 @@ describe('query.service', () => {
     });
   });
 
-  it('does not treat note-only records as detail-recorded', async () => {
+  it('treats note-only records as detail-recorded', async () => {
     (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
       id: 'module-1',
       profileId: 'profile-1',
@@ -98,6 +98,42 @@ describe('query.service', () => {
       flowLevel: null,
       colorLevel: null,
       note: 'late sleep',
+      source: 'manual',
+      isExplicit: true,
+      isDetailRecorded: true,
+    });
+  });
+
+  it('does not treat whitespace-only note records as detail-recorded', async () => {
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+    });
+    (prisma.dayRecord.findUnique as jest.Mock).mockResolvedValue({
+      date: new Date('2026-03-25T00:00:00.000Z'),
+      isPeriod: false,
+      source: 'MANUAL',
+      painLevel: null,
+      flowLevel: null,
+      colorLevel: null,
+      note: '   ',
+    });
+
+    const result = await getDayRecordDetail({
+      moduleInstanceId: 'module-1',
+      profileId: 'profile-1',
+      date: '2026-03-25',
+      userId: 'user-1',
+    });
+
+    expect(result.dayRecord).toEqual({
+      date: '2026-03-25',
+      isPeriod: false,
+      painLevel: null,
+      flowLevel: null,
+      colorLevel: null,
+      note: '   ',
       source: 'manual',
       isExplicit: true,
       isDetailRecorded: false,
