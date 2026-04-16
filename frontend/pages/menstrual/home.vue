@@ -13,9 +13,50 @@
 			<view v-if="userRole === 'viewer'" class="menstrual-home__leave-btn" @tap="handleLeaveTap">
 				<text>退出共享</text>
 			</view>
-			<view class="menstrual-home__hero-status-frame">
-				<image class="menstrual-home__hero-status-icon" :src="page.heroCard.statusFrame.iconUrl" mode="aspectFit" />
-				<text class="menstrual-home__hero-status-text">{{ page.heroCard.statusFrame.text }}</text>
+			<view
+				class="menstrual-home__hero-status-frame"
+				:class="{ 'menstrual-home__hero-status-frame--emphasis': page.heroCard.statusFrame.phaseStatus?.emphasis }"
+			>
+				<template v-if="page.heroCard.statusFrame.phaseStatus && page.heroCard.statusFrame.phaseStatus.phase !== '经期'">
+					<view class="menstrual-home__hero-phase-row">
+						<view
+							class="menstrual-home__hero-phase-group"
+							:class="{ 'menstrual-home__hero-phase-group--emphasis': page.heroCard.statusFrame.phaseStatus.emphasis }"
+						>
+							<image
+								class="menstrual-home__hero-phase-icon"
+								:src="getPhaseIconUrl(page.heroCard.statusFrame.phaseStatus.phase)"
+								mode="aspectFit"
+							/>
+							<text
+								class="menstrual-home__hero-phase-name"
+								:class="{ 'menstrual-home__hero-phase-name--emphasis': page.heroCard.statusFrame.phaseStatus.emphasis }"
+							>
+								{{ page.heroCard.statusFrame.phaseStatus.phase }}
+							</text>
+							<view
+								v-if="page.heroCard.statusFrame.phaseStatus.showReliabilityWarning"
+								class="menstrual-home__hero-phase-warning-btn"
+								@tap="handlePhaseWarningTap"
+							>
+								<text class="menstrual-home__hero-phase-warning-btn-label">!</text>
+							</view>
+						</view>
+						<view class="menstrual-home__hero-hint-group">
+							<image class="menstrual-home__hero-hint-icon" src="/static/menstrual/warning.svg" mode="aspectFit" />
+							<text
+								class="menstrual-home__hero-hint-text"
+								:class="{ 'menstrual-home__hero-hint-text--emphasis': page.heroCard.statusFrame.phaseStatus.isLutealLate }"
+							>
+								{{ page.heroCard.statusFrame.phaseStatus.hint }}
+							</text>
+						</view>
+					</view>
+				</template>
+				<template v-else>
+					<image class="menstrual-home__hero-status-icon" :src="page.heroCard.statusFrame.iconUrl" mode="aspectFit" />
+					<text class="menstrual-home__hero-status-text">{{ page.heroCard.statusFrame.text }}</text>
+				</template>
 			</view>
 			<text v-if="loadError" class="menstrual-home__hero-meta">联调刷新失败：{{ loadError }}</text>
 			<view class="menstrual-home__hero-info-row">
@@ -178,6 +219,13 @@
 	import { resolveRuntimeOpenid } from '../../utils/dev-openid.js';
 	import { createInviteToken, leaveModule } from '../../services/sharing/sharing-command-service.js';
 	import { createJoinPageUrl } from '../../services/menstrual/module-shell-service.js';
+
+	const PHASE_ICON_URL_MAP = Object.freeze({
+		卵泡期: '/static/menstrual/embryo.svg',
+		排卵期: '/static/menstrual/sun.svg',
+		黄体期: '/static/menstrual/moon.svg',
+		经期: '/static/icons/coffee.svg'
+	});
 
 	export default {
 		name: 'MenstrualHomePage',
@@ -1034,6 +1082,10 @@
 					uni.showToast({ title: '退出失败', icon: 'none' });
 				}
 			},
+			getPhaseIconUrl(phase) {
+				return PHASE_ICON_URL_MAP[phase] || PHASE_ICON_URL_MAP.经期;
+			},
+			handlePhaseWarningTap() {},
 			formatBatchDateLabel(cellKey) {
 				if (!cellKey) return '';
 				const cell = this.allCalendarCells.find((item) => item.key === cellKey);
@@ -1100,6 +1152,89 @@
 		gap: 8rpx;
 		padding: 18rpx 20rpx;
 		border-radius: 24rpx;
+	}
+
+	.menstrual-home__hero-status-frame--emphasis {
+		background: #FFFDF8;
+		border: 2rpx solid #E8D5A3;
+	}
+
+	.menstrual-home__hero-phase-row {
+		display: inline-flex;
+		align-items: center;
+		gap: 32rpx;
+		width: fit-content;
+	}
+
+	.menstrual-home__hero-phase-group {
+		display: inline-flex;
+		align-items: center;
+		gap: 8rpx;
+		min-width: 0;
+	}
+
+	.menstrual-home__hero-phase-group--emphasis {
+		padding: 12rpx 24rpx;
+		border-radius: 999rpx;
+		background: #FBF0D8;
+	}
+
+	.menstrual-home__hero-phase-icon {
+		width: 44rpx;
+		height: 44rpx;
+		flex-shrink: 0;
+	}
+
+	.menstrual-home__hero-phase-name {
+		font-size: 34rpx;
+		line-height: 1;
+		font-weight: $font-weight-strong;
+		color: $text-primary;
+	}
+
+	.menstrual-home__hero-phase-name--emphasis {
+		color: #B08D57;
+	}
+
+	.menstrual-home__hero-phase-warning-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 28rpx;
+		height: 28rpx;
+		border-radius: 999rpx;
+		background: #F3EEE7;
+		flex-shrink: 0;
+	}
+
+	.menstrual-home__hero-phase-warning-btn-label {
+		font-size: 18rpx;
+		line-height: 1;
+		font-weight: $font-weight-strong;
+		color: $text-muted;
+	}
+
+	.menstrual-home__hero-hint-group {
+		display: inline-flex;
+		align-items: center;
+		gap: 10rpx;
+		min-width: 0;
+	}
+
+	.menstrual-home__hero-hint-icon {
+		width: 28rpx;
+		height: 28rpx;
+		flex-shrink: 0;
+	}
+
+	.menstrual-home__hero-hint-text {
+		font-size: 24rpx;
+		line-height: 1.4;
+		color: $text-secondary;
+	}
+
+	.menstrual-home__hero-hint-text--emphasis {
+		color: #B08D57;
 	}
 
 	.menstrual-home__hero-status-icon {
