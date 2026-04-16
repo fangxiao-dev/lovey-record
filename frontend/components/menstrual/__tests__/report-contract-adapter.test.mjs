@@ -7,6 +7,13 @@ import {
 
 test('report contract adapter formats summary, trend, and history from cycle records', () => {
 	const viewModel = createReportPageViewModel({
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 31
+		},
+		accessState: {
+			callerRole: 'partner'
+		},
 		records: [
 			{ startDate: '2026-01-10', endDate: '2026-01-14', durationDays: 5 },
 			{ startDate: '2026-02-08', endDate: '2026-02-11', durationDays: 4 },
@@ -45,33 +52,42 @@ test('report contract adapter formats summary, trend, and history from cycle rec
 	]);
 	assert.equal(viewModel.trend.cycle.hasMinimumPoints, true);
 	assert.equal(viewModel.trend.duration.hasMinimumPoints, true);
+	assert.deepEqual(viewModel.summary.footer, {
+		currentSettingsText: '当前周期 31 天 · 时长 6 天',
+		portalMode: 'link',
+		targetModuleInstanceId: null
+	});
 
 	assert.deepEqual(viewModel.history.rows, [
 		{
 			key: '2026-04-12',
-			startLabel: 'Apr 12',
-			endLabel: 'Apr 17',
+			yearLabel: '2026',
+			startLabel: '04.12',
+			endLabel: '04.17',
 			durationLabel: '6d',
 			cycleLabel: '33d'
 		},
 		{
 			key: '2026-03-10',
-			startLabel: 'Mar 10',
-			endLabel: 'Mar 14',
+			yearLabel: '2026',
+			startLabel: '03.10',
+			endLabel: '03.14',
 			durationLabel: '5d',
 			cycleLabel: '30d'
 		},
 		{
 			key: '2026-02-08',
-			startLabel: 'Feb 08',
-			endLabel: 'Feb 11',
+			yearLabel: '2026',
+			startLabel: '02.08',
+			endLabel: '02.11',
 			durationLabel: '4d',
 			cycleLabel: '29d'
 		},
 		{
 			key: '2026-01-10',
-			startLabel: 'Jan 10',
-			endLabel: 'Jan 14',
+			yearLabel: '2026',
+			startLabel: '01.10',
+			endLabel: '01.14',
 			durationLabel: '5d',
 			cycleLabel: '-'
 		}
@@ -114,4 +130,36 @@ test('report contract adapter uses placeholders instead of zeroes when cycle his
 			displayText: '时长 6.0 天   波动 -0 ~ +0 天'
 		}
 	]);
+});
+
+test('report contract adapter uses module settings in the footer and falls back safely when settings are missing', () => {
+	const withViewerAccess = createReportPageViewModel({
+		moduleInstanceId: 'mi_report',
+		moduleSettings: {
+			defaultPeriodDurationDays: 5,
+			defaultPredictionTermDays: 28
+		},
+		accessState: {
+			callerRole: 'viewer'
+		},
+		records: [
+			{ startDate: '2026-04-12', endDate: '2026-04-17', durationDays: 6 }
+		]
+	});
+
+	assert.deepEqual(withViewerAccess.summary.footer, {
+		currentSettingsText: '当前周期 28 天 · 时长 5 天',
+		portalMode: 'readonly-warning',
+		targetModuleInstanceId: 'mi_report'
+	});
+
+	const withoutSettings = createReportPageViewModel({
+		moduleInstanceId: 'mi_report'
+	});
+
+	assert.deepEqual(withoutSettings.summary.footer, {
+		currentSettingsText: '当前周期 - · 时长 -',
+		portalMode: 'link',
+		targetModuleInstanceId: 'mi_report'
+	});
 });

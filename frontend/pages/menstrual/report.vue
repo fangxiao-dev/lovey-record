@@ -20,6 +20,8 @@
 			<ReportSummaryCard
 				class="report-page__summary-card u-page-section"
 				:rows="reportView.summary.rows"
+				:footer="reportView.summary.footer"
+				@footer-tap="handleSummaryFooterTap"
 			/>
 
 			<ReportTrendCard
@@ -48,6 +50,8 @@
 		DEFAULT_MENSTRUAL_REPORT_CONTEXT,
 		loadMenstrualReportView
 	} from '../../services/menstrual/report-contract-service.js';
+	import { loadMenstrualModuleSettings } from '../../services/menstrual/home-contract-service.js';
+	import { loadModuleAccessState } from '../../services/menstrual/module-shell-service.js';
 	import { mergeH5RouteQuery } from '../../utils/h5-route-query.js';
 	import { resolveRuntimeOpenid } from '../../utils/dev-openid.js';
 
@@ -85,8 +89,15 @@
 			async loadReport() {
 				this.loadError = '';
 				try {
-					const rawReport = await loadMenstrualReportView(this.contractContext);
+					const [rawReport, moduleSettings, accessState] = await Promise.all([
+						loadMenstrualReportView(this.contractContext),
+						loadMenstrualModuleSettings(this.contractContext).catch(() => null),
+						loadModuleAccessState(this.contractContext).catch(() => null)
+					]);
 					this.reportView = createReportPageViewModel({
+						moduleInstanceId: this.contractContext.moduleInstanceId,
+						moduleSettings,
+						accessState,
 						records: rawReport.records
 					});
 				} catch (error) {
@@ -96,6 +107,26 @@
 			handleTrendChange(nextKey) {
 				if (!nextKey) return;
 				this.activeTrendKey = nextKey;
+			},
+			handleSummaryFooterTap(footer) {
+				if (!footer) return;
+				if (footer.portalMode === 'readonly-warning') {
+					uni.showModal({
+						title: '只读权限',
+						content: '当前只有只读权限，不能修改周期和时长设置',
+						showCancel: false,
+						confirmText: '知道了'
+					});
+					return;
+				}
+				const query = [
+					`apiBaseUrl=${encodeURIComponent(this.contractContext.apiBaseUrl)}`,
+					`openid=${encodeURIComponent(this.contractContext.openid)}`,
+					`moduleInstanceId=${encodeURIComponent(footer.targetModuleInstanceId || this.contractContext.moduleInstanceId)}`
+				].join('&');
+				uni.navigateTo({
+					url: `/pages/management/index?${query}`
+				});
 			},
 			handleBack() {
 				uni.navigateBack({

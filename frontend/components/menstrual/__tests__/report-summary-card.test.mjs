@@ -18,4 +18,12 @@ test('report summary card renders two flattened rows with average and fluctuatio
 	assert.match(source, /row\.fluctuationText/);
 	assert.match(source, /report-summary-card__metric/);
 	assert.match(source, /report-summary-card__fluctuation/);
+	assert.match(source, /footer:\s*\{/);
+	assert.match(source, /class="report-summary-card__footer"/);
+	assert.match(source, /report-summary-card__footer-main/);
+	assert.match(source, /footer\.currentSettingsText/);
+	assert.match(source, /footer\.portalMode/);
+	assert.match(source, /report-summary-card__footer-divider/);
+	assert.match(source, /report-summary-card__footer-trigger/);
+	assert.match(source, /report-summary-card__footer-action/);
 });

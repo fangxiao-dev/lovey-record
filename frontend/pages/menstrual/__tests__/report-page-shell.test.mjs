@@ -36,6 +36,12 @@ test('menstrual report page composes the report service, adapter, and three repo
 	assert.match(reportPageSource, /<ReportTrendCard\b/);
 	assert.match(reportPageSource, /<ReportHistoryList\b/);
 	assert.match(reportPageSource, /@change="handleTrendChange"/);
+	assert.match(reportPageSource, /@footer-tap="handleSummaryFooterTap"/);
 	assert.match(reportPageSource, /this\.reportView = createReportPageViewModel/);
 	assert.match(reportPageSource, /loadMenstrualReportView/);
+	assert.match(reportPageSource, /loadMenstrualModuleSettings/);
+	assert.match(reportPageSource, /loadModuleAccessState/);
+	assert.match(reportPageSource, /Promise\.all/);
+	assert.match(reportPageSource, /pages\/management\/index/);
+	assert.match(reportPageSource, /当前只有只读权限，不能修改周期和时长设置/);
 });

@@ -22,16 +22,18 @@
 			<view class="report-trend-card__chart-body">
 				<view class="report-trend-card__track">
 					<view
-						class="report-trend-card__baseline"
-						:style="{ bottom: (8 + averageBarHeight) + 'rpx' }"
+						class="report-trend-card__average-line"
+						:style="{ bottom: averagePointOffset + 'rpx' }"
 					/>
 					<view
 						v-for="point in normalizedPoints"
 						:key="point.key"
 						class="report-trend-card__point-column"
 					>
-						<view class="report-trend-card__point" />
-						<view class="report-trend-card__bar" :style="{ height: point.barHeight + 'rpx' }" />
+						<view
+							class="report-trend-card__point-dot"
+							:style="{ bottom: point.pointOffset + 'rpx' }"
+						/>
 					</view>
 				</view>
 				<view class="report-trend-card__x-axis">
@@ -92,8 +94,12 @@
 				const values = points.map(p => p.value);
 				const rawMin = Math.min(...values);
 				const rawMax = Math.max(...values);
-				const min = rawMin === rawMax ? rawMin - 1 : rawMin;
-				const max = rawMin === rawMax ? rawMax + 1 : rawMax;
+				const min = this.activeKey === 'duration'
+					? 0
+					: (rawMin === rawMax ? rawMin - 1 : rawMin);
+				const max = rawMin === rawMax
+					? rawMax + 1
+					: rawMax;
 				const mid = Math.round((min + max) / 2);
 				return { max, mid, min };
 			},
@@ -115,12 +121,12 @@
 				const range = max - min;
 				return this.activeSeries.points.map(point => ({
 					...point,
-					barHeight: range > 0
+					pointOffset: range > 0
 						? Math.round(((point.value - min) / range) * 160 + 20)
 						: 100
 				}));
 			},
-			averageBarHeight() {
+			averagePointOffset() {
 				const points = this.activeSeries.points;
 				if (!points.length) return 100;
 				const avg = points.reduce((sum, p) => sum + p.value, 0) / points.length;
@@ -188,7 +194,7 @@
 	.report-trend-card__track {
 		position: relative;
 		display: flex;
-		align-items: flex-end;
+		align-items: stretch;
 		justify-content: space-around;
 		gap: 8rpx;
 		height: 200rpx;
@@ -197,7 +203,7 @@
 		padding-left: 8rpx;
 	}
 
-	.report-trend-card__baseline {
+	.report-trend-card__average-line {
 		position: absolute;
 		left: 0;
 		right: 0;
@@ -208,25 +214,19 @@
 
 	.report-trend-card__point-column {
 		flex: 1;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: flex-end;
+		position: relative;
 		max-width: 60rpx;
 	}
 
-	.report-trend-card__bar {
-		width: 16rpx;
-		background: rgba(217, 132, 119, 0.22);
-		border-radius: 4rpx 4rpx 0 0;
-	}
-
-	.report-trend-card__point {
+	.report-trend-card__point-dot {
+		position: absolute;
+		left: 50%;
 		width: 16rpx;
 		height: 16rpx;
+		transform: translateX(-50%);
 		border-radius: 999rpx;
 		background: #d98477;
-		flex-shrink: 0;
+		box-shadow: 0 0 0 6rpx rgba(217, 132, 119, 0.12);
 	}
 
 	.report-trend-card__x-axis {

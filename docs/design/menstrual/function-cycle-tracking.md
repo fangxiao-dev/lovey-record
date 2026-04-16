@@ -101,6 +101,13 @@ Two datasets:
 - x: start_date
 - y: duration
 
+Chart rendering rules:
+
+- `周期` trend keeps its historical-range y-axis behavior
+- `时长` trend must render from `0` on the y-axis because the metric range is intentionally small
+- both trends render as `average line + solid dots`
+- the previous column/bar expression is no longer used
+
 ---
 
 ### Data Filtering
@@ -198,6 +205,23 @@ The functional output is two flattened rows:
 - `时长 5.2 天   波动 -1 ~ +2 天`
 
 This is a display contract, not four independent metric blocks.
+
+---
+
+### 6.5 Current Settings Hint
+
+Below the two historical summary rows, the report page shows one independent hint row for the module's current settings:
+
+- `当前周期 X 天 · 时长 Y 天`
+
+Rules:
+
+- this row uses the module's current settings values
+- it must not reuse the latest history row or derive values from the latest period record
+- it is a navigation / permission affordance, not a third summary metric row
+- editable users jump to the current module's management page
+- read-only users see `!` instead of the jump affordance
+- tapping `!` shows a permission explanation modal stating that current settings cannot be changed under read-only access
 
 ---
 

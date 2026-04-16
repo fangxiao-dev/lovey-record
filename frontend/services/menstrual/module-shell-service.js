@@ -30,6 +30,18 @@ async function queryEnvelope({ apiBaseUrl, openid, path, data }) {
 	return response.data.data;
 }
 
+export async function loadModuleAccessState(context = {}) {
+	const resolved = { ...DEFAULT_MODULE_SHELL_CONTEXT, ...context };
+	return queryEnvelope({
+		apiBaseUrl: resolved.apiBaseUrl,
+		openid: resolved.openid,
+		path: '/api/queries/getModuleAccessState',
+		data: {
+			moduleInstanceId: resolved.moduleInstanceId
+		}
+	});
+}
+
 function getSharingLabel(sharingStatus) {
 	return sharingStatus === 'shared' ? '共享中' : '未共享';
 }
@@ -256,14 +268,7 @@ export async function resolveModuleContext(openid) {
 export async function loadMenstrualModuleShellPageModel(context = {}) {
 	const resolved = { ...DEFAULT_MODULE_SHELL_CONTEXT, ...context };
 	const [accessState, settings] = await Promise.all([
-		queryEnvelope({
-			apiBaseUrl: resolved.apiBaseUrl,
-			openid: resolved.openid,
-			path: '/api/queries/getModuleAccessState',
-			data: {
-				moduleInstanceId: resolved.moduleInstanceId
-			}
-		}),
+		loadModuleAccessState(resolved),
 		queryEnvelope({
 			apiBaseUrl: resolved.apiBaseUrl,
 			openid: resolved.openid,

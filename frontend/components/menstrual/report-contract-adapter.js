@@ -10,6 +10,10 @@ function formatAverageText(value) {
 	return `${value.toFixed(1)} 天`;
 }
 
+function formatCurrentSettingValue(value) {
+	return Number.isFinite(value) ? `${value} 天` : '-';
+}
+
 function formatFluctuationText(values) {
 	if (!values.length) {
 		return '波动 -';
@@ -109,14 +113,39 @@ function createHistoryRows(records) {
 		}));
 }
 
-export function createReportPageViewModel({ records = [] } = {}) {
+function createSummaryFooter({
+	moduleInstanceId = null,
+	moduleSettings = null,
+	accessState = null
+} = {}) {
+	const defaultPredictionTermDays = moduleSettings?.defaultPredictionTermDays;
+	const defaultPeriodDurationDays = moduleSettings?.defaultPeriodDurationDays;
+
+	return {
+		currentSettingsText: `当前周期 ${formatCurrentSettingValue(defaultPredictionTermDays)} · 时长 ${formatCurrentSettingValue(defaultPeriodDurationDays)}`,
+		portalMode: accessState?.callerRole === 'viewer' ? 'readonly-warning' : 'link',
+		targetModuleInstanceId: moduleInstanceId
+	};
+}
+
+export function createReportPageViewModel({
+	moduleInstanceId = null,
+	moduleSettings = null,
+	accessState = null,
+	records = []
+} = {}) {
 	const normalizedRecords = normalizeRecords(records);
 	const cycleTrend = createTrendSeries(normalizedRecords, 'cycleLength');
 	const durationTrend = createTrendSeries(normalizedRecords, 'durationDays');
 
 	return {
 		summary: {
-			rows: createSummaryRows(normalizedRecords)
+			rows: createSummaryRows(normalizedRecords),
+			footer: createSummaryFooter({
+				moduleInstanceId,
+				moduleSettings,
+				accessState
+			})
 		},
 		trend: {
 			cycle: cycleTrend,

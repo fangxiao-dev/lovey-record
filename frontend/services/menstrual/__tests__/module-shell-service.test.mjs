@@ -6,6 +6,7 @@ import {
 	createDemoMenstrualModuleShellPageModel,
 	createJoinPageUrl,
 	createMenstrualHomeEntryUrl,
+	loadModuleAccessState,
 	loadMenstrualModuleShellPageModel
 } from '../module-shell-service.js';
 
@@ -364,4 +365,44 @@ test('loadMenstrualModuleShellPageModel starts access and settings queries in pa
 	resolveAccess();
 	resolveSettings();
 	await loading;
+});
+
+test('loadModuleAccessState queries the live access endpoint and returns caller role context', async () => {
+	const requests = [];
+
+	installUniRequestMock((options) => {
+		requests.push({
+			url: options.url,
+			method: options.method,
+			data: options.data,
+			header: options.header
+		});
+
+		options.success({
+			statusCode: 200,
+			data: {
+				ok: true,
+				data: {
+					moduleInstanceId: 'seed-home-module',
+					sharingStatus: 'shared',
+					ownerUserId: 'seed-home-owner',
+					activePartners: [],
+					callerRole: 'viewer'
+				},
+				error: null
+			}
+		});
+	});
+
+	const result = await loadModuleAccessState({
+		...DEFAULT_MODULE_SHELL_CONTEXT,
+		moduleInstanceId: 'seed-home-module'
+	});
+
+	assert.equal(requests.length, 1);
+	assert.match(requests[0].url, /\/queries\/getModuleAccessState\?_ts=\d+$/);
+	assert.deepEqual(requests[0].data, {
+		moduleInstanceId: 'seed-home-module'
+	});
+	assert.equal(result.callerRole, 'viewer');
 });
