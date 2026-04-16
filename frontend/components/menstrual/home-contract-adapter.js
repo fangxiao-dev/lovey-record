@@ -256,10 +256,7 @@ function hasRecordedNote(note) {
 }
 
 function hasSelectedPanelDetailRecord(panel) {
-	return Boolean(panel && (
-		panel.summaryItems.length > 0
-		|| hasRecordedNote(panel.note)
-	));
+	return Boolean(panel && panel.summaryItems.length > 0);
 }
 
 function isDetailRecordedDay(dayRecord) {
@@ -267,7 +264,6 @@ function isDetailRecordedDay(dayRecord) {
 		dayRecord.flowLevel !== null
 		|| dayRecord.painLevel !== null
 		|| dayRecord.colorLevel !== null
-		|| hasRecordedNote(dayRecord.note)
 	));
 }
 
@@ -488,6 +484,96 @@ const STATUS_ICON = {
 	out_of_period: '/static/icons/vacation_1.png'
 };
 
+function resolveCycleLengthDays(moduleSettings) {
+	const cycleLengthDays = moduleSettings?.defaultCycleLengthDays ?? moduleSettings?.defaultPredictionTermDays;
+	return Number.isInteger(cycleLengthDays) && cycleLengthDays > 0 ? cycleLengthDays : null;
+}
+
+function resolvePeriodDurationDays(moduleSettings) {
+	const durationDays = moduleSettings?.defaultPeriodDurationDays;
+	return Number.isInteger(durationDays) && durationDays > 0 ? durationDays : null;
+}
+
+function resolveCountdownHint(daysUntilNextPeriod) {
+	return Number.isInteger(daysUntilNextPeriod) && daysUntilNextPeriod >= 0
+		? `还有 ${daysUntilNextPeriod} 天经期`
+		: '月经可能临近';
+}
+
+export function computePhaseStatus({ homeView, moduleSettings, today }) {
+	const currentStatusSummary = homeView?.currentStatusSummary || {};
+	const currentSegment = currentStatusSummary.currentSegment || currentStatusSummary.currentCycle || null;
+	const predictionSummary = homeView?.predictionSummary || null;
+	const cycleLengthDays = resolveCycleLengthDays(moduleSettings);
+	const periodDurationDays = resolvePeriodDurationDays(moduleSettings);
+	const predictedStartDate = predictionSummary?.predictedStartDate || null;
+	const basedOnCycleCount = predictionSummary?.basedOnCycleCount;
+
+	if (!today || !currentSegment?.startDate || !cycleLengthDays || !periodDurationDays) {
+		return {
+			phase: '卵泡期',
+			isLutealLate: false,
+			emphasis: false,
+			hint: '状态逐渐恢复',
+			showReliabilityWarning: Number.isInteger(basedOnCycleCount) ? basedOnCycleCount < 3 : false,
+			daysUntilNextPeriod: null
+		};
+	}
+
+	const segmentStartDate = currentSegment.startDate;
+	const segmentEndDate = currentSegment.endDate || addDays(segmentStartDate, periodDurationDays - 1);
+	const isInCurrentPeriod = today >= segmentStartDate && today <= segmentEndDate;
+	const daysUntilNextPeriod = predictedStartDate ? diffDays(today, predictedStartDate) : null;
+	const ovulationCenterDate = addDays(segmentStartDate, cycleLengthDays - 14);
+	const ovulationWindowStartDate = addDays(ovulationCenterDate, -2);
+	const ovulationWindowEndDate = addDays(ovulationCenterDate, 2);
+	const lutealLateStartDate = predictedStartDate ? addDays(predictedStartDate, -7) : null;
+	const showReliabilityWarning = Number.isInteger(basedOnCycleCount) ? basedOnCycleCount < 3 : false;
+
+	if (isInCurrentPeriod) {
+		return {
+			phase: '经期',
+			isLutealLate: false,
+			emphasis: false,
+			hint: '注意休息',
+			showReliabilityWarning,
+			daysUntilNextPeriod
+		};
+	}
+
+	if (today >= ovulationWindowStartDate && today <= ovulationWindowEndDate) {
+		return {
+			phase: '排卵期',
+			isLutealLate: false,
+			emphasis: true,
+			hint: '精力可能较好',
+			showReliabilityWarning,
+			daysUntilNextPeriod
+		};
+	}
+
+	if (today > ovulationWindowEndDate) {
+		const isLutealLate = Boolean(lutealLateStartDate && today >= lutealLateStartDate && (!predictedStartDate || today < predictedStartDate));
+		return {
+			phase: '黄体期',
+			isLutealLate,
+			emphasis: isLutealLate,
+			hint: isLutealLate ? resolveCountdownHint(daysUntilNextPeriod) : '注意身体变化',
+			showReliabilityWarning,
+			daysUntilNextPeriod
+		};
+	}
+
+	return {
+		phase: '卵泡期',
+		isLutealLate: false,
+		emphasis: false,
+		hint: '状态逐渐恢复',
+		showReliabilityWarning,
+		daysUntilNextPeriod
+	};
+}
+
 function createHeroCard(homeView, today, moduleSettings = null) {
 	const statusSummary = homeView.currentStatusSummary || {};
 	// Handle both old field names (status/currentCycle) and new ones (currentStatus/currentSegment)
@@ -504,6 +590,11 @@ function createHeroCard(homeView, today, moduleSettings = null) {
 			? formatMonthDayRange(prediction.predictedStartDate, predictedSegmentEndDate)
 			: formatMonthDayDot(prediction.predictedStartDate)
 		: '暂无记录';
+	const phaseStatus = computePhaseStatus({
+		homeView,
+		moduleSettings,
+		today
+	});
 
 	// When in period: "上次" refers to the previous segment
 	// When out of period: "上次" refers to the segment we just exited (current segment)
@@ -515,7 +606,8 @@ function createHeroCard(homeView, today, moduleSettings = null) {
 		statusFrame: {
 			state: currentStatus,
 			text: statusText,
-			iconUrl: STATUS_ICON[currentStatus] || STATUS_ICON.out_of_period
+			iconUrl: STATUS_ICON[currentStatus] || STATUS_ICON.out_of_period,
+			phaseStatus
 		},
 		previousFrame: {
 			label: '上次',

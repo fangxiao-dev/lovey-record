@@ -7,11 +7,133 @@ import {
 	applyBatchPeriodDraftToPageModel,
 	applySingleDayPeriodActionToPageModel,
 	applyToggleAttributeOptionToPageModel,
+	computePhaseStatus,
 	createEmptyDayDetail,
 	createSeededHomeContracts,
 	createMenstrualHomePageModel,
 	resolveJumpTargetDate
 } from '../home-contract-adapter.js';
+
+function createPhaseHomeReadModel({
+	today,
+	phaseLabel = '非经期',
+	currentStatus = 'out_of_period',
+	currentSegment = {
+		startDate: '2026-03-01',
+		endDate: '2026-03-05',
+		durationDays: 5
+	},
+	moduleSettings = {
+		defaultPeriodDurationDays: 5,
+		defaultPredictionTermDays: 28
+	},
+	predictionSummary = {
+		predictedStartDate: '2026-03-29',
+		predictionWindowStart: '2026-03-27',
+		predictionWindowEnd: '2026-03-31',
+		basedOnCycleCount: 4
+	}
+} = {}) {
+	return {
+		today,
+		homeView: {
+			moduleInstanceId: 'phase-home-module',
+			sharingStatus: 'private',
+			currentStatusSummary: {
+				currentStatus,
+				anchorDate: today,
+				currentSegment,
+				statusCard: {
+					label: phaseLabel
+				},
+				previousSegment: null
+			},
+			predictionSummary
+		},
+		moduleSettings
+	};
+}
+
+test('computePhaseStatus returns 经期 when today is inside the current period segment', () => {
+	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
+		today: '2026-03-03',
+		currentStatus: 'in_period',
+		phaseLabel: '经期第3天'
+	}));
+
+	assert.equal(phaseStatus.phase, '经期');
+	assert.equal(phaseStatus.emphasis, false);
+	assert.equal(phaseStatus.showReliabilityWarning, false);
+	assert.equal(phaseStatus.daysUntilNextPeriod, 26);
+});
+
+test('computePhaseStatus returns 卵泡期 without emphasis when today is between period end and ovulation window', () => {
+	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
+		today: '2026-03-10'
+	}));
+
+	assert.equal(phaseStatus.phase, '卵泡期');
+	assert.equal(phaseStatus.emphasis, false);
+	assert.equal(phaseStatus.isLutealLate, false);
+	assert.equal(phaseStatus.daysUntilNextPeriod, 19);
+});
+
+test('computePhaseStatus returns 排卵期 with emphasis inside the ovulation window', () => {
+	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
+		today: '2026-03-15'
+	}));
+
+	assert.equal(phaseStatus.phase, '排卵期');
+	assert.equal(phaseStatus.emphasis, true);
+	assert.equal(phaseStatus.isLutealLate, false);
+	assert.equal(phaseStatus.daysUntilNextPeriod, 14);
+});
+
+test('computePhaseStatus returns 黄体期 without emphasis in early luteal days', () => {
+	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
+		today: '2026-03-20'
+	}));
+
+	assert.equal(phaseStatus.phase, '黄体期');
+	assert.equal(phaseStatus.isLutealLate, false);
+	assert.equal(phaseStatus.emphasis, false);
+	assert.equal(phaseStatus.daysUntilNextPeriod, 9);
+});
+
+test('computePhaseStatus returns 黄体期 with late-stage emphasis in the final seven days before next period', () => {
+	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
+		today: '2026-03-24'
+	}));
+
+	assert.equal(phaseStatus.phase, '黄体期');
+	assert.equal(phaseStatus.isLutealLate, true);
+	assert.equal(phaseStatus.emphasis, true);
+	assert.equal(phaseStatus.daysUntilNextPeriod, 5);
+});
+
+test('computePhaseStatus enables the reliability warning when period record count is below three', () => {
+	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
+		today: '2026-03-15',
+		predictionSummary: {
+			predictedStartDate: '2026-03-29',
+			predictionWindowStart: '2026-03-27',
+			predictionWindowEnd: '2026-03-31',
+			basedOnCycleCount: 2
+		}
+	}));
+
+	assert.equal(phaseStatus.showReliabilityWarning, true);
+	assert.equal(phaseStatus.phase, '排卵期');
+});
+
+test('computePhaseStatus resolves the luteal late countdown hint using daysUntilNextPeriod', () => {
+	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
+		today: '2026-03-24'
+	}));
+
+	assert.equal(phaseStatus.hint, '还有 5 天经期');
+	assert.equal(phaseStatus.daysUntilNextPeriod, 5);
+});
 
 test('home contract adapter maps query responses into the formal menstrual home page model', () => {
 	const { homeView, dayDetail, moduleSettings } = createSeededHomeContracts();
