@@ -1086,7 +1086,14 @@
 			getPhaseIconUrl(phase) {
 				return PHASE_ICON_URL_MAP[phase] || PHASE_ICON_URL_MAP.经期;
 			},
-			handlePhaseWarningTap() {},
+			handlePhaseWarningTap() {
+				uni.showModal({
+					title: '提示',
+					content: '当前预测基于较少记录，随着记录次数增加会更准确',
+					showCancel: false,
+					confirmText: '知道了'
+				});
+			},
 			formatBatchDateLabel(cellKey) {
 				if (!cellKey) return '';
 				const cell = this.allCalendarCells.find((item) => item.key === cellKey);

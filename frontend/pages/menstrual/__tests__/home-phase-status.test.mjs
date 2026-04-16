@@ -39,4 +39,6 @@ test('home page renders the reliability warning button inline with the phase nam
 	assert.match(source, /page\.heroCard\.statusFrame\.phaseStatus\.showReliabilityWarning/);
 	assert.match(source, /class="menstrual-home__hero-phase-warning-btn"/);
 	assert.match(source, /@\s*tap="handlePhaseWarningTap"/);
+	assert.match(source, /uni\.showModal\(/);
+	assert.match(source, /当前预测基于较少记录，随着记录次数增加会更准确/);
 });
