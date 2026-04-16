@@ -25,12 +25,12 @@ test('home page renders a dedicated phase status row with inline hint content', 
 test('home page source includes amber emphasis classes and warm hero styling for ovulation and late luteal phases', () => {
 	const source = readHomePageSource();
 
-	assert.match(source, /menstrual-home__hero-status-frame--emphasis/);
+	assert.match(source, /menstrual-home__hero--emphasis/);
 	assert.match(source, /menstrual-home__hero-phase-group--emphasis/);
 	assert.match(source, /menstrual-home__hero-phase-name--emphasis/);
-	assert.match(source, /#FBF0D8/);
-	assert.match(source, /#FFFDF8/);
-	assert.match(source, /#E8D5A3/);
+	assert.match(source, /#FCF4E6/);
+	assert.match(source, /#FFFCF6/);
+	assert.match(source, /#EAD9B3/);
 });
 
 test('home page renders the reliability warning button inline with the phase name', () => {

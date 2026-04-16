@@ -1,6 +1,10 @@
 <template>
 	<view class="menstrual-home u-page-shell">
-		<view v-if="page" class="menstrual-home__hero">
+		<view
+			v-if="page"
+			class="menstrual-home__hero"
+			:class="{ 'menstrual-home__hero--emphasis': page.heroCard.statusFrame.phaseStatus?.emphasis }"
+		>
 			<view class="menstrual-home__hero-header">
 				<text class="menstrual-home__hero-label">{{ page.heroCard.label }}</text>
 				<view class="menstrual-home__hero-sharing-chip">
@@ -13,10 +17,7 @@
 			<view v-if="userRole === 'viewer'" class="menstrual-home__leave-btn" @tap="handleLeaveTap">
 				<text>退出共享</text>
 			</view>
-			<view
-				class="menstrual-home__hero-status-frame"
-				:class="{ 'menstrual-home__hero-status-frame--emphasis': page.heroCard.statusFrame.phaseStatus?.emphasis }"
-			>
+			<view class="menstrual-home__hero-status-frame">
 				<template v-if="page.heroCard.statusFrame.phaseStatus && page.heroCard.statusFrame.phaseStatus.phase !== '经期'">
 					<view class="menstrual-home__hero-phase-row">
 						<view
@@ -1116,6 +1117,11 @@
 		background: #ffffff;
 	}
 
+	.menstrual-home__hero--emphasis {
+		background: #FFFCF6;
+		border: 2rpx solid #EAD9B3;
+	}
+
 	.menstrual-home__hero-header {
 		display: flex;
 		align-items: center;
@@ -1154,11 +1160,6 @@
 		border-radius: 24rpx;
 	}
 
-	.menstrual-home__hero-status-frame--emphasis {
-		background: #FFFDF8;
-		border: 2rpx solid #E8D5A3;
-	}
-
 	.menstrual-home__hero-phase-row {
 		display: inline-flex;
 		align-items: center;
@@ -1176,7 +1177,7 @@
 	.menstrual-home__hero-phase-group--emphasis {
 		padding: 12rpx 24rpx;
 		border-radius: 999rpx;
-		background: #FBF0D8;
+		background: #FCF4E6;
 	}
 
 	.menstrual-home__hero-phase-icon {
@@ -1193,7 +1194,7 @@
 	}
 
 	.menstrual-home__hero-phase-name--emphasis {
-		color: #B08D57;
+		color: #B79B67;
 	}
 
 	.menstrual-home__hero-phase-warning-btn {
@@ -1234,7 +1235,7 @@
 	}
 
 	.menstrual-home__hero-hint-text--emphasis {
-		color: #B08D57;
+		color: #B79B67;
 	}
 
 	.menstrual-home__hero-status-icon {
