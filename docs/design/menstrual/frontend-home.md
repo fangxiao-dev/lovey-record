@@ -48,7 +48,10 @@ The primary hero frame is not a small chip. It is a dedicated status container.
 Current MVP states:
 
 - `经期第<N>天`
-- `非经期`
+- `卵泡期` with inline hint
+- `排卵期` with amber emphasis and inline hint
+- `黄体期` with inline hint
+- `黄体期` final 7 days with amber emphasis and countdown-capable hint
 
 
 Design rule:
@@ -128,4 +131,3 @@ The durable logic for:
 - when `暂无记录` appears
 
 must be maintained in the application contract under [../../contracts/application-contracts/menstrual-application-contract.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/contracts/application-contracts/menstrual-application-contract.md).
-
