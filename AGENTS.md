@@ -55,6 +55,26 @@
   - `Current mainline progress: menstrual/home 的前后端联调主链已经打通，正式页所需的单日读写、note、batch edit、live-first 加载与页面级 live 验收都已进入可闭环状态。`
   - `Next-step recommendation: 收口 clear-record 的最终产品语义，并把本轮 live-only 验收沉淀成固定回归清单或脚本。`
 
+### Development Environment & Git Worktrees
+
+When using git worktrees for parallel development:
+
+**Worktree Setup:**
+- After creating a new worktree, run `./setup.ps1` from the worktree root to automatically copy `.env` files from the parent repository
+- This ensures the worktree has required configuration without manually copying files
+- The script handles both `backend/.env` and `frontend/.env*` files
+- Example: 
+  ```powershell
+  cd .claude/worktrees/your-worktree/
+  ./setup.ps1
+  ```
+
+**Local Development Workflow:**
+- Develop on a feature branch in the worktree (no push to remote required)
+- Commit changes locally in the worktree
+- Merge the worktree branch to the local master in the parent repository: `git merge <worktree-branch>`
+- Keep the remote clean - only push when ready for external sharing/review
+
 ---
 
 ## Frontend-Specific Guidance
