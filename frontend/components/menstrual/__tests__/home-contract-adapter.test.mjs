@@ -14,6 +14,28 @@ import {
 	resolveJumpTargetDate
 } from '../home-contract-adapter.js';
 
+function createUniStorageMock() {
+	const store = new Map();
+
+	return {
+		store,
+		getStorageSync(key) {
+			return store.get(key);
+		},
+		setStorageSync(key, value) {
+			store.set(key, value);
+		}
+	};
+}
+
+test.beforeEach(() => {
+	globalThis.uni = createUniStorageMock();
+});
+
+test.afterEach(() => {
+	delete globalThis.uni;
+});
+
 function createPhaseHomeReadModel({
 	today,
 	phaseLabel = '非经期',
@@ -127,11 +149,12 @@ test('computePhaseStatus enables the reliability warning when period record coun
 });
 
 test('computePhaseStatus resolves the luteal late countdown hint using daysUntilNextPeriod', () => {
-	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
+	const phaseInput = createPhaseHomeReadModel({
 		today: '2026-03-24'
-	}));
+	});
+	const phaseStatus = computePhaseStatus(phaseInput);
 
-	assert.equal(phaseStatus.hint, '还有 5 天经期');
+	assert.match(phaseStatus.hint, /月经可能临近|还有 5 天经期/);
 	assert.equal(phaseStatus.daysUntilNextPeriod, 5);
 });
 

@@ -1,4 +1,5 @@
 import { createCalendarLegendItems } from './calendar-legend-data.js';
+import { resolveHint } from './phase-hint-rotation.js';
 
 const WEEKDAY_LABELS = Object.freeze(['M', 'T', 'W', 'T', 'F', 'S', 'S']);
 
@@ -494,12 +495,6 @@ function resolvePeriodDurationDays(moduleSettings) {
 	return Number.isInteger(durationDays) && durationDays > 0 ? durationDays : null;
 }
 
-function resolveCountdownHint(daysUntilNextPeriod) {
-	return Number.isInteger(daysUntilNextPeriod) && daysUntilNextPeriod >= 0
-		? `还有 ${daysUntilNextPeriod} 天经期`
-		: '月经可能临近';
-}
-
 export function computePhaseStatus({ homeView, moduleSettings, today }) {
 	const currentStatusSummary = homeView?.currentStatusSummary || {};
 	const currentSegment = currentStatusSummary.currentSegment || currentStatusSummary.currentCycle || null;
@@ -514,7 +509,7 @@ export function computePhaseStatus({ homeView, moduleSettings, today }) {
 			phase: '卵泡期',
 			isLutealLate: false,
 			emphasis: false,
-			hint: '状态逐渐恢复',
+			hint: resolveHint('卵泡期', false, null),
 			showReliabilityWarning: Number.isInteger(basedOnCycleCount) ? basedOnCycleCount < 3 : false,
 			daysUntilNextPeriod: null
 		};
@@ -535,7 +530,7 @@ export function computePhaseStatus({ homeView, moduleSettings, today }) {
 			phase: '经期',
 			isLutealLate: false,
 			emphasis: false,
-			hint: '注意休息',
+			hint: resolveHint('经期', false, daysUntilNextPeriod),
 			showReliabilityWarning,
 			daysUntilNextPeriod
 		};
@@ -546,7 +541,7 @@ export function computePhaseStatus({ homeView, moduleSettings, today }) {
 			phase: '排卵期',
 			isLutealLate: false,
 			emphasis: true,
-			hint: '精力可能较好',
+			hint: resolveHint('排卵期', false, daysUntilNextPeriod),
 			showReliabilityWarning,
 			daysUntilNextPeriod
 		};
@@ -558,7 +553,7 @@ export function computePhaseStatus({ homeView, moduleSettings, today }) {
 			phase: '黄体期',
 			isLutealLate,
 			emphasis: isLutealLate,
-			hint: isLutealLate ? resolveCountdownHint(daysUntilNextPeriod) : '注意身体变化',
+			hint: resolveHint('黄体期', isLutealLate, daysUntilNextPeriod),
 			showReliabilityWarning,
 			daysUntilNextPeriod
 		};
@@ -568,7 +563,7 @@ export function computePhaseStatus({ homeView, moduleSettings, today }) {
 		phase: '卵泡期',
 		isLutealLate: false,
 		emphasis: false,
-		hint: '状态逐渐恢复',
+		hint: resolveHint('卵泡期', false, daysUntilNextPeriod),
 		showReliabilityWarning,
 		daysUntilNextPeriod
 	};
