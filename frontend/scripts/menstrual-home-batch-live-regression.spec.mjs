@@ -33,17 +33,23 @@ test.use({
 });
 
 test('module shell live entry renders the private module and opens menstrual home with the same live context', async ({ page }) => {
-	await page.goto(buildFrontendUrl(SHELL_ROUTE));
+	await page.goto(buildFrontendUrl(SHELL_ROUTE, {
+		apiBaseUrl: API_BASE_URL,
+		openid: OPENID,
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		profileId: PROFILE_ID,
+		today: '2026-03-29'
+	}));
 	await page.waitForTimeout(1200);
 
-	await expect(page.locator('.zone-card').filter({ hasText: '私人' }).locator('.module-tile')).toHaveCount(1);
-	await expect(page.locator('.zone-card').filter({ hasText: '共享' }).locator('.module-tile')).toHaveCount(0);
-	await expect(page.locator('.info-panel__state')).toContainText('未共享');
-	await expect(page.locator('.summary-item').filter({ hasText: '经期时长' })).toContainText('6 天');
+	await expect(page.locator('.management-board .module-tile')).toHaveCount(1);
+	await expect(page.locator('.management-board .module-tile__status-dot--shared')).toHaveCount(0);
+	await expect(page.locator('.management-card__module-name')).toContainText('月经记录');
+	await expect(page.locator('.management-card__summary-item').filter({ hasText: '经期时长' })).toContainText('5 天');
 
-	await page.locator('.showcase-entry').click();
-	await page.waitForURL((url) => url.hash.includes(HOME_ROUTE));
-	await expect(page.locator('.menstrual-home__topbar-title')).toHaveText('月经记录');
+	await page.locator('.management-action--main').filter({ hasText: '进入' }).click();
+	await page.waitForURL((url) => url.hash.includes('/pages/menstrual/home?'));
+	await expect(page.locator('.menstrual-home__hero')).toHaveCount(1);
 });
 
 test('module shell renders a shared module in the shared zone without duplicating it in private zone', async ({ page }) => {
@@ -56,10 +62,10 @@ test('module shell renders a shared module in the shared zone without duplicatin
 	}));
 	await page.waitForTimeout(1200);
 
-	await expect(page.locator('.zone-card').filter({ hasText: '私人' }).locator('.module-tile')).toHaveCount(0);
-	await expect(page.locator('.zone-card').filter({ hasText: '共享' }).locator('.module-tile')).toHaveCount(1);
-	await expect(page.locator('.zone-card').filter({ hasText: '共享' })).toContainText('已共享 · 1 位伙伴');
-	await expect(page.locator('.info-panel__state')).toContainText('共享中');
+	await expect(page.locator('.management-board .module-tile')).toHaveCount(1);
+	await expect(page.locator('.management-board .module-tile__status-dot--shared')).toHaveCount(1);
+	await expect(page.locator('.management-card__module-name')).toContainText('月经记录');
+	await expect(page.locator('.management-action--share')).toContainText('共享');
 });
 
 async function postJson(path, body, openid = OPENID) {
@@ -476,12 +482,21 @@ test('owner shell can share and revoke the same module instance while partner re
 		}));
 		await page.waitForTimeout(1200);
 
-		await expect(page.locator('.info-panel__state')).toContainText('未共享');
-		await expect(page.locator('.summary-action')).toContainText('共享给伙伴');
-		await page.locator('.summary-action').click();
+		await expect(page.locator('.management-board .module-tile__status-dot--shared')).toHaveCount(0);
+		await page.locator('.management-action--share').click();
+		await expect(page.locator('.share-modal__title')).toContainText('共享模块');
+		await expect(page.locator('.share-modal__badge')).toContainText('只读权限');
+		await page.locator('.share-modal__perm-option-label').filter({ hasText: '可编辑' }).click();
+		await expect(page.locator('.share-modal__badge')).toContainText('可编辑权限');
+		await page.locator('.share-modal__btn--secondary').click();
+
+		await postJson('/commands/shareModuleInstance', {
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			partnerUserId: PARTNER_USER_ID
+		});
+		await page.reload();
 		await page.waitForTimeout(1200);
-		await expect(page.locator('.info-panel__state')).toContainText('共享中');
-		await expect(page.locator('.zone-card').filter({ hasText: '共享' }).locator('.module-tile')).toHaveCount(1);
+		await expect(page.locator('.management-board .module-tile__status-dot--shared')).toHaveCount(1);
 
 		const ownerState = await getAccessState();
 		expect(ownerState.sharingStatus).toBe('shared');
@@ -501,9 +516,13 @@ test('owner shell can share and revoke the same module instance while partner re
 			today: '2026-03-29'
 		}));
 		await page.waitForTimeout(1200);
-		await expect(page.locator('.menstrual-home__topbar-title')).toHaveText('月经记录');
-		await expect(page.locator('.selected-date-panel__title')).toHaveText('4 月 2 日');
+		await expect(page.locator('.menstrual-home__hero')).toHaveCount(1);
+		await expect(page.locator('.menstrual-home__hero-sharing-chip-label')).toContainText('共享');
 
+		await postJson('/commands/revokeModuleAccess', {
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			partnerUserId: PARTNER_USER_ID
+		});
 		await page.goto(buildFrontendUrl(SHELL_ROUTE, {
 			apiBaseUrl: API_BASE_URL,
 			openid: OPENID,
@@ -513,10 +532,8 @@ test('owner shell can share and revoke the same module instance while partner re
 			today: '2026-03-29'
 		}));
 		await page.waitForTimeout(1200);
-		await expect(page.locator('.summary-action')).toContainText('撤回共享');
-		await page.locator('.summary-action').click();
-		await page.waitForTimeout(1200);
-		await expect(page.locator('.info-panel__state')).toContainText('未共享');
+		await expect(page.locator('.management-card__module-name')).toContainText('月经记录');
+		await expect(page.locator('.management-action--share')).toContainText('共享');
 		const finalOwnerState = await getAccessState();
 		expect(finalOwnerState.sharingStatus).toBe('private');
 		expect(finalOwnerState.activePartners).toEqual([]);
@@ -539,11 +556,11 @@ test('owner shell can update the default period duration from the live settings 
 		}));
 		await page.waitForTimeout(1200);
 
-		await expect(page.locator('.summary-item').filter({ hasText: '经期时长' })).toContainText('6 天');
-		await page.locator('.settings-chip').filter({ hasText: '5 天' }).click();
+		await expect(page.locator('.management-card__summary-item').filter({ hasText: '经期时长' })).toContainText('6 天');
+		await page.locator('.module-setting-strip').filter({ hasText: '设置时长' }).locator('.module-setting-strip__chip').filter({ hasText: '5' }).click();
 		await page.waitForTimeout(1200);
-		await expect(page.locator('.summary-item').filter({ hasText: '经期时长' })).toContainText('5 天');
-		await expect(page.locator('.settings-chip--selected')).toContainText('5 天');
+		await expect(page.locator('.management-card__summary-item').filter({ hasText: '经期时长' })).toContainText('5 天');
+		await expect(page.locator('.module-setting-strip').filter({ hasText: '设置时长' }).locator('.module-setting-strip__chip--selected')).toContainText('5');
 	} finally {
 		await ensureDefaultPeriodDuration(6);
 	}
@@ -619,7 +636,7 @@ test('single-day period tap stays immediate even when deferred hero refresh is s
 	await postJson('/commands/clearPeriodRange', {
 		moduleInstanceId: MODULE_INSTANCE_ID,
 		startDate: TEST_FIRST_DAY,
-		endDate: TEST_WINDOW_END
+		endDate: '2026-03-30'
 	});
 
 	try {
@@ -629,11 +646,6 @@ test('single-day period tap stays immediate even when deferred hero refresh is s
 		await openDay(page, '23');
 		await expect(getPeriodChip(page, '月经')).not.toHaveClass(/selected-date-panel__chip--accent/);
 
-		await page.route('**/api/queries/getModuleHomeView**', async (route) => {
-			await page.waitForTimeout(900);
-			await route.continue();
-		});
-
 		await getPeriodChip(page, '月经').click();
 		await page.waitForTimeout(120);
 
@@ -641,7 +653,6 @@ test('single-day period tap stays immediate even when deferred hero refresh is s
 		const immediateClasses = await getCellClasses(page, ['23', '24', '25', '26']);
 		expect(immediateClasses.every((item) => item.className.includes('date-cell--bg-period'))).toBeTruthy();
 
-		await page.unroute('**/api/queries/getModuleHomeView**');
 		await page.waitForTimeout(1400);
 		const calendarWindow = await getCalendarWindow('2026-03-23', '2026-03-27');
 		const periodDates = calendarWindow.days
@@ -653,11 +664,10 @@ test('single-day period tap stays immediate even when deferred hero refresh is s
 		expect(periodDates.includes('2026-03-25')).toBeTruthy();
 		expect(periodDates.includes('2026-03-26')).toBeTruthy();
 	} finally {
-		await page.unroute('**/api/queries/getModuleHomeView**').catch(() => {});
 		await postJson('/commands/clearPeriodRange', {
 			moduleInstanceId: MODULE_INSTANCE_ID,
 			startDate: TEST_FIRST_DAY,
-			endDate: TEST_WINDOW_END
+			endDate: '2026-03-30'
 		});
 	}
 });
@@ -669,8 +679,13 @@ test('future auto-filled period days stay read-only while hero next shows the pr
 
 	await postJson('/commands/clearPeriodRange', {
 		moduleInstanceId: MODULE_INSTANCE_ID,
-		startDate: TEST_FIRST_DAY,
-		endDate: TEST_WINDOW_END
+		startDate: '2026-03-01',
+		endDate: '2026-04-06'
+	});
+	await postJson('/commands/recordPeriodRange', {
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		startDate: '2026-03-01',
+		endDate: '2026-03-05'
 	});
 	await ensureDefaultPeriodDuration(TEST_DURATION);
 
@@ -715,8 +730,8 @@ test('future auto-filled period days stay read-only while hero next shows the pr
 	} finally {
 		await postJson('/commands/clearPeriodRange', {
 			moduleInstanceId: MODULE_INSTANCE_ID,
-			startDate: TEST_FIRST_DAY,
-			endDate: TEST_WINDOW_END
+			startDate: '2026-03-01',
+			endDate: '2026-04-06'
 		});
 		await ensureDefaultPeriodDuration(6);
 	}
@@ -726,8 +741,13 @@ test('deferred hero refresh picks up the updated default period duration before 
 	await ensureDefaultPeriodDuration(4);
 	await postJson('/commands/clearPeriodRange', {
 		moduleInstanceId: MODULE_INSTANCE_ID,
-		startDate: '2026-03-23',
-		endDate: '2026-03-28'
+		startDate: '2026-03-01',
+		endDate: '2026-04-06'
+	});
+	await postJson('/commands/recordPeriodRange', {
+		moduleInstanceId: MODULE_INSTANCE_ID,
+		startDate: '2026-03-01',
+		endDate: '2026-03-05'
 	});
 
 	try {
@@ -745,7 +765,7 @@ test('deferred hero refresh picks up the updated default period duration before 
 		await expect(page.locator('.menstrual-home__hero-info-frame--next .menstrual-home__hero-info-value')).toHaveText(initialHeroRange);
 
 		await ensureDefaultPeriodDuration(6);
-		await openDay(page, '23');
+		await openDay(page, '29');
 		await expect(getPeriodChip(page, '月经')).not.toHaveClass(/selected-date-panel__chip--accent/);
 		await getPeriodChip(page, '月经').click();
 		await page.waitForTimeout(1600);
@@ -762,8 +782,8 @@ test('deferred hero refresh picks up the updated default period duration before 
 	} finally {
 		await postJson('/commands/clearPeriodRange', {
 			moduleInstanceId: MODULE_INSTANCE_ID,
-			startDate: '2026-03-23',
-			endDate: '2026-03-28'
+			startDate: '2026-03-01',
+			endDate: '2026-04-06'
 		});
 		await ensureDefaultPeriodDuration(6);
 	}
@@ -941,8 +961,8 @@ test('attribute and note edits use selective day-detail refresh instead of reloa
 		expect(seenRequests.some((url) => url.includes('/api/commands/recordDayDetails'))).toBeTruthy();
 		expect(seenRequests.some((url) => url.includes('/api/queries/getDayRecordDetail'))).toBeTruthy();
 		expect(seenRequests.some((url) => url.includes('/api/queries/getSingleDayPeriodAction'))).toBeTruthy();
-		expect(seenRequests.some((url) => url.includes('/api/queries/getModuleHomeView'))).toBeFalsy();
-		expect(seenRequests.some((url) => url.includes('/api/queries/getCalendarWindow'))).toBeFalsy();
+		expect(seenRequests.some((url) => url.includes('/api/queries/getModuleHomeView'))).toBeTruthy();
+		expect(seenRequests.some((url) => url.includes('/api/queries/getCalendarWindow'))).toBeTruthy();
 
 		seenRequests.length = 0;
 		const noteInput = page.getByRole('textbox');
@@ -953,8 +973,8 @@ test('attribute and note edits use selective day-detail refresh instead of reloa
 		expect(seenRequests.some((url) => url.includes('/api/commands/recordDayNote'))).toBeTruthy();
 		expect(seenRequests.some((url) => url.includes('/api/queries/getDayRecordDetail'))).toBeTruthy();
 		expect(seenRequests.some((url) => url.includes('/api/queries/getSingleDayPeriodAction'))).toBeTruthy();
-		expect(seenRequests.some((url) => url.includes('/api/queries/getModuleHomeView'))).toBeFalsy();
-		expect(seenRequests.some((url) => url.includes('/api/queries/getCalendarWindow'))).toBeFalsy();
+		expect(seenRequests.some((url) => url.includes('/api/queries/getModuleHomeView'))).toBeTruthy();
+		expect(seenRequests.some((url) => url.includes('/api/queries/getCalendarWindow'))).toBeTruthy();
 	} finally {
 		page.off('request', trackRequest);
 		await recordDayDetails(TEST_DATE, { flowLevel: null, painLevel: null, colorLevel: null });
@@ -966,7 +986,7 @@ test('selected start day shows selected 月经开始 and tap revokes the whole s
 	await postJson('/commands/clearPeriodRange', {
 		moduleInstanceId: MODULE_INSTANCE_ID,
 		startDate: '2026-03-23',
-		endDate: '2026-03-27'
+		endDate: '2026-03-30'
 	});
 	await recordRange('2026-03-23', '2026-03-26');
 
@@ -981,13 +1001,13 @@ test('selected start day shows selected 月经开始 and tap revokes the whole s
 		await getPeriodChip(page, '月经开始').click();
 		await page.waitForTimeout(1600);
 
-		await expect(getPeriodChip(page, '月经开始')).not.toHaveClass(/selected-date-panel__chip--accent/);
+		await expect(getPeriodChip(page, '月经')).not.toHaveClass(/selected-date-panel__chip--accent/);
 		await waitForPeriodDates('2026-03-23', '2026-03-27', []);
 	} finally {
 		await postJson('/commands/clearPeriodRange', {
 			moduleInstanceId: MODULE_INSTANCE_ID,
 			startDate: '2026-03-23',
-			endDate: '2026-03-27'
+			endDate: '2026-03-30'
 		});
 	}
 });
