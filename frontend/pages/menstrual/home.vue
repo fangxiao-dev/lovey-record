@@ -44,7 +44,12 @@
 							</view>
 						</view>
 						<view class="menstrual-home__hero-hint-group">
-							<image class="menstrual-home__hero-hint-icon" src="/static/menstrual/warning.svg" mode="aspectFit" />
+							<image
+								v-if="shouldShowPhaseHintIcon(page.heroCard.statusFrame.phaseStatus)"
+								class="menstrual-home__hero-hint-icon"
+								src="/static/menstrual/warning.svg"
+								mode="aspectFit"
+							/>
 							<text
 								class="menstrual-home__hero-hint-text"
 								:class="{ 'menstrual-home__hero-hint-text--emphasis': page.heroCard.statusFrame.phaseStatus.isLutealLate }"
@@ -226,6 +231,10 @@
 		排卵期: '/static/menstrual/sun.svg',
 		黄体期: '/static/menstrual/moon.svg',
 		经期: '/static/icons/coffee.svg'
+	});
+
+	const PHASE_HINT_ICON_CONFIG = Object.freeze({
+		黄体期_前7天: true
 	});
 
 	export default {
@@ -1085,6 +1094,17 @@
 			},
 			getPhaseIconUrl(phase) {
 				return PHASE_ICON_URL_MAP[phase] || PHASE_ICON_URL_MAP.经期;
+			},
+			getPhaseHintStateKey(phaseStatus) {
+				if (!phaseStatus?.phase) return '';
+				if (phaseStatus.phase === '黄体期') {
+					return phaseStatus.isLutealLate ? '黄体期_前7天' : '黄体期_早段';
+				}
+				return phaseStatus.phase;
+			},
+			shouldShowPhaseHintIcon(phaseStatus) {
+				const phaseHintStateKey = this.getPhaseHintStateKey(phaseStatus);
+				return Boolean(PHASE_HINT_ICON_CONFIG[phaseHintStateKey]);
 			},
 			handlePhaseWarningTap() {
 				uni.showModal({

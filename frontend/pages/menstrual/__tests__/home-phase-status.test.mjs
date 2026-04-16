@@ -20,6 +20,8 @@ test('home page renders a dedicated phase status row with inline hint content', 
 	assert.match(source, /class="menstrual-home__hero-hint-group"/);
 	assert.match(source, /class="menstrual-home__hero-hint-text"/);
 	assert.match(source, /page\.heroCard\.statusFrame\.phaseStatus\.hint/);
+	assert.match(source, /shouldShowPhaseHintIcon\(page\.heroCard\.statusFrame\.phaseStatus\)/);
+	assert.match(source, /黄体期_前7天/);
 });
 
 test('home page source includes amber emphasis classes and warm hero styling for ovulation and late luteal phases', () => {
