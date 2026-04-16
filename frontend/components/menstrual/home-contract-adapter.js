@@ -881,6 +881,11 @@ export function applyClearAttributesToPageModel(pageModel) {
 		options: row.options.map((option) => ({ ...option, selected: false }))
 	}));
 	next.selectedDatePanel.summaryItems = [];
+	if (next.selectedDatePanel.badge !== '今日') {
+		next.selectedDatePanel.badge = (next.selectedDatePanel.initialPeriodMarked || hasSelectedPanelDetailRecord(next.selectedDatePanel))
+			? '已记录'
+			: '点击记录';
+	}
 	return updateSelectedCalendarCell(next);
 }
 
