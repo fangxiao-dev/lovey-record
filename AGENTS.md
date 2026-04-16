@@ -63,11 +63,6 @@ When using git worktrees for parallel development:
 - After creating a new worktree, run `./setup.ps1` from the worktree root to automatically copy `.env` files from the parent repository
 - This ensures the worktree has required configuration without manually copying files
 - The script handles both `backend/.env` and `frontend/.env*` files
-- Example: 
-  ```powershell
-  cd .claude/worktrees/your-worktree/
-  ./setup.ps1
-  ```
 
 **Local Development Workflow:**
 - Develop on a feature branch in the worktree (no push to remote required)
