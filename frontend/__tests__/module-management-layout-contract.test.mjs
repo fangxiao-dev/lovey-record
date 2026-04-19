@@ -70,7 +70,7 @@ test('module management page uses compact module tiles, split action layout, and
 	assert.match(settingStripSource, /height:\s*220rpx;/);
 	assert.match(settingStripSource, /border-radius:\s*24rpx;/);
 	assert.match(settingStripSource, /border:\s*2rpx solid \$text-muted;/);
-	assert.match(settingStripSource, /background:\s*rgba\(255, 255, 255, 0\.64\);/);
+	assert.match(settingStripSource, /background:\s*transparent;/);
 	assert.match(settingStripSource, /height:\s*44rpx;/);
 	assert.match(settingStripSource, /color:\s*\$text-primary;/);
 	assert.match(settingStripSource, /font-weight:\s*\$font-weight-title;/);

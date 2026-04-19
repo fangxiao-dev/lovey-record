@@ -53,7 +53,7 @@
 					<picker-view
 						class="module-setting-strip__picker-view"
 						:value="[resolvedPickerIndex]"
-						indicator-style="height: 44rpx; border-radius: 22rpx; background: rgba(255, 255, 255, 0.64); border: 2rpx solid rgba(216, 154, 141, 0.18);"
+						indicator-style="height: 44rpx; border-radius: 22rpx; background: transparent; border: 2rpx solid rgba(216, 154, 141, 0.24);"
 						mask-style="background: linear-gradient(180deg, rgba(246, 243, 238, 0.92) 0%, rgba(246, 243, 238, 0.18) 100%); pointer-events: none;"
 						@change="handlePickerChange"
 					>
