@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const FRONTEND_BASE_URL = process.env.MENSTRUAL_FRONTEND_BASE_URL || 'http://localhost:5173';
 const HOME_ROUTE = '/pages/menstrual/home';
@@ -10,6 +12,7 @@ const CHROME_PATH = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrom
 const PARTNER_USER_ID = process.env.MENSTRUAL_PARTNER_USER_ID || 'seed-shared-partner';
 const PARTNER_OPENID = process.env.MENSTRUAL_PARTNER_OPENID || 'seed-shared-partner-openid';
 const PROFILE_ID = process.env.MENSTRUAL_PROFILE_ID || 'seed-home-profile';
+const CHANGELOG_DATA_PATH = path.resolve(process.cwd(), 'frontend/utils/changelog-data.js');
 
 function buildFrontendUrl(route, params = {}) {
 	const query = new URLSearchParams(params);
@@ -25,6 +28,23 @@ const FRONTEND_URL = process.env.MENSTRUAL_HOME_URL || buildFrontendUrl(HOME_ROU
 	today: '2026-03-29'
 });
 
+async function dismissChangelogSheetIfPresent(page) {
+	const overlay = page.locator('.changelog-sheet__overlay');
+	await overlay.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+	if (await overlay.count()) {
+		await overlay.first().click({ force: true });
+		await page.waitForTimeout(300);
+	}
+}
+
+async function seedChangelogAsSeen(page) {
+	const source = fs.readFileSync(CHANGELOG_DATA_PATH, 'utf8');
+	const latestVersion = source.match(/"version":\s*"(v[^"]+)"/)?.[1] || 'v0.0.0';
+	await page.addInitScript((version) => {
+		localStorage.setItem('changelog_lastViewedVersion', version);
+	}, latestVersion);
+}
+
 test.use({
 	viewport: { width: 900, height: 900 },
 	launchOptions: {
@@ -33,6 +53,7 @@ test.use({
 });
 
 test('module shell live entry renders the private module and opens menstrual home with the same live context', async ({ page }) => {
+	await seedChangelogAsSeen(page);
 	await page.goto(buildFrontendUrl(SHELL_ROUTE, {
 		apiBaseUrl: API_BASE_URL,
 		openid: OPENID,
@@ -41,6 +62,7 @@ test('module shell live entry renders the private module and opens menstrual hom
 		today: '2026-03-29'
 	}));
 	await page.waitForTimeout(1200);
+	await dismissChangelogSheetIfPresent(page);
 
 	await expect(page.locator('.management-board .module-tile')).toHaveCount(1);
 	await expect(page.locator('.management-board .module-tile__status-dot--shared')).toHaveCount(0);
@@ -53,6 +75,7 @@ test('module shell live entry renders the private module and opens menstrual hom
 });
 
 test('module shell renders a shared module in the shared zone without duplicating it in private zone', async ({ page }) => {
+	await seedChangelogAsSeen(page);
 	await page.goto(buildFrontendUrl(SHELL_ROUTE, {
 		apiBaseUrl: API_BASE_URL,
 		openid: 'seed-shared-openid',
@@ -61,6 +84,7 @@ test('module shell renders a shared module in the shared zone without duplicatin
 		today: '2026-03-29'
 	}));
 	await page.waitForTimeout(1200);
+	await dismissChangelogSheetIfPresent(page);
 
 	await expect(page.locator('.management-board .module-tile')).toHaveCount(1);
 	await expect(page.locator('.management-board .module-tile__status-dot--shared')).toHaveCount(1);
@@ -470,6 +494,7 @@ test('batch save keeps the optimistic period result visible before backend recon
 
 test('owner shell can share and revoke the same module instance while partner reads the same home data', async ({ page }) => {
 	await ensurePrivateModuleState();
+	await seedChangelogAsSeen(page);
 
 	try {
 		await page.goto(buildFrontendUrl(SHELL_ROUTE, {
@@ -481,6 +506,7 @@ test('owner shell can share and revoke the same module instance while partner re
 			today: '2026-03-29'
 		}));
 		await page.waitForTimeout(1200);
+		await dismissChangelogSheetIfPresent(page);
 
 		await expect(page.locator('.management-board .module-tile__status-dot--shared')).toHaveCount(0);
 		await page.locator('.management-action--share').click();
@@ -516,6 +542,7 @@ test('owner shell can share and revoke the same module instance while partner re
 			today: '2026-03-29'
 		}));
 		await page.waitForTimeout(1200);
+		await dismissChangelogSheetIfPresent(page);
 		await expect(page.locator('.menstrual-home__hero')).toHaveCount(1);
 		await expect(page.locator('.menstrual-home__hero-sharing-chip-label')).toContainText('共享');
 
@@ -544,6 +571,7 @@ test('owner shell can share and revoke the same module instance while partner re
 
 test('owner shell can update the default period duration from the live settings strip', async ({ page }) => {
 	await ensureDefaultPeriodDuration(6);
+	await seedChangelogAsSeen(page);
 
 	try {
 		await page.goto(buildFrontendUrl(SHELL_ROUTE, {
