@@ -21,8 +21,9 @@ The current Pencil baseline for this page is:
 
 The module management page is a single default view with two stacked sections:
 
-- `模块空间`
-- `模块管理`
+- page top bar `记录空间`
+- `工具箱`
+- `周期设置`
 
 It no longer uses:
 
@@ -35,11 +36,11 @@ It no longer uses:
 
 The top section should contain:
 
-- page title `模块空间`
+- page top bar `记录空间`
 - one lightweight helper line: `点击卡片查看下方摘要和操作。`
-- one `功能模块` board
+- one `工具箱` board
 
-The `功能模块` board should contain:
+The `工具箱` board should contain:
 
 - a top-right legend for shared-module meaning
 - a flat module list ordered by recent usage
@@ -83,11 +84,11 @@ The lower section is a single card for the currently selected module.
 
 For the current menstrual module, the card contains:
 
-- module title `月经记录`
+- module title `经期小记`
 - two summary frames: `经期时长` and `月经周期`
-- one quick-setting area with compact chips plus a `自定义` trigger on each value family
+- one quick-setting area with compact chips plus a `自选` trigger on each value family
 - one single-column custom picker expansion state for the active quick-setting family
-- one action row with `进入`, `共享`, and `删除`
+- one action row with `进入`, `邀请 TA`, and `删除`
 
 This card replaces the earlier split between a separate summary block and a separate action block.
 
@@ -100,7 +101,7 @@ Rules:
 - keep the controls visually light and immediate
 - keep the duration and cycle value groups side by side
 - keep the summary cards above in a stable left / right arrangement
-- use the `自定义` trigger to open the single-column picker state for that same value group
+- use the `自选` trigger to open the single-column picker state for that same value group
 - selected values should read clearly without becoming louder than the primary action button
 
 The custom picker should follow the `Piw9E` state family:
@@ -118,12 +119,12 @@ The custom picker should follow the `Piw9E` state family:
 The action row should keep a clear hierarchy:
 
 - `进入` is the primary action
-- `共享` is secondary and uses the calm-green button style sourced from token node `qD9vb`
+- `邀请 TA` is secondary and uses the calm-green button style sourced from token node `qD9vb`
 - `删除` is destructive but visually contained inside the same card
 
 Interaction rule:
 
-- the `共享` button generates an invite token and exposes a shareable invite link instead of navigating the owner into the recipient acceptance page
+- the `邀请 TA` button generates an invite token and exposes a shareable invite link instead of navigating the owner into the recipient acceptance page
 - the generated recipient-facing join path must not embed the owner `openid` by default
 - it should not visually toggle the card into a fake `已共享` state before real shared status is returned
 

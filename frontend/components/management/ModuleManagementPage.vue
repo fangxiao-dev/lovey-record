@@ -1,14 +1,14 @@
 <template>
-	<view class="management-page u-page-shell">
-		<view v-if="page" class="management-page__body">
-			<view class="management-page__intro ui-card">
-				<text class="management-page__title u-text-title-lg">{{ page.title }}</text>
-				<text class="management-page__helper u-text-caption">{{ page.helperText }}</text>
-			</view>
-
+	<view class="management-page">
+		<template v-if="page">
+			<PageNavBar title="记录空间" icon-src="/static/management/setting-mirror.svg" />
+			<view class="management-page__body">
 			<view class="management-board ui-card">
 				<view class="management-board__header ui-card__header">
-					<text class="management-board__title u-text-title-sm">{{ page.moduleBoard.title }}</text>
+					<view class="management-board__title-group">
+						<image class="management-board__title-icon" src="/static/management/toolkit_pekomon.svg" mode="aspectFit" />
+						<text class="management-board__title u-text-title-sm">{{ page.moduleBoard.title }}</text>
+					</view>
 					<view class="management-board__legend">
 						<SharedLegendChip
 							v-for="item in page.moduleBoard.legendItems"
@@ -37,8 +37,8 @@
 			<view v-if="selectedModule && page.managementCard" class="management-card ui-card">
 				<view class="management-card__header ui-card__header">
 					<view class="management-card__title-block">
-						<text class="management-card__title u-text-title-sm">{{ page.managementCard.title }}</text>
-						<text class="management-card__module-name u-text-body">{{ selectedModule.moduleName }}</text>
+						<text class="management-card__module-name u-text-title-sm">{{ selectedModule.moduleName }}</text>
+						<text class="management-card__title u-text-caption">{{ page.managementCard.title }}</text>
 					</view>
 				</view>
 
@@ -98,6 +98,7 @@
 				@open="openChangelog"
 			/>
 		</view>
+		</template>
 
 		<LoadingScreen v-else :error-message="loadError" @retry="retryInitialLoad" />
 
@@ -105,7 +106,7 @@
 		<view v-if="showShareModal" class="share-modal-mask" @tap="showShareModal = false">
 			<view class="share-modal" @tap.stop>
 				<view class="share-modal__header">
-					<text class="share-modal__title u-text-title-sm">共享模块</text>
+					<text class="share-modal__title u-text-title-sm">邀请 TA 加入</text>
 					<text class="share-modal__module-name u-text-body">{{ selectedModule && selectedModule.moduleName }}</text>
 				</view>
 
@@ -120,8 +121,8 @@
 							<view v-if="selectedPermission === 'VIEWER'" class="share-modal__perm-option-radio-dot" />
 						</view>
 						<view class="share-modal__perm-option-body">
-							<text class="share-modal__perm-option-label">只读</text>
-							<text class="share-modal__perm-option-desc">可查看，不可编辑</text>
+							<text class="share-modal__perm-option-label">仅查看</text>
+							<text class="share-modal__perm-option-desc">TA 可以查看你的记录</text>
 						</view>
 					</view>
 					<view
@@ -133,15 +134,15 @@
 							<view v-if="selectedPermission === 'PARTNER'" class="share-modal__perm-option-radio-dot" />
 						</view>
 						<view class="share-modal__perm-option-body">
-							<text class="share-modal__perm-option-label">可编辑</text>
-							<text class="share-modal__perm-option-desc">可查看并添加、编辑记录</text>
+							<text class="share-modal__perm-option-label">一起记录</text>
+							<text class="share-modal__perm-option-desc">TA 可以帮你添加和编辑</text>
 						</view>
 					</view>
 				</view>
 
 				<view class="share-modal__badge" :class="{ 'share-modal__badge--partner': selectedPermission === 'PARTNER' }">
 					<view class="share-modal__badge-dot" />
-					<text class="share-modal__badge-text">{{ selectedPermission === 'PARTNER' ? '可编辑权限' : '只读权限' }}</text>
+					<text class="share-modal__badge-text">{{ selectedPermission === 'PARTNER' ? '共同记录' : '查看权限' }}</text>
 				</view>
 
 				<view class="share-modal__perms">
@@ -149,7 +150,7 @@
 						<view class="share-modal__perm-icon share-modal__perm-icon--ok">
 							<text class="share-modal__perm-icon-text">✓</text>
 						</view>
-						<text class="share-modal__perm-text"><text class="share-modal__perm-bold">可以查看</text>所有周期记录、日历和统计数据</text>
+						<text class="share-modal__perm-text"><text class="share-modal__perm-bold">可以看到</text>所有周期记录和数据</text>
 					</view>
 					<view class="share-modal__perm-row">
 						<view v-if="selectedPermission === 'PARTNER'" class="share-modal__perm-icon share-modal__perm-icon--ok">
@@ -159,7 +160,7 @@
 							<text class="share-modal__perm-icon-text">✕</text>
 						</view>
 						<text class="share-modal__perm-text">
-							<text class="share-modal__perm-bold">{{ selectedPermission === 'PARTNER' ? '可以添加和编辑' : '无法编辑' }}</text>{{ selectedPermission === 'PARTNER' ? '日记录和经期信息' : '任何数据，仅供阅读' }}
+							<text class="share-modal__perm-bold">{{ selectedPermission === 'PARTNER' ? '可以帮你记录' : '无法修改' }}</text>{{ selectedPermission === 'PARTNER' ? '日常数据和经期信息' : '任何内容' }}
 						</text>
 					</view>
 				</view>
@@ -201,6 +202,7 @@
 	import ModuleActionRow from './ModuleActionRow.vue';
 	import ModuleSettingStrip from './ModuleSettingStrip.vue';
 	import LoadingScreen from '../common/LoadingScreen.vue';
+	import PageNavBar from '../common/PageNavBar.vue';
 	import {
 		DEFAULT_MODULE_SHELL_CONTEXT,
 		createShareableJoinLink,
@@ -229,7 +231,8 @@
 			ModuleSettingStrip,
 			LoadingScreen,
 			ChangelogEntryRow,
-			ChangelogSheet
+			ChangelogSheet,
+			PageNavBar
 		},
 		data() {
 			return {
@@ -584,20 +587,35 @@
 
 <style lang="scss">
 	.management-page {
-		padding-bottom: 48rpx;
+		min-height: 100vh;
+		background: $bg-base;
 	}
 
 	.management-page__body {
 		display: flex;
 		flex-direction: column;
 		gap: 16rpx;
+		padding: 16rpx $page-padding-x 48rpx;
 	}
 
-	.management-page__intro,
 	.management-board,
 	.management-card,
 	.management-page__state-card {
 		background: #ffffff;
+	}
+
+	/* ── Module board title with icon ─────────────────────────────── */
+	.management-board__title-group {
+		display: flex;
+		align-items: center;
+		gap: 10rpx;
+	}
+
+	.management-board__title-icon {
+		width: 40rpx;
+		height: 40rpx;
+		flex-shrink: 0;
+		border-radius: 50%;
 	}
 
 	.management-card {
@@ -655,7 +673,12 @@
 		gap: 8rpx;
 	}
 
+	/* module-name is now the primary title, title is the secondary label */
 	.management-card__module-name {
+		color: $text-primary;
+	}
+
+	.management-card__title {
 		color: $text-secondary;
 	}
 

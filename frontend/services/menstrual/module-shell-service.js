@@ -72,7 +72,7 @@ function getModuleTile({
 
 	return {
 		id: moduleInstanceId,
-		moduleName: '月经记录',
+		moduleName: '经期小记',
 		entryUrl,
 		statusText: isShared ? `已共享 · ${partnerCount} 位伙伴` : '仅自己可见',
 		summaryText: `默认经期 ${defaultPeriodDurationDays} 天 · 预测 ${defaultPredictionTermDays} 天`,
@@ -144,15 +144,15 @@ export function createModuleShellPageModel({
 		title: '模块空间',
 		helperText: '点击卡片查看下方摘要和操作。',
 		moduleBoard: {
-			title: '功能模块',
+			title: '工具箱',
 			legendItems: [
 				{ key: 'shared', label: '共享模块', tone: 'shared' }
 			],
 			modules: [moduleCard],
-			continuationText: '更多模块会继续出现在这里。'
+			continuationText: '更多功能陆续上线中'
 		},
 		managementCard: {
-			title: '模块管理',
+			title: '周期设置',
 			moduleName: moduleCard.moduleName,
 			sharingStatus: {
 				label: '共享状态',
@@ -168,29 +168,29 @@ export function createModuleShellPageModel({
 				value: `${defaultPredictionTermDays} 天`
 			},
 			settingsControl: {
-				label: '设置时长',
+				label: '经期天数',
 				value: defaultPeriodDurationDays,
 				options: [5, 6, 7].map((days) => ({
 					value: days,
 					label: `${days}`,
 					selected: days === defaultPeriodDurationDays
 				})),
-				customLabel: '自定义',
+				customLabel: '自选',
 				customPickerOptions: buildNumericOptions(1, 15)
 			},
 			predictionSettingsControl: {
-				label: '设置周期',
+				label: '周期天数',
 				value: defaultPredictionTermDays,
 				options: [27, 28, 29].map((days) => ({
 					value: days,
 					label: `${days}`,
 					selected: days === defaultPredictionTermDays
 				})),
-				customLabel: '自定义',
+				customLabel: '自选',
 				customPickerOptions: buildNumericOptions(20, 45)
 			},
 			secondaryAction: {
-				label: '共享',
+				label: '邀请 TA',
 				helperText: activePartners.length
 					? `当前目标：${activePartners[0].userId}`
 					: `当前目标：${context.partnerUserId}`,

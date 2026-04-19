@@ -3,13 +3,13 @@
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "模块管理"
+				"navigationBarTitleText": "记录空间", "navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/management/index",
 			"style": {
-				"navigationBarTitleText": "模块管理"
+				"navigationBarTitleText": "记录空间", "navigationStyle": "custom"
 			}
 		},
 		{
@@ -21,13 +21,15 @@
 		{
 			"path": "pages/menstrual/home",
 			"style": {
-				"navigationBarTitleText": "月经记录"
+				"navigationBarTitleText": "经期小记",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/menstrual/report",
 			"style": {
-				"navigationBarTitleText": "周期记录"
+				"navigationBarTitleText": "周期小结",
+				"navigationStyle": "custom"
 			}
 		},
 		{

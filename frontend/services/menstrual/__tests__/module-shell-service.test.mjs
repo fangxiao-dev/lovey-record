@@ -67,22 +67,22 @@ test('loadMenstrualModuleShellPageModel maps a private module into the private z
 
 	assert.equal(result.page.title, '模块空间');
 	assert.match(result.page.helperText, /点击卡片查看下方摘要和操作/);
-	assert.equal(result.page.moduleBoard.title, '功能模块');
+	assert.equal(result.page.moduleBoard.title, '工具箱');
 	assert.deepEqual(result.page.moduleBoard.legendItems, [
 		{ key: 'shared', label: '共享模块', tone: 'shared' }
 	]);
 	assert.equal(result.page.moduleBoard.modules.length, 1);
 	assert.equal(result.page.moduleBoard.modules[0].ownershipTone, 'private');
 	assert.equal(result.page.moduleBoard.modules[0].selected, true);
-	assert.equal(result.page.managementCard.title, '模块管理');
-	assert.equal(result.page.managementCard.moduleName, '月经记录');
+	assert.equal(result.page.managementCard.title, '周期设置');
+	assert.equal(result.page.managementCard.moduleName, '经期小记');
 	assert.equal(result.page.managementCard.sharingStatus.value, '未共享');
 	assert.equal(result.page.managementCard.sharingStatus.tone, 'private');
 	assert.equal(result.page.managementCard.defaultPeriodDuration.label, '经期时长');
 	assert.equal(result.page.managementCard.defaultPeriodDuration.value, `${DEFAULT_PERIOD_DURATION_DAYS} 天`);
 	assert.equal(result.page.managementCard.defaultPredictionTerm.label, '月经周期');
 	assert.equal(result.page.managementCard.defaultPredictionTerm.value, `${DEFAULT_PREDICTION_TERM_DAYS} 天`);
-	assert.equal(result.page.managementCard.settingsControl.label, '设置时长');
+	assert.equal(result.page.managementCard.settingsControl.label, '经期天数');
 	assert.deepEqual(
 		result.page.managementCard.settingsControl.options.map((option) => option.value),
 		PERIOD_DURATION_OPTIONS
@@ -103,7 +103,7 @@ test('loadMenstrualModuleShellPageModel maps a private module into the private z
 		result.page.managementCard.settingsControl.customPickerOptions.slice(-3).map((option) => option.value),
 		[13, 14, 15]
 	);
-	assert.equal(result.page.managementCard.predictionSettingsControl.label, '设置周期');
+	assert.equal(result.page.managementCard.predictionSettingsControl.label, '周期天数');
 	assert.deepEqual(
 		result.page.managementCard.predictionSettingsControl.options.map((option) => option.value),
 		PREDICTION_TERM_OPTIONS
@@ -125,7 +125,7 @@ test('loadMenstrualModuleShellPageModel maps a private module into the private z
 		...DEFAULT_MODULE_SHELL_CONTEXT,
 		moduleInstanceId: 'seed-home-module'
 	}));
-	assert.equal(result.page.managementCard.secondaryAction.label, '共享');
+	assert.equal(result.page.managementCard.secondaryAction.label, '邀请 TA');
 	assert.equal(result.page.managementCard.secondaryAction.action, 'open-join');
 	assert.equal(result.page.managementCard.secondaryAction.url, null);
 	assert.equal(result.page.managementCard.destructiveAction.label, '删除');
@@ -191,7 +191,7 @@ test('loadMenstrualModuleShellPageModel maps a shared module into the shared zon
 	assert.equal(result.page.managementCard.sharingStatus.tone, 'shared');
 	assert.equal(result.page.managementCard.defaultPeriodDuration.value, '7 天');
 	assert.equal(result.page.managementCard.defaultPredictionTerm.value, '29 天');
-	assert.equal(result.page.managementCard.secondaryAction.label, '共享');
+	assert.equal(result.page.managementCard.secondaryAction.label, '邀请 TA');
 	assert.equal(result.page.managementCard.secondaryAction.action, 'open-join');
 	assert.equal(result.page.managementCard.secondaryAction.url, null);
 });
@@ -289,8 +289,8 @@ test('createDemoMenstrualModuleShellPageModel exposes a local seed page for H5 v
 	assert.equal(result.page.moduleBoard.modules[0].id, 'demo-module');
 	assert.equal(result.page.managementCard.defaultPeriodDuration.value, '5 天');
 	assert.equal(result.page.managementCard.defaultPredictionTerm.value, '28 天');
-	assert.equal(result.page.managementCard.settingsControl.customLabel, '自定义');
-	assert.equal(result.page.managementCard.predictionSettingsControl.customLabel, '自定义');
+	assert.equal(result.page.managementCard.settingsControl.customLabel, '自选');
+	assert.equal(result.page.managementCard.predictionSettingsControl.customLabel, '自选');
 	assert.deepEqual(
 		result.page.managementCard.settingsControl.options.map((option) => option.label),
 		['5', '6', '7']

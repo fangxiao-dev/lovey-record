@@ -88,7 +88,7 @@
 			},
 			customLabel: {
 				type: String,
-				default: '自定义'
+				default: '自选'
 			},
 			customPickerVisible: {
 				type: Boolean,
@@ -188,15 +188,17 @@
 
 	.module-setting-strip__chip {
 		display: inline-flex;
-		flex: 0 0 auto;
+		flex: 0 0 72rpx;
+		width: 72rpx;
 		align-items: center;
 		justify-content: center;
 		min-height: 56rpx;
-		padding: 0 18rpx;
+		padding: 0;
 		border-radius: 999rpx;
 		border: 2rpx solid transparent;
 		background: $bg-subtle;
 		box-sizing: border-box;
+		overflow: hidden;
 	}
 
 	.module-setting-strip__chip--selected {
@@ -205,7 +207,7 @@
 	}
 
 	.module-setting-strip__chip--custom {
-		padding: 0 18rpx;
+		/* inherits fixed 72rpx width from base chip */
 	}
 
 	.module-setting-strip__chip-text {

@@ -21,7 +21,7 @@
 
 			<view class="join-page__card">
 				<text class="join-page__card-label">邀请你加入</text>
-				<text class="join-page__card-module">月经记录</text>
+				<text class="join-page__card-module">经期小记</text>
 
 				<view class="join-page__divider" />
 

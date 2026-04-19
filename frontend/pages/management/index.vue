@@ -25,11 +25,11 @@
 			const ctx = page && page.context;
 
 			if (!ctx) {
-				return { title: '月经记录' };
+				return { title: '经期小记' };
 			}
 
 			const accessRole = (page && page.selectedPermission) || 'VIEWER';
-			const shareTitle = accessRole === 'PARTNER' ? '邀请你协作编辑月经记录' : '邀请你查看月经记录';
+			const shareTitle = accessRole === 'PARTNER' ? '邀请你一起记录经期小记' : '邀请你查看经期小记';
 
 			return createInviteToken({
 				apiBaseUrl: ctx.apiBaseUrl,
@@ -45,7 +45,7 @@
 				return { title: shareTitle, path };
 			}).catch(() => {
 				page && (page.showShareModal = false);
-				return { title: '月经记录' };
+				return { title: '经期小记' };
 			});
 		},
 	};
