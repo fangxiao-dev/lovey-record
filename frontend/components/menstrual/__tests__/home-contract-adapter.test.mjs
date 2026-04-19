@@ -1076,7 +1076,7 @@ test('formatWindowMonthLabel via createMenstrualHomePageModel: single month', ()
 	});
 
 	assert.equal(model.headerNav.monthLabel, '4月');
-	assert.equal(model.headerNav.startYearLabel, '2026');
+	assert.equal(model.headerNav.startYearLabel, '');
 	assert.equal(model.headerNav.endYearLabel, '');
 });
 
@@ -1096,7 +1096,7 @@ test('formatWindowMonthLabel via createMenstrualHomePageModel: cross-month same 
 	});
 
 	assert.equal(model.headerNav.monthLabel, '4月~5月');
-	assert.equal(model.headerNav.startYearLabel, '2026');
+	assert.equal(model.headerNav.startYearLabel, '');
 	assert.equal(model.headerNav.endYearLabel, '');
 });
 
@@ -1130,4 +1130,235 @@ test('formatWindowMonthLabel via createMenstrualHomePageModel: cross-year', () =
 	assert.equal(model.headerNav.monthLabel, '12月~1月');
 	assert.equal(model.headerNav.startYearLabel, '2025');
 	assert.equal(model.headerNav.endYearLabel, '2026');
+});
+
+test('createMenstrualHomePageModel exposes focused navigation targets for real periods', () => {
+	const homeView = {
+		moduleInstanceId: 'focus-home-module',
+		sharingStatus: 'private',
+		currentStatusSummary: {
+			currentStatus: 'out_of_period',
+			anchorDate: '2026-04-20',
+			currentSegment: {
+				startDate: '2026-04-20',
+				endDate: '2026-04-25',
+				durationDays: 6
+			},
+			previousSegment: {
+				startDate: '2026-03-22',
+				endDate: '2026-03-27',
+				durationDays: 6
+			},
+			statusCard: {
+				label: '非经期'
+			}
+		},
+		calendarMarks: [
+			{ date: '2026-03-22', kind: 'period_start' },
+			{ date: '2026-03-23', kind: 'period' },
+			{ date: '2026-04-20', kind: 'period_start' },
+			{ date: '2026-04-21', kind: 'period' },
+			{ date: '2026-05-18', kind: 'prediction_start' }
+		],
+		predictionSummary: {
+			predictedStartDate: '2026-05-18',
+			predictionWindowStart: '2026-05-18',
+			predictionWindowEnd: '2026-05-23',
+			basedOnCycleCount: 3
+		}
+	};
+
+	const model = createMenstrualHomePageModel({
+		homeView,
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 28
+		},
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'focus-home-module',
+			profileId: 'focus-profile',
+			date: '2026-04-20'
+		}),
+		today: '2026-04-30',
+		focusDate: '2026-04-20',
+		viewMode: 'three-week'
+	});
+
+	assert.equal(model.headerNav.previousPeriodStart, '2026-03-22');
+	assert.equal(model.headerNav.nextPeriodStart, '2026-05-18');
+	assert.equal(model.headerNav.focusedNodeType, 'real-period');
+	assert.equal(model.headerNav.isForwardBoundary, false);
+});
+
+test('createMenstrualHomePageModel exposes prediction node as terminal next target', () => {
+	const homeView = {
+		moduleInstanceId: 'focus-home-module',
+		sharingStatus: 'private',
+		currentStatusSummary: {
+			currentStatus: 'out_of_period',
+			anchorDate: '2026-04-20',
+			currentSegment: {
+				startDate: '2026-04-20',
+				endDate: '2026-04-25',
+				durationDays: 6
+			},
+			previousSegment: {
+				startDate: '2026-03-22',
+				endDate: '2026-03-27',
+				durationDays: 6
+			},
+			statusCard: {
+				label: '非经期'
+			}
+		},
+		calendarMarks: [
+			{ date: '2026-03-22', kind: 'period_start' },
+			{ date: '2026-03-23', kind: 'period' },
+			{ date: '2026-04-20', kind: 'period_start' },
+			{ date: '2026-04-21', kind: 'period' },
+			{ date: '2026-05-18', kind: 'prediction_start' }
+		],
+		predictionSummary: {
+			predictedStartDate: '2026-05-18',
+			predictionWindowStart: '2026-05-18',
+			predictionWindowEnd: '2026-05-23',
+			basedOnCycleCount: 3
+		}
+	};
+
+	const model = createMenstrualHomePageModel({
+		homeView,
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 28
+		},
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'focus-home-module',
+			profileId: 'focus-profile',
+			date: '2026-05-18'
+		}),
+		today: '2026-04-30',
+		focusDate: '2026-05-18',
+		viewMode: 'three-week'
+	});
+
+	assert.equal(model.headerNav.previousPeriodStart, '2026-04-20');
+	assert.equal(model.headerNav.nextPeriodStart, null);
+	assert.equal(model.headerNav.focusedNodeType, 'prediction');
+	assert.equal(model.headerNav.isForwardBoundary, true);
+});
+
+test('createMenstrualHomePageModel marks prediction node as forward-invalid', () => {
+	const { homeView, moduleSettings } = createSeededHomeContracts();
+
+	const model = createMenstrualHomePageModel({
+		homeView,
+		moduleSettings,
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			date: homeView.predictionSummary.predictedStartDate
+		}),
+		today: '2026-03-29',
+		focusDate: homeView.predictionSummary.predictedStartDate,
+		viewMode: 'three-week'
+	});
+
+	assert.equal(model.headerNav.focusedNodeType, 'prediction');
+	assert.equal(model.headerNav.isForwardBoundary, true);
+	assert.equal(model.headerNav.nextPeriodStart, null);
+	assert.equal(model.headerNav.previousPeriodStart, homeView.currentStatusSummary.currentSegment.startDate);
+});
+
+test('three-week focused view keeps default window placement when first-row gain is weak', () => {
+	const homeView = {
+		moduleInstanceId: 'window-home-module',
+		sharingStatus: 'private',
+		currentStatusSummary: {
+			currentStatus: 'out_of_period',
+			anchorDate: '2026-04-20',
+			currentSegment: {
+				startDate: '2026-04-20',
+				endDate: '2026-04-25',
+				durationDays: 6
+			},
+			previousSegment: null,
+			statusCard: { label: '非经期' }
+		},
+		calendarMarks: [
+			{ date: '2026-04-20', kind: 'period_start' },
+			{ date: '2026-04-21', kind: 'period' },
+			{ date: '2026-04-22', kind: 'period' },
+			{ date: '2026-04-23', kind: 'period' },
+			{ date: '2026-04-24', kind: 'period' },
+			{ date: '2026-04-25', kind: 'period' }
+		],
+		predictionSummary: null
+	};
+
+	const model = createMenstrualHomePageModel({
+		homeView,
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 28
+		},
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'window-home-module',
+			profileId: 'window-profile',
+			date: '2026-04-20'
+		}),
+		today: '2026-04-30',
+		focusDate: '2026-04-20',
+		viewMode: 'three-week'
+	});
+
+	assert.equal(model.calendarCard.weeks[0].cells[0].key, '2026-04-13');
+	assert.equal(model.calendarCard.weeks[1].cells[0].key, '2026-04-20');
+});
+
+test('three-week focused view prefers first-row placement when it clearly improves period readability', () => {
+	const homeView = {
+		moduleInstanceId: 'window-home-module',
+		sharingStatus: 'private',
+		currentStatusSummary: {
+			currentStatus: 'out_of_period',
+			anchorDate: '2026-04-25',
+			currentSegment: {
+				startDate: '2026-04-25',
+				endDate: '2026-04-30',
+				durationDays: 6
+			},
+			previousSegment: null,
+			statusCard: { label: '非经期' }
+		},
+		calendarMarks: [
+			{ date: '2026-04-25', kind: 'period_start' },
+			{ date: '2026-04-26', kind: 'period' },
+			{ date: '2026-04-27', kind: 'period' },
+			{ date: '2026-04-28', kind: 'period' },
+			{ date: '2026-04-29', kind: 'period' },
+			{ date: '2026-04-30', kind: 'period' }
+		],
+		predictionSummary: null
+	};
+
+	const model = createMenstrualHomePageModel({
+		homeView,
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 28
+		},
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'window-home-module',
+			profileId: 'window-profile',
+			date: '2026-04-25'
+		}),
+		today: '2026-05-02',
+		focusDate: '2026-04-25',
+		viewMode: 'three-week'
+	});
+
+	assert.equal(model.calendarCard.weeks[0].cells[0].key, '2026-04-20');
+	assert.equal(model.calendarCard.weeks[0].cells[5].key, '2026-04-25');
+	assert.equal(model.calendarCard.weeks[1].cells[3].key, '2026-04-30');
 });

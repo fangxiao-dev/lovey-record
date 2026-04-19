@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Calendar Month Boundary — Hard Case</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --color-warm-000:   #ffffff;
+  --color-warm-050:   #faf7f2;
+  --color-warm-100:   #f3eee7;
+  --color-warm-150:   #eadfd6;
+  --color-brown-500:  #a29488;
+  --color-brown-700:  #72685f;
+  --color-brown-900:  #2f2a26;
+  --color-rose-300:   #f3d7d1;
+  --color-rose-700:   #c9786a;
+
+  --bg-card:           var(--color-warm-000);
+  --bg-base:           var(--color-warm-050);
+  --text-primary:      var(--color-brown-900);
+  --text-muted:        var(--color-brown-500);
+  --accent-period:     var(--color-rose-700);
+  --accent-period-soft:var(--color-rose-300);
+  --accent-prediction: var(--color-warm-150);
+  --border-today:      var(--color-brown-700);
+  --week-div-color:    var(--color-warm-100);   /* #f3eee7 */
+
+  /* boundary elements */
+  --divider-color:  var(--color-warm-100);   /* 和 week-divider 同色，细线 */
+  --chip-bg:        var(--color-brown-500);  /* #a29488, 调色板现有 token */
+  --chip-text:      var(--color-warm-000);
+
+  /* rpx → px  (750rpx = 375px → 1rpx = 0.5px) */
+  --cell-size:    45px;
+  --cell-radius:  10px;
+  --cell-pad-top:  8px;
+  --cell-gap:      3px;
+  --cell-border:   1px;
+  --label-size:   14px;
+  --weekday-size: 11px;
+  --col-gap:       4px;
+  --week-gap:      8px;   /* calendar-grid gap between week containers */
+  --inner-gap:     6px;   /* gap inside week (divider ↔ cells) */
+  --grid-pad:      8px;
+
+  /* how far to pull the cell background from the boundary edge */
+  --boundary-pull: 10px;
+}
+
+body {
+  background: var(--bg-base);
+  font-family: "PingFang SC", "SF Pro SC", "Helvetica Neue", sans-serif;
+  padding: 32px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.scenario-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding-left: 2px;
+  align-self: flex-start;
+  width: 100%;
+  max-width: 390px;
+}
+
+/* ── Calendar Grid ──────────────────────────────────── */
+.calendar-grid {
+  width: 100%;
+  max-width: 390px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--week-gap);
+  padding: var(--grid-pad);
+  border-radius: 14px;
+  background: var(--bg-card);
+  box-shadow: 0 2px 12px rgba(47,42,38,0.07);
+  overflow: visible;
+}
+
+.weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  justify-items: center;
+}
+.weekday {
+  font-size: var(--weekday-size);
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 3px 0;
+}
+
+.week {
+  display: flex;
+  flex-direction: column;
+  gap: var(--inner-gap);
+  position: relative;
+  overflow: visible;
+}
+
+.week-divider {
+  height: 1px;
+  background: var(--week-div-color);
+}
+
+.cells {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  column-gap: var(--col-gap);
+  justify-items: center;
+  position: relative;
+  overflow: visible;
+}
+
+/* ── DateCell ─────────────────────────────────────────── */
+.date-cell {
+  width: var(--cell-size);
+  height: var(--cell-size);
+  padding: var(--cell-pad-top) 0 0;
+  border: var(--cell-border) solid transparent;
+  border-radius: var(--cell-radius);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--cell-gap);
+  transition: margin 0.15s ease;
+}
+.date-cell__label {
+  font-size: var(--label-size);
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+/* States */
+.date-cell--period     { background: var(--accent-period); }
+.date-cell--period     .date-cell__label { color: #fff; }
+.date-cell--period-soft{ background: var(--accent-period-soft); }
+.date-cell--period-soft .date-cell__label { color: var(--accent-period); }
+.date-cell--prediction { background: var(--accent-prediction); }
+.date-cell--prediction .date-cell__label { color: var(--color-brown-700); }
+.date-cell--muted      .date-cell__label { color: var(--text-muted); }
+
+/* ── Boundary Treatment ───────────────────────────────── */
+.date-cell--boundary-right { margin-right: var(--boundary-pull); }
+.date-cell--boundary-left  { margin-left:  var(--boundary-pull); }
+
+/* ── (A) Vertical Divider line ────────────────────────── */
+/*  Same color + weight as week-divider, vertical */
+.month-divider {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
+  background: var(--divider-color);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── (B) Month Chip — stacked vertical, each char upright ── */
+.month-chip {
+  position: absolute;
+  top: -8px;
+  transform: translateX(-50%);
+  background: var(--chip-bg);
+  color: var(--chip-text);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 3px;
+  border-radius: 4px;
+  z-index: 20;
+  pointer-events: none;
+
+  /* stack characters vertically, each stays upright */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+</style>
+</head>
+<body>
+
+<div class="scenario-label">上下左右均有状态 — 行内边界（最难场景）</div>
+
+<div class="calendar-grid">
+  <div class="weekday-row">
+    <div class="weekday">一</div><div class="weekday">二</div><div class="weekday">三</div>
+    <div class="weekday">四</div><div class="weekday">五</div><div class="weekday">六</div><div class="weekday">日</div>
+  </div>
+
+  <!-- Row 1: Apr 20–26, all period -->
+  <!-- col 3 (Thu=23) and col 4 (Fri=24) are directly above the boundary -->
+  <div class="week">
+    <div class="cells">
+      <div class="date-cell date-cell--period"><span class="date-cell__label">20</span></div>
+      <div class="date-cell date-cell--period"><span class="date-cell__label">21</span></div>
+      <div class="date-cell date-cell--period"><span class="date-cell__label">22</span></div>
+      <div class="date-cell date-cell--period"><span class="date-cell__label">23</span></div>
+      <div class="date-cell date-cell--period"><span class="date-cell__label">24</span></div>
+      <div class="date-cell date-cell--period"><span class="date-cell__label">25</span></div>
+      <div class="date-cell date-cell--period"><span class="date-cell__label">26</span></div>
+    </div>
+  </div>
+
+  <!-- Row 2 (boundary row): Apr 27–30 = period, May 1–3 = prediction -->
+  <!-- Boundary: after col 3 (Thu Apr 30) → before col 4 (Fri May 1) -->
+  <!-- left = 4/7 * 100% = 57.14% -->
+  <div class="week">
+    <div class="week-divider"></div>
+    <div class="cells">
+      <div class="date-cell date-cell--period"><span class="date-cell__label">27</span></div>
+      <div class="date-cell date-cell--period"><span class="date-cell__label">28</span></div>
+      <div class="date-cell date-cell--period"><span class="date-cell__label">29</span></div>
+      <div class="date-cell date-cell--period  date-cell--boundary-right"><span class="date-cell__label">30</span></div>
+      <div class="date-cell date-cell--prediction date-cell--boundary-left"><span class="date-cell__label">01</span></div>
+      <div class="date-cell date-cell--prediction"><span class="date-cell__label">02</span></div>
+      <div class="date-cell date-cell--prediction"><span class="date-cell__label">03</span></div>
+
+      <!-- divider: 1px, week-div color, after col 3 -->
+      <div class="month-divider" style="left: calc(57.14% - 0.5px)"></div>
+      <!-- chip: vertical "5月", centered on boundary column -->
+      <div class="month-chip"    style="left: 57.14%"><span>5</span><span>月</span></div>
+    </div>
+  </div>
+
+  <!-- Row 3: May 4–10, all prediction -->
+  <!-- col 3 (Thu=May 7) and col 4 (Fri=May 8) are directly below the boundary -->
+  <div class="week">
+    <div class="week-divider"></div>
+    <div class="cells">
+      <div class="date-cell date-cell--prediction date-cell--muted"><span class="date-cell__label">04</span></div>
+      <div class="date-cell date-cell--prediction date-cell--muted"><span class="date-cell__label">05</span></div>
+      <div class="date-cell date-cell--prediction date-cell--muted"><span class="date-cell__label">06</span></div>
+      <div class="date-cell date-cell--prediction date-cell--muted"><span class="date-cell__label">07</span></div>
+      <div class="date-cell date-cell--prediction date-cell--muted"><span class="date-cell__label">08</span></div>
+      <div class="date-cell date-cell--prediction date-cell--muted"><span class="date-cell__label">09</span></div>
+      <div class="date-cell date-cell--prediction date-cell--muted"><span class="date-cell__label">10</span></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

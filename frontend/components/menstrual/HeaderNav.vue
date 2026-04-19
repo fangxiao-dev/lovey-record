@@ -2,15 +2,16 @@
 	<view class="header-nav">
 		<view
 			class="header-nav__button"
+			:class="{
+				'header-nav__button--textual': true,
+				'header-nav__button--focused': focusedMode
+			}"
 			hover-class="ui-pressable-hover"
 			:hover-stay-time="70"
 			@tap="handlePrev"
 		>
-			<image
-				class="header-nav__button-icon"
-				src="/static/icons/header-nav-left-arrow.svg"
-				mode="aspectFit"
-			/>
+			<view class="header-nav__focused-icon header-nav__focused-icon--prev"></view>
+			<text class="header-nav__button-label">{{ leadingLabel }}</text>
 		</view>
 		<view class="header-nav__title-group">
 			<text v-if="startYearLabel" class="header-nav__year header-nav__year--start">{{ startYearLabel }}</text>
@@ -19,16 +20,19 @@
 		</view>
 		<view
 			class="header-nav__button"
+			:class="{
+				'header-nav__button--textual': true,
+				'header-nav__button--focused': focusedMode,
+				'header-nav__button--invalid': focusedMode && nextInvalid
+			}"
 			hover-class="ui-pressable-hover"
 			:hover-stay-time="70"
 			@tap="handleNext"
 		>
-			<image
-				class="header-nav__button-icon header-nav__button-icon--next"
-				src="/static/icons/header-nav-left-arrow.svg"
-				mode="aspectFit"
-			/>
+			<text class="header-nav__button-label">{{ trailingLabel }}</text>
+			<view class="header-nav__focused-icon"></view>
 		</view>
+		<text v-if="inlineMessage" class="header-nav__inline-message">{{ inlineMessage }}</text>
 	</view>
 </template>
 
@@ -56,6 +60,18 @@
 				type: String,
 				default: '›'
 			},
+			focusedMode: {
+				type: Boolean,
+				default: false
+			},
+			nextInvalid: {
+				type: Boolean,
+				default: false
+			},
+			inlineMessage: {
+				type: String,
+				default: ''
+			},
 			busy: {
 				type: Boolean,
 				default: false
@@ -77,20 +93,24 @@
 
 <style lang="scss">
 	.header-nav {
-		display: flex;
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-rows: auto;
 		align-items: center;
-		justify-content: space-between;
-		gap: $space-3;
+		column-gap: $space-3;
+		position: relative;
 	}
 
 	.header-nav__title-group {
-		flex: 1;
+		grid-column: 2;
+		grid-row: 1;
 		min-width: 0;
 		position: relative;
 		height: 60rpx;
 	}
 
 	.header-nav__button {
+		grid-row: 1;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -101,12 +121,54 @@
 		background: #f3eee7;
 	}
 
-	.header-nav__button-icon {
-		width: 24rpx;
-		height: 24rpx;
+	.header-nav__button--textual {
+		min-width: 132rpx;
+		padding: 0 14rpx;
+		background: transparent;
+		gap: 8rpx;
 	}
 
-	.header-nav__button-icon--next {
+	.header-nav__button--focused {
+		min-width: 144rpx;
+	}
+
+	.header-nav__button--invalid {
+		opacity: 0.45;
+	}
+
+	.header-nav__button:first-child {
+		grid-column: 1;
+	}
+
+	.header-nav__button:nth-of-type(2) {
+		grid-column: 3;
+		justify-self: end;
+	}
+
+	.header-nav__button-label {
+		font-size: 24rpx;
+		line-height: 1;
+		font-weight: $font-weight-medium;
+		color: $text-secondary;
+		white-space: nowrap;
+	}
+
+	.header-nav__focused-icon {
+		width: 36rpx;
+		height: 36rpx;
+		flex-shrink: 0;
+		background-color: $text-primary;
+		mask-image: url('/static/menstrual/header-nav-next.svg');
+		mask-repeat: no-repeat;
+		mask-position: center;
+		mask-size: contain;
+		-webkit-mask-image: url('/static/menstrual/header-nav-next.svg');
+		-webkit-mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		-webkit-mask-size: contain;
+	}
+
+	.header-nav__focused-icon--prev {
 		transform: scaleX(-1);
 	}
 
@@ -145,5 +207,18 @@
 	.header-nav__year--end {
 		right: 0;
 		text-align: right;
+	}
+
+	.header-nav__inline-message {
+		position: absolute;
+		right: 0;
+		top: calc(100% - 2rpx);
+		font-size: 20rpx;
+		line-height: 1.3;
+		color: #b36c62;
+		text-align: right;
+		max-width: 188rpx;
+		pointer-events: none;
+		z-index: 2;
 	}
 </style>

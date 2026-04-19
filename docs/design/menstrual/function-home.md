@@ -24,6 +24,7 @@ It must answer current status before exposing deeper browsing and editing.
 - single-day editing stays inline on the home page
 - long-press drag is the primary batch-edit path
 - month view is browse-only support, not a second editor
+- 3-week view acts as the focused-view browsing surface for period occurrences
 - `period / prediction / today / detail-recorded` remain distinguishable with restrained hierarchy
 
 ## States
@@ -59,6 +60,17 @@ The home page must cover:
 - CalendarGrid uses that same predicted period range as the visible prediction highlight span
 - the `下次预测` shortcut still jumps to the predicted start date only; it does not jump to the whole range
 - the old `本次` shortcut semantics are absorbed by the hero status layer and should not remain as a separate shortcut
+
+## Focused-View Browsing Semantics
+
+- The home page's `3 周` calendar is not a generic rolling date pager; it is the focused-view surface for browsing period occurrences.
+- The focused-view navigation anchor is always the `period start date`.
+- Header navigation moves across `previous period occurrence` and `next period occurrence`, rather than moving by natural week or month units.
+- When the focused node reaches `下次预测`, forward browsing stops there:
+  - the right-side forward action becomes invalid
+  - repeated taps do not navigate further
+  - inline feedback is shown as `暂无更后的月经记录`
+- Backward browsing from `下次预测` returns to the most recent real period record.
 
 ## Future-Date Read-Only Rule
 

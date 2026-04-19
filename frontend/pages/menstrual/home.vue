@@ -112,8 +112,11 @@
 				:month-label="page.headerNav.monthLabel"
 				:start-year-label="page.headerNav.startYearLabel"
 				:end-year-label="page.headerNav.endYearLabel"
-				:leading-label="page.headerNav.leadingLabel"
-				:trailing-label="page.headerNav.trailingLabel"
+				:leading-label="page.viewModeControl.value === 'three-week' ? '前一次' : '上个月'"
+				:trailing-label="page.viewModeControl.value === 'three-week' ? '后一次' : '下个月'"
+				:focused-mode="page.viewModeControl.value === 'three-week'"
+				:next-invalid="page.viewModeControl.value === 'three-week' && page.headerNav.isForwardBoundary"
+				:inline-message="headerInlineMessage"
 				:busy="isBrowseBusy"
 				@prev="handleHeaderPrev"
 				@next="handleHeaderNext"
@@ -285,10 +288,15 @@
 					painLevel: null,
 					colorLevel: null
 				},
+				headerInlineMessage: '',
+				headerInlineMessageTimer: null,
 				contractContext: { ...DEFAULT_MENSTRUAL_HOME_CONTEXT },
 				rawContracts: null,
 				userRole: 'owner'
 			};
+		},
+		beforeUnmount() {
+			this.clearHeaderInlineMessage();
 		},
 		computed: {
 			allCalendarCells() {
@@ -654,6 +662,7 @@
 			handleViewModeChange(nextMode) {
 				if (this.isBrowseBusy) return;
 				if (!nextMode || nextMode === this.viewMode) return;
+				this.clearHeaderInlineMessage();
 				this.panelMode = 'single-day';
 				this.applyLocalBrowseState({
 					selectedDate: this.activeDate,
@@ -670,39 +679,68 @@
 			handleHeaderPrev() {
 				if (this.isBrowseBusy) return;
 				this.panelMode = 'single-day';
-				const nextFocusDate = shiftFocusDate(this.focusDate, this.viewMode, -1);
+				this.clearHeaderInlineMessage();
+				const nextFocusDate = this.viewMode === 'three-week'
+					? this.page?.headerNav?.previousPeriodStart
+					: shiftFocusDate(this.focusDate, this.viewMode, -1);
+				if (!nextFocusDate) return;
 				this.applyLocalBrowseState({
-					selectedDate: this.activeDate,
+					selectedDate: nextFocusDate,
 					focusDate: nextFocusDate,
 					viewMode: this.viewMode,
-					useCalendarWindow: false
+					useCalendarWindow: false,
+					dayDetail: this.getSelectedDayDetail(nextFocusDate)
 				});
-				this.refreshCalendarWindow({
-					selectedDate: this.activeDate,
-					focusDate: nextFocusDate,
-					viewMode: this.viewMode
-				}).catch(() => {});
+				Promise.all([
+					this.refreshCalendarWindow({
+						selectedDate: nextFocusDate,
+						focusDate: nextFocusDate,
+						viewMode: this.viewMode
+					}),
+					this.refreshSelectedDayDetail({
+						selectedDate: nextFocusDate,
+						focusDate: nextFocusDate,
+						viewMode: this.viewMode
+					})
+				]).catch(() => {});
 			},
 			handleHeaderNext() {
 				if (this.isBrowseBusy) return;
 				this.panelMode = 'single-day';
-				const nextFocusDate = shiftFocusDate(this.focusDate, this.viewMode, 1);
+				if (this.viewMode === 'three-week' && this.page?.headerNav?.isForwardBoundary) {
+					this.showHeaderInlineMessage('暂无更后的月经记录');
+					return;
+				}
+				this.clearHeaderInlineMessage();
+				const nextFocusDate = this.viewMode === 'three-week'
+					? this.page?.headerNav?.nextPeriodStart
+					: shiftFocusDate(this.focusDate, this.viewMode, 1);
+				if (!nextFocusDate) return;
 				this.applyLocalBrowseState({
-					selectedDate: this.activeDate,
+					selectedDate: nextFocusDate,
 					focusDate: nextFocusDate,
 					viewMode: this.viewMode,
-					useCalendarWindow: false
+					useCalendarWindow: false,
+					dayDetail: this.getSelectedDayDetail(nextFocusDate)
 				});
-				this.refreshCalendarWindow({
-					selectedDate: this.activeDate,
-					focusDate: nextFocusDate,
-					viewMode: this.viewMode
-				}).catch(() => {});
+				Promise.all([
+					this.refreshCalendarWindow({
+						selectedDate: nextFocusDate,
+						focusDate: nextFocusDate,
+						viewMode: this.viewMode
+					}),
+					this.refreshSelectedDayDetail({
+						selectedDate: nextFocusDate,
+						focusDate: nextFocusDate,
+						viewMode: this.viewMode
+					})
+				]).catch(() => {});
 			},
 			handleJump(jumpKey) {
 				if (this.isBrowseBusy) return;
 				const targetDate = resolveJumpTargetDate(this.rawContracts?.homeView, jumpKey, this.contractContext.today);
 				if (!targetDate) return;
+				this.clearHeaderInlineMessage();
 				this.panelMode = 'single-day';
 				this.applyLocalBrowseState({
 					selectedDate: targetDate,
@@ -731,6 +769,21 @@
 					painLevel: null,
 					colorLevel: null
 				};
+			},
+			clearHeaderInlineMessage() {
+				if (this.headerInlineMessageTimer) {
+					clearTimeout(this.headerInlineMessageTimer);
+					this.headerInlineMessageTimer = null;
+				}
+				this.headerInlineMessage = '';
+			},
+			showHeaderInlineMessage(message) {
+				this.clearHeaderInlineMessage();
+				this.headerInlineMessage = message;
+				this.headerInlineMessageTimer = setTimeout(() => {
+					this.headerInlineMessage = '';
+					this.headerInlineMessageTimer = null;
+				}, 1800);
 			},
 			enterBatchMode(startCell = null) {
 				this.panelMode = 'batch';

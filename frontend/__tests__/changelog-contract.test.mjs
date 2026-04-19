@@ -19,11 +19,12 @@ test('changelog-data.js exports an array literal with at least one entry', () =>
   assert.match(source, /version.*v\d+\.\d+\.\d+/, 'must contain at least one versioned entry');
 });
 
-test('changelog-data.js entries each have version, title, date, changes fields', () => {
+test('changelog-data.js entries each have version, title, date, anchorCommit, changes fields', () => {
   const source = fs.readFileSync(dataPath, 'utf8');
   assert.match(source, /"version"/, 'must have version field');
   assert.match(source, /"title"/, 'must have title field');
   assert.match(source, /"date"/, 'must have date field');
+  assert.match(source, /"anchorCommit"/, 'must have anchorCommit field');
   assert.match(source, /"changes"/, 'must have changes field');
 });
 
@@ -33,6 +34,15 @@ test('changelog-data.js version strings match vMAJOR.MINOR.PATCH format', () => 
   assert.ok(versions.length > 0, 'no version strings found');
   for (const v of versions) {
     assert.match(v, /^v\d+\.\d+\.\d+$/, `invalid version format: ${v}`);
+  }
+});
+
+test('changelog-data.js anchorCommit values are full Git SHAs', () => {
+  const source = fs.readFileSync(dataPath, 'utf8');
+  const commitIds = [...source.matchAll(/"anchorCommit":\s*"([0-9a-f]+)"/g)].map((m) => m[1]);
+  assert.ok(commitIds.length > 0, 'no anchorCommit values found');
+  for (const commitId of commitIds) {
+    assert.match(commitId, /^[0-9a-f]{40}$/, `invalid anchorCommit format: ${commitId}`);
   }
 });
 
