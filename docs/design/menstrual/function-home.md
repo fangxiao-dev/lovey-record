@@ -24,7 +24,7 @@ It must answer current status before exposing deeper browsing and editing.
 - single-day editing stays inline on the home page
 - long-press drag is the primary batch-edit path
 - month view is browse-only support, not a second editor
-- 3-week view acts as the focused-view browsing surface for period occurrences
+- 聚焦模式 acts as the focused-view browsing surface for period occurrences
 - `period / prediction / today / detail-recorded` remain distinguishable with restrained hierarchy
 
 ## States
@@ -63,7 +63,7 @@ The home page must cover:
 
 ## Focused-View Browsing Semantics
 
-- The home page's `3 周` calendar is not a generic rolling date pager; it is the focused-view surface for browsing period occurrences.
+- The home page's `聚焦模式` calendar is not a generic rolling date pager; it is the focused-view surface for browsing period occurrences.
 - The focused-view navigation anchor is always the `period start date`.
 - Header navigation moves across `previous period occurrence` and `next period occurrence`, rather than moving by natural week or month units.
 - When the focused node reaches `下次预测`, forward browsing stops there:

@@ -1110,7 +1110,7 @@ export function createMenstrualHomePageModel({
 		viewModeControl: {
 			value: viewMode,
 			options: [
-				{ key: 'three-week', label: '3 周' },
+				{ key: 'three-week', label: '聚焦模式' },
 				{ key: 'month', label: '月览' }
 			]
 		},

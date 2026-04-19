@@ -22,14 +22,14 @@ CalendarPanel
 ## Surface Composition
 
 - `HeaderNav` carries the month label and the focused-navigation actions
-- `SegmentedControl` carries the `3 周 / 月览` switch
+- `SegmentedControl` carries the `聚焦模式 / 月览` switch
 - `CalendarGrid` carries date cells and week dividers
 - `JumpTabs` carries date-location shortcuts
 - `CalendarLegend` explains period / prediction / detail-recorded meaning
 
 ## HeaderNav
 
-- in `3 周` mode, uses explicit focused-navigation buttons instead of arrow-only controls
+- in `聚焦模式` mode, uses explicit focused-navigation buttons instead of arrow-only controls
 - the label should remain visually centered while the side actions read as lightweight inline navigation
 
 ### 3-Week Focused Navigation Presentation
@@ -68,12 +68,12 @@ Rules:
 
 Two options:
 
-- `3 周`
+- `聚焦模式`
 - `月览`
 
 UI rules:
 
-- `3 周` is the primary editing mode and should read as the active default
+- `聚焦模式` is the primary editing mode and should read as the active default
 - `月览` is visually subordinate when inactive
 - switching views should not visually suggest a mode reset
 
