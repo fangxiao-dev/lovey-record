@@ -53,28 +53,24 @@ test('module management page uses compact module tiles, split action layout, and
 	assert.match(tileSource, /min-height:\s*136rpx;/);
 	assert.match(actionRowSource, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/);
 	assert.doesNotMatch(actionRowSource, /grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/);
-	assert.doesNotMatch(settingStripSource, /picker-view/);
+	assert.match(settingStripSource, /picker-view/);
+	assert.match(settingStripSource, /picker-view-column/);
+	assert.match(settingStripSource, /handlePickerChange/);
+	assert.match(settingStripSource, /mask-style=/);
 	assert.match(settingStripSource, /module-setting-strip__picker-card/);
 	assert.match(settingStripSource, /pickerAlign:\s*\{\s*type:\s*String,/);
 	assert.match(settingStripSource, /resolvedPickerAlign\(\)/);
-	assert.match(settingStripSource, /visibleWheelOptions\(\)/);
 	assert.match(settingStripSource, /module-setting-strip__control-group--start/);
 	assert.match(settingStripSource, /module-setting-strip__control-group--end/);
 	assert.match(settingStripSource, /module-setting-strip__wheel-shell/);
-	assert.match(settingStripSource, /module-setting-strip__wheel-indicator/);
-	assert.match(settingStripSource, /module-setting-strip__wheel-track/);
 	assert.match(settingStripSource, /@tap="\$emit\('custom'\)"/);
-	assert.match(settingStripSource, /@tap="handleWheelOptionSelect\(option\)"/);
 	assert.match(settingStripSource, /flex-wrap:\s*nowrap;/);
 	assert.match(settingStripSource, /width:\s*fit-content;/);
 	assert.match(settingStripSource, /width:\s*188rpx;/);
-	assert.match(settingStripSource, /height:\s*212rpx;/);
+	assert.match(settingStripSource, /height:\s*220rpx;/);
 	assert.match(settingStripSource, /border-radius:\s*24rpx;/);
 	assert.match(settingStripSource, /border:\s*2rpx solid \$text-muted;/);
 	assert.match(settingStripSource, /height:\s*44rpx;/);
-	assert.match(settingStripSource, /module-setting-strip__wheel-shell::before/);
-	assert.match(settingStripSource, /module-setting-strip__wheel-shell::after/);
-	assert.match(settingStripSource, /module-setting-strip__picker-text--selected/);
 	assert.match(settingStripSource, /module-setting-strip__control-group--start\s*\{\s*align-self:\s*flex-start;/);
 	assert.match(settingStripSource, /module-setting-strip__control-group--end\s*\{\s*align-self:\s*flex-end;/);
 	assert.match(settingStripSource, /module-setting-strip__picker-card\s*\{[\s\S]*align-self:\s*center;/);
@@ -87,6 +83,10 @@ test('module management page keeps only the shared-module legend while preservin
 	const actionRowSource = readModuleActionRow();
 	const settingStripSource = readModuleSettingStrip();
 	const serviceSource = readModuleShellService();
+	const aliasSource = fs.readFileSync(
+		path.resolve(repoRoot, 'pages/management/index.vue'),
+		'utf8'
+	);
 
 	assert.match(legendSource, /\$management-shared-green:\s*#6bb98e;/i);
 	assert.match(actionRowSource, /\$management-shared-green:\s*#6bb98e;/i);
@@ -109,9 +109,14 @@ test('module management page keeps only the shared-module legend while preservin
 	assert.match(serviceSource, /customLabel:\s*'自定义'/);
 	assert.match(serviceSource, /customPickerOptions:\s*buildNumericOptions\(1,\s*15\)/);
 	assert.match(serviceSource, /customPickerOptions:\s*buildNumericOptions\(20,\s*45\)/);
-	assert.match(pageSource, /createInviteToken/);
-	assert.match(pageSource, /createJoinPageUrl/);
-	assert.match(pageSource, /uni\.navigateTo\(\{\s*url\s*\}\)/);
+	assert.match(pageSource, /showShareModal/);
+	assert.doesNotMatch(pageSource, /createInviteToken/);
+	assert.doesNotMatch(pageSource, /uni\.navigateTo\(\{\s*url\s*\}\)/);
+	assert.match(aliasSource, /onShareAppMessage/);
+	assert.match(aliasSource, /createInviteToken/);
+	assert.match(aliasSource, /createJoinPageUrl/);
+	assert.match(aliasSource, /\$refs\.managementPage/);
+	assert.match(aliasSource, /\.context/);
 	assert.doesNotMatch(pageSource, /persistModuleSharingState/);
 	assert.match(actionRowSource, /@tap="\$emit\('share'\)"/);
 });

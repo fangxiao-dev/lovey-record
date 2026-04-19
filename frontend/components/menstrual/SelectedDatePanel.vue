@@ -204,28 +204,28 @@
 		},
 		methods: {
 			toggleEditor() {
-				if (this.busy || !this.isEditable) return;
+				if (this.busy || this.isEditable === false) return;
 				this.isEditorOpen = !this.isEditorOpen;
 				this.$emit('toggle-editor', this.isEditorOpen);
 			},
 			togglePeriod() {
-				if (this.busy || !this.isEditable) return;
+				if (this.busy || this.isEditable === false) return;
 				this.$emit('toggle-period', !this.isPeriodChipSelected);
 			},
 			toggleAttributeOption(rowKey, optionKey) {
-				if (this.busy || !this.isEditable) return;
+				if (this.busy || this.isEditable === false) return;
 				this.$emit('toggle-attribute-option', { rowKey, optionKey });
 			},
 			clearAttributes() {
-				if (this.busy || !this.isEditable) return;
+				if (this.busy || this.isEditable === false) return;
 				this.$emit('clear-attributes');
 			},
 			handleNoteInput(event) {
-				if (!this.isEditable) return;
+				if (this.isEditable === false) return;
 				this.noteDraft = event?.detail?.value || '';
 			},
 			commitNote(event) {
-				if (!this.isEditable) return;
+				if (this.isEditable === false) return;
 				const nextValue = event?.detail?.value ?? this.noteDraft;
 				this.noteDraft = nextValue;
 				if (nextValue === this.note) return;
