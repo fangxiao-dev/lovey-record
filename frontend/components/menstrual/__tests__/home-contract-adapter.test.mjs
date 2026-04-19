@@ -1059,3 +1059,69 @@ test('home contract adapter renders future auto-filled period dates with period 
 	assert.equal(byDate['2026-04-02'], 'futurePeriod');
 	assert.equal(byDate['2026-03-31'].includes('Detail'), false);
 });
+
+test('formatWindowMonthLabel via createMenstrualHomePageModel: single month', () => {
+	const { homeView, moduleSettings } = createSeededHomeContracts();
+	const model = createMenstrualHomePageModel({
+		homeView,
+		moduleSettings,
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			date: '2026-04-19'
+		}),
+		today: '2026-04-19',
+		focusDate: '2026-04-19',
+		viewMode: 'three-week'
+	});
+
+	assert.equal(model.headerNav.monthLabel, '2026 · 4月');
+});
+
+test('formatWindowMonthLabel via createMenstrualHomePageModel: cross-month same year', () => {
+	const { homeView, moduleSettings } = createSeededHomeContracts();
+	const model = createMenstrualHomePageModel({
+		homeView,
+		moduleSettings,
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			date: '2026-04-26'
+		}),
+		today: '2026-04-26',
+		focusDate: '2026-04-26',
+		viewMode: 'three-week'
+	});
+
+	assert.equal(model.headerNav.monthLabel, '26 · 4月 ~ 5月');
+});
+
+test('formatWindowMonthLabel via createMenstrualHomePageModel: cross-year', () => {
+	const minimalHomeView = {
+		moduleInstanceId: 'test',
+		sharingStatus: 'private',
+		currentStatusSummary: {
+			currentStatus: 'out_of_period',
+			anchorDate: null,
+			currentSegment: null,
+			previousSegment: null,
+			statusCard: { label: '非经期' }
+		},
+		calendarMarks: [],
+		predictionSummary: null
+	};
+	const model = createMenstrualHomePageModel({
+		homeView: minimalHomeView,
+		moduleSettings: { defaultPeriodDurationDays: 5, defaultPredictionTermDays: 28 },
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'test',
+			profileId: 'test-profile',
+			date: '2025-12-28'
+		}),
+		today: '2025-12-28',
+		focusDate: '2025-12-28',
+		viewMode: 'three-week'
+	});
+
+	assert.equal(model.headerNav.monthLabel, '25 · 12月 ~ 26 · 1月');
+});

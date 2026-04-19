@@ -22,14 +22,30 @@
 			:key="week.key || weekIndex"
 			class="calendar-grid__week"
 		>
-			<view v-if="weekIndex > 0" class="calendar-grid__divider" aria-hidden="true"></view>
+			<view
+				v-if="weekIndex > 0"
+				class="calendar-grid__divider"
+				:class="{ 'calendar-grid__divider--month-boundary': weekBoundaryInfo[weekIndex].betweenRowBoundary }"
+				aria-hidden="true"
+			>
+				<template v-if="weekBoundaryInfo[weekIndex].betweenRowBoundary">
+					<view class="calendar-grid__divider-segment" />
+					<view class="calendar-grid__month-chip calendar-grid__month-chip--between-row">
+						<text>{{ formatBoundaryMonthNumber(weekBoundaryInfo[weekIndex].betweenRowNewMonth) }}</text>
+						<text>月</text>
+					</view>
+					<view class="calendar-grid__divider-segment" />
+				</template>
+			</view>
 			<view class="calendar-grid__cells">
 				<view
-					v-for="cell in week.cells"
+					v-for="(cell, cellIndex) in week.cells"
 					:key="cell.key || cell.label"
 					class="calendar-grid__cell"
 					:class="[
-						{ 'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy }
+						{ 'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy },
+						{ 'calendar-grid__cell--boundary-right': weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex === cellIndex },
+						{ 'calendar-grid__cell--boundary-left': weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex + 1 === cellIndex && weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex >= 0 }
 					]"
 					:hover-class="interactive && cell.selectable !== false && !busy ? 'ui-pressable-hover' : ''"
 					:hover-stay-time="70"
@@ -40,6 +56,21 @@
 						{{ cell.caption }}
 					</text>
 				</view>
+				<template v-if="weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex >= 0">
+					<view
+						class="calendar-grid__month-divider"
+						aria-hidden="true"
+						:style="{ left: `${((weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex + 1) / 7) * 100}%` }"
+					/>
+					<view
+						class="calendar-grid__month-chip"
+						aria-hidden="true"
+						:style="{ left: `${((weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex + 1) / 7) * 100}%` }"
+					>
+						<text>{{ formatBoundaryMonthNumber(weekBoundaryInfo[weekIndex].inRowNewMonth) }}</text>
+						<text>月</text>
+					</view>
+				</template>
 			</view>
 		</view>
 	</view>
@@ -120,6 +151,14 @@
 			todayPeriod: 'today'
 		};
 		return previewToDefaultMap[normalizedVariant] || normalizedVariant;
+	}
+
+	function formatBoundaryMonthNumber(monthNumber) {
+		if (!Number.isInteger(monthNumber) || monthNumber <= 0) {
+			return '';
+		}
+
+		return String(monthNumber).padStart(2, '0');
 	}
 
 	export default {
@@ -221,9 +260,51 @@
 			},
 			allCells() {
 				return this.resolvedWeeks.flatMap((w) => w.cells);
+			},
+			weekBoundaryInfo() {
+				return this.resolvedWeeks.map((week, weekIndex) => {
+					let inRowBoundaryAfterIndex = -1;
+					for (let i = 0; i < 6; i += 1) {
+						const currentDate = week.cells[i]?.isoDate;
+						const nextDate = week.cells[i + 1]?.isoDate;
+						if (!currentDate || !nextDate) continue;
+
+						const currentMonth = new Date(`${currentDate}T00:00:00Z`).getUTCMonth();
+						const nextMonth = new Date(`${nextDate}T00:00:00Z`).getUTCMonth();
+						if (currentMonth !== nextMonth) {
+							inRowBoundaryAfterIndex = i;
+							break;
+						}
+					}
+
+					const inRowNewMonth = inRowBoundaryAfterIndex >= 0
+						? new Date(`${week.cells[inRowBoundaryAfterIndex + 1].isoDate}T00:00:00Z`).getUTCMonth() + 1
+						: null;
+
+					const prevWeek = weekIndex > 0 ? this.resolvedWeeks[weekIndex - 1] : null;
+					let betweenRowBoundary = false;
+					let betweenRowNewMonth = null;
+
+					if (prevWeek?.cells[6]?.isoDate && week.cells[0]?.isoDate) {
+						const prevMonth = new Date(`${prevWeek.cells[6].isoDate}T00:00:00Z`).getUTCMonth();
+						const currentMonth = new Date(`${week.cells[0].isoDate}T00:00:00Z`).getUTCMonth();
+						if (prevMonth !== currentMonth) {
+							betweenRowBoundary = true;
+							betweenRowNewMonth = currentMonth + 1;
+						}
+					}
+
+					return {
+						inRowBoundaryAfterIndex,
+						inRowNewMonth,
+						betweenRowBoundary,
+						betweenRowNewMonth
+					};
+				});
 			}
 		},
 		methods: {
+			formatBoundaryMonthNumber,
 			effectiveVariant(cell) {
 				if (this.selectedKeys.includes(cell.key)) {
 					const previewVariant = this.previewPeriodMarked === null
@@ -485,6 +566,8 @@
 		column-gap: 8rpx;
 		row-gap: 12rpx;
 		justify-items: center;
+		position: relative;
+		overflow: visible;
 	}
 
 	.calendar-grid__cell {
@@ -502,6 +585,14 @@
 		cursor: pointer;
 	}
 
+	.calendar-grid__cell--boundary-right > .date-cell {
+		margin-right: 8rpx;
+	}
+
+	.calendar-grid__cell--boundary-left > .date-cell {
+		margin-left: 8rpx;
+	}
+
 	.calendar-grid__cell-caption {
 		display: block;
 		font-family: $font-family-body;
@@ -509,5 +600,57 @@
 		line-height: 1;
 		color: $text-muted;
 		text-align: center;
+	}
+
+	.calendar-grid__month-divider {
+		position: absolute;
+		top: 4rpx;
+		bottom: 4rpx;
+		width: 1px;
+		background: $calendar-week-divider;
+		pointer-events: none;
+		z-index: 1;
+		transform: translateX(-50%);
+	}
+
+	.calendar-grid__month-chip {
+		background: $bg-subtle;
+		color: $text-muted;
+		font-size: 16rpx;
+		font-weight: $font-weight-semibold;
+		padding: 4rpx 6rpx;
+		border-radius: 6rpx;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		line-height: 1.1;
+		pointer-events: none;
+		z-index: 2;
+	}
+
+	.calendar-grid__cells .calendar-grid__month-chip {
+		position: absolute;
+		top: -8rpx;
+		transform: translateX(-50%);
+	}
+
+	.calendar-grid__month-chip--between-row {
+		position: static;
+		transform: none;
+	}
+
+	.calendar-grid__divider--month-boundary {
+		height: auto;
+		background: transparent;
+		display: flex;
+		align-items: center;
+		gap: 8rpx;
+	}
+
+	.calendar-grid__divider-segment {
+		flex: 1;
+		height: 1px;
+		background: $calendar-week-divider;
 	}
 </style>
