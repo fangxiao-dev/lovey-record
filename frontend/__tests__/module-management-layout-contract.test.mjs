@@ -45,6 +45,8 @@ test('module management page uses compact module tiles, split action layout, and
 	assert.match(pageSource, /<ModuleActionRow/);
 	assert.match(pageSource, /<ModuleSettingStrip/);
 	assert.match(pageSource, /:picker-align="setting\.pickerAlign"/);
+	assert.match(pageSource, /@custom-preview-change="handleCustomPickerPreviewChange\(setting\.key, \$event\)"/);
+	assert.match(pageSource, /management-page__picker-backdrop/);
 	assert.match(actionRowSource, /management-card__actions-main/);
 	assert.match(actionRowSource, /management-card__actions-destructive/);
 	assert.match(actionRowSource, /<view class="management-card__actions-main">/);
@@ -60,8 +62,12 @@ test('module management page uses compact module tiles, split action layout, and
 	assert.match(settingStripSource, /module-setting-strip__picker-card/);
 	assert.match(settingStripSource, /pickerAlign:\s*\{\s*type:\s*String,/);
 	assert.match(settingStripSource, /resolvedPickerAlign\(\)/);
+	assert.match(settingStripSource, /custom-preview-change/);
 	assert.match(pageSource, /quickWindowAnchors/);
 	assert.match(pageSource, /buildCenteredQuickOptions/);
+	assert.match(pageSource, /customPickerDraftIndices/);
+	assert.match(pageSource, /handleCustomPickerBackdropTap/);
+	assert.match(pageSource, /commitCustomPickerSelection/);
 	assert.match(settingStripSource, /module-setting-strip__control-group--start/);
 	assert.match(settingStripSource, /module-setting-strip__control-group--end/);
 	assert.match(settingStripSource, /module-setting-strip__wheel-shell/);

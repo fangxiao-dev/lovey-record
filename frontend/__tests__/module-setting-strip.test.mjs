@@ -50,7 +50,7 @@ test('ModuleSettingStrip renders a native picker-view wheel shell', () => {
 	assert.doesNotMatch(source, /handleWheelOptionSelect\(option\)/);
 });
 
-test('ModuleSettingStrip picker-view emits custom-change with the selected option and index', () => {
+test('ModuleSettingStrip picker-view emits custom-preview-change with the selected option and index', () => {
 	const ModuleSettingStrip = loadModuleSettingStrip();
 	const emitted = [];
 	const ctx = {
@@ -70,5 +70,5 @@ test('ModuleSettingStrip picker-view emits custom-change with the selected optio
 		}
 	});
 
-	assert.deepEqual(normalize(emitted), [['custom-change', { value: 7, index: 2 }]]);
+	assert.deepEqual(normalize(emitted), [['custom-preview-change', { value: 7, index: 2 }]]);
 });

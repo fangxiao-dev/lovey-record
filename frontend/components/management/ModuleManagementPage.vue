@@ -66,7 +66,7 @@
 						:picker-align="setting.pickerAlign"
 						@select="handleSettingOptionSelect(setting.key, $event)"
 						@custom="toggleCustomPicker(setting.key)"
-						@custom-change="handleCustomPickerChange(setting.key, $event)"
+						@custom-preview-change="handleCustomPickerPreviewChange(setting.key, $event)"
 					/>
 				</view>
 
@@ -186,6 +186,12 @@
 			:entries="changelogEntries"
 			@close="closeChangelog"
 		/>
+
+		<view
+			v-if="activeCustomPickerKey"
+			class="management-page__picker-backdrop"
+			@tap="handleCustomPickerBackdropTap"
+		/>
 	</view>
 </template>
 
@@ -238,6 +244,7 @@
 				selectedModuleId: '',
 				activeCustomPickerKey: '',
 				quickWindowAnchors: {},
+				customPickerDraftIndices: {},
 				context: { ...DEFAULT_MODULE_SHELL_CONTEXT },
 				showChangelogSheet: false,
 				changelogEntries,
@@ -273,6 +280,7 @@
 				const customPickerValueIndex = customPickerOptions.findIndex((option) => option.value === selectedValue);
 				const anchor = this.quickWindowAnchors[key] ?? selectedValue ?? 0;
 				const options = buildCenteredQuickOptions(anchor, selectedValue, customPickerOptions);
+				const resolvedValueIndex = customPickerValueIndex >= 0 ? customPickerValueIndex : 0;
 
 				return {
 					key,
@@ -281,9 +289,19 @@
 					customLabel: control?.customLabel || '自定义',
 					customPickerVisible: this.activeCustomPickerKey === key,
 					customPickerOptions,
-					customPickerValueIndex: customPickerValueIndex >= 0 ? customPickerValueIndex : 0,
+					customPickerValueIndex: this.activeCustomPickerKey === key
+						? this.getActiveCustomPickerDraftIndex(key, resolvedValueIndex)
+						: resolvedValueIndex,
 					pickerAlign: key === 'prediction' ? 'end' : 'start'
 				};
+			},
+			getActiveCustomPickerDraftIndex(key, fallbackIndex) {
+				const draftIndex = this.customPickerDraftIndices?.[key];
+				if (typeof draftIndex === 'number' && draftIndex >= 0) {
+					return draftIndex;
+				}
+
+				return fallbackIndex >= 0 ? fallbackIndex : 0;
 			},
 			syncQuickWindowAnchorsFromPage(page) {
 				const card = page?.managementCard;
@@ -352,6 +370,7 @@
 				this.selectedModuleId = '';
 				this.activeCustomPickerKey = '';
 				this.quickWindowAnchors = {};
+				this.customPickerDraftIndices = {};
 				this.loadError = '';
 				this.context = {
 					...DEFAULT_MODULE_SHELL_CONTEXT,
@@ -368,17 +387,18 @@
 					this.page = result.page;
 					this.selectedModuleId = result.page?.moduleBoard?.modules?.[0]?.id || '';
 					this.syncQuickWindowAnchorsFromPage(result.page);
+					this.customPickerDraftIndices = {};
 					return;
 				}
 
 				if (!runtimeOptions.moduleInstanceId) {
 					try {
-						const resolved = await resolveModuleContext(openid);
-						this.context = {
-							...this.context,
-							moduleInstanceId: resolved.moduleInstanceId,
-							profileId: resolved.profileId
-						};
+					const resolved = await resolveModuleContext(openid);
+					this.context = {
+						...this.context,
+						moduleInstanceId: resolved.moduleInstanceId,
+						profileId: resolved.profileId
+					};
 					} catch (error) {
 						this.loadError = error instanceof Error ? error.message : '获取模块信息失败';
 						return;
@@ -406,6 +426,7 @@
 					const result = await loadMenstrualModuleShellPageModel(this.context);
 					this.page = result.page;
 					this.activeCustomPickerKey = '';
+					this.customPickerDraftIndices = {};
 					this.selectedModuleId = result.page?.moduleBoard?.modules?.find((module) => module.selected)?.id
 						|| result.page?.moduleBoard?.modules?.[0]?.id
 						|| '';
@@ -421,7 +442,25 @@
 			},
 			toggleCustomPicker(key) {
 				if (!key || this.isMutating) return;
-				this.activeCustomPickerKey = this.activeCustomPickerKey === key ? '' : key;
+
+				if (this.activeCustomPickerKey === key) {
+					this.handleCustomPickerBackdropTap();
+					return;
+				}
+
+				const control = this.getSettingControlByKey(key);
+				const selectedValue = control?.value;
+				const currentIndex = (control?.customPickerOptions || []).findIndex((option) => option.value === selectedValue);
+				const anchorValue = typeof selectedValue === 'number' ? selectedValue : 0;
+				this.customPickerDraftIndices = {
+					...this.customPickerDraftIndices,
+					[key]: currentIndex >= 0 ? currentIndex : 0
+				};
+				this.quickWindowAnchors = {
+					...this.quickWindowAnchors,
+					[key]: anchorValue
+				};
+				this.activeCustomPickerKey = key;
 			},
 			async handleSettingOptionSelect(key, days) {
 				const control = this.getSettingControlByKey(key);
@@ -445,16 +484,18 @@
 					this.isMutating = false;
 				}
 			},
-			async handleCustomPickerChange(key, payload) {
+			async commitCustomPickerSelection(key) {
 				const control = this.getSettingControlByKey(key);
-				const nextValue = payload?.value;
+				const draftIndex = this.customPickerDraftIndices?.[key];
+				const option = control?.customPickerOptions?.[draftIndex];
+				const nextValue = option?.value;
 
-				if (this.isMutating || !control || !nextValue || nextValue === control.value) return;
+				if (this.isMutating || !control || !option || !nextValue || nextValue === control.value) return true;
 
 				if (this.isDemoMode) {
 					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: nextValue };
 					this.applyDemoSettingUpdate(key, nextValue);
-					return;
+					return true;
 				}
 
 				const previousAnchor = this.quickWindowAnchors[key];
@@ -464,12 +505,39 @@
 					await this.persistSettingByKey(key, nextValue);
 					await this.retryInitialLoad();
 					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: nextValue };
+					return true;
 				} catch (error) {
 					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: previousAnchor };
 					this.loadError = error instanceof Error ? error.message : '模块设置更新失败';
+					return false;
 				} finally {
 					this.isMutating = false;
 				}
+			},
+			async handleCustomPickerBackdropTap() {
+				if (!this.activeCustomPickerKey || this.isMutating) return;
+
+				const key = this.activeCustomPickerKey;
+				const committed = await this.commitCustomPickerSelection(key);
+				if (committed === false) return;
+
+				this.activeCustomPickerKey = '';
+				this.customPickerDraftIndices = {};
+			},
+			async handleCustomPickerPreviewChange(key, payload) {
+				const index = payload?.index;
+				const value = payload?.value;
+
+				if (!key || typeof index !== 'number' || index < 0 || typeof value === 'undefined') return;
+
+				this.customPickerDraftIndices = {
+					...this.customPickerDraftIndices,
+					[key]: index
+				};
+				this.quickWindowAnchors = {
+					...this.quickWindowAnchors,
+					[key]: value
+				};
 			},
 			handleShareAction() {
 				if (this.isMutating || !this.page?.managementCard?.secondaryAction) return;
@@ -530,6 +598,11 @@
 	.management-card,
 	.management-page__state-card {
 		background: #ffffff;
+	}
+
+	.management-card {
+		position: relative;
+		z-index: 21;
 	}
 
 	.management-page__title {
@@ -622,6 +695,13 @@
 
 	.management-page__dev-reset--busy {
 		opacity: 0.5;
+	}
+
+	.management-page__picker-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.01);
+		z-index: 20;
 	}
 
 	.management-page__dev-reset-text {

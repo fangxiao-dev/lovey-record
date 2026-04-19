@@ -76,7 +76,7 @@
 <script>
 	export default {
 		name: 'ModuleSettingStrip',
-		emits: ['select', 'custom', 'custom-change'],
+		emits: ['select', 'custom', 'custom-preview-change'],
 		props: {
 			label: {
 				type: String,
@@ -128,7 +128,7 @@
 				const option = this.customPickerOptions?.[index];
 				if (!option) return;
 
-				this.$emit('custom-change', {
+				this.$emit('custom-preview-change', {
 					value: option.value,
 					index
 				});
