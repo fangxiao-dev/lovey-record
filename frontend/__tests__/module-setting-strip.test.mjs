@@ -38,10 +38,12 @@ test('ModuleSettingStrip renders a native picker-view wheel shell', () => {
 
 	assert.match(source, /<picker-view/);
 	assert.match(source, /<picker-view-column>/);
-	assert.match(source, /indicator-style="height: 44rpx; border-radius: 22rpx; background: rgba\(255, 255, 255, 0\.96\);"/);
+	assert.match(source, /indicator-style="height: 44rpx; border-radius: 22rpx; background: rgba\(255, 255, 255, 0\.64\); border: 2rpx solid rgba\(216, 154, 141, 0\.18\);"/);
 	assert.match(source, /mask-style="background: linear-gradient\(180deg, rgba\(246, 243, 238, 0\.92\) 0%, rgba\(246, 243, 238, 0\.18\) 100%\); pointer-events: none;"/);
 	assert.match(source, /height:\s*220rpx;/);
 	assert.match(source, /module-setting-strip__picker-view/);
+	assert.match(source, /module-setting-strip__picker-focus/);
+	assert.match(source, /resolvedPickerLabel\(\)/);
 	assert.doesNotMatch(source, /visibleWheelOptions\(\)/);
 	assert.doesNotMatch(source, /handleWheelOptionSelect\(option\)/);
 });
