@@ -63,7 +63,6 @@ test('module management page uses compact module tiles, split action layout, and
 	assert.match(settingStripSource, /module-setting-strip__control-group--start/);
 	assert.match(settingStripSource, /module-setting-strip__control-group--end/);
 	assert.match(settingStripSource, /module-setting-strip__wheel-shell/);
-	assert.match(settingStripSource, /module-setting-strip__picker-focus/);
 	assert.match(settingStripSource, /@tap="\$emit\('custom'\)"/);
 	assert.match(settingStripSource, /flex-wrap:\s*nowrap;/);
 	assert.match(settingStripSource, /width:\s*fit-content;/);
@@ -73,6 +72,8 @@ test('module management page uses compact module tiles, split action layout, and
 	assert.match(settingStripSource, /border:\s*2rpx solid \$text-muted;/);
 	assert.match(settingStripSource, /background:\s*rgba\(255, 255, 255, 0\.64\);/);
 	assert.match(settingStripSource, /height:\s*44rpx;/);
+	assert.match(settingStripSource, /color:\s*\$text-primary;/);
+	assert.match(settingStripSource, /font-weight:\s*\$font-weight-title;/);
 	assert.match(settingStripSource, /module-setting-strip__control-group--start\s*\{\s*align-self:\s*flex-start;/);
 	assert.match(settingStripSource, /module-setting-strip__control-group--end\s*\{\s*align-self:\s*flex-end;/);
 	assert.match(settingStripSource, /module-setting-strip__picker-card\s*\{[\s\S]*align-self:\s*center;/);
