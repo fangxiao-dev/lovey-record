@@ -60,6 +60,8 @@ test('module management page uses compact module tiles, split action layout, and
 	assert.match(settingStripSource, /module-setting-strip__picker-card/);
 	assert.match(settingStripSource, /pickerAlign:\s*\{\s*type:\s*String,/);
 	assert.match(settingStripSource, /resolvedPickerAlign\(\)/);
+	assert.match(pageSource, /quickWindowAnchors/);
+	assert.match(pageSource, /buildCenteredQuickOptions/);
 	assert.match(settingStripSource, /module-setting-strip__control-group--start/);
 	assert.match(settingStripSource, /module-setting-strip__control-group--end/);
 	assert.match(settingStripSource, /module-setting-strip__wheel-shell/);

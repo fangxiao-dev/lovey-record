@@ -209,6 +209,7 @@
 	import ChangelogEntryRow from './ChangelogEntryRow.vue';
 	import ChangelogSheet from './ChangelogSheet.vue';
 	import changelogEntries from '../../utils/changelog-data.js';
+	import { buildCenteredQuickOptions } from '../../utils/picker-quick-options.js';
 	import { readLastViewedVersion, writeLastViewedVersion } from '../../utils/changelog.js';
 	import { mergeH5RouteQuery } from '../../utils/h5-route-query.js';
 	import { resolveRuntimeOpenid } from '../../utils/dev-openid.js';
@@ -236,6 +237,7 @@
 				selectedPermission: 'VIEWER',
 				selectedModuleId: '',
 				activeCustomPickerKey: '',
+				quickWindowAnchors: {},
 				context: { ...DEFAULT_MODULE_SHELL_CONTEXT },
 				showChangelogSheet: false,
 				changelogEntries,
@@ -269,16 +271,28 @@
 				const customPickerOptions = control?.customPickerOptions || [];
 				const selectedValue = control?.value;
 				const customPickerValueIndex = customPickerOptions.findIndex((option) => option.value === selectedValue);
+				const anchor = this.quickWindowAnchors[key] ?? selectedValue ?? 0;
+				const options = buildCenteredQuickOptions(anchor, selectedValue, customPickerOptions);
 
 				return {
 					key,
 					label: control?.label || '',
-					options: control?.options || [],
+					options,
 					customLabel: control?.customLabel || '自定义',
 					customPickerVisible: this.activeCustomPickerKey === key,
 					customPickerOptions,
 					customPickerValueIndex: customPickerValueIndex >= 0 ? customPickerValueIndex : 0,
 					pickerAlign: key === 'prediction' ? 'end' : 'start'
+				};
+			},
+			syncQuickWindowAnchorsFromPage(page) {
+				const card = page?.managementCard;
+
+				if (!card) return;
+
+				this.quickWindowAnchors = {
+					duration: card.settingsControl?.value,
+					prediction: card.predictionSettingsControl?.value
 				};
 			},
 			updateDemoSettingRow(control, days) {
@@ -337,6 +351,7 @@
 				this.page = null;
 				this.selectedModuleId = '';
 				this.activeCustomPickerKey = '';
+				this.quickWindowAnchors = {};
 				this.loadError = '';
 				this.context = {
 					...DEFAULT_MODULE_SHELL_CONTEXT,
@@ -352,6 +367,7 @@
 					const result = createDemoMenstrualModuleShellPageModel(this.context);
 					this.page = result.page;
 					this.selectedModuleId = result.page?.moduleBoard?.modules?.[0]?.id || '';
+					this.syncQuickWindowAnchorsFromPage(result.page);
 					return;
 				}
 
@@ -393,6 +409,7 @@
 					this.selectedModuleId = result.page?.moduleBoard?.modules?.find((module) => module.selected)?.id
 						|| result.page?.moduleBoard?.modules?.[0]?.id
 						|| '';
+					this.syncQuickWindowAnchorsFromPage(result.page);
 				} catch (error) {
 					this.page = null;
 					this.loadError = error instanceof Error ? error.message : '联调环境请求失败';
@@ -435,16 +452,20 @@
 				if (this.isMutating || !control || !nextValue || nextValue === control.value) return;
 
 				if (this.isDemoMode) {
+					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: nextValue };
 					this.applyDemoSettingUpdate(key, nextValue);
 					return;
 				}
 
+				const previousAnchor = this.quickWindowAnchors[key];
 				this.isMutating = true;
 				this.loadError = '';
 				try {
 					await this.persistSettingByKey(key, nextValue);
 					await this.retryInitialLoad();
+					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: nextValue };
 				} catch (error) {
+					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: previousAnchor };
 					this.loadError = error instanceof Error ? error.message : '模块设置更新失败';
 				} finally {
 					this.isMutating = false;
