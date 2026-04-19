@@ -62,7 +62,7 @@ function formatHumanDate(dateString) {
 
 function formatMonthLabel(dateString) {
 	const date = toDateOnly(dateString);
-	return `${date.getUTCFullYear()} · ${date.getUTCMonth() + 1}月`;
+	return `${String(date.getUTCFullYear()).slice(2)}年 ${date.getUTCMonth() + 1}月`;
 }
 
 function formatWindowMonthLabel(windowStartDate, windowEndDate) {
@@ -74,14 +74,37 @@ function formatWindowMonthLabel(windowStartDate, windowEndDate) {
 	const endMonth = end.getUTCMonth() + 1;
 
 	if (startYear === endYear && startMonth === endMonth) {
-		return `${startYear} · ${startMonth}月`;
+		return `${String(startYear).slice(2)}年 ${startMonth}月`;
 	}
 
 	if (startYear === endYear) {
-		return `${String(startYear).slice(2)} · ${startMonth}月 ~ ${endMonth}月`;
+		return `${String(startYear).slice(2)}年 ${startMonth}月~${endMonth}月`;
 	}
 
-	return `${String(startYear).slice(2)} · ${startMonth}月 ~ ${String(endYear).slice(2)} · ${endMonth}月`;
+	return `${String(startYear).slice(2)}年 ${startMonth}月~${String(endYear).slice(2)}年 ${endMonth}月`;
+}
+
+function formatWindowMonthHeader(windowStartDate, windowEndDate) {
+	const start = toDateOnly(windowStartDate);
+	const end = toDateOnly(windowEndDate);
+	const startYear = start.getUTCFullYear();
+	const endYear = end.getUTCFullYear();
+	const startMonth = start.getUTCMonth() + 1;
+	const endMonth = end.getUTCMonth() + 1;
+
+	if (startYear === endYear && startMonth === endMonth) {
+		return {
+			monthLabel: `${startMonth}月`,
+			startYearLabel: String(startYear),
+			endYearLabel: ''
+		};
+	}
+
+	return {
+		monthLabel: `${startMonth}月~${endMonth}月`,
+		startYearLabel: String(startYear),
+		endYearLabel: startYear === endYear ? '' : String(endYear)
+	};
 }
 
 function createDateRange(startDate, endDate) {
@@ -886,13 +909,17 @@ export function createMenstrualHomePageModel({
 		},
 		heroCard: createHeroCard(homeView, today, moduleSettings),
 		headerNav: {
-			monthLabel: (() => {
+			...(() => {
 				if (viewMode !== 'three-week') {
-					return formatMonthLabel(resolvedFocusDate);
+					return {
+						monthLabel: formatMonthLabel(resolvedFocusDate),
+						startYearLabel: '',
+						endYearLabel: ''
+					};
 				}
 				const windowStartDate = addDays(startOfWeek(resolvedFocusDate), -7);
 				const windowEndDate = addDays(windowStartDate, 20);
-				return formatWindowMonthLabel(windowStartDate, windowEndDate);
+				return formatWindowMonthHeader(windowStartDate, windowEndDate);
 			})(),
 			leadingLabel: '‹',
 			trailingLabel: '›'

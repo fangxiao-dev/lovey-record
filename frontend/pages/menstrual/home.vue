@@ -110,6 +110,8 @@
 			/>
 			<HeaderNav
 				:month-label="page.headerNav.monthLabel"
+				:start-year-label="page.headerNav.startYearLabel"
+				:end-year-label="page.headerNav.endYearLabel"
 				:leading-label="page.headerNav.leadingLabel"
 				:trailing-label="page.headerNav.trailingLabel"
 				:busy="isBrowseBusy"

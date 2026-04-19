@@ -29,24 +29,23 @@
 				aria-hidden="true"
 			>
 				<template v-if="weekBoundaryInfo[weekIndex].betweenRowBoundary">
-					<view class="calendar-grid__divider-segment" />
-					<view class="calendar-grid__month-chip calendar-grid__month-chip--between-row">
-						<text>{{ formatBoundaryMonthNumber(weekBoundaryInfo[weekIndex].betweenRowNewMonth) }}</text>
-						<text>月</text>
+					<view class="calendar-grid__boundary-slot calendar-grid__boundary-slot--between-row">
+						<view class="calendar-grid__boundary-slot-box calendar-grid__boundary-slot-box--between-row">
+							<view class="calendar-grid__month-chip calendar-grid__month-chip--between-row">
+								<text>{{ formatBoundaryMonthNumber(weekBoundaryInfo[weekIndex].betweenRowNewMonth) }}</text>
+								<text>月</text>
+							</view>
+						</view>
 					</view>
-					<view class="calendar-grid__divider-segment" />
 				</template>
 			</view>
 			<view class="calendar-grid__cells">
+				<!-- cells before the month boundary (or all 7 cells when no boundary) -->
 				<view
-					v-for="(cell, cellIndex) in week.cells"
+					v-for="cell in weekCellsBefore(week, weekIndex)"
 					:key="cell.key || cell.label"
 					class="calendar-grid__cell"
-					:class="[
-						{ 'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy },
-						{ 'calendar-grid__cell--boundary-right': weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex === cellIndex },
-						{ 'calendar-grid__cell--boundary-left': weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex + 1 === cellIndex && weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex >= 0 }
-					]"
+					:class="{ 'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy }"
 					:hover-class="interactive && cell.selectable !== false && !busy ? 'ui-pressable-hover' : ''"
 					:hover-stay-time="70"
 					@tap.stop="onCellTap(cell)"
@@ -56,21 +55,34 @@
 						{{ cell.caption }}
 					</text>
 				</view>
-				<template v-if="weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex >= 0">
-					<view
-						class="calendar-grid__month-divider"
-						aria-hidden="true"
-						:style="{ left: `${((weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex + 1) / 7) * 100}%` }"
-					/>
-					<view
-						class="calendar-grid__month-chip"
-						aria-hidden="true"
-						:style="{ left: `${((weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex + 1) / 7) * 100}%` }"
-					>
-						<text>{{ formatBoundaryMonthNumber(weekBoundaryInfo[weekIndex].inRowNewMonth) }}</text>
-						<text>月</text>
+				<!-- boundary slot: real flex item so it takes space rather than overlaying cells -->
+				<view
+					v-if="weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex >= 0"
+					class="calendar-grid__boundary-slot"
+					aria-hidden="true"
+				>
+					<view class="calendar-grid__boundary-slot-box">
+						<view class="calendar-grid__month-chip">
+							<text>{{ formatBoundaryMonthNumber(weekBoundaryInfo[weekIndex].inRowNewMonth) }}</text>
+							<text>月</text>
+						</view>
 					</view>
-				</template>
+				</view>
+				<!-- cells after the month boundary (empty when no boundary) -->
+				<view
+					v-for="cell in weekCellsAfter(week, weekIndex)"
+					:key="cell.key || cell.label"
+					class="calendar-grid__cell"
+					:class="{ 'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy }"
+					:hover-class="interactive && cell.selectable !== false && !busy ? 'ui-pressable-hover' : ''"
+					:hover-stay-time="70"
+					@tap.stop="onCellTap(cell)"
+				>
+					<DateCell :label="cell.label" :variant="effectiveVariant(cell)" />
+					<text v-if="cell.caption" class="calendar-grid__cell-caption">
+						{{ cell.caption }}
+					</text>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -158,7 +170,7 @@
 			return '';
 		}
 
-		return String(monthNumber).padStart(2, '0');
+		return String(monthNumber);
 	}
 
 	export default {
@@ -305,6 +317,19 @@
 		},
 		methods: {
 			formatBoundaryMonthNumber,
+
+			/** Returns cells before the month boundary (or all 7 when no boundary). */
+			weekCellsBefore(week, weekIndex) {
+				const idx = this.weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex;
+				return idx >= 0 ? week.cells.slice(0, idx + 1) : week.cells;
+			},
+
+			/** Returns cells after the month boundary (empty array when no boundary). */
+			weekCellsAfter(week, weekIndex) {
+				const idx = this.weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex;
+				return idx >= 0 ? week.cells.slice(idx + 1) : [];
+			},
+
 			effectiveVariant(cell) {
 				if (this.selectedKeys.includes(cell.key)) {
 					const previewVariant = this.previewPeriodMarked === null
@@ -561,16 +586,19 @@
 	}
 
 	.calendar-grid__cells {
-		display: grid;
-		grid-template-columns: repeat(7, 1fr);
-		column-gap: 8rpx;
-		row-gap: 12rpx;
-		justify-items: center;
-		position: relative;
-		overflow: visible;
+		/*
+		 * Flex row so the boundary-slot chip is a real layout participant.
+		 * Each cell gets flex:1 (equal share of remaining space after chip).
+		 * This ensures chip and cells never overlap — no absolute positioning tricks.
+		 */
+		display: flex;
+		flex-direction: row;
+		gap: 8rpx;
+		align-items: stretch;
 	}
 
 	.calendar-grid__cell {
+		flex: 1;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -585,12 +613,34 @@
 		cursor: pointer;
 	}
 
-	.calendar-grid__cell--boundary-right > .date-cell {
-		margin-right: 8rpx;
+	/* Boundary slot: chip + divider as a real flex item between the two cell groups */
+	.calendar-grid__boundary-slot {
+		flex: 0 0 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		align-self: stretch;
+		padding: 0 4rpx;
+		min-width: 28rpx;
 	}
 
-	.calendar-grid__cell--boundary-left > .date-cell {
-		margin-left: 8rpx;
+	.calendar-grid__boundary-slot--between-row {
+		align-self: auto;
+		padding: 0;
+		min-width: 0;
+	}
+
+	.calendar-grid__boundary-slot-box {
+		height: 100%;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		align-items: center;
+	}
+
+	.calendar-grid__boundary-slot-box--between-row {
+		height: auto;
 	}
 
 	.calendar-grid__cell-caption {
@@ -600,17 +650,6 @@
 		line-height: 1;
 		color: $text-muted;
 		text-align: center;
-	}
-
-	.calendar-grid__month-divider {
-		position: absolute;
-		top: 4rpx;
-		bottom: 4rpx;
-		width: 1px;
-		background: $calendar-week-divider;
-		pointer-events: none;
-		z-index: 1;
-		transform: translateX(-50%);
 	}
 
 	.calendar-grid__month-chip {
@@ -629,28 +668,15 @@
 		z-index: 2;
 	}
 
-	.calendar-grid__cells .calendar-grid__month-chip {
-		position: absolute;
-		top: -8rpx;
-		transform: translateX(-50%);
-	}
-
 	.calendar-grid__month-chip--between-row {
-		position: static;
-		transform: none;
+		align-self: flex-start;
 	}
 
 	.calendar-grid__divider--month-boundary {
-		height: auto;
+		min-height: 12rpx;
 		background: transparent;
 		display: flex;
 		align-items: center;
-		gap: 8rpx;
-	}
-
-	.calendar-grid__divider-segment {
-		flex: 1;
-		height: 1px;
-		background: $calendar-week-divider;
+		justify-content: center;
 	}
 </style>

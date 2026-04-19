@@ -12,7 +12,11 @@
 				mode="aspectFit"
 			/>
 		</view>
-		<text class="header-nav__month">{{ monthLabel }}</text>
+		<view class="header-nav__title-group">
+			<text v-if="startYearLabel" class="header-nav__year header-nav__year--start">{{ startYearLabel }}</text>
+			<text class="header-nav__month">{{ monthLabel }}</text>
+			<text v-if="endYearLabel" class="header-nav__year header-nav__year--end">{{ endYearLabel }}</text>
+		</view>
 		<view
 			class="header-nav__button"
 			hover-class="ui-pressable-hover"
@@ -35,6 +39,14 @@
 			monthLabel: {
 				type: String,
 				required: true
+			},
+			startYearLabel: {
+				type: String,
+				default: ''
+			},
+			endYearLabel: {
+				type: String,
+				default: ''
 			},
 			leadingLabel: {
 				type: String,
@@ -71,6 +83,13 @@
 		gap: $space-3;
 	}
 
+	.header-nav__title-group {
+		flex: 1;
+		min-width: 0;
+		position: relative;
+		height: 60rpx;
+	}
+
 	.header-nav__button {
 		display: flex;
 		align-items: center;
@@ -92,10 +111,39 @@
 	}
 
 	.header-nav__month {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
 		font-size: 34rpx;
 		line-height: 1;
 		font-weight: 700;
 		letter-spacing: 1rpx;
 		color: $text-primary;
+		text-align: center;
+		white-space: nowrap;
+		max-width: 100%;
+	}
+
+	.header-nav__year {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		font-size: 24rpx;
+		line-height: 1;
+		font-weight: $font-weight-medium;
+		color: $text-muted;
+		flex-shrink: 0;
+		white-space: nowrap;
+	}
+
+	.header-nav__year--start {
+		left: 0;
+		text-align: left;
+	}
+
+	.header-nav__year--end {
+		right: 0;
+		text-align: right;
 	}
 </style>

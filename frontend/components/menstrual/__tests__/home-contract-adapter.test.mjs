@@ -299,7 +299,7 @@ test('home contract adapter builds the calendar from getCalendarWindow and prese
 	});
 
 	assert.equal(model.viewModeControl.value, 'month');
-	assert.equal(model.headerNav.monthLabel, '2026 · 3月');
+	assert.equal(model.headerNav.monthLabel, '26年 3月');
 	assert.equal(model.calendarCard.weeks.length, 6);
 	assert.equal(model.calendarCard.weeks.every((week) => week.cells.length === 7), true);
 	assert.equal(
@@ -329,7 +329,7 @@ test('home contract adapter can build a month-view calendar locally from homeVie
 	});
 
 	assert.equal(model.viewModeControl.value, 'month');
-	assert.equal(model.headerNav.monthLabel, '2026 · 4月');
+	assert.equal(model.headerNav.monthLabel, '26年 4月');
 	assert.equal(model.calendarCard.weeks.length, 5);
 	assert.equal(
 		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-04-27' && cell.variant === 'selected'),
@@ -1075,7 +1075,9 @@ test('formatWindowMonthLabel via createMenstrualHomePageModel: single month', ()
 		viewMode: 'three-week'
 	});
 
-	assert.equal(model.headerNav.monthLabel, '2026 · 4月');
+	assert.equal(model.headerNav.monthLabel, '4月');
+	assert.equal(model.headerNav.startYearLabel, '2026');
+	assert.equal(model.headerNav.endYearLabel, '');
 });
 
 test('formatWindowMonthLabel via createMenstrualHomePageModel: cross-month same year', () => {
@@ -1093,7 +1095,9 @@ test('formatWindowMonthLabel via createMenstrualHomePageModel: cross-month same 
 		viewMode: 'three-week'
 	});
 
-	assert.equal(model.headerNav.monthLabel, '26 · 4月 ~ 5月');
+	assert.equal(model.headerNav.monthLabel, '4月~5月');
+	assert.equal(model.headerNav.startYearLabel, '2026');
+	assert.equal(model.headerNav.endYearLabel, '');
 });
 
 test('formatWindowMonthLabel via createMenstrualHomePageModel: cross-year', () => {
@@ -1123,5 +1127,7 @@ test('formatWindowMonthLabel via createMenstrualHomePageModel: cross-year', () =
 		viewMode: 'three-week'
 	});
 
-	assert.equal(model.headerNav.monthLabel, '25 · 12月 ~ 26 · 1月');
+	assert.equal(model.headerNav.monthLabel, '12月~1月');
+	assert.equal(model.headerNav.startYearLabel, '2025');
+	assert.equal(model.headerNav.endYearLabel, '2026');
 });
