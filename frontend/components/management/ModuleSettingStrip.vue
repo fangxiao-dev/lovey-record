@@ -53,7 +53,7 @@
 					<picker-view
 						class="module-setting-strip__picker-view"
 						:value="[resolvedPickerIndex]"
-						indicator-style="height: 44rpx; border-radius: 22rpx; background: rgba(255, 255, 255, 0.96);"
+						indicator-style="height: 44rpx; border-radius: 22rpx; background: rgba(255, 255, 255, 0.64); border: 2rpx solid rgba(216, 154, 141, 0.18);"
 						mask-style="background: linear-gradient(180deg, rgba(246, 243, 238, 0.92) 0%, rgba(246, 243, 238, 0.18) 100%); pointer-events: none;"
 						@change="handlePickerChange"
 					>
@@ -67,6 +67,15 @@
 							</view>
 						</picker-view-column>
 					</picker-view>
+
+					<view
+						v-if="resolvedPickerLabel"
+						class="module-setting-strip__picker-focus"
+					>
+						<text class="module-setting-strip__picker-focus-text">
+							{{ resolvedPickerLabel }}
+						</text>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -120,6 +129,9 @@
 			},
 			resolvedPickerAlign() {
 				return this.pickerAlign === 'end' ? 'end' : 'start';
+			},
+			resolvedPickerLabel() {
+				return this.customPickerOptions?.[this.resolvedPickerIndex]?.label || '';
 			}
 		},
 		methods: {
@@ -247,6 +259,32 @@
 		width: 100%;
 		height: 100%;
 		background: transparent;
+	}
+
+	.module-setting-strip__picker-focus {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 50%;
+		height: 44rpx;
+		transform: translateY(-50%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 22rpx;
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(250, 245, 240, 0.54) 100%);
+		box-shadow: 0 4rpx 12rpx rgba(47, 42, 38, 0.06);
+		box-sizing: border-box;
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	.module-setting-strip__picker-focus-text {
+		font-size: 28rpx;
+		line-height: 1;
+		color: $text-primary;
+		font-weight: $font-weight-title;
+		letter-spacing: 0.5rpx;
 	}
 
 	.module-setting-strip__picker-item {

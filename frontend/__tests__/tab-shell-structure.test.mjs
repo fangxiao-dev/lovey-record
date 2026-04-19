@@ -30,9 +30,12 @@ test('app keeps module management as the single home entry without the temporary
 	assert.match(homeSource, /import ModuleManagementPage from '..\/..\/components\/management\/ModuleManagementPage\.vue';/);
 	assert.match(managementSource, /import ModuleManagementPage from '..\/..\/components\/management\/ModuleManagementPage\.vue';/);
 	assert.match(homeSource, /onLoad\(options\)/);
+	assert.match(homeSource, /\$nextTick\(\(\) => \{/);
 	assert.match(homeSource, /\$refs\.managementPage\?\.initialize\(options \|\| \{\}\)/);
 	assert.match(managementSource, /onLoad\(options\)/);
-	assert.match(managementSource, /\$refs\.managementPage\?\.initialize\(options \|\| \{\}\)/);
+	assert.match(managementSource, /mounted\(\)/);
+	assert.match(managementSource, /this\._loadOptions = options \|\| \{\};/);
+	assert.match(managementSource, /\$refs\.managementPage\?\.initialize\(this\._loadOptions \|\| \{\}\)/);
 	assert.match(managementComponentSource, /management-page__title/);
 	assert.match(managementComponentSource, /async initialize\(options = \{\}\)/);
 	assert.match(managementComponentSource, /moduleTiles/);
