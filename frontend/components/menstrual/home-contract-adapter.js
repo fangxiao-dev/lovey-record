@@ -134,11 +134,17 @@ function addDays(dateString, amount) {
 	return formatYMD(date);
 }
 
-function getRealPeriodStartDates(homeView) {
+function getRealPeriodStartDates(homeView, extraMarks = []) {
 	const starts = new Set();
 	const currentStatusSummary = homeView?.currentStatusSummary || {};
 	const currentSegment = currentStatusSummary.currentSegment || currentStatusSummary.currentCycle || null;
 	const previousSegment = currentStatusSummary.previousSegment || null;
+
+	(homeView?.historicalPeriodStarts || []).forEach((startDate) => {
+		if (startDate) {
+			starts.add(startDate);
+		}
+	});
 
 	if (previousSegment?.startDate) {
 		starts.add(previousSegment.startDate);
@@ -147,7 +153,7 @@ function getRealPeriodStartDates(homeView) {
 		starts.add(currentSegment.startDate);
 	}
 
-	(homeView?.calendarMarks || []).forEach((mark) => {
+	[...(homeView?.calendarMarks || []), ...extraMarks].forEach((mark) => {
 		if (mark?.kind === 'period_start' && mark?.date) {
 			starts.add(mark.date);
 		}
@@ -160,8 +166,8 @@ function segmentContainsDate(segment, date) {
 	return Boolean(segment?.startDate && segment?.endDate && date >= segment.startDate && date <= segment.endDate);
 }
 
-function resolveFocusedNavigation(homeView, focusDate) {
-	const realStarts = getRealPeriodStartDates(homeView);
+function resolveFocusedNavigation(homeView, focusDate, calendarWindowMarks = []) {
+	const realStarts = getRealPeriodStartDates(homeView, calendarWindowMarks);
 	const predictionStart = homeView?.predictionSummary?.predictedStartDate || null;
 	const currentStatusSummary = homeView?.currentStatusSummary || {};
 	const currentSegment = currentStatusSummary.currentSegment || currentStatusSummary.currentCycle || null;
@@ -174,7 +180,8 @@ function resolveFocusedNavigation(homeView, focusDate) {
 			focusedNodeType: 'prediction',
 			previousPeriodStart,
 			nextPeriodStart: null,
-			isForwardBoundary: true
+			isForwardBoundary: true,
+			isBackwardBoundary: !previousPeriodStart
 		};
 	}
 
@@ -195,7 +202,8 @@ function resolveFocusedNavigation(homeView, focusDate) {
 			focusedNodeType: predictionStart ? 'prediction' : 'real-period',
 			previousPeriodStart: null,
 			nextPeriodStart: predictionStart && predictionStart > focusDate ? predictionStart : null,
-			isForwardBoundary: Boolean(predictionStart && focusDate === predictionStart)
+			isForwardBoundary: Boolean(predictionStart && focusDate === predictionStart),
+			isBackwardBoundary: true
 		};
 	}
 
@@ -209,7 +217,8 @@ function resolveFocusedNavigation(homeView, focusDate) {
 		focusedNodeType: 'real-period',
 		previousPeriodStart,
 		nextPeriodStart,
-		isForwardBoundary: false
+		isForwardBoundary: false,
+		isBackwardBoundary: !previousPeriodStart
 	};
 }
 
@@ -434,7 +443,7 @@ function getFocusDate(homeView, dayDetail, today) {
 function getJumpTabValue(homeView, today) {
 	const previousSegment = homeView.currentStatusSummary?.previousSegment;
 	if (previousSegment && today === previousSegment.startDate) {
-		return 'previous';
+		return 'prev-period';
 	}
 	if (homeView.predictionSummary?.predictedStartDate) {
 		return 'prediction';
@@ -1023,12 +1032,9 @@ function clonePageModel(pageModel) {
 
 export function resolveJumpTargetDate(homeView, jumpKey, today) {
 	if (jumpKey === 'today') return today;
-	if (jumpKey === 'previous') {
+	if (jumpKey === 'prev-period') {
 		const statusSummary = homeView.currentStatusSummary || {};
-		// Handle both old field names (status) and new ones (currentStatus)
 		const currentStatus = statusSummary.currentStatus || statusSummary.status || 'out_of_period';
-		// When in period: "上次" refers to previousSegment
-		// When out of period: "上次" refers to the segment we just exited (currentSegment)
 		const lastSegment = currentStatus === 'in_period'
 			? statusSummary.previousSegment
 			: (statusSummary.currentSegment || statusSummary.currentCycle);
@@ -1060,7 +1066,7 @@ export function createMenstrualHomePageModel({
 }) {
 	const activeDate = dayDetail?.dayRecord?.date || today;
 	const resolvedFocusDate = focusDate || activeDate;
-	const focusedNavigation = resolveFocusedNavigation(homeView, resolvedFocusDate);
+	const focusedNavigation = resolveFocusedNavigation(homeView, resolvedFocusDate, calendarWindow?.marks || []);
 
 	return {
 		topBar: {
@@ -1079,7 +1085,8 @@ export function createMenstrualHomePageModel({
 						nextPeriodStart: null,
 						focusedNodeType: null,
 						focusedAnchorDate: resolvedFocusDate,
-						isForwardBoundary: false
+						isForwardBoundary: false,
+						isBackwardBoundary: false
 					};
 				}
 				const windowStartDate = addDays(startOfWeek(resolvedFocusDate), -7);
@@ -1094,17 +1101,19 @@ export function createMenstrualHomePageModel({
 		},
 		jumpTabs: {
 			value: (() => {
-				const previousTarget = resolveJumpTargetDate(homeView, 'previous', today);
+				const prevPeriodTarget = resolveJumpTargetDate(homeView, 'prev-period', today);
 				const predictionTarget = resolveJumpTargetDate(homeView, 'prediction', today);
 				if (resolvedFocusDate === today) return 'today';
-				if (previousTarget && resolvedFocusDate === previousTarget) return 'previous';
+				if (prevPeriodTarget && resolvedFocusDate === prevPeriodTarget) return 'prev-period';
 				if (predictionTarget && resolvedFocusDate === predictionTarget) return 'prediction';
 				return getJumpTabValue(homeView, today);
 			})(),
 			items: [
 				{ key: 'today', label: '今天', tone: 'outlined', disabled: false },
-				{ key: 'previous', label: '上次', tone: 'muted', disabled: (() => { const s = homeView.currentStatusSummary || {}; const cs = s.currentStatus || s.status || 'out_of_period'; const ls = cs === 'in_period' ? s.previousSegment : (s.currentSegment || s.currentCycle); return !ls; })() },
-				{ key: 'prediction', label: '下次预测', tone: 'soft', disabled: !homeView.predictionSummary }
+				{ key: 'prediction', label: '下次预测', tone: 'soft', disabled: !homeView.predictionSummary },
+				{ key: '_sep', type: 'label', label: '按经期定位' },
+				{ key: 'prev-period', label: '向前', tone: 'muted', disabled: (() => { const s = homeView.currentStatusSummary || {}; const cs = s.currentStatus || s.status || 'out_of_period'; const ls = cs === 'in_period' ? s.previousSegment : (s.currentSegment || s.currentCycle); return !ls; })() },
+				{ key: 'next-period', label: '向后', tone: 'muted', disabled: !homeView.predictionSummary }
 			]
 		},
 		viewModeControl: {
@@ -1139,8 +1148,15 @@ export function applyHeroSnapshotToPageModel(pageModel, { homeView, moduleSettin
 	next.jumpTabs.items = [
 		{ key: 'today', label: '今天', tone: 'outlined', disabled: false },
 		{
-			key: 'previous',
-			label: '上次',
+			key: 'prediction',
+			label: '下次预测',
+			tone: 'soft',
+			disabled: !homeView?.predictionSummary
+		},
+		{ key: '_sep', type: 'label', label: '按经期定位' },
+		{
+			key: 'prev-period',
+			label: '向前',
 			tone: 'muted',
 			disabled: (() => {
 				const summary = homeView?.currentStatusSummary || {};
@@ -1151,14 +1167,9 @@ export function applyHeroSnapshotToPageModel(pageModel, { homeView, moduleSettin
 				return !lastSegment;
 			})()
 		},
-		{
-			key: 'prediction',
-			label: '下次预测',
-			tone: 'soft',
-			disabled: !homeView?.predictionSummary
-		}
+		{ key: 'next-period', label: '向后', tone: 'muted', disabled: !homeView?.predictionSummary }
 	];
-	next.jumpTabs.value = ['today', 'previous', 'prediction'].includes(previousJumpValue)
+	next.jumpTabs.value = ['today', 'prev-period', 'next-period', 'prediction'].includes(previousJumpValue)
 		? previousJumpValue
 		: getJumpTabValue(homeView || {}, today);
 	return next;

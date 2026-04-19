@@ -559,6 +559,58 @@ describe('query.service', () => {
         durationDays: 5,
       },
     });
+    expect(result.historicalPeriodStarts).toEqual(['2026-03-01', '2026-03-29']);
+    jest.useRealTimers();
+  });
+
+  it('returns full historical period starts for focused-view navigation, not only the latest two segments', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-04-10T00:00:00.000Z'));
+    (prisma.moduleInstance.findFirst as jest.Mock).mockResolvedValue({
+      id: 'module-1',
+      profileId: 'profile-1',
+      ownerUserId: 'user-1',
+      sharingStatus: 'PRIVATE',
+    });
+    (prisma.derivedCycle.findMany as jest.Mock).mockResolvedValue([
+      {
+        startDate: new Date('2025-12-26T00:00:00.000Z'),
+        endDate: new Date('2025-12-30T00:00:00.000Z'),
+        durationDays: 5,
+        derivedFromDates: JSON.stringify(['2025-12-26', '2025-12-27', '2025-12-28', '2025-12-29', '2025-12-30']),
+      },
+      {
+        startDate: new Date('2026-02-08T00:00:00.000Z'),
+        endDate: new Date('2026-02-12T00:00:00.000Z'),
+        durationDays: 5,
+        derivedFromDates: JSON.stringify(['2026-02-08', '2026-02-09', '2026-02-10', '2026-02-11', '2026-02-12']),
+      },
+      {
+        startDate: new Date('2026-03-06T00:00:00.000Z'),
+        endDate: new Date('2026-03-11T00:00:00.000Z'),
+        durationDays: 6,
+        derivedFromDates: JSON.stringify(['2026-03-06', '2026-03-07', '2026-03-08', '2026-03-09', '2026-03-10', '2026-03-11']),
+      },
+      {
+        startDate: new Date('2026-04-06T00:00:00.000Z'),
+        endDate: new Date('2026-04-11T00:00:00.000Z'),
+        durationDays: 6,
+        derivedFromDates: JSON.stringify(['2026-04-06', '2026-04-07', '2026-04-08', '2026-04-09', '2026-04-10', '2026-04-11']),
+      },
+    ]);
+    (prisma.prediction.findUnique as jest.Mock).mockResolvedValue(null);
+
+    const result = await getModuleHomeView({
+      moduleInstanceId: 'module-1',
+      userId: 'user-1',
+      today: '2026-04-10',
+    });
+
+    expect(result.historicalPeriodStarts).toEqual([
+      '2025-12-26',
+      '2026-02-08',
+      '2026-03-06',
+      '2026-04-06',
+    ]);
     jest.useRealTimers();
   });
 

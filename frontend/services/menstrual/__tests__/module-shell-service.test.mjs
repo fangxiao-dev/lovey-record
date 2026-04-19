@@ -125,7 +125,7 @@ test('loadMenstrualModuleShellPageModel maps a private module into the private z
 		...DEFAULT_MODULE_SHELL_CONTEXT,
 		moduleInstanceId: 'seed-home-module'
 	}));
-	assert.equal(result.page.managementCard.secondaryAction.label, '邀请 TA');
+	assert.equal(result.page.managementCard.secondaryAction.label, '共享');
 	assert.equal(result.page.managementCard.secondaryAction.action, 'open-join');
 	assert.equal(result.page.managementCard.secondaryAction.url, null);
 	assert.equal(result.page.managementCard.destructiveAction.label, '删除');
@@ -191,7 +191,7 @@ test('loadMenstrualModuleShellPageModel maps a shared module into the shared zon
 	assert.equal(result.page.managementCard.sharingStatus.tone, 'shared');
 	assert.equal(result.page.managementCard.defaultPeriodDuration.value, '7 天');
 	assert.equal(result.page.managementCard.defaultPredictionTerm.value, '29 天');
-	assert.equal(result.page.managementCard.secondaryAction.label, '邀请 TA');
+	assert.equal(result.page.managementCard.secondaryAction.label, '共享');
 	assert.equal(result.page.managementCard.secondaryAction.action, 'open-join');
 	assert.equal(result.page.managementCard.secondaryAction.url, null);
 });

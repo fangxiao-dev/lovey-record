@@ -117,7 +117,7 @@ model DerivedCycle {
   startDate        DateTime @db.Date @map("start_date")
   endDate          DateTime @db.Date @map("end_date")
   durationDays     Int      @map("duration_days")
-  derivedFromDates String   @map("derived_from_dates")
+  derivedFromDates String   @db.Text @map("derived_from_dates")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 

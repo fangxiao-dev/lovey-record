@@ -89,7 +89,7 @@ test('module shell renders a shared module in the shared zone without duplicatin
 	await expect(page.locator('.management-board .module-tile')).toHaveCount(1);
 	await expect(page.locator('.management-board .module-tile__status-dot--shared')).toHaveCount(1);
 	await expect(page.locator('.management-card__module-name')).toContainText('经期小记');
-	await expect(page.locator('.management-action--share')).toContainText('邀请 TA');
+	await expect(page.locator('.management-action--share')).toContainText('共享');
 });
 
 async function postJson(path, body, openid = OPENID) {

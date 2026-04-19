@@ -190,8 +190,10 @@ test('home contract adapter maps query responses into the formal menstrual home 
 		model.jumpTabs.items.map((item) => [item.key, item.label, item.disabled]),
 		[
 			['today', '今天', false],
-			['previous', '上次', false],
-			['prediction', '下次预测', false]
+			['prediction', '下次预测', false],
+			['_sep', '按经期定位', undefined],
+			['prev-period', '向前', false],
+			['next-period', '向后', false]
 		]
 	);
 	assert.equal(model.calendarCard.weeks.length, 3);
@@ -230,8 +232,10 @@ test('home contract adapter shows "上次" from currentSegment when out_of_perio
 		model.jumpTabs.items.map((item) => [item.key, item.label, item.disabled]),
 		[
 			['today', '今天', false],
-			['previous', '上次', false],
-			['prediction', '下次预测', false]
+			['prediction', '下次预测', false],
+			['_sep', '按经期定位', undefined],
+			['prev-period', '向前', false],
+			['next-period', '向后', false]
 		]
 	);
 	assert.equal(model.jumpTabs.items.some((item) => item.key === 'current'), false);
@@ -1268,6 +1272,57 @@ test('createMenstrualHomePageModel marks prediction node as forward-invalid', ()
 	assert.equal(model.headerNav.isForwardBoundary, true);
 	assert.equal(model.headerNav.nextPeriodStart, null);
 	assert.equal(model.headerNav.previousPeriodStart, homeView.currentStatusSummary.currentSegment.startDate);
+});
+
+test('createMenstrualHomePageModel uses full historical period starts for backward focused navigation even when calendar marks only include the latest segment', () => {
+	const homeView = {
+		moduleInstanceId: 'focus-home-module',
+		sharingStatus: 'private',
+		currentStatusSummary: {
+			currentStatus: 'out_of_period',
+			anchorDate: '2026-04-06',
+			currentSegment: {
+				startDate: '2026-04-06',
+				endDate: '2026-04-11',
+				durationDays: 6
+			},
+			previousSegment: {
+				startDate: '2026-03-06',
+				endDate: '2026-03-11',
+				durationDays: 6
+			},
+			statusCard: {
+				label: '非经期'
+			}
+		},
+		historicalPeriodStarts: ['2025-12-26', '2026-02-08', '2026-03-06', '2026-04-06'],
+		calendarMarks: [
+			{ date: '2026-04-06', kind: 'period_start' },
+			{ date: '2026-04-07', kind: 'period' }
+		],
+		predictionSummary: null
+	};
+
+	const model = createMenstrualHomePageModel({
+		homeView,
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 28
+		},
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'focus-home-module',
+			profileId: 'focus-profile',
+			date: '2026-02-08'
+		}),
+		today: '2026-04-10',
+		focusDate: '2026-02-08',
+		viewMode: 'three-week'
+	});
+
+	assert.equal(model.headerNav.focusedAnchorDate, '2026-02-08');
+	assert.equal(model.headerNav.previousPeriodStart, '2025-12-26');
+	assert.equal(model.headerNav.nextPeriodStart, '2026-03-06');
+	assert.equal(model.headerNav.isBackwardBoundary, false);
 });
 
 test('three-week focused view keeps default window placement when first-row gain is weak', () => {

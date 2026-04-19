@@ -106,7 +106,7 @@
 		<view v-if="showShareModal" class="share-modal-mask" @tap="showShareModal = false">
 			<view class="share-modal" @tap.stop>
 				<view class="share-modal__header">
-					<text class="share-modal__title u-text-title-sm">邀请 TA 加入</text>
+					<text class="share-modal__title u-text-title-sm">共享 加入</text>
 					<text class="share-modal__module-name u-text-body">{{ selectedModule && selectedModule.moduleName }}</text>
 				</view>
 

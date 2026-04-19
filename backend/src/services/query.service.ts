@@ -229,6 +229,7 @@ export async function getModuleHomeView(input: AccessInput & { today?: string })
   const todayStr = formatDate(today);
   const currentSegment = formatSegment(latestSegment);
   const previousSegment = formatSegment(previousSegmentRecord);
+  const historicalPeriodStarts = cycles.map((cycle) => formatDate(cycle.startDate));
   const currentStatus = isDateWithinSegment(today, latestSegment) ? 'in_period' : 'out_of_period';
   const statusCard = createStatusCard(currentStatus, currentSegment, today);
   const currentStatusSummary = {
@@ -291,6 +292,7 @@ export async function getModuleHomeView(input: AccessInput & { today?: string })
     currentSegment,
     previousSegment,
     currentStatusSummary,
+    historicalPeriodStarts,
     visibleWindow,
     calendarMarks,
     selectedDay: null,

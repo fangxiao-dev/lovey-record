@@ -88,7 +88,7 @@ For the current menstrual module, the card contains:
 - two summary frames: `经期时长` and `月经周期`
 - one quick-setting area with compact chips plus a `自选` trigger on each value family
 - one single-column custom picker expansion state for the active quick-setting family
-- one action row with `进入`, `邀请 TA`, and `删除`
+- one action row with `进入`, `共享`, and `删除`
 
 This card replaces the earlier split between a separate summary block and a separate action block.
 
@@ -119,12 +119,12 @@ The custom picker should follow the `Piw9E` state family:
 The action row should keep a clear hierarchy:
 
 - `进入` is the primary action
-- `邀请 TA` is secondary and uses the calm-green button style sourced from token node `qD9vb`
+- `共享` is secondary and uses the calm-green button style sourced from token node `qD9vb`
 - `删除` is destructive but visually contained inside the same card
 
 Interaction rule:
 
-- the `邀请 TA` button generates an invite token and exposes a shareable invite link instead of navigating the owner into the recipient acceptance page
+- the `共享` button generates an invite token and exposes a shareable invite link instead of navigating the owner into the recipient acceptance page
 - the generated recipient-facing join path must not embed the owner `openid` by default
 - it should not visually toggle the card into a fake `已共享` state before real shared status is returned
 

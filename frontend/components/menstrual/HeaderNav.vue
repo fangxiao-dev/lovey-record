@@ -4,7 +4,8 @@
 			class="header-nav__button"
 			:class="{
 				'header-nav__button--textual': true,
-				'header-nav__button--focused': focusedMode
+				'header-nav__button--focused': focusedMode,
+				'header-nav__button--invalid': focusedMode && prevInvalid
 			}"
 			hover-class="ui-pressable-hover"
 			:hover-stay-time="70"
@@ -12,6 +13,14 @@
 		>
 			<view class="header-nav__focused-icon header-nav__focused-icon--prev"></view>
 			<text class="header-nav__button-label">{{ leadingLabel }}</text>
+			<view
+				v-if="inlineMessage && inlineMessageSide === 'prev'"
+				class="header-nav__bubble header-nav__bubble--prev"
+				@tap="handleCloseBubble"
+			>
+				<text class="header-nav__bubble-text">{{ inlineMessage }}</text>
+				<view class="header-nav__bubble-arrow header-nav__bubble-arrow--prev"></view>
+			</view>
 		</view>
 		<view class="header-nav__title-group">
 			<text v-if="startYearLabel" class="header-nav__year header-nav__year--start">{{ startYearLabel }}</text>
@@ -19,7 +28,7 @@
 			<text v-if="endYearLabel" class="header-nav__year header-nav__year--end">{{ endYearLabel }}</text>
 		</view>
 		<view
-			class="header-nav__button"
+			class="header-nav__button header-nav__button--next"
 			:class="{
 				'header-nav__button--textual': true,
 				'header-nav__button--focused': focusedMode,
@@ -31,8 +40,11 @@
 		>
 			<text class="header-nav__button-label">{{ trailingLabel }}</text>
 			<view class="header-nav__focused-icon"></view>
+			<view v-if="inlineMessage && inlineMessageSide === 'next'" class="header-nav__bubble header-nav__bubble--next" @tap.stop="handleCloseBubble">
+				<text class="header-nav__bubble-text">{{ inlineMessage }}</text>
+				<view class="header-nav__bubble-arrow header-nav__bubble-arrow--next"></view>
+			</view>
 		</view>
-		<text v-if="inlineMessage" class="header-nav__inline-message">{{ inlineMessage }}</text>
 	</view>
 </template>
 
@@ -68,16 +80,24 @@
 				type: Boolean,
 				default: false
 			},
+			prevInvalid: {
+				type: Boolean,
+				default: false
+			},
 			inlineMessage: {
 				type: String,
 				default: ''
+			},
+			inlineMessageSide: {
+				type: String,
+				default: 'next'
 			},
 			busy: {
 				type: Boolean,
 				default: false
 			}
 		},
-		emits: ['prev', 'next'],
+		emits: ['prev', 'next', 'close-message'],
 		methods: {
 			handlePrev() {
 				if (this.busy) return;
@@ -86,6 +106,9 @@
 			handleNext() {
 				if (this.busy) return;
 				this.$emit('next');
+			},
+			handleCloseBubble() {
+				this.$emit('close-message');
 			}
 		}
 	};
@@ -209,16 +232,54 @@
 		text-align: right;
 	}
 
-	.header-nav__inline-message {
+	.header-nav__button--next {
+		position: relative;
+	}
+
+	.header-nav__button:first-child {
+		position: relative;
+	}
+
+	.header-nav__bubble {
 		position: absolute;
+		bottom: calc(100% + 14rpx);
+		background: #8b6f63;
+		border-radius: 14rpx;
+		padding: 12rpx 18rpx;
+		pointer-events: auto;
+		z-index: 10;
+		white-space: nowrap;
+	}
+
+	.header-nav__bubble--next {
 		right: 0;
-		top: calc(100% - 2rpx);
-		font-size: 20rpx;
+	}
+
+	.header-nav__bubble--prev {
+		left: 0;
+	}
+
+	.header-nav__bubble-text {
+		font-size: 22rpx;
 		line-height: 1.3;
-		color: #b36c62;
-		text-align: right;
-		max-width: 188rpx;
-		pointer-events: none;
-		z-index: 2;
+		color: #fff;
+	}
+
+	.header-nav__bubble-arrow {
+		position: absolute;
+		top: 100%;
+		width: 0;
+		height: 0;
+		border-left: 10rpx solid transparent;
+		border-right: 10rpx solid transparent;
+		border-top: 10rpx solid #8b6f63;
+	}
+
+	.header-nav__bubble-arrow--next {
+		right: 20rpx;
+	}
+
+	.header-nav__bubble-arrow--prev {
+		left: 20rpx;
 	}
 </style>

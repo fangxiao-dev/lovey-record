@@ -91,7 +91,10 @@
 			@tap="handleReportEntryTap"
 		>
 			<view class="menstrual-home__report-entry-copy">
-				<text class="menstrual-home__report-entry-title">{{ page.reportEntryCard.title }}</text>
+				<view class="menstrual-home__report-entry-title-row">
+					<image class="menstrual-home__report-entry-title-icon" src="/static/menstrual/calendar-menstrual.svg" mode="aspectFit" />
+					<text class="menstrual-home__report-entry-title">{{ page.reportEntryCard.title }}</text>
+				</view>
 				<text class="menstrual-home__report-entry-description">{{ page.reportEntryCard.description }}</text>
 			</view>
 			<image
@@ -112,17 +115,28 @@
 				:month-label="page.headerNav.monthLabel"
 				:start-year-label="page.headerNav.startYearLabel"
 				:end-year-label="page.headerNav.endYearLabel"
-				:leading-label="page.viewModeControl.value === 'three-week' ? '前一次' : '上个月'"
-				:trailing-label="page.viewModeControl.value === 'three-week' ? '后一次' : '下个月'"
+				:leading-label="browseNavLabels.leadingLabel"
+				:trailing-label="browseNavLabels.trailingLabel"
 				:focused-mode="page.viewModeControl.value === 'three-week'"
-				:next-invalid="page.viewModeControl.value === 'three-week' && page.headerNav.isForwardBoundary"
-				:inline-message="headerInlineMessage"
+				:prev-invalid="false"
+				:next-invalid="false"
+				:inline-message="''"
+				:inline-message-side="'next'"
 				:busy="isBrowseBusy"
 				@prev="handleHeaderPrev"
 				@next="handleHeaderNext"
 			/>
 			<view class="menstrual-home__jump-row">
-				<JumpTabs :items="page.jumpTabs.items" :value="page.jumpTabs.value" :busy="isBrowseBusy" @jump="handleJump" />
+				<JumpTabs
+					class="menstrual-home__jump-tabs"
+					:items="resolvedJumpTabItems"
+					:value="page.jumpTabs.value"
+					:busy="isBrowseBusy"
+					:inline-message="headerInlineMessage"
+					:inline-message-key="headerInlineMessageSide"
+					@jump="handleJump"
+					@close-message="clearHeaderInlineMessage"
+				/>
 				<view v-if="userRole !== 'viewer'" class="menstrual-home__batch-actions">
 					<view
 						v-if="panelMode !== 'batch'"
@@ -199,6 +213,12 @@
 	import PageNavBar from '../../components/common/PageNavBar.vue';
 	import HeaderNav from '../../components/menstrual/HeaderNav.vue';
 	import JumpTabs from '../../components/menstrual/JumpTabs.vue';
+	import {
+		isJumpBoundary,
+		resolveBrowseNavLabels,
+		resolveJumpBoundaryMessage,
+		resolveJumpTabItems
+	} from '../../components/menstrual/navigation-contract.js';
 	import SelectedDatePanel from '../../components/menstrual/SelectedDatePanel.vue';
 	import SegmentedControl from '../../components/menstrual/SegmentedControl.vue';
 	import LoadingScreen from '../../components/common/LoadingScreen.vue';
@@ -289,6 +309,7 @@
 					colorLevel: null
 				},
 				headerInlineMessage: '',
+				headerInlineMessageSide: 'next',
 				headerInlineMessageTimer: null,
 				contractContext: { ...DEFAULT_MENSTRUAL_HOME_CONTEXT },
 				rawContracts: null,
@@ -299,6 +320,12 @@
 			this.clearHeaderInlineMessage();
 		},
 		computed: {
+			browseNavLabels() {
+				return resolveBrowseNavLabels(this.viewMode);
+			},
+			resolvedJumpTabItems() {
+				return resolveJumpTabItems(this.page?.jumpTabs?.items || [], this.page?.headerNav || {});
+			},
 			allCalendarCells() {
 				return this.page?.calendarCard?.weeks?.flatMap((week) => week.cells) || [];
 			},
@@ -680,9 +707,7 @@
 				if (this.isBrowseBusy) return;
 				this.panelMode = 'single-day';
 				this.clearHeaderInlineMessage();
-				const nextFocusDate = this.viewMode === 'three-week'
-					? this.page?.headerNav?.previousPeriodStart
-					: shiftFocusDate(this.focusDate, this.viewMode, -1);
+				const nextFocusDate = shiftFocusDate(this.focusDate, this.viewMode, -1);
 				if (!nextFocusDate) return;
 				this.applyLocalBrowseState({
 					selectedDate: nextFocusDate,
@@ -707,14 +732,8 @@
 			handleHeaderNext() {
 				if (this.isBrowseBusy) return;
 				this.panelMode = 'single-day';
-				if (this.viewMode === 'three-week' && this.page?.headerNav?.isForwardBoundary) {
-					this.showHeaderInlineMessage('暂无更后的月经记录');
-					return;
-				}
 				this.clearHeaderInlineMessage();
-				const nextFocusDate = this.viewMode === 'three-week'
-					? this.page?.headerNav?.nextPeriodStart
-					: shiftFocusDate(this.focusDate, this.viewMode, 1);
+				const nextFocusDate = shiftFocusDate(this.focusDate, this.viewMode, 1);
 				if (!nextFocusDate) return;
 				this.applyLocalBrowseState({
 					selectedDate: nextFocusDate,
@@ -738,7 +757,16 @@
 			},
 			handleJump(jumpKey) {
 				if (this.isBrowseBusy) return;
-				const targetDate = resolveJumpTargetDate(this.rawContracts?.homeView, jumpKey, this.contractContext.today);
+				const headerNav = this.page?.headerNav || {};
+				const targetDate = jumpKey === 'next-period'
+					? headerNav.nextPeriodStart || null
+					: jumpKey === 'prev-period'
+						? headerNav.previousPeriodStart || null
+					: resolveJumpTargetDate(this.rawContracts?.homeView, jumpKey, this.contractContext.today);
+				if ((jumpKey === 'prev-period' || jumpKey === 'next-period') && (isJumpBoundary(headerNav, jumpKey) || !targetDate)) {
+					this.showHeaderInlineMessage(resolveJumpBoundaryMessage(jumpKey), jumpKey);
+					return;
+				}
 				if (!targetDate) return;
 				this.clearHeaderInlineMessage();
 				this.panelMode = 'single-day';
@@ -777,13 +805,14 @@
 				}
 				this.headerInlineMessage = '';
 			},
-			showHeaderInlineMessage(message) {
+			showHeaderInlineMessage(message, side = 'next') {
 				this.clearHeaderInlineMessage();
 				this.headerInlineMessage = message;
+				this.headerInlineMessageSide = side;
 				this.headerInlineMessageTimer = setTimeout(() => {
 					this.headerInlineMessage = '';
 					this.headerInlineMessageTimer = null;
-				}, 1800);
+				}, 1500);
 			},
 			enterBatchMode(startCell = null) {
 				this.panelMode = 'batch';
@@ -1392,14 +1421,19 @@
 
 	.menstrual-home__jump-row {
 		display: flex;
-		align-items: center;
+		align-items: flex-end;
 		justify-content: space-between;
 		gap: 12rpx;
 	}
 
+	.menstrual-home__jump-tabs {
+		flex: 1;
+		min-width: 0;
+	}
+
 	.menstrual-home__batch-actions {
 		display: inline-flex;
-		align-items: center;
+		align-items: flex-end;
 		gap: 8rpx;
 		flex-shrink: 0;
 	}
@@ -1486,6 +1520,19 @@
 		flex-direction: column;
 		gap: 8rpx;
 		min-width: 0;
+	}
+
+	.menstrual-home__report-entry-title-row {
+		display: flex;
+		align-items: center;
+		gap: 10rpx;
+	}
+
+	.menstrual-home__report-entry-title-icon {
+		width: 36rpx;
+		height: 36rpx;
+		flex-shrink: 0;
+		border-radius: 50%;
 	}
 
 	.menstrual-home__report-entry-title {

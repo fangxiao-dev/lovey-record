@@ -3,6 +3,17 @@
 // version format: vMAJOR.MINOR.PATCH
 export default [
   {
+    "version": "v0.5.1",
+    "title": "优化日历浏览体验",
+    "date": "2026-04-19",
+    "anchorCommit": "ad90f4a6a269a5b18f6c76c10adf0a61988a56bf",
+    "changes": [
+      "3 周视图现在可以按前一次和后一次经期连续浏览，不用再只靠固定快捷跳转",
+      "浏览到下次预测后，会直接提示“暂无更后的月经记录”，不会再打断当前页面",
+      "日历头部的月份显示和翻页按钮更清晰，跨年时也更容易看懂",
+    ],
+  },
+  {
     "version": "v0.5.0",
     "title": "新增周期阶段提示",
     "date": "2026-04-16",

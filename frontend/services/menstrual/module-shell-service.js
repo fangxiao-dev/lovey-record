@@ -190,7 +190,7 @@ export function createModuleShellPageModel({
 				customPickerOptions: buildNumericOptions(20, 45)
 			},
 			secondaryAction: {
-				label: '邀请 TA',
+				label: '共享',
 				helperText: activePartners.length
 					? `当前目标：${activePartners[0].userId}`
 					: `当前目标：${context.partnerUserId}`,
