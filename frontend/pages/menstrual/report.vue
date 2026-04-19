@@ -1,15 +1,11 @@
 <template>
 	<view class="report-page u-page-shell">
-		<view class="report-page__header u-page-section">
-			<view
-				class="report-page__back"
-				hover-class="ui-pressable-hover"
-				:hover-stay-time="70"
-				@tap="handleBack"
-			>
-				<text class="report-page__back-label">返回</text>
-			</view>
-		</view>
+		<PageNavBar
+			title="周期小结"
+			icon-src="/static/menstrual/calendar-menstrual.svg"
+			:show-back="true"
+			:large-title="true"
+		/>
 
 		<view v-if="loadError" class="report-page__state-card ui-card u-page-section">
 			<text class="report-page__state-title">联调加载失败</text>
@@ -42,6 +38,7 @@
 </template>
 
 <script>
+	import PageNavBar from '../../components/common/PageNavBar.vue';
 	import ReportSummaryCard from '../../components/menstrual/ReportSummaryCard.vue';
 	import ReportTrendCard from '../../components/menstrual/ReportTrendCard.vue';
 	import ReportHistoryList from '../../components/menstrual/ReportHistoryList.vue';
@@ -58,6 +55,7 @@
 	export default {
 		name: 'MenstrualReportPage',
 		components: {
+			PageNavBar,
 			ReportSummaryCard,
 			ReportTrendCard,
 			ReportHistoryList
@@ -127,11 +125,6 @@
 				uni.navigateTo({
 					url: `/pages/management/index?${query}`
 				});
-			},
-			handleBack() {
-				uni.navigateBack({
-					delta: 1
-				});
 			}
 		}
 	};
@@ -144,29 +137,6 @@
 		gap: 16rpx;
 		padding-bottom: $space-12;
 		background: $bg-base;
-	}
-
-	.report-page__header {
-		display: flex;
-		align-items: center;
-		gap: 12rpx;
-		padding-top: $space-2;
-		padding-bottom: 0;
-	}
-
-	.report-page__back {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 88rpx;
-		padding: 10rpx 20rpx;
-		border-radius: 999rpx;
-		background: rgba(255, 255, 255, 0.76);
-	}
-
-	.report-page__back-label {
-		font-size: 24rpx;
-		color: $text-secondary;
 	}
 
 	.report-page__title {

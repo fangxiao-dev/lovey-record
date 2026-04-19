@@ -66,7 +66,7 @@ test('module shell live entry renders the private module and opens menstrual hom
 
 	await expect(page.locator('.management-board .module-tile')).toHaveCount(1);
 	await expect(page.locator('.management-board .module-tile__status-dot--shared')).toHaveCount(0);
-	await expect(page.locator('.management-card__module-name')).toContainText('月经记录');
+	await expect(page.locator('.management-card__module-name')).toContainText('经期小记');
 	await expect(page.locator('.management-card__summary-item').filter({ hasText: '经期时长' })).toContainText('5 天');
 
 	await page.locator('.management-action--main').filter({ hasText: '进入' }).click();
@@ -88,8 +88,8 @@ test('module shell renders a shared module in the shared zone without duplicatin
 
 	await expect(page.locator('.management-board .module-tile')).toHaveCount(1);
 	await expect(page.locator('.management-board .module-tile__status-dot--shared')).toHaveCount(1);
-	await expect(page.locator('.management-card__module-name')).toContainText('月经记录');
-	await expect(page.locator('.management-action--share')).toContainText('共享');
+	await expect(page.locator('.management-card__module-name')).toContainText('经期小记');
+	await expect(page.locator('.management-action--share')).toContainText('邀请 TA');
 });
 
 async function postJson(path, body, openid = OPENID) {
@@ -559,7 +559,7 @@ test('owner shell can share and revoke the same module instance while partner re
 			today: '2026-03-29'
 		}));
 		await page.waitForTimeout(1200);
-		await expect(page.locator('.management-card__module-name')).toContainText('月经记录');
+	await expect(page.locator('.management-card__module-name')).toContainText('经期小记');
 		await expect(page.locator('.management-action--share')).toContainText('共享');
 		const finalOwnerState = await getAccessState();
 		expect(finalOwnerState.sharingStatus).toBe('private');

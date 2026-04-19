@@ -3,7 +3,7 @@ import { createSelectedDatePanelData } from './selected-date-panel-data.js';
 
 const CALENDAR_GRID_ACCEPTANCE_PAGE = Object.freeze({
 	topBar: {
-		title: '月经记录',
+		title: '经期小记',
 		statusLabel: '共享'
 	},
 	heroCard: {

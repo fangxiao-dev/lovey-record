@@ -168,7 +168,7 @@ test('home contract adapter maps query responses into the formal menstrual home 
 		today: homeView.currentStatusSummary.anchorDate  // Use seed's actual date
 	});
 
-	assert.equal(model.topBar.title, '月经记录');
+	assert.equal(model.topBar.title, '经期小记');
 	assert.equal(model.topBar.statusLabel, '私人');
 	assert.equal(model.heroCard.label, '当前状态');
 	assert.equal(model.heroCard.sharingLabel, '私人');

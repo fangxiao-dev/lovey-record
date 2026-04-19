@@ -41,6 +41,6 @@ test('calendar grid showcase page uses HeaderNav for the three-week home demo sh
 	assert.match(dataSource, /下次预测/);
 	assert.match(dataSource, /3 周/);
 	assert.match(dataSource, /月览/);
-	assert.match(dataSource, /月经记录/);
+	assert.match(dataSource, /经期小记/);
 	assert.match(dataSource, /经期第 2 天/);
 });

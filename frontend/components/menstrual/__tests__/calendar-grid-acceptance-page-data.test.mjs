@@ -6,7 +6,7 @@ import { createCalendarGridAcceptancePage } from '../calendar-grid-acceptance-pa
 test('calendar grid acceptance page exposes the three-week home demo shell', () => {
 	const page = createCalendarGridAcceptancePage();
 
-	assert.equal(page.topBar.title, '月经记录');
+	assert.equal(page.topBar.title, '经期小记');
 	assert.equal(page.topBar.statusLabel, '共享');
 	assert.equal(page.heroCard.eyebrow, '当前状态');
 	assert.equal(page.heroCard.title, '经期第 2 天');

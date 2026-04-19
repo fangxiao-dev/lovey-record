@@ -862,7 +862,7 @@ export function createMenstrualHomePageModel({
 
 	return {
 		topBar: {
-			title: '月经记录',
+			title: '经期小记',
 			statusLabel: mapStatusLabel(homeView.sharingStatus)
 		},
 		heroCard: createHeroCard(homeView, today, moduleSettings),
@@ -899,8 +899,8 @@ export function createMenstrualHomePageModel({
 		legend: createCalendarLegendItems(),
 		selectedDatePanel: createSelectedDatePanel(homeView, dayDetail, today, singleDayPeriodAction),
 		reportEntryCard: {
-			title: '查看周期记录',
-			description: '看平均周期、波动和历史记录',
+			title: '周期小结',
+			description: '看看周期节奏和过往记录',
 			iconUrl: '/static/menstrual/report.svg',
 			targetUrl: '/pages/menstrual/report'
 		},

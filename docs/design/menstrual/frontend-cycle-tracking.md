@@ -32,8 +32,8 @@ The page header should be weak.
 
 Required:
 
-- back action
-- low-presence title
+- native/system back action
+- low-presence title with the approved calendar-menstrual icon
 
 Do not add:
 
@@ -44,7 +44,13 @@ Do not add:
 
 Suggested title direction:
 
-- `周期记录`
+- `周期小结`
+
+Placement rule:
+
+- the title lives in the page header only
+- do not repeat `周期小结` as a body heading above the cards
+- the title may be slightly larger than the previous weak-header baseline, but it should remain restrained
 
 ---
 

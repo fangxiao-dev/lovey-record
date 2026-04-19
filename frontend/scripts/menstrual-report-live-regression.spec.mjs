@@ -73,7 +73,7 @@ test('menstrual report page live regression', async ({ page }) => {
 	await page.waitForURL((url) => url.hash.includes(REPORT_ROUTE));
 	await page.waitForTimeout(800);
 
-	await expect(page.locator('.report-page__title')).toHaveText('周期记录');
+	await expect(page.locator('.page-nav-bar__title')).toHaveText('周期小结');
 	await expect(page.locator('.report-summary-card')).toContainText('周期');
 	await expect(page.locator('.report-summary-card')).toContainText('时长5.0 天');
 	await expect(page.locator('.report-summary-card')).toContainText('波动 -');
@@ -84,7 +84,7 @@ test('menstrual report page live regression', async ({ page }) => {
 
 	await expect(page.locator('.report-history-list__row').first()).toContainText(expectedHistoryText);
 
-	await page.locator('.report-page__back').click();
+	await page.goBack();
 	await page.waitForURL((url) => url.hash.includes(HOME_ROUTE));
 	await expect(page.locator('.menstrual-home__report-entry')).toHaveCount(1);
 });

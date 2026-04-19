@@ -1,5 +1,11 @@
 <template>
 	<view class="menstrual-home u-page-shell">
+		<PageNavBar
+			v-if="page"
+			title="经期小记"
+			icon-src="/static/menstrual/menstruation.svg"
+			:show-back="true"
+		/>
 		<view
 			v-if="page"
 			class="menstrual-home__hero"
@@ -185,6 +191,7 @@
 <script>
 	import CalendarGrid from '../../components/menstrual/CalendarGrid.vue';
 	import CalendarLegend from '../../components/menstrual/CalendarLegend.vue';
+	import PageNavBar from '../../components/common/PageNavBar.vue';
 	import HeaderNav from '../../components/menstrual/HeaderNav.vue';
 	import JumpTabs from '../../components/menstrual/JumpTabs.vue';
 	import SelectedDatePanel from '../../components/menstrual/SelectedDatePanel.vue';
@@ -242,6 +249,7 @@
 		components: {
 			CalendarGrid,
 			CalendarLegend,
+			PageNavBar,
 			HeaderNav,
 			JumpTabs,
 			SelectedDatePanel,
@@ -324,12 +332,12 @@
 				}).replace(/^\//, '');
 
 				return ({
-				title: '邀请你查看月经记录',
+				title: '邀请你查看经期小记',
 				path,
 				});
 			}).catch((err) => {
 				console.error('[onShareAppMessage] token 生成失败:', err);
-				return { title: '月经记录' };
+				return { title: '经期小记' };
 			});
 		},
 		onLoad(options) {

@@ -36,10 +36,14 @@ The hero is status-first and should now use this structure:
 
 The hero should no longer show:
 
-- duplicated page title text such as `月经记录`
+- duplicated page title text such as `经期小记`
 - helper copy such as `先看当前状态，再在下方 3 周视图里定位和记录。`
 
 The private/shared chip belongs inside the hero, not as a detached page-level badge above it.
+
+If the module name is shown as a page title, it should live above the hero as a separate title row with the approved module icon, not inside the hero header itself.
+
+The secondary report entry card belongs directly under the hero and above the calendar/content stack. It must not drift below the selected-date panel.
 
 ### Status Frame
 
