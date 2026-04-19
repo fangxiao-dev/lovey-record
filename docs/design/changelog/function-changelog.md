@@ -27,7 +27,10 @@ Each entry has the following shape:
 - `version` — version string in `vMAJOR.MINOR.PATCH` format (e.g. `v1.2.0`)
 - `title` — short human-readable title for this release (e.g. `周期阶段提示`)
 - `date` — release date in `YYYY-MM-DD` format
+- `anchorCommit` — full Git commit SHA used as the version anchor for this historical entry
 - `changes` — array of user-facing change description strings, ordered by importance
+
+`anchorCommit` is metadata for maintainers. It is not required to be rendered in the MVP UI, but it must be kept in the bundled data so the current changelog line can be traced back to the exact repository commit that anchors that version.
 
 ### Review Draft Policy
 

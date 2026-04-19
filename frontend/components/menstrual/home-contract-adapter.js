@@ -95,14 +95,14 @@ function formatWindowMonthHeader(windowStartDate, windowEndDate) {
 	if (startYear === endYear && startMonth === endMonth) {
 		return {
 			monthLabel: `${startMonth}月`,
-			startYearLabel: String(startYear),
+			startYearLabel: '',
 			endYearLabel: ''
 		};
 	}
 
 	return {
 		monthLabel: `${startMonth}月~${endMonth}月`,
-		startYearLabel: String(startYear),
+		startYearLabel: startYear === endYear ? '' : String(startYear),
 		endYearLabel: startYear === endYear ? '' : String(endYear)
 	};
 }
@@ -132,6 +132,154 @@ function addDays(dateString, amount) {
 	const date = toDateOnly(dateString);
 	date.setUTCDate(date.getUTCDate() + amount);
 	return formatYMD(date);
+}
+
+function getRealPeriodStartDates(homeView) {
+	const starts = new Set();
+	const currentStatusSummary = homeView?.currentStatusSummary || {};
+	const currentSegment = currentStatusSummary.currentSegment || currentStatusSummary.currentCycle || null;
+	const previousSegment = currentStatusSummary.previousSegment || null;
+
+	if (previousSegment?.startDate) {
+		starts.add(previousSegment.startDate);
+	}
+	if (currentSegment?.startDate) {
+		starts.add(currentSegment.startDate);
+	}
+
+	(homeView?.calendarMarks || []).forEach((mark) => {
+		if (mark?.kind === 'period_start' && mark?.date) {
+			starts.add(mark.date);
+		}
+	});
+
+	return Array.from(starts).sort();
+}
+
+function segmentContainsDate(segment, date) {
+	return Boolean(segment?.startDate && segment?.endDate && date >= segment.startDate && date <= segment.endDate);
+}
+
+function resolveFocusedNavigation(homeView, focusDate) {
+	const realStarts = getRealPeriodStartDates(homeView);
+	const predictionStart = homeView?.predictionSummary?.predictedStartDate || null;
+	const currentStatusSummary = homeView?.currentStatusSummary || {};
+	const currentSegment = currentStatusSummary.currentSegment || currentStatusSummary.currentCycle || null;
+	const previousSegment = currentStatusSummary.previousSegment || null;
+
+	if (predictionStart && focusDate === predictionStart) {
+		const previousPeriodStart = realStarts.filter((startDate) => startDate < predictionStart).at(-1) || null;
+		return {
+			focusedAnchorDate: predictionStart,
+			focusedNodeType: 'prediction',
+			previousPeriodStart,
+			nextPeriodStart: null,
+			isForwardBoundary: true
+		};
+	}
+
+	let focusedAnchorDate = realStarts.includes(focusDate) ? focusDate : null;
+	if (!focusedAnchorDate && segmentContainsDate(currentSegment, focusDate)) {
+		focusedAnchorDate = currentSegment.startDate;
+	}
+	if (!focusedAnchorDate && segmentContainsDate(previousSegment, focusDate)) {
+		focusedAnchorDate = previousSegment.startDate;
+	}
+	if (!focusedAnchorDate && realStarts.length) {
+		focusedAnchorDate = realStarts.filter((startDate) => startDate <= focusDate).at(-1) || realStarts[0];
+	}
+
+	if (!focusedAnchorDate) {
+		return {
+			focusedAnchorDate: focusDate,
+			focusedNodeType: predictionStart ? 'prediction' : 'real-period',
+			previousPeriodStart: null,
+			nextPeriodStart: predictionStart && predictionStart > focusDate ? predictionStart : null,
+			isForwardBoundary: Boolean(predictionStart && focusDate === predictionStart)
+		};
+	}
+
+	const focusedIndex = realStarts.indexOf(focusedAnchorDate);
+	const previousPeriodStart = focusedIndex > 0 ? realStarts[focusedIndex - 1] : null;
+	const nextRealPeriodStart = focusedIndex >= 0 ? realStarts[focusedIndex + 1] || null : null;
+	const nextPeriodStart = nextRealPeriodStart || (predictionStart && predictionStart > focusedAnchorDate ? predictionStart : null);
+
+	return {
+		focusedAnchorDate,
+		focusedNodeType: 'real-period',
+		previousPeriodStart,
+		nextPeriodStart,
+		isForwardBoundary: false
+	};
+}
+
+function resolveRealPeriodEndDate(homeView, moduleSettings, startDate) {
+	const currentStatusSummary = homeView?.currentStatusSummary || {};
+	const currentSegment = currentStatusSummary.currentSegment || currentStatusSummary.currentCycle || null;
+	const previousSegment = currentStatusSummary.previousSegment || null;
+
+	if (currentSegment?.startDate === startDate && currentSegment?.endDate) {
+		return currentSegment.endDate;
+	}
+	if (previousSegment?.startDate === startDate && previousSegment?.endDate) {
+		return previousSegment.endDate;
+	}
+
+	const periodDates = new Set(
+		(homeView?.calendarMarks || [])
+			.filter((mark) => mark?.date && (mark.kind === 'period_start' || mark.kind === 'period'))
+			.map((mark) => mark.date)
+	);
+	if (periodDates.has(startDate)) {
+		let endDate = startDate;
+		let cursor = addDays(startDate, 1);
+		while (periodDates.has(cursor)) {
+			endDate = cursor;
+			cursor = addDays(cursor, 1);
+		}
+		return endDate;
+	}
+
+	const durationDays = resolvePeriodDurationDays(moduleSettings);
+	return durationDays ? addDays(startDate, durationDays - 1) : startDate;
+}
+
+function resolveVisibleRangeForFocusedNode(homeView, moduleSettings, focusedNavigation) {
+	if (!focusedNavigation?.focusedAnchorDate) return null;
+
+	if (focusedNavigation.focusedNodeType === 'prediction') {
+		const endDate = resolvePredictedSegmentEndDate(homeView?.predictionSummary, moduleSettings);
+		return endDate
+			? { startDate: focusedNavigation.focusedAnchorDate, endDate }
+			: null;
+	}
+
+	return {
+		startDate: focusedNavigation.focusedAnchorDate,
+		endDate: resolveRealPeriodEndDate(homeView, moduleSettings, focusedNavigation.focusedAnchorDate)
+	};
+}
+
+function countRangeDaysInRowThree(range, windowStartDate) {
+	if (!range?.startDate || !range?.endDate) return 0;
+	const rowThreeStart = addDays(windowStartDate, 14);
+	if (range.endDate < rowThreeStart) return 0;
+	const overlapStart = range.startDate > rowThreeStart ? range.startDate : rowThreeStart;
+	return diffDays(overlapStart, range.endDate) + 1;
+}
+
+function resolveThreeWeekWindowStart({ focusDate, focusedNavigation, visibleRange }) {
+	const defaultWindowStart = addDays(startOfWeek(focusDate), -7);
+	if (!visibleRange?.startDate || visibleRange.startDate !== focusDate) {
+		return defaultWindowStart;
+	}
+
+	const firstRowWindowStart = startOfWeek(focusDate);
+	const defaultRowThreeDays = countRangeDaysInRowThree(visibleRange, defaultWindowStart);
+	const firstRowThreeDays = countRangeDaysInRowThree(visibleRange, firstRowWindowStart);
+	const hasClearImprovement = defaultRowThreeDays >= 2 && firstRowThreeDays < defaultRowThreeDays;
+
+	return hasClearImprovement ? firstRowWindowStart : defaultWindowStart;
 }
 
 function resolvePredictedSegmentEndDate(predictionSummary, moduleSettings) {
@@ -394,7 +542,7 @@ function updateSelectedCalendarCell(pageModel) {
 	return pageModel;
 }
 
-function createCalendarDatesForViewMode({ focusDate, viewMode }) {
+function createCalendarDatesForViewMode({ focusDate, viewMode, threeWeekWindowStart = null }) {
 	if (viewMode === 'month') {
 		const monthStart = startOfMonth(focusDate);
 		const monthEnd = endOfMonth(focusDate);
@@ -402,7 +550,7 @@ function createCalendarDatesForViewMode({ focusDate, viewMode }) {
 		return createDateRange(startDate, addDays(startOfWeek(monthEnd), 6));
 	}
 
-	const startDate = addDays(startOfWeek(focusDate), -7);
+	const startDate = threeWeekWindowStart || addDays(startOfWeek(focusDate), -7);
 	return createDateRange(startDate, addDays(startDate, 20));
 }
 
@@ -419,9 +567,20 @@ function buildCalendarCard(homeView, moduleSettings, dayDetail, selectedDate, fo
 	);
 
 	const resolvedFocusDate = focusDate || getFocusDate(homeView, { dayRecord: { date: selectedDate } }, today);
+	const focusedNavigation = resolveFocusedNavigation(homeView, resolvedFocusDate);
+	const visibleRange = viewMode === 'three-week'
+		? resolveVisibleRangeForFocusedNode(homeView, moduleSettings, focusedNavigation)
+		: null;
 	const days = createCalendarDatesForViewMode({
 		focusDate: resolvedFocusDate,
-		viewMode
+		viewMode,
+		threeWeekWindowStart: viewMode === 'three-week'
+			? resolveThreeWeekWindowStart({
+				focusDate: resolvedFocusDate,
+				focusedNavigation,
+				visibleRange
+			})
+			: null
 	});
 
 	const weeks = [];
@@ -901,6 +1060,7 @@ export function createMenstrualHomePageModel({
 }) {
 	const activeDate = dayDetail?.dayRecord?.date || today;
 	const resolvedFocusDate = focusDate || activeDate;
+	const focusedNavigation = resolveFocusedNavigation(homeView, resolvedFocusDate);
 
 	return {
 		topBar: {
@@ -914,12 +1074,20 @@ export function createMenstrualHomePageModel({
 					return {
 						monthLabel: formatMonthLabel(resolvedFocusDate),
 						startYearLabel: '',
-						endYearLabel: ''
+						endYearLabel: '',
+						previousPeriodStart: null,
+						nextPeriodStart: null,
+						focusedNodeType: null,
+						focusedAnchorDate: resolvedFocusDate,
+						isForwardBoundary: false
 					};
 				}
 				const windowStartDate = addDays(startOfWeek(resolvedFocusDate), -7);
 				const windowEndDate = addDays(windowStartDate, 20);
-				return formatWindowMonthHeader(windowStartDate, windowEndDate);
+				return {
+					...formatWindowMonthHeader(windowStartDate, windowEndDate),
+					...focusedNavigation
+				};
 			})(),
 			leadingLabel: '‹',
 			trailingLabel: '›'

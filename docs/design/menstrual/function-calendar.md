@@ -17,12 +17,29 @@ For the frontend/UI presentation contract, read:
 ### 3-Week View (default)
 
 - The default editing surface.
-- Shows a 3-week rolling window centered on the active focus point.
+- This view is the `聚焦视图`: users browse one menstrual event at a time rather than a generic date span.
+- Shows a fixed 3-week (`21` day / `3` row) rolling window anchored by the active focus point.
 - Default center priority (from `function-recording-model.md`):
   1. Current period
   2. Predicted period
   3. Today
 - All date interactions (tap, long-press drag) are active in this view.
+
+#### Focused Navigation Model
+
+- The navigation object in 3-week view is `one period occurrence`.
+- The navigation anchor remains the `period start date`.
+- Navigating within this view always lands on a period start date, not on a natural week or month boundary.
+- The window remains a fixed `21` day surface after navigation; the view does not become a free-form range browser.
+
+#### Window Placement Rule
+
+- Default behavior continues to use the current 3-week window generation logic.
+- The view may optionally place the current period start on the first row, but only when that placement clearly improves readability of the current period.
+- `Clearly improves readability` means cases such as:
+  - the default placement pushes too much of the current period into the third row
+  - the default placement makes the latter part of the current period read noticeably too far back in the window
+- If the improvement is not clear, the default window placement must be preserved.
 
 ### Month View
 
@@ -44,6 +61,29 @@ Rules:
 - If no previous segment exists, `上次` is disabled (not hidden).
 - If no prediction exists, `下次预测` is disabled (not hidden).
 - Tapping a jump tab does not change the selected date; it only scrolls the view.
+- JumpTabs remain anchor-style shortcuts and do not replace sequential focused navigation in 3-week view.
+
+## Header Navigation in 3-Week View
+
+The header nav in 3-week view is part of the focused-navigation model and should be treated differently from month browsing.
+
+### Labels
+
+- Left action: `<<前一次`
+- Right action: `后一次>>`
+
+### Behavior
+
+- `<<前一次` jumps to the start date of the previous real period occurrence.
+- `后一次>>` jumps to the start date of the next period occurrence in the focused sequence.
+- When the current focused node is `下次预测`, `<<前一次` remains available and returns to the most recent real period record.
+
+### Boundary State
+
+- When the current focused node is `下次预测`, `后一次>>` enters an invalid state.
+- Clicking the invalid `后一次>>` does not trigger a new navigation.
+- This boundary feedback must be inline, not modal.
+- The inline message is: `暂无更后的月经记录`
 
 ## Date State Rules
 
