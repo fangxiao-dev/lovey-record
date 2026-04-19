@@ -91,6 +91,12 @@
 					<text class="management-page__dev-reset-text">{{ isResetting ? '重置中…' : 'Reset to seed' }}</text>
 				</view>
 			</view>
+
+			<ChangelogEntryRow
+				:entries="changelogEntries"
+				:last-viewed-version="lastViewedVersion"
+				@open="openChangelog"
+			/>
 		</view>
 
 		<LoadingScreen v-else :error-message="loadError" @retry="retryInitialLoad" />
@@ -174,6 +180,12 @@
 				</view>
 			</view>
 		</view>
+
+		<ChangelogSheet
+			:visible="showChangelogSheet"
+			:entries="changelogEntries"
+			@close="closeChangelog"
+		/>
 	</view>
 </template>
 
@@ -194,6 +206,10 @@
 		persistModuleSettings,
 		persistModulePredictionTerm
 	} from '../../services/menstrual/module-shell-command-service.js';
+	import ChangelogEntryRow from './ChangelogEntryRow.vue';
+	import ChangelogSheet from './ChangelogSheet.vue';
+	import changelogEntries from '../../utils/changelog-data.js';
+	import { readLastViewedVersion, writeLastViewedVersion } from '../../utils/changelog.js';
 	import { mergeH5RouteQuery } from '../../utils/h5-route-query.js';
 	import { resolveRuntimeOpenid } from '../../utils/dev-openid.js';
 
@@ -204,7 +220,9 @@
 			ModuleTileCompact,
 			ModuleActionRow,
 			ModuleSettingStrip,
-			LoadingScreen
+			LoadingScreen,
+			ChangelogEntryRow,
+			ChangelogSheet
 		},
 		data() {
 			return {
@@ -218,7 +236,10 @@
 				selectedPermission: 'VIEWER',
 				selectedModuleId: '',
 				activeCustomPickerKey: '',
-				context: { ...DEFAULT_MODULE_SHELL_CONTEXT }
+				context: { ...DEFAULT_MODULE_SHELL_CONTEXT },
+				showChangelogSheet: false,
+				changelogEntries,
+				lastViewedVersion: 'v0.0.0'
 			};
 		},
 		computed: {
@@ -305,6 +326,7 @@
 				});
 			},
 			async initialize(options = {}) {
+				this.lastViewedVersion = readLastViewedVersion();
 				const runtimeOptions = mergeH5RouteQuery(options || {});
 				const openid = resolveRuntimeOpenid({
 					explicitOpenid: runtimeOptions.openid,
@@ -348,6 +370,19 @@
 				}
 
 				await this.retryInitialLoad();
+
+				// Auto-show on first launch after a new version.
+				// Deferred to next tick so the page DOM is settled before the sheet appears.
+				// Guard: skip if load failed to avoid masking the error/retry UI.
+				if (
+					!this.loadError &&
+					this.changelogEntries.length > 0 &&
+					this.changelogEntries[0].version !== this.lastViewedVersion
+				) {
+					this.$nextTick(() => {
+						this.showChangelogSheet = true;
+					});
+				}
 			},
 			async retryInitialLoad() {
 				this.loadError = '';
@@ -424,6 +459,16 @@
 				}
 
 				this.showShareModal = true;
+			},
+			openChangelog() {
+				this.showChangelogSheet = true;
+			},
+			closeChangelog() {
+				if (this.changelogEntries.length > 0) {
+					writeLastViewedVersion(this.changelogEntries[0].version);
+					this.lastViewedVersion = this.changelogEntries[0].version;
+				}
+				this.showChangelogSheet = false;
 			},
 			async handleDevReset() {
 				if (this.isResetting) return;
