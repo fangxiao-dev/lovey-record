@@ -1496,6 +1496,13 @@ test('home month-view calendar stays interactive and passes focusedDate only for
 	assert.match(source, /:focused-date="viewMode === 'month' \? activeDate : null"/);
 });
 
+test('home header nav keeps prev and next buttons visually valid for free paging', () => {
+	const source = fs.readFileSync(path.resolve(repoRoot, 'frontend/pages/menstrual/home.vue'), 'utf8');
+
+	assert.match(source, /:prev-invalid="false"/);
+	assert.match(source, /:next-invalid="false"/);
+});
+
 test('home calendar swipe handlers reuse the existing header navigation flow', () => {
 	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
 		CalendarGrid: {},
@@ -1656,6 +1663,100 @@ test('home beginBufferedBrowse keeps the current page stable until animation com
 	assert.equal(maskScheduled, true);
 	assert.equal(ctx.browseMaskShown, false);
 	assert.equal(animationStarted, true);
+});
+
+test('home onLoad restores the remembered view type without restoring a historical browse position', () => {
+	const storage = new Map([['menstrual-home-view-mode', 'month']]);
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		mergeH5RouteQuery: (options) => options,
+		resolveRuntimeOpenid: ({ explicitOpenid, fallbackOpenid }) => explicitOpenid || fallbackOpenid,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		uni: {
+			getStorageSync(key) {
+				return storage.get(key);
+			},
+			setStorageSync(key, value) {
+				storage.set(key, value);
+			}
+		}
+	});
+
+	let retryCalled = false;
+	const ctx = {
+		contractContext: {},
+		activeDate: '',
+		focusDate: '',
+		viewMode: 'three-week',
+		resolveRememberedViewMode: home.methods.resolveRememberedViewMode,
+		retryInitialLoad() {
+			retryCalled = true;
+		}
+	};
+
+	home.onLoad.call(ctx, {
+		today: '2026-04-20',
+		openid: 'owner-openid',
+		apiBaseUrl: 'http://localhost:3004',
+		moduleInstanceId: 'module-1',
+		profileId: 'profile-1'
+	});
+
+	assert.equal(ctx.viewMode, 'month');
+	assert.equal(ctx.activeDate, '2026-04-20');
+	assert.equal(ctx.focusDate, '2026-04-20');
+	assert.equal(ctx.contractContext.today, '2026-04-20');
+	assert.equal(retryCalled, true);
+});
+
+test('home handleViewModeChange persists the selected view type before starting buffered browse', () => {
+	const writes = [];
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		uni: {
+			getStorageSync() {
+				return '';
+			},
+			setStorageSync(key, value) {
+				writes.push([key, value]);
+			}
+		}
+	});
+
+	const calls = [];
+	const ctx = {
+		isNavigationBusy: false,
+		activeDate: '2026-03-29',
+		focusDate: '2026-03-24',
+		viewMode: 'three-week',
+		rememberViewMode: home.methods.rememberViewMode,
+		beginBufferedBrowse(payload) {
+			calls.push(payload);
+		}
+	};
+
+	home.methods.handleViewModeChange.call(ctx, 'month');
+
+	assert.deepEqual(writes, [['menstrual-home-view-mode', 'month']]);
+	assert.equal(calls.length, 1);
+	assert.equal(calls[0].viewMode, 'month');
+	assert.equal(calls[0].focusDate, '2026-03-24');
 });
 
 test('home commitBufferedBrowse applies the pending payload atomically and clears transition state', () => {

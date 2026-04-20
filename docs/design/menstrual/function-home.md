@@ -25,7 +25,10 @@ It must answer current status before exposing deeper browsing and editing.
 - long-press drag is the primary batch-edit path
 - month view is browse-only support, not a second editor
 - 聚焦模式 acts as the focused-view browsing surface for period occurrences
+- 聚焦模式 uses a compact 2-row / 14-day focused window for current recording
 - `period / prediction / today / detail-recorded` remain distinguishable with restrained hierarchy
+- entering the page should restore the last user-selected `view type` when available
+- the page must remember only `聚焦模式 / 月览`, not the previous browse position inside either view
 
 ## States
 
@@ -73,11 +76,27 @@ The home page must cover:
 - The home page's `聚焦模式` calendar is not a generic rolling date pager; it is the focused-view surface for browsing period occurrences.
 - The focused-view navigation anchor is always the `period start date`.
 - Header navigation moves across `previous period occurrence` and `next period occurrence`, rather than moving by natural week or month units.
+- The focused window is a fixed 2-row / 14-day surface.
+- The default focused occurrence should land in the first row of that surface.
 - When the focused node reaches `下次预测`, forward browsing stops there:
   - the right-side forward action becomes invalid
   - repeated taps do not navigate further
   - inline feedback is shown as `暂无更后的月经记录`
 - Backward browsing from `下次预测` returns to the most recent real period record.
+
+## View Mode Memory
+
+- The page should reopen in the last user-selected `view type`.
+- Supported remembered values are:
+  - `聚焦模式`
+  - `月览`
+- This memory affects only which view is active after page entry or reload.
+- This memory must not persist or restore:
+  - focused occurrence date
+  - month-browse anchor
+  - selected date
+  - jump-tab target
+- If no prior view memory exists yet, the page may fall back to the current system default initial view behavior.
 
 ## Future-Date Read-Only Rule
 

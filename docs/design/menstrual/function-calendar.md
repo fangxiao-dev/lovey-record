@@ -14,38 +14,39 @@ For the frontend/UI presentation contract, read:
 
 ## View Modes
 
-### 3-Week View (default)
+### Focused View
 
-- The default editing surface.
-- This view is the `聚焦视图`: users browse one menstrual event at a time rather than a generic date span.
-- Shows a fixed 3-week (`21` day / `3` row) rolling window anchored by the active focus point.
-- Default center priority (from `function-recording-model.md`):
+- The focused editing surface.
+- This view is the `聚焦模式`: users browse one menstrual event at a time rather than a generic date span.
+- Shows a fixed 2-week (`14` day / `2` row) rolling window anchored by the active focus point.
+- Default focus priority (from `function-recording-model.md`):
   1. Current period
   2. Predicted period
   3. Today
+- The default focused occurrence lands in the first row of the window.
 - All date interactions (tap, long-press drag) are active in this view.
 
 #### Focused Navigation Model
 
-- The navigation object in 3-week view is `one period occurrence`.
+- The navigation object in focused view is `one period occurrence`.
 - The navigation anchor remains the `period start date`.
 - Navigating within this view always lands on a period start date, not on a natural week or month boundary.
-- The window remains a fixed `21` day surface after navigation; the view does not become a free-form range browser.
+- The window remains a fixed `14` day surface after navigation; the view does not become a free-form range browser.
 
 #### Window Placement Rule
 
-- Default behavior continues to use the current 3-week window generation logic.
-- The view may optionally place the current period start on the first row, but only when that placement clearly improves readability of the current period.
-- `Clearly improves readability` means cases such as:
-  - the default placement pushes too much of the current period into the third row
-  - the default placement makes the latter part of the current period read noticeably too far back in the window
-- If the improvement is not clear, the default window placement must be preserved.
+- Default behavior uses the current focus priority, but the resulting focused window is always a 2-row / 14-day surface.
+- The focused occurrence should land in the first row rather than the vertical center of the surface.
+- The second row provides contextual support only; it is not the default focal band.
+- If the window needs local adjustment to keep the focused occurrence readable, that adjustment must still preserve the first-row placement intent.
 
 ### Month View
 
 - A browse-only view. No editing is allowed.
 - Users can navigate and inspect date states, but cannot tap to edit or drag to batch-select.
 - Switching to month view does not clear any selection state; it simply disables editing affordances.
+- The page should restore the last user-selected `view type` between `聚焦模式` and `月览`.
+- This memory is limited to `view type` only. It must not restore a previous focused occurrence, month anchor, or jump target.
 
 ## JumpTabs
 
@@ -61,11 +62,11 @@ Rules:
 - If no previous segment exists, `上次` is disabled (not hidden).
 - If no prediction exists, `下次预测` is disabled (not hidden).
 - Tapping a jump tab does not change the selected date; it only scrolls the view.
-- JumpTabs remain anchor-style shortcuts and do not replace sequential focused navigation in 3-week view.
+- JumpTabs remain anchor-style shortcuts and do not replace sequential focused navigation in focused view.
 
-## Header Navigation in 3-Week View
+## Header Navigation in Focused View
 
-The header nav in 3-week view is part of the focused-navigation model and should be treated differently from month browsing.
+The header nav in `聚焦模式` is part of the focused-navigation model and should be treated differently from month browsing.
 
 ### Labels
 
@@ -148,7 +149,7 @@ Forbidden combinations from `date-state-spec.md`:
 
 ### Batch Action Buttons
 
-```
+```txt
 JumpTabs Row
 ├── JumpTabs           ← 今天 / 上次 / 下次预测
 └── Right Action Area

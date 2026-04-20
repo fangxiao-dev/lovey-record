@@ -37,14 +37,14 @@ beforeEach(() => {
 	__resetMenstrualHomeMemoryCacheForTest();
 });
 
-test('createCalendarQueryRange returns a 3-week rolling window around the focus date', () => {
+test('createCalendarQueryRange returns a focused 14-day window anchored to the focus week', () => {
 	assert.deepEqual(
 		createCalendarQueryRange({
 			focusDate: '2026-03-29',
 			viewMode: 'three-week'
 		}),
 		{
-			startDate: '2026-03-16',
+			startDate: '2026-03-23',
 			endDate: '2026-04-05'
 		}
 	);

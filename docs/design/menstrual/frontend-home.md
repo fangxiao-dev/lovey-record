@@ -22,6 +22,8 @@ The core composition remains:
 - `SelectedDatePanel`
 - batch-mode action buttons in the jump row
 
+When `聚焦模式` is active, the `CalendarGrid` portion of the page uses a two-row focused window.
+
 ## Hero Structure
 
 The hero is status-first and should now use this structure:
@@ -59,12 +61,11 @@ Current MVP states:
 - `黄体期` with inline hint
 - `黄体期` final 7 days with amber emphasis and countdown-capable hint
 
-
 Design rule:
 
 - treat this as a reusable `status frame` pattern, not as a one-off menstrual text block
 - `暂无记录` is the pre-history fallback state and should use a neutral empty-state treatment with invitation copy
-- `记录中` is the coarse cycle fallback state for “has historical cycle data, but fine-grained phase is not yet available”; it is neutral, not exceptional
+- `记录中` is the coarse cycle fallback state for "has historical cycle data, but fine-grained phase is not yet available"; it is neutral, not exceptional
 
 ### Reference Frames
 
@@ -91,6 +92,14 @@ Rules:
 - when no previous segment exists, `上次` is disabled
 - `本次` should be removed from the shortcut row because its semantics are now carried by the hero status frame
 - the remaining shortcuts may continue to include `今天` and `下次预测` as long as they reflect the same read-model semantics as the hero
+
+## View Mode Presentation
+
+- `聚焦模式 / 月览` remains the only top-level calendar view switch.
+- The active visual state of that switch on page entry should come from the last remembered `view type` when available.
+- Restoring the active view should feel like continuity of preference, not restoration of a prior browsing position.
+- If no remembered view type exists, the page may use the existing default entry behavior.
+- Switching between the two views should preserve the existing page shell and should not imply that any record semantics changed.
 
 ## Empty State Invitation
 
@@ -122,6 +131,9 @@ This copy should remain concise and encouraging, and it should not imply that ph
 - `CalendarGrid` carries week-divider lines as part of the grid structure.
 - Week dividers support browsing rhythm only; they are not date-state markers.
 - Date cells in the grid should consume the component-library date-state source instead of page-local hand-drawn variants.
+- In `聚焦模式`, `CalendarGrid` presents a fixed `14` day / `2` row rhythm.
+- The first row should read as the primary focus band for current recording.
+- Supporting components below the grid should continue to align cleanly under the tighter 2-row footprint without introducing new affordances.
 
 ## Visual Direction
 

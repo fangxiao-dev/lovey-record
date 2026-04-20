@@ -269,26 +269,13 @@ function resolveVisibleRangeForFocusedNode(homeView, moduleSettings, focusedNavi
 	};
 }
 
-function countRangeDaysInRowThree(range, windowStartDate) {
-	if (!range?.startDate || !range?.endDate) return 0;
-	const rowThreeStart = addDays(windowStartDate, 14);
-	if (range.endDate < rowThreeStart) return 0;
-	const overlapStart = range.startDate > rowThreeStart ? range.startDate : rowThreeStart;
-	return diffDays(overlapStart, range.endDate) + 1;
-}
-
-function resolveThreeWeekWindowStart({ focusDate, focusedNavigation, visibleRange }) {
-	const defaultWindowStart = addDays(startOfWeek(focusDate), -7);
+function resolveFocusedWindowStart({ focusDate, visibleRange }) {
+	const firstRowWindowStart = startOfWeek(focusDate);
 	if (!visibleRange?.startDate || visibleRange.startDate !== focusDate) {
-		return defaultWindowStart;
+		return firstRowWindowStart;
 	}
 
-	const firstRowWindowStart = startOfWeek(focusDate);
-	const defaultRowThreeDays = countRangeDaysInRowThree(visibleRange, defaultWindowStart);
-	const firstRowThreeDays = countRangeDaysInRowThree(visibleRange, firstRowWindowStart);
-	const hasClearImprovement = defaultRowThreeDays >= 2 && firstRowThreeDays < defaultRowThreeDays;
-
-	return hasClearImprovement ? firstRowWindowStart : defaultWindowStart;
+	return firstRowWindowStart;
 }
 
 function resolvePredictedSegmentEndDate(predictionSummary, moduleSettings) {
@@ -570,7 +557,7 @@ function updateSelectedCalendarCell(pageModel) {
 	return pageModel;
 }
 
-function createCalendarDatesForViewMode({ focusDate, viewMode, threeWeekWindowStart = null }) {
+function createCalendarDatesForViewMode({ focusDate, viewMode, focusedWindowStart = null }) {
 	if (viewMode === 'month') {
 		const monthStart = startOfMonth(focusDate);
 		const monthEnd = endOfMonth(focusDate);
@@ -578,8 +565,8 @@ function createCalendarDatesForViewMode({ focusDate, viewMode, threeWeekWindowSt
 		return createDateRange(startDate, addDays(startOfWeek(monthEnd), 6));
 	}
 
-	const startDate = threeWeekWindowStart || addDays(startOfWeek(focusDate), -7);
-	return createDateRange(startDate, addDays(startDate, 20));
+	const startDate = focusedWindowStart || startOfWeek(focusDate);
+	return createDateRange(startDate, addDays(startDate, 13));
 }
 
 function buildCalendarCard(homeView, moduleSettings, dayDetail, selectedDate, focusDate, viewMode, today, selectedDateKey = null) {
@@ -602,10 +589,9 @@ function buildCalendarCard(homeView, moduleSettings, dayDetail, selectedDate, fo
 	const days = createCalendarDatesForViewMode({
 		focusDate: resolvedFocusDate,
 		viewMode,
-		threeWeekWindowStart: viewMode === 'three-week'
-			? resolveThreeWeekWindowStart({
+		focusedWindowStart: viewMode === 'three-week'
+			? resolveFocusedWindowStart({
 				focusDate: resolvedFocusDate,
-				focusedNavigation,
 				visibleRange
 			})
 			: null
@@ -1137,8 +1123,8 @@ export function createMenstrualHomePageModel({
 						isBackwardBoundary: false
 					};
 				}
-				const windowStartDate = addDays(startOfWeek(resolvedFocusDate), -7);
-				const windowEndDate = addDays(windowStartDate, 20);
+				const windowStartDate = startOfWeek(resolvedFocusDate);
+				const windowEndDate = addDays(windowStartDate, 13);
 				return {
 					...formatWindowMonthHeader(windowStartDate, windowEndDate),
 					...focusedNavigation

@@ -28,11 +28,13 @@ For the full data-model contract, also read [menstrual-domain-model.md](/D:/Code
 
 ## View Rules
 
-- `Segment Window` is the default editing view
+- `Segment Window` is the default focused editing view
 - `Month View` is a browsing view
-- the default center priority is:
+- the focused editing surface uses a fixed `14` day / `2` row window
+- the default focus priority is:
   1. current period
   2. predicted period
   3. today
-
-
+- the default focused occurrence lands in the first row of the focused window
+- the product remembers the last selected `view type` between `Segment Window` and `Month View`
+- that memory restores only the active view, not the previous browse position

@@ -26,7 +26,7 @@
 					@tap="$emit('footer-tap', footer)"
 				>
 					<text class="report-summary-card__footer-action">
-						{{ footer.portalMode === 'readonly-warning' ? '!' : '可手动调整：>' }}
+						{{ footer.portalMode === 'readonly-warning' ? '!' : '可手动调整>' }}
 					</text>
 				</view>
 			</view>

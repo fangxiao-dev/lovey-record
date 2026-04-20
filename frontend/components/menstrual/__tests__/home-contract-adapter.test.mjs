@@ -233,13 +233,9 @@ test('home contract adapter maps query responses into the formal menstrual home 
 			['next-period', '向后', false]
 		]
 	);
-	assert.equal(model.calendarCard.weeks.length, 3);
+	assert.equal(model.calendarCard.weeks.length, 2);
 	assert.equal(model.calendarCard.weeks.every((week) => week.cells.length === 7), true);
-	// Should have today marker
-	assert.ok(
-		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.variant.includes('today')),
-		'should have a today cell'
-	);
+	assert.equal(model.calendarCard.weeks.flatMap((week) => week.cells).length, 14);
 	// Badge depends on whether selected date is today and has attributes
 	assert.ok(model.selectedDatePanel.badge);
 	assert.equal(model.selectedDatePanel.periodChipText, '月经');
@@ -513,8 +509,8 @@ test('home contract adapter keeps calendar cells unselected by default and appli
 		.flatMap((week) => week.cells)
 		.find((cell) => cell.key === '2026-03-27');
 
-	assert.ok(unselectedCell, 'expected the target date to be present in the 3-week window');
-	assert.ok(clickedCell, 'expected the clicked date to be present in the 3-week window');
+	assert.ok(unselectedCell, 'expected the target date to be present in the focused window');
+	assert.ok(clickedCell, 'expected the clicked date to be present in the focused window');
 	assert.equal(unselectedModel.selectedDateKey, null);
 	assert.equal(unselectedCell.variant.startsWith('selected'), false);
 	assert.equal(clickedModel.selectedDateKey, '2026-03-27');
@@ -1530,7 +1526,7 @@ test('createMenstrualHomePageModel uses full historical period starts for backwa
 	assert.equal(model.headerNav.isBackwardBoundary, false);
 });
 
-test('three-week focused view keeps default window placement when first-row gain is weak', () => {
+test('focused view keeps the focused occurrence in the first row by default', () => {
 	const homeView = {
 		moduleInstanceId: 'window-home-module',
 		sharingStatus: 'private',
@@ -1572,11 +1568,13 @@ test('three-week focused view keeps default window placement when first-row gain
 		viewMode: 'three-week'
 	});
 
-	assert.equal(model.calendarCard.weeks[0].cells[0].key, '2026-04-13');
-	assert.equal(model.calendarCard.weeks[1].cells[0].key, '2026-04-20');
+	assert.equal(model.calendarCard.weeks.length, 2);
+	assert.equal(model.calendarCard.weeks[0].cells[0].key, '2026-04-20');
+	assert.equal(model.calendarCard.weeks[0].cells[6].key, '2026-04-26');
+	assert.equal(model.calendarCard.weeks[1].cells[0].key, '2026-04-27');
 });
 
-test('three-week focused view prefers first-row placement when it clearly improves period readability', () => {
+test('focused view uses a fixed fourteen-day window anchored from the focused period start week', () => {
 	const homeView = {
 		moduleInstanceId: 'window-home-module',
 		sharingStatus: 'private',
@@ -1618,7 +1616,30 @@ test('three-week focused view prefers first-row placement when it clearly improv
 		viewMode: 'three-week'
 	});
 
+	assert.equal(model.calendarCard.weeks.length, 2);
 	assert.equal(model.calendarCard.weeks[0].cells[0].key, '2026-04-20');
 	assert.equal(model.calendarCard.weeks[0].cells[5].key, '2026-04-25');
 	assert.equal(model.calendarCard.weeks[1].cells[3].key, '2026-04-30');
+	assert.equal(model.calendarCard.weeks.flatMap((week) => week.cells).length, 14);
+});
+
+test('formatWindowMonthLabel via createMenstrualHomePageModel: cross-month same year in focused fourteen-day window', () => {
+	const { homeView, moduleSettings } = createSeededHomeContracts();
+	const model = createMenstrualHomePageModel({
+		homeView,
+		moduleSettings,
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			date: '2026-04-26'
+		}),
+		today: '2026-04-26',
+		focusDate: '2026-04-26',
+		viewMode: 'three-week'
+	});
+
+	assert.equal(model.calendarCard.weeks.length, 2);
+	assert.equal(model.headerNav.monthLabel, '4月~5月');
+	assert.equal(model.headerNav.startYearLabel, '');
+	assert.equal(model.headerNav.endYearLabel, '');
 });

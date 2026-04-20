@@ -224,10 +224,10 @@ export function createCalendarQueryRange({ focusDate, viewMode }) {
 		return { startDate, endDate };
 	}
 
-	const startDate = addDays(startOfWeek(focusDate), -7);
+	const startDate = startOfWeek(focusDate);
 	return {
 		startDate,
-		endDate: addDays(startDate, 20)
+		endDate: addDays(startDate, 13)
 	};
 }
 

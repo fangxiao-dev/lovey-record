@@ -156,11 +156,12 @@
 				:focused-mode="page.viewModeControl.value === 'three-week'"
 				:prev-invalid="false"
 				:next-invalid="false"
-				:inline-message="''"
-				:inline-message-side="'next'"
+				:inline-message="headerInlineMessage"
+				:inline-message-side="headerInlineMessageSide"
 				:busy="isNavigationBusy"
 				@prev="handleHeaderPrev"
 				@next="handleHeaderNext"
+				@close-message="clearHeaderInlineMessage"
 			/>
 			<view class="menstrual-home__jump-row">
 				<JumpTabs
@@ -327,6 +328,7 @@
 
 	const BROWSE_ANIMATION_MS = 200;
 	const BROWSE_MASK_DELAY_MS = 120;
+	const VIEW_MODE_STORAGE_KEY = 'menstrual-home-view-mode';
 	const PHASE_ICON_URL_MAP = Object.freeze({
 		卵泡期: '/static/menstrual/embryo.svg',
 		排卵期: '/static/menstrual/sun.svg',
@@ -507,6 +509,7 @@
 				profileId: d(runtimeOptions.profileId) || DEFAULT_MENSTRUAL_HOME_CONTEXT.profileId,
 				today: d(runtimeOptions.today) || DEFAULT_MENSTRUAL_HOME_CONTEXT.today
 			};
+			this.viewMode = this.resolveRememberedViewMode();
 			this.activeDate = this.contractContext.today;
 			this.focusDate = this.contractContext.today;
 			this.retryInitialLoad();
@@ -515,6 +518,18 @@
 			this.$refs.calendarGrid?.invalidateCellRects?.();
 		},
 		methods: {
+			resolveRememberedViewMode() {
+				if (typeof uni === 'undefined' || typeof uni.getStorageSync !== 'function') {
+					return 'three-week';
+				}
+				const remembered = uni.getStorageSync(VIEW_MODE_STORAGE_KEY);
+				return remembered === 'month' ? 'month' : 'three-week';
+			},
+			rememberViewMode(viewMode) {
+				if (viewMode !== 'month' && viewMode !== 'three-week') return;
+				if (typeof uni === 'undefined' || typeof uni.setStorageSync !== 'function') return;
+				uni.setStorageSync(VIEW_MODE_STORAGE_KEY, viewMode);
+			},
 			getSelectedDayDetail(selectedDate) {
 				if (this.rawContracts?.dayDetail?.dayRecord?.date === selectedDate) {
 					return this.rawContracts.dayDetail;
@@ -999,6 +1014,7 @@
 			handleViewModeChange(nextMode) {
 				if (this.isNavigationBusy) return;
 				if (!nextMode || nextMode === this.viewMode) return;
+				this.rememberViewMode(nextMode);
 				this.beginBufferedBrowse({
 					selectedDate: this.activeDate,
 					focusDate: this.focusDate,
