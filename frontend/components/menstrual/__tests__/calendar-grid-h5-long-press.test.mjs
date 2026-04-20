@@ -159,6 +159,9 @@ test('CalendarGrid reuses cached cell rects for the next batch start until inval
 		batchMode: false,
 		suppressTapUntil: 0,
 		longPressStartedAt: 123,
+		invalidateCellRects() {
+			this.cellRects = null;
+		},
 		captureCellRects(onReady) {
 			captureCalls += 1;
 			onReady(this.cellRects);
