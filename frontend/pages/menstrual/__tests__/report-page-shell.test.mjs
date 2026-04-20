@@ -17,7 +17,7 @@ test('menstrual report page shell is registered and exposes the required layout 
 	const reportPageSource = fs.readFileSync(reportPagePath, 'utf8');
 
 	assert.match(reportPageSource, /class="report-page\b/);
-	assert.match(reportPageSource, /class="report-page__header\b/);
+	assert.match(reportPageSource, /<PageNavBar\b/);
 	assert.match(reportPageSource, /class="report-page__summary-card\b/);
 	assert.match(reportPageSource, /class="report-page__trend-card\b/);
 	assert.match(reportPageSource, /class="report-page__history-list\b/);
