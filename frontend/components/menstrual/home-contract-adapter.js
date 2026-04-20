@@ -563,7 +563,7 @@ function createCalendarDatesForViewMode({ focusDate, viewMode, threeWeekWindowSt
 	return createDateRange(startDate, addDays(startDate, 20));
 }
 
-function buildCalendarCard(homeView, moduleSettings, dayDetail, selectedDate, focusDate, viewMode, today) {
+function buildCalendarCard(homeView, moduleSettings, dayDetail, selectedDate, focusDate, viewMode, today, selectedDateKey = null) {
 	const periodDates = new Set(
 		(homeView.calendarMarks || [])
 			.filter((mark) => mark.kind === 'period' || mark.kind === 'period_start')
@@ -599,7 +599,7 @@ function buildCalendarCard(homeView, moduleSettings, dayDetail, selectedDate, fo
 		weeks.push({
 			key: `week-${weekIndex + 1}`,
 			cells: weekDays.map((date) => {
-				const isSelected = date === selectedDate;
+				const isSelected = selectedDateKey ? date === selectedDateKey : false;
 				const variant = composeCalendarVariant({
 					date,
 					today,
@@ -644,7 +644,7 @@ export function createEmptyDayDetail({ moduleInstanceId, profileId, date }) {
 	};
 }
 
-function buildCalendarCardFromWindow(homeView, moduleSettings, calendarWindow, selectedDate, today) {
+function buildCalendarCardFromWindow(homeView, moduleSettings, calendarWindow, selectedDate, today, selectedDateKey = null) {
 	const dayMap = new Map((calendarWindow.days || []).map((day) => [day.date, day]));
 	const predictionDates = createPredictionDateSet(
 		homeView.predictionSummary,
@@ -669,7 +669,7 @@ function buildCalendarCardFromWindow(homeView, moduleSettings, calendarWindow, s
 					isPeriod,
 					isPrediction,
 					isDetailRecorded: Boolean(day?.isDetailRecorded),
-					isSelected: date === selectedDate
+					isSelected: selectedDateKey ? date === selectedDateKey : false
 				});
 				const displayDate = toDateOnly(date);
 
@@ -1062,11 +1062,13 @@ export function createMenstrualHomePageModel({
 	singleDayPeriodAction = null,
 	today,
 	viewMode = 'three-week',
-	focusDate = null
+	focusDate = null,
+	selectedDateKey = null
 }) {
 	const activeDate = dayDetail?.dayRecord?.date || today;
 	const resolvedFocusDate = focusDate || activeDate;
 	const focusedNavigation = resolveFocusedNavigation(homeView, resolvedFocusDate, calendarWindow?.marks || []);
+	const resolvedSelectedDateKey = selectedDateKey || null;
 
 	return {
 		topBar: {
@@ -1124,8 +1126,8 @@ export function createMenstrualHomePageModel({
 			]
 		},
 		calendarCard: calendarWindow
-			? buildCalendarCardFromWindow(homeView, moduleSettings, calendarWindow, activeDate, today)
-			: buildCalendarCard(homeView, moduleSettings, dayDetail, activeDate, resolvedFocusDate, viewMode, today),
+			? buildCalendarCardFromWindow(homeView, moduleSettings, calendarWindow, activeDate, today, resolvedSelectedDateKey)
+			: buildCalendarCard(homeView, moduleSettings, dayDetail, activeDate, resolvedFocusDate, viewMode, today, resolvedSelectedDateKey),
 		legend: createCalendarLegendItems(),
 		selectedDatePanel: createSelectedDatePanel(homeView, dayDetail, today, singleDayPeriodAction),
 		reportEntryCard: {
@@ -1134,7 +1136,7 @@ export function createMenstrualHomePageModel({
 			iconUrl: '/static/menstrual/report.svg',
 			targetUrl: '/pages/menstrual/report'
 		},
-		selectedDateKey: activeDate,
+		selectedDateKey: resolvedSelectedDateKey,
 		todayKey: today
 	};
 }
@@ -1263,8 +1265,8 @@ export function applySingleDayPeriodActionToPageModel(pageModel, { resolvedActio
 
 export function applyBatchPeriodDraftToPageModel(pageModel, { selectedKeys, batchDraft, activeDate }) {
 	const next = clonePageModel(pageModel);
-	next.selectedDateKey = activeDate || next.selectedDateKey;
-	next.selectedDatePanel.title = formatHumanDate(next.selectedDateKey);
+	const targetDateKey = activeDate || next.selectedDateKey;
+	next.selectedDatePanel.title = formatHumanDate(targetDateKey);
 	next.selectedDatePanel.note = next.selectedDatePanel.note || '';
 	next.selectedDatePanel.summaryItems = createSummaryItems({
 		flowLevel: batchDraft.flowLevel ?? null,
@@ -1290,14 +1292,14 @@ export function applyBatchPeriodDraftToPageModel(pageModel, { selectedKeys, batc
 		if (!selectedSet.has(cell.key)) return;
 		overrides[cell.isoDate] = {
 			isPeriod: Boolean(batchDraft.isPeriod),
-			isDetailRecorded: cell.isoDate === next.selectedDateKey
+			isDetailRecorded: cell.isoDate === targetDateKey
 				? hasSelectedPanelDetailRecord(next.selectedDatePanel)
 				: cell.variant?.includes('Detail') || false
 		};
 	});
 
 	const { periodDates } = patchCalendarCells(next, overrides);
-	const chip = deriveChipFromPeriodDates(next.selectedDateKey, periodDates);
+	const chip = deriveChipFromPeriodDates(targetDateKey, periodDates);
 	next.selectedDatePanel.periodChipText = chip.text;
 	next.selectedDatePanel.periodChipSelected = chip.selected;
 	return next;

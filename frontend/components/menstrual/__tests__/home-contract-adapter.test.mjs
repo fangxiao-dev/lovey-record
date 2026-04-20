@@ -307,7 +307,7 @@ test('home contract adapter builds the calendar from getCalendarWindow and prese
 	assert.equal(model.calendarCard.weeks.length, 6);
 	assert.equal(model.calendarCard.weeks.every((week) => week.cells.length === 7), true);
 	assert.equal(
-		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-03-29' && cell.variant === 'selectedTodayPeriod'),
+		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-03-29' && cell.variant === 'todayPeriod'),
 		true
 	);
 	assert.equal(
@@ -329,7 +329,8 @@ test('home contract adapter can build a month-view calendar locally from homeVie
 		}),
 		today: '2026-03-29',
 		focusDate: '2026-04-27',
-		viewMode: 'month'
+		viewMode: 'month',
+		selectedDateKey: '2026-04-27'
 	});
 
 	assert.equal(model.viewModeControl.value, 'month');
@@ -386,13 +387,32 @@ test('home contract adapter renders the full predicted period range instead of o
 		viewMode: 'month'
 	});
 	const localByDate = Object.fromEntries(localModel.calendarCard.weeks.flatMap((week) => week.cells).map((cell) => [cell.key, cell.variant]));
-	assert.equal(localByDate['2026-04-03'], 'selectedPrediction');
+	assert.equal(localByDate['2026-04-03'], 'prediction');
 	assert.equal(localByDate['2026-04-04'], 'prediction');
 	assert.equal(localByDate['2026-04-05'], 'prediction');
 	assert.equal(localByDate['2026-04-06'], 'todayPrediction');
 	assert.equal(localByDate['2026-04-07'], 'futurePrediction');
 	assert.equal(localByDate['2026-04-08'], 'futurePrediction');
 	assert.equal(localByDate['2026-04-02'], 'default');
+
+	const selectedLocalModel = createMenstrualHomePageModel({
+		homeView,
+		moduleSettings: {
+			defaultPeriodDurationDays: 6,
+			defaultPredictionTermDays: 22
+		},
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			date: '2026-04-03'
+		}),
+		today: '2026-04-06',
+		focusDate: '2026-04-03',
+		viewMode: 'month',
+		selectedDateKey: '2026-04-03'
+	});
+	const selectedLocalByDate = Object.fromEntries(selectedLocalModel.calendarCard.weeks.flatMap((week) => week.cells).map((cell) => [cell.key, cell.variant]));
+	assert.equal(selectedLocalByDate['2026-04-03'], 'selectedPrediction');
 
 	const windowModel = createMenstrualHomePageModel({
 		homeView,
@@ -428,7 +448,7 @@ test('home contract adapter renders the full predicted period range instead of o
 		viewMode: 'month'
 	});
 	const windowByDate = Object.fromEntries(windowModel.calendarCard.weeks.flatMap((week) => week.cells).map((cell) => [cell.key, cell.variant]));
-	assert.equal(windowByDate['2026-04-03'], 'selectedPrediction');
+	assert.equal(windowByDate['2026-04-03'], 'prediction');
 	assert.equal(windowByDate['2026-04-04'], 'prediction');
 	assert.equal(windowByDate['2026-04-05'], 'prediction');
 	assert.equal(windowByDate['2026-04-06'], 'todayPrediction');
@@ -444,7 +464,8 @@ test('home contract adapter uses predictedStartDate for the prediction jump targ
 		homeView,
 		dayDetail,
 		moduleSettings,
-		today: '2026-03-29'
+		today: '2026-03-29',
+		selectedDateKey: '2026-03-28'
 	});
 
 	assert.equal(
@@ -548,7 +569,8 @@ test('home contract adapter keeps period-only days recorded without adding an ey
 		homeView,
 		moduleSettings,
 		dayDetail: periodOnlyDayDetail,
-		today: '2026-03-29'
+		today: '2026-03-29',
+		selectedDateKey: '2026-04-03'
 	});
 
 	assert.equal(model.selectedDatePanel.badge, '已记录');
@@ -616,7 +638,7 @@ test('home contract adapter keeps the eye marker when today has detail and predi
 	});
 
 	assert.equal(
-		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-03-29' && cell.variant === 'selectedTodayDetail'),
+		model.calendarCard.weeks.flatMap((week) => week.cells).some((cell) => cell.key === '2026-03-29' && cell.variant === 'todayDetail'),
 		true
 	);
 	assert.equal(
@@ -645,7 +667,8 @@ test('home contract adapter adds the eye marker to the selected calendar day onc
 	const model = createMenstrualHomePageModel({
 		homeView,
 		dayDetail,
-		today: '2026-03-29'
+		today: '2026-03-29',
+		selectedDateKey: '2026-03-22'
 	});
 
 	const toggled = applyToggleAttributeOptionToPageModel(model, {
@@ -712,7 +735,8 @@ test('home contract adapter clears all attribute selections and removes summary 
 		homeView,
 		dayDetail,
 		moduleSettings,
-		today: '2026-03-29'
+		today: '2026-03-29',
+		selectedDateKey: '2026-03-28'
 	});
 
 	const cleared = applyClearAttributesToPageModel(model);
@@ -735,7 +759,8 @@ test('home contract adapter optimistically marks a non-period day as period usin
 		homeView,
 		dayDetail,
 		moduleSettings,
-		today: '2026-03-29'
+		today: '2026-03-29',
+		selectedDateKey: '2026-03-28'
 	});
 
 	const next = applySingleDayPeriodActionToPageModel(model, {
@@ -797,7 +822,8 @@ test('home contract adapter optimistically truncates later period dates using th
 			defaultPeriodDurationDays: 6,
 			defaultPredictionTermDays: 22
 		},
-		today: '2026-03-29'
+		today: '2026-03-29',
+		selectedDateKey: '2026-03-25'
 	});
 
 	const next = applySingleDayPeriodActionToPageModel(model, {
@@ -830,7 +856,8 @@ test('home contract adapter applies batch draft to the visible calendar and sele
 		homeView,
 		dayDetail,
 		moduleSettings,
-		today: '2026-03-29'
+		today: '2026-03-29',
+		selectedDateKey: '2026-03-24'
 	});
 	const originalHero = structuredClone(model.heroCard);
 
@@ -913,7 +940,8 @@ test('home contract adapter applies hero snapshot while preserving selected day 
 	assert.equal(nextByDate['2026-04-25'], 'futurePrediction');
 	assert.equal(nextByDate['2026-04-26'], 'futurePrediction');
 	assert.deepEqual(next.selectedDatePanel, originalPanel);
-	assert.equal(next.selectedDateKey, model.selectedDateKey);
+	assert.equal(next.selectedDateKey, null);
+	assert.equal(model.selectedDateKey, null);
 	assert.equal(next.headerNav.monthLabel, model.headerNav.monthLabel);
 	assert.equal(next.viewModeControl.value, model.viewModeControl.value);
 });

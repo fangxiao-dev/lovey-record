@@ -21,7 +21,7 @@
 ### Task 1: 开启月览交互
 
 **Files:**
-- Modify: `frontend/pages/menstrual/home.vue:156`
+- Modify: `frontend/pages/menstrual/home.vue:182`
 
 **Step 1: 修改 `interactive` prop**
 
@@ -91,7 +91,7 @@ focusedDate: {
 
 **Step 4: 在 home.vue 传入 `focusedDate`**
 
-找到 `<CalendarGrid>` 绑定（home.vue 约第 152-164 行），新增一行：
+找到 `<CalendarGrid>` 绑定（home.vue 约第 180-195 行），新增一行：
 
 ```diff
  <CalendarGrid
@@ -130,7 +130,7 @@ git commit -m "feat(menstrual): highlight focused cell in month view"
 
 **Step 1: 新增常量**
 
-在现有常量区（约第 112-113 行 `LONG_PRESS_DELAY` / `MOVE_CANCEL_THRESHOLD` 旁边）添加：
+在现有常量区（约第 124-125 行 `LONG_PRESS_DELAY` / `MOVE_CANCEL_THRESHOLD` 旁边）添加：
 
 ```js
 const SWIPE_THRESHOLD = 48;   // px — 横向位移超过此值才算翻页
@@ -149,14 +149,14 @@ swipeCancelled: false,  // 长按定时器因移动被取消时置 true
 
 **Step 3: 在 `handlePointerMove` 中更新当前位置 & 标记 swipe 候选**
 
-找到 `handlePointerMove`（约第 411 行），在方法开头（现有逻辑之前）插入：
+找到 `handlePointerMove`（约第 436 行），在方法开头（现有逻辑之前）插入：
 
 ```js
 this.touchCurrentX = clientX;
 this.touchCurrentY = clientY;
 ```
 
-在取消长按定时器的 `if` 块内（约第 416-420 行），将 `swipeCancelled` 置为 true：
+在取消长按定时器的 `if` 块内（约第 440-443 行），将 `swipeCancelled` 置为 true：
 
 ```diff
  if (Math.abs(dx) > MOVE_CANCEL_THRESHOLD || Math.abs(dy) > MOVE_CANCEL_THRESHOLD) {
@@ -168,7 +168,7 @@ this.touchCurrentY = clientY;
 
 **Step 4: 在 `beginLongPress` 中重置 swipeCancelled**
 
-找到 `beginLongPress`（约第 398 行），在方法开头插入：
+找到 `beginLongPress`（约第 423 行），在方法开头插入：
 
 ```js
 this.swipeCancelled = false;
@@ -176,7 +176,7 @@ this.swipeCancelled = false;
 
 **Step 5: 在 `finishLongPress` 中判断横滑并 emit**
 
-找到 `finishLongPress`（约第 437 行）。在方法**末尾**（现有逻辑之后，`this.longPressStartedAt = 0;` 之前）添加：
+找到 `finishLongPress`（约第 462 行）。在方法**末尾**（现有逻辑之后，`this.longPressStartedAt = 0;` 之前）添加：
 
 ```js
 if (this.swipeCancelled && !this.batchMode) {
@@ -204,7 +204,7 @@ this.swipeCancelled = false;
 
 **Step 7: 在 home.vue 中监听事件并调用现有导航方法**
 
-找到 `<CalendarGrid>` 绑定（home.vue 约第 152-164 行），新增：
+找到 `<CalendarGrid>` 绑定（home.vue 约第 180-195 行），新增：
 
 ```diff
  @batch-end="handleBatchEnd"
@@ -259,7 +259,7 @@ calendarNavKey: 0,       // 每次翻页时 +1，触发 <transition> 的 key 变
 
 将 `handleHeaderPrev` / `handleHeaderNext` 中重复的 `applyLocalBrowseState` + `refreshCalendarWindow` 逻辑提取为一个内部方法，并在执行前设置过渡方向：
 
-找到 `handleHeaderPrev`（约第 668 行）和 `handleHeaderNext`（约第 684 行），在各自方法开头分别插入：
+找到 `handleHeaderPrev`（约第 958 行）和 `handleHeaderNext`（约第 970 行），在各自方法开头分别插入：
 
 ```js
 // handleHeaderPrev 开头：
@@ -358,11 +358,11 @@ git commit -m "feat(menstrual): add directional slide transition on calendar pag
 > 月览中，批选不可跨页（即不可选到上个月/下个月溢出的格子）。
 
 **Files:**
-- Modify: `frontend/pages/menstrual/home.vue:1005-1023`
+- Modify: `frontend/pages/menstrual/home.vue:1300`
 
 **Step 1: 在 `syncBatchSelectionRange` 中增加月份过滤**
 
-找到 `syncBatchSelectionRange`（约第 1005 行），在现有 `.filter((cell) => cell.selectable !== false)` 一行中追加月份限制：
+找到 `syncBatchSelectionRange`（约第 1300 行），在现有 `.filter((cell) => cell.selectable !== false)` 一行中追加月份限制：
 
 ```diff
  this.batchSelectedKeysState = this.allCalendarCells

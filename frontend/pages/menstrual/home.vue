@@ -286,6 +286,7 @@
 	import { createJoinPageUrl } from '../../services/menstrual/module-shell-service.js';
 
 	const BROWSE_ANIMATION_MS = 200;
+	const BROWSE_MASK_DELAY_MS = 120;
 	const PHASE_ICON_URL_MAP = Object.freeze({
 		卵泡期: '/static/menstrual/embryo.svg',
 		排卵期: '/static/menstrual/sun.svg',
@@ -315,6 +316,7 @@
 				loadError: '',
 				activeDate: DEFAULT_MENSTRUAL_HOME_CONTEXT.today,
 				focusDate: DEFAULT_MENSTRUAL_HOME_CONTEXT.today,
+				selectedDateKey: null,
 				viewMode: 'three-week',
 				isMutating: false,
 				isRefreshingSnapshot: false,
@@ -329,6 +331,8 @@
 				pendingCalendarKey: 0,
 				browseRequestId: 0,
 				browseAnimationTimer: null,
+				browseMaskDelayTimer: null,
+				browseMaskShown: false,
 				snapshotRequestId: 0,
 				calendarRequestId: 0,
 				dayDetailRequestId: 0,
@@ -355,6 +359,7 @@
 		beforeUnmount() {
 			this.clearHeaderInlineMessage();
 			this.clearBrowseAnimationTimer();
+			this.clearBrowseMaskTimer();
 		},
 		computed: {
 			browseNavLabels() {
@@ -383,7 +388,7 @@
 				return this.isRefreshing || this.isMutating || this.browseTransitionPhase !== 'idle';
 			},
 			browseMaskVisible() {
-				return this.browseTransitionPhase === 'preloading';
+				return this.browseMaskShown;
 			},
 			currentCalendarLayerClasses() {
 				return {
@@ -486,7 +491,7 @@
 				}
 				return null;
 			},
-			rebuildLocalPage({ selectedDate = this.activeDate, focusDate = this.focusDate, viewMode = this.viewMode, useCalendarWindow = true, dayDetail = null } = {}) {
+			rebuildLocalPage({ selectedDate = this.activeDate, focusDate = this.focusDate, viewMode = this.viewMode, useCalendarWindow = true, dayDetail = null, selectedDateKey = this.selectedDateKey } = {}) {
 				if (!this.rawContracts?.homeView) {
 					return this.page;
 				}
@@ -498,19 +503,22 @@
 					calendarWindow: useCalendarWindow ? this.rawContracts.calendarWindow : null,
 					today: this.contractContext.today,
 					focusDate,
-					viewMode
+					viewMode,
+					selectedDateKey
 				});
 			},
-			applyLocalBrowseState({ selectedDate = this.activeDate, focusDate = this.focusDate, viewMode = this.viewMode, useCalendarWindow = true, dayDetail = null } = {}) {
+			applyLocalBrowseState({ selectedDate = this.activeDate, focusDate = this.focusDate, viewMode = this.viewMode, useCalendarWindow = true, dayDetail = null, selectedDateKey = this.selectedDateKey } = {}) {
 				this.activeDate = selectedDate;
 				this.focusDate = focusDate;
+				this.selectedDateKey = selectedDateKey;
 				this.viewMode = viewMode;
 				this.page = this.rebuildLocalPage({
 					selectedDate,
 					focusDate,
 					viewMode,
 					useCalendarWindow,
-					dayDetail
+					dayDetail,
+					selectedDateKey
 				});
 			},
 			clearBrowseAnimationTimer() {
@@ -518,6 +526,22 @@
 					clearTimeout(this.browseAnimationTimer);
 					this.browseAnimationTimer = null;
 				}
+			},
+			clearBrowseMaskTimer() {
+				if (this.browseMaskDelayTimer) {
+					clearTimeout(this.browseMaskDelayTimer);
+					this.browseMaskDelayTimer = null;
+				}
+				this.browseMaskShown = false;
+			},
+			scheduleBrowseMask() {
+				this.clearBrowseMaskTimer();
+				this.browseMaskDelayTimer = setTimeout(() => {
+					this.browseMaskDelayTimer = null;
+					if (this.browseTransitionPhase === 'preloading') {
+						this.browseMaskShown = true;
+					}
+				}, BROWSE_MASK_DELAY_MS);
 			},
 			buildBrowsePayload({
 				selectedDate,
@@ -588,6 +612,7 @@
 			startBrowseAnimation() {
 				const requestId = this.browseRequestId;
 				this.browseTransitionPhase = 'animating';
+				this.clearBrowseMaskTimer();
 				this.clearBrowseAnimationTimer();
 				this.browseAnimationTimer = setTimeout(() => {
 					this.commitBufferedBrowse(requestId);
@@ -603,6 +628,7 @@
 				this.rawContracts = pending.rawContracts;
 				this.activeDate = pending.activeDate;
 				this.focusDate = pending.focusDate;
+				this.selectedDateKey = null;
 				this.viewMode = pending.viewMode;
 				this.currentCalendarKey = this.pendingCalendarKey;
 				this.pendingBrowsePayload = null;
@@ -611,6 +637,7 @@
 				this.browseTransitionDirection = null;
 				this.browseTransitionEffect = 'slide';
 				this.clearBrowseAnimationTimer();
+				this.clearBrowseMaskTimer();
 			},
 			resetBufferedBrowse() {
 				this.pendingBrowsePayload = null;
@@ -619,6 +646,7 @@
 				this.browseTransitionDirection = null;
 				this.browseTransitionEffect = 'slide';
 				this.clearBrowseAnimationTimer();
+				this.clearBrowseMaskTimer();
 			},
 			async beginBufferedBrowse({
 				selectedDate,
@@ -637,6 +665,15 @@
 				this.browseTransitionPhase = 'preloading';
 				this.browseTransitionDirection = direction;
 				this.browseTransitionEffect = effect;
+				this.selectedDateKey = null;
+				this.page = this.rebuildLocalPage({
+					selectedDate: this.activeDate,
+					focusDate: this.focusDate,
+					viewMode: this.viewMode,
+					useCalendarWindow: true,
+					selectedDateKey: null
+				});
+				this.scheduleBrowseMask();
 
 				try {
 					const pendingPayload = await this.loadBrowseDependencies({
@@ -668,6 +705,7 @@
 					activeDate,
 					focusDate: nextFocusDate,
 					viewMode: nextViewMode,
+					selectedDateKey: this.selectedDateKey,
 					fallbackOnError: options.fallbackOnError
 				});
 				if (requestId !== this.snapshotRequestId) {
@@ -680,6 +718,7 @@
 				this.activeDate = result.raw?.dayDetail?.dayRecord?.date || activeDate || this.activeDate;
 				this.focusDate = result.raw?.focusDate || nextFocusDate;
 				this.viewMode = result.raw?.viewMode || nextViewMode;
+				this.selectedDateKey = result.page?.selectedDateKey || null;
 				return result;
 			},
 			async refreshCalendarWindow({ selectedDate = this.activeDate, focusDate = this.focusDate, viewMode = this.viewMode } = {}) {
@@ -705,7 +744,8 @@
 						selectedDate,
 						focusDate,
 						viewMode,
-						useCalendarWindow: true
+						useCalendarWindow: true,
+						selectedDateKey: this.selectedDateKey
 					});
 					return result;
 				} catch (error) {
@@ -747,7 +787,8 @@
 						focusDate,
 						viewMode,
 						useCalendarWindow: true,
-						dayDetail
+						dayDetail,
+						selectedDateKey: this.selectedDateKey
 					});
 					return dayDetail;
 				} catch (error) {
@@ -889,12 +930,14 @@
 					return;
 				}
 				this.panelMode = 'single-day';
+				this.selectedDateKey = cell.isoDate;
 				this.applyLocalBrowseState({
 					selectedDate: cell.isoDate,
 					focusDate: this.focusDate,
 					viewMode: this.viewMode,
 					useCalendarWindow: true,
-					dayDetail: this.getSelectedDayDetail(cell.isoDate)
+					dayDetail: this.getSelectedDayDetail(cell.isoDate),
+					selectedDateKey: cell.isoDate
 				});
 				this.refreshSelectedDayDetail({
 					selectedDate: cell.isoDate,
@@ -988,6 +1031,14 @@
 				this.batchStartKey = startCell?.key || null;
 				this.batchEndKey = startCell?.key || null;
 				this.batchHoveredKey = startCell?.key || null;
+				this.selectedDateKey = null;
+				this.page = this.rebuildLocalPage({
+					selectedDate: this.activeDate,
+					focusDate: this.focusDate,
+					viewMode: this.viewMode,
+					useCalendarWindow: true,
+					selectedDateKey: null
+				});
 				this.syncBatchSelectionRange();
 				if (startCell?.isoDate) {
 					this.activeDate = startCell.isoDate;

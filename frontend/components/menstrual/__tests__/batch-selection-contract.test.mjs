@@ -55,6 +55,9 @@ test('home batch selection keeps a continuous inclusive range from the anchor to
 		createEmptyBatchDraft: home.methods.createEmptyBatchDraft,
 		enterBatchMode: home.methods.enterBatchMode,
 		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
+		rebuildLocalPage() {
+			return this.page;
+		},
 		activeDate: '2026-03-25',
 		allCalendarCells: [
 			{ key: '2026-03-01', isoDate: '2026-03-01', selectable: true },
@@ -131,6 +134,9 @@ test('home batch selection updates the active single-day context to the latest d
 		createEmptyBatchDraft: home.methods.createEmptyBatchDraft,
 		enterBatchMode: home.methods.enterBatchMode,
 		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
+		rebuildLocalPage() {
+			return this.page;
+		},
 		activeDate: '2026-03-25',
 		allCalendarCells: [
 			{ key: '2026-03-23', isoDate: '2026-03-23', selectable: true },
@@ -162,6 +168,9 @@ test('home batch selection recomputes the full range even when drag jumps across
 		applyTogglePeriodToPageModel: () => {},
 		resolveJumpTargetDate: () => null,
 		shiftFocusDate: () => null,
+		rebuildLocalPage() {
+			return this.page;
+		},
 		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
 			today: '2026-03-29',
 			apiBaseUrl: 'http://localhost:3000/api',
@@ -181,6 +190,9 @@ test('home batch selection recomputes the full range even when drag jumps across
 		createEmptyBatchDraft: home.methods.createEmptyBatchDraft,
 		enterBatchMode: home.methods.enterBatchMode,
 		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
+		rebuildLocalPage() {
+			return this.page;
+		},
 		activeDate: '2026-03-01',
 		allCalendarCells: [
 			{ key: '2026-03-01', isoDate: '2026-03-01', selectable: true },
@@ -234,6 +246,9 @@ test('home enterBatchMode activates an empty batch state without changing the ac
 		applyToggleAttributeOptionToPageModel: () => {},
 		resolveJumpTargetDate: () => null,
 		shiftFocusDate: () => null,
+		rebuildLocalPage() {
+			return this.page;
+		},
 		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
 			today: '2026-03-29',
 			apiBaseUrl: 'http://localhost:3000/api',
@@ -258,7 +273,10 @@ test('home enterBatchMode activates an empty batch state without changing the ac
 			colorLevel: 5
 		},
 		createEmptyBatchDraft: home.methods.createEmptyBatchDraft,
-		syncBatchSelectionRange: home.methods.syncBatchSelectionRange
+		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
+		rebuildLocalPage() {
+			return this.page;
+		}
 	};
 
 	home.methods.enterBatchMode.call(ctx);
@@ -290,6 +308,9 @@ test('home handleCellTap starts batch selection from the tapped day when batch m
 		applyToggleAttributeOptionToPageModel: () => {},
 		resolveJumpTargetDate: () => null,
 		shiftFocusDate: () => null,
+		rebuildLocalPage() {
+			return this.page;
+		},
 		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
 			today: '2026-03-29',
 			apiBaseUrl: 'http://localhost:3000/api',
@@ -315,6 +336,9 @@ test('home handleCellTap starts batch selection from the tapped day when batch m
 		createEmptyBatchDraft: home.methods.createEmptyBatchDraft,
 		enterBatchMode: home.methods.enterBatchMode,
 		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
+		rebuildLocalPage() {
+			return this.page;
+		},
 		refreshSelectedDayDetail() {
 			throw new Error('single-day refresh should not run while starting empty batch selection');
 		},
@@ -370,7 +394,10 @@ test('home handleCellTap ignores future-muted dates while batch mode is empty', 
 		allCalendarCells: [{ key: '2026-03-30', isoDate: '2026-03-30', selectable: false }],
 		isBrowseBusy: false,
 		enterBatchMode: home.methods.enterBatchMode,
-		syncBatchSelectionRange: home.methods.syncBatchSelectionRange
+		syncBatchSelectionRange: home.methods.syncBatchSelectionRange,
+		rebuildLocalPage() {
+			return this.page;
+		}
 	};
 
 	home.methods.handleCellTap.call(ctx, {
@@ -1275,4 +1302,227 @@ test('home single-day bridge confirm calls applySingleDayPeriodAction with confi
 		action: 'start',
 		confirmed: true
 	}]);
+});
+
+test('home handleHeaderNext delegates browse navigation into buffered preload instead of rebuilding immediately', () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		shiftFocusDate: () => '2026-04-01'
+	});
+
+	const calls = [];
+	const ctx = {
+		isNavigationBusy: false,
+		focusDate: '2026-03-25',
+		viewMode: 'month',
+		rebuildLocalPage() {
+			return this.page;
+		},
+		beginBufferedBrowse(payload) {
+			calls.push(payload);
+		},
+		applyLocalBrowseState() {
+			throw new Error('legacy eager browse path should not run');
+		}
+	};
+
+	home.methods.handleHeaderNext.call(ctx);
+
+	assert.equal(calls.length, 1);
+	assert.equal(calls[0].selectedDate, '2026-04-01');
+	assert.equal(calls[0].focusDate, '2026-04-01');
+	assert.equal(calls[0].viewMode, 'month');
+	assert.equal(calls[0].direction, 'next');
+	assert.equal(calls[0].effect, 'slide');
+});
+
+test('home beginBufferedBrowse keeps the current page stable until animation commit', async () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {}
+	});
+
+	const currentPage = { id: 'current-page' };
+	const pendingPayload = {
+		pageModel: { id: 'pending-page', calendarCard: { weeks: [], weekdayLabels: [] } },
+		rawContracts: { homeView: {}, moduleSettings: {}, focusDate: '2026-04-01', viewMode: 'month' },
+		activeDate: '2026-04-01',
+		focusDate: '2026-04-01',
+		viewMode: 'month'
+	};
+	let animationStarted = false;
+	let maskScheduled = false;
+	const ctx = {
+		rawContracts: { homeView: {}, moduleSettings: {} },
+		isNavigationBusy: false,
+		loadError: 'stale',
+		panelMode: 'batch',
+		page: currentPage,
+		currentCalendarKey: 3,
+		pendingCalendarKey: 0,
+		browseRequestId: 0,
+		browseTransitionPhase: 'idle',
+		browseTransitionDirection: null,
+		browseTransitionEffect: 'slide',
+		pendingBrowsePayload: null,
+		browseMaskShown: false,
+		rebuildLocalPage() {
+			return this.page;
+		},
+		clearHeaderInlineMessage() {},
+		scheduleBrowseMask() {
+			maskScheduled = true;
+		},
+		loadBrowseDependencies: async () => pendingPayload,
+		startBrowseAnimation() {
+			animationStarted = true;
+			this.browseTransitionPhase = 'animating';
+		}
+	};
+
+	await home.methods.beginBufferedBrowse.call(ctx, {
+		selectedDate: '2026-04-01',
+		focusDate: '2026-04-01',
+		viewMode: 'month',
+		direction: 'next',
+		effect: 'fade'
+	});
+
+	assert.equal(ctx.page, currentPage);
+	assert.equal(ctx.loadError, '');
+	assert.equal(ctx.panelMode, 'single-day');
+	assert.equal(ctx.pendingBrowsePayload, pendingPayload);
+	assert.equal(ctx.pendingCalendarKey, 4);
+	assert.equal(ctx.browseTransitionDirection, 'next');
+	assert.equal(ctx.browseTransitionEffect, 'fade');
+	assert.equal(maskScheduled, true);
+	assert.equal(ctx.browseMaskShown, false);
+	assert.equal(animationStarted, true);
+});
+
+test('home commitBufferedBrowse applies the pending payload atomically and clears transition state', () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {}
+	});
+
+	const pendingPayload = {
+		pageModel: { id: 'next-page' },
+		rawContracts: { homeView: {}, moduleSettings: {}, focusDate: '2026-04-01', viewMode: 'month' },
+		activeDate: '2026-04-01',
+		focusDate: '2026-04-01',
+		viewMode: 'month'
+	};
+	let timerCleared = false;
+	const ctx = {
+		browseRequestId: 5,
+		pendingBrowsePayload: pendingPayload,
+		pendingCalendarKey: 8,
+		currentCalendarKey: 7,
+		browseTransitionPhase: 'animating',
+		browseTransitionDirection: 'next',
+		browseTransitionEffect: 'fade',
+		clearBrowseAnimationTimer() {
+			timerCleared = true;
+		},
+		clearBrowseMaskTimer() {}
+	};
+
+	home.methods.commitBufferedBrowse.call(ctx, 5);
+
+	assert.equal(ctx.page, pendingPayload.pageModel);
+	assert.equal(ctx.rawContracts, pendingPayload.rawContracts);
+	assert.equal(ctx.activeDate, '2026-04-01');
+	assert.equal(ctx.focusDate, '2026-04-01');
+	assert.equal(ctx.viewMode, 'month');
+	assert.equal(ctx.currentCalendarKey, 8);
+	assert.equal(ctx.pendingBrowsePayload, null);
+	assert.equal(ctx.pendingCalendarKey, 0);
+	assert.equal(ctx.browseTransitionPhase, 'idle');
+	assert.equal(ctx.browseTransitionDirection, null);
+	assert.equal(ctx.browseTransitionEffect, 'slide');
+	assert.equal(timerCleared, true);
+});
+
+test('home beginBufferedBrowse restores idle state when preload fails', async () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {}
+	});
+
+	let resetCalled = false;
+	const ctx = {
+		rawContracts: { homeView: {}, moduleSettings: {} },
+		isNavigationBusy: false,
+		loadError: '',
+		panelMode: 'single-day',
+		browseRequestId: 0,
+		browseTransitionPhase: 'idle',
+		rebuildLocalPage() {
+			return this.page;
+		},
+		clearHeaderInlineMessage() {},
+		scheduleBrowseMask() {},
+		loadBrowseDependencies: async () => {
+			throw new Error('calendar query failed');
+		},
+		resetBufferedBrowse() {
+			resetCalled = true;
+			this.browseTransitionPhase = 'idle';
+		}
+	};
+
+	await home.methods.beginBufferedBrowse.call(ctx, {
+		selectedDate: '2026-04-01',
+		focusDate: '2026-04-01',
+		viewMode: 'month'
+	});
+
+	assert.equal(resetCalled, true);
+	assert.equal(ctx.loadError, '联调环境请求失败');
+	assert.equal(ctx.browseTransitionPhase, 'idle');
+});
+
+test('home scheduleBrowseMask only reveals the overlay when preloading outlives the delay', async () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {}
+	});
+
+	const ctx = {
+		browseTransitionPhase: 'preloading',
+		browseMaskDelayTimer: null,
+		browseMaskShown: false
+	};
+	ctx.clearBrowseMaskTimer = home.methods.clearBrowseMaskTimer;
+
+	home.methods.scheduleBrowseMask.call(ctx);
+	assert.equal(ctx.browseMaskShown, false);
+
+	await new Promise((resolve) => setTimeout(resolve, 140));
+	assert.equal(ctx.browseMaskShown, true);
+
+	home.methods.clearBrowseMaskTimer.call(ctx);
+	assert.equal(ctx.browseMaskShown, false);
 });

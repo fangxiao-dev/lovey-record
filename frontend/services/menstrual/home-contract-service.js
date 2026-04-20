@@ -225,7 +225,8 @@ export async function loadMenstrualHomePageModel(context = {}) {
 				singleDayPeriodAction,
 				today: resolved.today,
 				viewMode,
-				focusDate
+				focusDate,
+				selectedDateKey: resolved.selectedDateKey || null
 			}),
 			raw: {
 				homeView,
@@ -271,7 +272,8 @@ export async function loadMenstrualHomePageModel(context = {}) {
 				singleDayPeriodAction: null,
 				today: resolved.today,
 				viewMode,
-				focusDate: resolved.focusDate || resolved.activeDate || resolved.today
+				focusDate: resolved.focusDate || resolved.activeDate || resolved.today,
+				selectedDateKey: resolved.selectedDateKey || null
 			}),
 			raw: {
 				homeView: fallback.homeView,
