@@ -11,7 +11,7 @@
 				:hover-stay-time="70"
 				@tap="handleBack"
 			>
-				<text class="page-nav-bar__back-label">‹</text>
+				<image class="page-nav-bar__back-icon" src="/static/icons/return.svg" mode="aspectFit" />
 			</view>
 			<view v-else class="page-nav-bar__back page-nav-bar__back--placeholder" />
 
@@ -94,8 +94,8 @@
 	}
 
 	.page-nav-bar__back {
-		width: 48rpx;
-		height: 48rpx;
+		width: 56rpx;
+		height: 56rpx;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -107,10 +107,10 @@
 		pointer-events: none;
 	}
 
-	.page-nav-bar__back-label {
-		font-size: 44rpx;
-		line-height: 1;
-		color: $text-primary;
+	.page-nav-bar__back-icon {
+		width: 34rpx;
+		height: 34rpx;
+		flex-shrink: 0;
 	}
 
 	.page-nav-bar__center {
