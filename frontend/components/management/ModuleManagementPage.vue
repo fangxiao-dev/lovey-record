@@ -44,11 +44,11 @@
 				<view class="management-card__summary-grid">
 					<view class="management-card__summary-item">
 						<text class="management-card__summary-label u-text-caption">{{ page.managementCard.defaultPeriodDuration.label }}</text>
-						<text class="management-card__summary-value u-text-body">{{ page.managementCard.defaultPeriodDuration.value }}</text>
+						<text class="management-card__summary-value u-text-body">{{ resolvedSummaryDisplay('duration', page.managementCard.defaultPeriodDuration.value) }}</text>
 					</view>
 					<view class="management-card__summary-item">
 						<text class="management-card__summary-label u-text-caption">{{ page.managementCard.defaultPredictionTerm.label }}</text>
-						<text class="management-card__summary-value u-text-body">{{ page.managementCard.defaultPredictionTerm.value }}</text>
+						<text class="management-card__summary-value u-text-body">{{ resolvedSummaryDisplay('prediction', page.managementCard.defaultPredictionTerm.value) }}</text>
 					</view>
 				</view>
 
@@ -66,6 +66,7 @@
 						@select="handleSettingOptionSelect(setting.key, $event)"
 						@custom="toggleCustomPicker(setting.key)"
 						@custom-preview-change="handleCustomPickerPreviewChange(setting.key, $event)"
+						@confirm="handleCustomPickerBackdropTap"
 					/>
 				</view>
 
@@ -247,6 +248,7 @@
 				activeCustomPickerKey: '',
 				quickWindowAnchors: {},
 				customPickerDraftIndices: {},
+				customPickerPreviewValues: {},
 				context: { ...DEFAULT_MODULE_SHELL_CONTEXT },
 				showChangelogSheet: false,
 				changelogEntries,
@@ -280,8 +282,10 @@
 				const customPickerOptions = control?.customPickerOptions || [];
 				const selectedValue = control?.value;
 				const customPickerValueIndex = customPickerOptions.findIndex((option) => option.value === selectedValue);
-				const anchor = this.quickWindowAnchors[key] ?? selectedValue ?? 0;
-				const previewValue = this.activeCustomPickerKey === key ? this.quickWindowAnchors[key] : undefined;
+				const anchor = this.resolveQuickWindowAnchorForRender(key, control);
+				const previewValue = this.activeCustomPickerKey === key
+					? this.customPickerPreviewValues?.[key]
+					: undefined;
 				const resolvedSelectedValue = typeof previewValue === 'number' ? previewValue : selectedValue;
 				const options = buildCenteredQuickOptions(anchor, resolvedSelectedValue, customPickerOptions);
 				const resolvedValueIndex = customPickerValueIndex >= 0 ? customPickerValueIndex : 0;
@@ -307,14 +311,68 @@
 
 				return fallbackIndex >= 0 ? fallbackIndex : 0;
 			},
+			getDefaultQuickWindowAnchor(control) {
+				if (typeof control?.value === 'number') {
+					return control.value;
+				}
+
+				const optionValues = (control?.options || [])
+					.map((option) => option?.value)
+					.filter((value) => typeof value === 'number');
+				if (optionValues.length) {
+					return optionValues[Math.floor(optionValues.length / 2)];
+				}
+
+				return 0;
+			},
+			getCommittedQuickWindowAnchor(key, control) {
+				const existingAnchor = this.quickWindowAnchors?.[key];
+				if (typeof existingAnchor === 'number') {
+					return existingAnchor;
+				}
+
+				return this.getDefaultQuickWindowAnchor(control);
+			},
+			isValueWithinQuickWindow(anchor, selectedValue, allOptions, nextValue) {
+				return buildCenteredQuickOptions(anchor, selectedValue, allOptions)
+					.some((option) => option.value === nextValue);
+			},
+			resolveQuickWindowAnchorForRender(key, control) {
+				const customPickerOptions = control?.customPickerOptions || [];
+				const selectedValue = control?.value;
+				const committedAnchor = this.getCommittedQuickWindowAnchor(key, control);
+
+				if (this.activeCustomPickerKey !== key) {
+					return committedAnchor;
+				}
+
+				const previewValue = this.customPickerPreviewValues?.[key];
+				if (typeof previewValue !== 'number') {
+					return committedAnchor;
+				}
+
+				if (this.isValueWithinQuickWindow(committedAnchor, selectedValue, customPickerOptions, previewValue)) {
+					return committedAnchor;
+				}
+
+				return previewValue;
+			},
+			resolvedSummaryDisplay(key, serverValue) {
+				if (this.activeCustomPickerKey !== key) return serverValue;
+				const preview = this.customPickerPreviewValues?.[key];
+				return typeof preview === 'number' ? `${preview} 天` : serverValue;
+			},
+			resolveCommittedQuickWindowAnchorAfterSelection(key, control, nextValue) {
+				return nextValue;
+			},
 			syncQuickWindowAnchorsFromPage(page) {
 				const card = page?.managementCard;
 
 				if (!card) return;
 
 				this.quickWindowAnchors = {
-					duration: card.settingsControl?.value,
-					prediction: card.predictionSettingsControl?.value
+					duration: this.getCommittedQuickWindowAnchor('duration', card.settingsControl),
+					prediction: this.getCommittedQuickWindowAnchor('prediction', card.predictionSettingsControl)
 				};
 			},
 			updateDemoSettingRow(control, days) {
@@ -375,6 +433,7 @@
 				this.activeCustomPickerKey = '';
 				this.quickWindowAnchors = {};
 				this.customPickerDraftIndices = {};
+				this.customPickerPreviewValues = {};
 				this.loadError = '';
 				this.context = {
 					...DEFAULT_MODULE_SHELL_CONTEXT,
@@ -392,6 +451,7 @@
 					this.selectedModuleId = result.page?.moduleBoard?.modules?.[0]?.id || '';
 					this.syncQuickWindowAnchorsFromPage(result.page);
 					this.customPickerDraftIndices = {};
+					this.customPickerPreviewValues = {};
 					return;
 				}
 
@@ -431,6 +491,7 @@
 					this.page = result.page;
 					this.activeCustomPickerKey = '';
 					this.customPickerDraftIndices = {};
+					this.customPickerPreviewValues = {};
 					this.selectedModuleId = result.page?.moduleBoard?.modules?.find((module) => module.selected)?.id
 						|| result.page?.moduleBoard?.modules?.[0]?.id
 						|| '';
@@ -455,14 +516,18 @@
 				const control = this.getSettingControlByKey(key);
 				const selectedValue = control?.value;
 				const currentIndex = (control?.customPickerOptions || []).findIndex((option) => option.value === selectedValue);
-				const anchorValue = typeof selectedValue === 'number' ? selectedValue : 0;
+				const fallbackAnchor = this.getDefaultQuickWindowAnchor(control);
 				this.customPickerDraftIndices = {
 					...this.customPickerDraftIndices,
 					[key]: currentIndex >= 0 ? currentIndex : 0
 				};
 				this.quickWindowAnchors = {
 					...this.quickWindowAnchors,
-					[key]: anchorValue
+					[key]: this.getCommittedQuickWindowAnchor(key, control) || fallbackAnchor
+				};
+				this.customPickerPreviewValues = {
+					...this.customPickerPreviewValues,
+					[key]: selectedValue
 				};
 				this.activeCustomPickerKey = key;
 			},
@@ -474,6 +539,7 @@
 				if (this.isDemoMode) {
 					this.applyDemoSettingUpdate(key, days);
 					this.activeCustomPickerKey = '';
+					this.customPickerPreviewValues = {};
 					return;
 				}
 
@@ -482,6 +548,7 @@
 				try {
 					await this.persistSettingByKey(key, days);
 					await this.retryInitialLoad();
+					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: days };
 				} catch (error) {
 					this.loadError = error instanceof Error ? error.message : '模块设置更新失败';
 				} finally {
@@ -493,11 +560,12 @@
 				const draftIndex = this.customPickerDraftIndices?.[key];
 				const option = control?.customPickerOptions?.[draftIndex];
 				const nextValue = option?.value;
+				const nextAnchor = this.resolveCommittedQuickWindowAnchorAfterSelection(key, control, nextValue);
 
 				if (this.isMutating || !control || !option || !nextValue || nextValue === control.value) return true;
 
 				if (this.isDemoMode) {
-					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: nextValue };
+					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: nextAnchor };
 					this.applyDemoSettingUpdate(key, nextValue);
 					return true;
 				}
@@ -508,7 +576,7 @@
 				try {
 					await this.persistSettingByKey(key, nextValue);
 					await this.retryInitialLoad();
-					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: nextValue };
+					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: nextAnchor };
 					return true;
 				} catch (error) {
 					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: previousAnchor };
@@ -527,6 +595,7 @@
 
 				this.activeCustomPickerKey = '';
 				this.customPickerDraftIndices = {};
+				this.customPickerPreviewValues = {};
 			},
 			async handleCustomPickerPreviewChange(key, payload) {
 				const index = payload?.index;
@@ -538,8 +607,8 @@
 					...this.customPickerDraftIndices,
 					[key]: index
 				};
-				this.quickWindowAnchors = {
-					...this.quickWindowAnchors,
+				this.customPickerPreviewValues = {
+					...this.customPickerPreviewValues,
 					[key]: value
 				};
 			},
@@ -717,7 +786,7 @@
 		position: fixed;
 		inset: 0;
 		background: rgba(0, 0, 0, 0.01);
-		z-index: 20;
+		z-index: 22;
 	}
 
 	.management-page__dev-reset-text {

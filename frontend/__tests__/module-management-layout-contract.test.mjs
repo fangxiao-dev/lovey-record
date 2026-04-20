@@ -37,6 +37,13 @@ function readModuleShellService() {
 	return fs.readFileSync(moduleShellServicePath, 'utf8');
 }
 
+function createMethodContext(component, overrides = {}) {
+	return {
+		...component.methods,
+		...overrides
+	};
+}
+
 test('module management page uses preview value as the temporary selected chip while custom picker is open', () => {
 	const ModuleManagementPage = loadVueOptions('frontend/components/management/ModuleManagementPage.vue', {
 		buildCenteredQuickOptions,
@@ -51,14 +58,15 @@ test('module management page uses preview value as the temporary selected chip w
 	});
 
 	const row = ModuleManagementPage.methods.buildSettingRow.call(
-		{
+		createMethodContext(ModuleManagementPage, {
 			quickWindowAnchors: { duration: 6 },
 			activeCustomPickerKey: 'duration',
 			customPickerDraftIndices: { duration: 1 },
+			customPickerPreviewValues: { duration: 6 },
 			getActiveCustomPickerDraftIndex(key, fallbackIndex) {
 				return this.customPickerDraftIndices[key] ?? fallbackIndex;
 			}
-		},
+		}),
 		'duration',
 		{
 			label: '经期时长',
@@ -90,14 +98,15 @@ test('module management page keeps the selected chip in sync across consecutive 
 		PageNavBar: {}
 	});
 
-	const baseContext = {
+	const baseContext = createMethodContext(ModuleManagementPage, {
 		quickWindowAnchors: { duration: 6 },
 		activeCustomPickerKey: 'duration',
 		customPickerDraftIndices: { duration: 1 },
+		customPickerPreviewValues: { duration: 6 },
 		getActiveCustomPickerDraftIndex(key, fallbackIndex) {
 			return this.customPickerDraftIndices[key] ?? fallbackIndex;
 		}
-	};
+	});
 
 	const firstRow = ModuleManagementPage.methods.buildSettingRow.call(baseContext, 'duration', {
 		label: '经期时长',
@@ -111,11 +120,12 @@ test('module management page keeps the selected chip in sync across consecutive 
 	});
 
 	const secondRow = ModuleManagementPage.methods.buildSettingRow.call(
-		{
+		createMethodContext(ModuleManagementPage, {
 			...baseContext,
 			quickWindowAnchors: { duration: 7 },
-			customPickerDraftIndices: { duration: 2 }
-		},
+			customPickerDraftIndices: { duration: 2 },
+			customPickerPreviewValues: { duration: 7 }
+		}),
 		'duration',
 		{
 			label: '经期时长',
@@ -133,6 +143,206 @@ test('module management page keeps the selected chip in sync across consecutive 
 	assert.deepStrictEqual(secondRow.options.map((option) => option.selected), [false, false, true]);
 	assert.equal(firstRow.customPickerValueIndex, 1);
 	assert.equal(secondRow.customPickerValueIndex, 2);
+});
+
+test('module management page centers chips on the actual selected value on first load when no anchor is stored', () => {
+	const ModuleManagementPage = loadVueOptions('frontend/components/management/ModuleManagementPage.vue', {
+		buildCenteredQuickOptions,
+		SharedLegendChip: {},
+		ModuleTileCompact: {},
+		ModuleActionRow: {},
+		ModuleSettingStrip: {},
+		LoadingScreen: {},
+		ChangelogEntryRow: {},
+		ChangelogSheet: {},
+		PageNavBar: {}
+	});
+
+	const row = ModuleManagementPage.methods.buildSettingRow.call(
+		createMethodContext(ModuleManagementPage, {
+			quickWindowAnchors: {},
+			activeCustomPickerKey: '',
+			customPickerDraftIndices: {},
+			getActiveCustomPickerDraftIndex(key, fallbackIndex) {
+				return this.customPickerDraftIndices[key] ?? fallbackIndex;
+			}
+		}),
+		'duration',
+		{
+			label: '经期时长',
+			value: 7,
+			customLabel: '自选',
+			options: [
+				{ value: 5, label: '5' },
+				{ value: 6, label: '6' },
+				{ value: 7, label: '7' }
+			],
+			customPickerOptions: Array.from({ length: 15 }, (_, index) => ({
+				value: index + 1,
+				label: String(index + 1)
+			}))
+		}
+	);
+
+	assert.deepStrictEqual(row.options.map((option) => option.value), [6, 7, 8]);
+});
+
+test('module management page keeps the existing quick window after selecting another quick chip inside that window', () => {
+	const ModuleManagementPage = loadVueOptions('frontend/components/management/ModuleManagementPage.vue', {
+		buildCenteredQuickOptions,
+		SharedLegendChip: {},
+		ModuleTileCompact: {},
+		ModuleActionRow: {},
+		ModuleSettingStrip: {},
+		LoadingScreen: {},
+		ChangelogEntryRow: {},
+		ChangelogSheet: {},
+		PageNavBar: {}
+	});
+
+	const row = ModuleManagementPage.methods.buildSettingRow.call(
+		createMethodContext(ModuleManagementPage, {
+			quickWindowAnchors: { duration: 9 },
+			activeCustomPickerKey: '',
+			customPickerDraftIndices: {},
+			getActiveCustomPickerDraftIndex(key, fallbackIndex) {
+				return this.customPickerDraftIndices[key] ?? fallbackIndex;
+			}
+		}),
+		'duration',
+		{
+			label: '经期时长',
+			value: 10,
+			customLabel: '自选',
+			customPickerOptions: Array.from({ length: 15 }, (_, index) => ({
+				value: index + 1,
+				label: String(index + 1)
+			}))
+		}
+	);
+
+	assert.deepStrictEqual(row.options.map((option) => option.value), [8, 9, 10]);
+	assert.deepStrictEqual(row.options.map((option) => option.selected), [false, false, true]);
+});
+
+test('module management page keeps the existing quick window during custom preview when the preview value is already inside it', () => {
+	const ModuleManagementPage = loadVueOptions('frontend/components/management/ModuleManagementPage.vue', {
+		buildCenteredQuickOptions,
+		SharedLegendChip: {},
+		ModuleTileCompact: {},
+		ModuleActionRow: {},
+		ModuleSettingStrip: {},
+		LoadingScreen: {},
+		ChangelogEntryRow: {},
+		ChangelogSheet: {},
+		PageNavBar: {}
+	});
+
+	const row = ModuleManagementPage.methods.buildSettingRow.call(
+		createMethodContext(ModuleManagementPage, {
+			quickWindowAnchors: { duration: 9 },
+			activeCustomPickerKey: 'duration',
+			customPickerDraftIndices: { duration: 9 },
+			customPickerPreviewValues: { duration: 10 },
+			getActiveCustomPickerDraftIndex(key, fallbackIndex) {
+				return this.customPickerDraftIndices[key] ?? fallbackIndex;
+			}
+		}),
+		'duration',
+		{
+			label: '经期时长',
+			value: 8,
+			customLabel: '自选',
+			customPickerOptions: Array.from({ length: 15 }, (_, index) => ({
+				value: index + 1,
+				label: String(index + 1)
+			}))
+		}
+	);
+
+	assert.deepStrictEqual(row.options.map((option) => option.value), [8, 9, 10]);
+	assert.deepStrictEqual(row.options.map((option) => option.selected), [false, false, true]);
+});
+
+test('module management page recenters the quick window during custom preview when the preview value moves outside it', () => {
+	const ModuleManagementPage = loadVueOptions('frontend/components/management/ModuleManagementPage.vue', {
+		buildCenteredQuickOptions,
+		SharedLegendChip: {},
+		ModuleTileCompact: {},
+		ModuleActionRow: {},
+		ModuleSettingStrip: {},
+		LoadingScreen: {},
+		ChangelogEntryRow: {},
+		ChangelogSheet: {},
+		PageNavBar: {}
+	});
+
+	const row = ModuleManagementPage.methods.buildSettingRow.call(
+		createMethodContext(ModuleManagementPage, {
+			quickWindowAnchors: { duration: 9 },
+			activeCustomPickerKey: 'duration',
+			customPickerDraftIndices: { duration: 10 },
+			customPickerPreviewValues: { duration: 11 },
+			getActiveCustomPickerDraftIndex(key, fallbackIndex) {
+				return this.customPickerDraftIndices[key] ?? fallbackIndex;
+			}
+		}),
+		'duration',
+		{
+			label: '经期时长',
+			value: 8,
+			customLabel: '自选',
+			customPickerOptions: Array.from({ length: 15 }, (_, index) => ({
+				value: index + 1,
+				label: String(index + 1)
+			}))
+		}
+	);
+
+	assert.deepStrictEqual(row.options.map((option) => option.value), [10, 11, 12]);
+	assert.deepStrictEqual(row.options.map((option) => option.selected), [false, true, false]);
+});
+
+test('module management page shows picker preview value in summary display when picker is active', () => {
+	const ModuleManagementPage = loadVueOptions('frontend/components/management/ModuleManagementPage.vue', {
+		buildCenteredQuickOptions,
+		SharedLegendChip: {},
+		ModuleTileCompact: {},
+		ModuleActionRow: {},
+		ModuleSettingStrip: {},
+		LoadingScreen: {},
+		ChangelogEntryRow: {},
+		ChangelogSheet: {},
+		PageNavBar: {}
+	});
+
+	const display = ModuleManagementPage.methods.resolvedSummaryDisplay.call(
+		{ activeCustomPickerKey: 'duration', customPickerPreviewValues: { duration: 10 } },
+		'duration',
+		'7 天'
+	);
+	assert.equal(display, '10 天');
+});
+
+test('module management page shows server value in summary display when picker is inactive', () => {
+	const ModuleManagementPage = loadVueOptions('frontend/components/management/ModuleManagementPage.vue', {
+		buildCenteredQuickOptions,
+		SharedLegendChip: {},
+		ModuleTileCompact: {},
+		ModuleActionRow: {},
+		ModuleSettingStrip: {},
+		LoadingScreen: {},
+		ChangelogEntryRow: {},
+		ChangelogSheet: {},
+		PageNavBar: {}
+	});
+
+	const display = ModuleManagementPage.methods.resolvedSummaryDisplay.call(
+		{ activeCustomPickerKey: '', customPickerPreviewValues: {} },
+		'duration',
+		'7 天'
+	);
+	assert.equal(display, '7 天');
 });
 
 test('module management page uses compact module tiles, split action layout, and inline custom pickers', () => {
@@ -163,6 +373,10 @@ test('module management page uses compact module tiles, split action layout, and
 	assert.match(settingStripSource, /pickerAlign:\s*\{\s*type:\s*String,/);
 	assert.match(settingStripSource, /resolvedPickerAlign\(\)/);
 	assert.match(settingStripSource, /custom-preview-change/);
+	assert.match(settingStripSource, /'confirm'/);
+	assert.match(pageSource, /@confirm="handleCustomPickerBackdropTap"/);
+	assert.match(pageSource, /resolvedSummaryDisplay/);
+	assert.doesNotMatch(settingStripSource, /module-setting-strip__chip--selected/);
 	assert.match(pageSource, /quickWindowAnchors/);
 	assert.match(pageSource, /buildCenteredQuickOptions/);
 	assert.match(pageSource, /customPickerDraftIndices/);

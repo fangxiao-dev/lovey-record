@@ -19,27 +19,22 @@
 					v-for="option in options"
 					:key="option.value"
 					class="module-setting-strip__chip"
-					:class="{ 'module-setting-strip__chip--selected': option.selected }"
 					hover-class="ui-pressable-hover"
 					:hover-stay-time="70"
 					@tap="$emit('select', option.value)"
 				>
-					<text class="module-setting-strip__chip-text" :class="{ 'module-setting-strip__chip-text--selected': option.selected }">
+					<text class="module-setting-strip__chip-text">
 						{{ option.label }}
 					</text>
 				</view>
 
 				<view
 					class="module-setting-strip__chip module-setting-strip__chip--custom"
-					:class="{ 'module-setting-strip__chip--selected': customPickerVisible }"
 					hover-class="ui-pressable-hover"
 					:hover-stay-time="70"
 					@tap="$emit('custom')"
 				>
-					<text
-						class="module-setting-strip__chip-text module-setting-strip__chip-text--custom"
-						:class="{ 'module-setting-strip__chip-text--selected': customPickerVisible }"
-					>
+					<text class="module-setting-strip__chip-text module-setting-strip__chip-text--custom">
 						{{ customLabel }}
 					</text>
 				</view>
@@ -56,6 +51,7 @@
 						indicator-style="height: 44rpx; border-radius: 22rpx; background: transparent; border: 2rpx solid rgba(216, 154, 141, 0.24);"
 						mask-style="background: linear-gradient(180deg, rgba(246, 243, 238, 0.92) 0%, rgba(246, 243, 238, 0.18) 100%); pointer-events: none;"
 						@change="handlePickerChange"
+						@tap="$emit('confirm')"
 					>
 						<picker-view-column>
 							<view
@@ -76,7 +72,7 @@
 <script>
 	export default {
 		name: 'ModuleSettingStrip',
-		emits: ['select', 'custom', 'custom-preview-change'],
+		emits: ['select', 'custom', 'custom-preview-change', 'confirm'],
 		props: {
 			label: {
 				type: String,
@@ -202,11 +198,6 @@
 		overflow: hidden;
 	}
 
-	.module-setting-strip__chip--selected {
-		background: $accent-period-soft;
-		border-color: $accent-period;
-	}
-
 	.module-setting-strip__chip--custom {
 		/* inherits fixed 72rpx width from base chip */
 	}
@@ -215,11 +206,6 @@
 		font-size: $font-size-caption;
 		line-height: 1;
 		color: $text-secondary;
-	}
-
-	.module-setting-strip__chip-text--selected {
-		color: $accent-period;
-		font-weight: $font-weight-title;
 	}
 
 	.module-setting-strip__chip-text--custom {
