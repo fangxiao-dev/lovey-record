@@ -129,8 +129,10 @@
 
 	const LONG_PRESS_DELAY = 400; // ms
 	const MOVE_CANCEL_THRESHOLD = 10; // px
+	const GESTURE_LOCK_THRESHOLD = 12; // px
 	const SWIPE_THRESHOLD = 48; // px
 	const SWIPE_AXIS_RATIO = 1.5;
+	const HORIZONTAL_LOCK_RATIO = 1.35;
 
 	function normalizeVariant(variant) {
 		return SELECT_VARIANT_REVERSE_MAP[variant] || variant;
@@ -261,6 +263,7 @@
 				touchStartY: 0,
 				touchCurrentX: 0,
 				touchCurrentY: 0,
+				gestureAxisLock: null,
 				swipeCancelled: false,
 				cellRects: null,
 				suppressTapUntil: 0,
@@ -441,6 +444,7 @@
 				this.touchStartY = clientY;
 				this.touchCurrentX = clientX;
 				this.touchCurrentY = clientY;
+				this.gestureAxisLock = null;
 				this.swipeCancelled = false;
 				this.longPressStartedAt = Date.now();
 				if (this.longPressTimer) {
@@ -457,12 +461,21 @@
 				this.touchCurrentY = clientY;
 				const dx = clientX - this.touchStartX;
 				const dy = clientY - this.touchStartY;
+				const absDx = Math.abs(dx);
+				const absDy = Math.abs(dy);
+
+				if (!this.gestureAxisLock && (absDx >= GESTURE_LOCK_THRESHOLD || absDy >= GESTURE_LOCK_THRESHOLD)) {
+					this.gestureAxisLock = absDx >= absDy * HORIZONTAL_LOCK_RATIO ? 'horizontal' : 'vertical';
+				}
 
 				if (this.longPressTimer) {
-					if (Math.abs(dx) > MOVE_CANCEL_THRESHOLD || Math.abs(dy) > MOVE_CANCEL_THRESHOLD) {
+					if (absDx > MOVE_CANCEL_THRESHOLD || absDy > MOVE_CANCEL_THRESHOLD) {
 						clearTimeout(this.longPressTimer);
 						this.longPressTimer = null;
-						this.swipeCancelled = true;
+						this.swipeCancelled = this.gestureAxisLock === 'horizontal';
+						if (this.gestureAxisLock === 'horizontal' && typeof e?.preventDefault === 'function') {
+							e.preventDefault();
+						}
 					}
 					return;
 				}
@@ -486,6 +499,11 @@
 						return;
 					}
 					extendBatchFromPoint();
+					return;
+				}
+
+				if (this.gestureAxisLock === 'horizontal' && typeof e?.preventDefault === 'function') {
+					e.preventDefault();
 				}
 			},
 
@@ -514,6 +532,7 @@
 					}
 				}
 				this.swipeCancelled = false;
+				this.gestureAxisLock = null;
 				this.longPressStartedAt = 0;
 			},
 

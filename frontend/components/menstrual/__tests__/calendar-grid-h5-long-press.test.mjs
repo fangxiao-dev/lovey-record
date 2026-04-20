@@ -123,6 +123,68 @@ test('CalendarGrid only prevents touchmove scrolling while batch drag is active'
 	assert.equal(preventCount, 1);
 });
 
+test('CalendarGrid locks a meaningful horizontal drag and prevents vertical page scrolling before swipe commit', () => {
+	const CalendarGrid = loadCalendarGrid();
+	let preventCount = 0;
+	const ctx = {
+		gestureAxisLock: null,
+		swipeCancelled: false,
+		longPressTimer: { token: true },
+		batchMode: false,
+		touchStartX: 100,
+		touchStartY: 50,
+		touchCurrentX: 100,
+		touchCurrentY: 50,
+		cellRects: [],
+		allCells: [],
+		$emit() {
+			throw new Error('no grid event should emit while the gesture is still moving');
+		}
+	};
+
+	CalendarGrid.methods.handlePointerMove.call(ctx, 118, 54, {
+		preventDefault() {
+			preventCount += 1;
+		}
+	});
+
+	assert.equal(ctx.gestureAxisLock, 'horizontal');
+	assert.equal(ctx.swipeCancelled, true);
+	assert.equal(ctx.longPressTimer, null);
+	assert.equal(preventCount, 1);
+});
+
+test('CalendarGrid treats ambiguous diagonal movement as vertical and keeps page scroll available', () => {
+	const CalendarGrid = loadCalendarGrid();
+	let preventCount = 0;
+	const ctx = {
+		gestureAxisLock: null,
+		swipeCancelled: false,
+		longPressTimer: { token: true },
+		batchMode: false,
+		touchStartX: 100,
+		touchStartY: 50,
+		touchCurrentX: 100,
+		touchCurrentY: 50,
+		cellRects: [],
+		allCells: [],
+		$emit() {
+			throw new Error('no swipe should emit during move');
+		}
+	};
+
+	CalendarGrid.methods.handlePointerMove.call(ctx, 112, 64, {
+		preventDefault() {
+			preventCount += 1;
+		}
+	});
+
+	assert.equal(ctx.gestureAxisLock, 'vertical');
+	assert.equal(ctx.swipeCancelled, false);
+	assert.equal(ctx.longPressTimer, null);
+	assert.equal(preventCount, 0);
+});
+
 test('CalendarGrid treats a stationary long press release as batch entry once the hold duration has elapsed', () => {
 	const CalendarGrid = loadCalendarGrid();
 	let started = 0;
@@ -263,6 +325,7 @@ test('CalendarGrid emits swipe navigation after a horizontal gesture cancels lon
 	const CalendarGrid = loadCalendarGrid();
 	const emitted = [];
 	const ctx = {
+		gestureAxisLock: 'horizontal',
 		swipeCancelled: false,
 		longPressTimer: { token: true },
 		batchMode: false,
@@ -283,6 +346,31 @@ test('CalendarGrid emits swipe navigation after a horizontal gesture cancels lon
 	CalendarGrid.methods.finishLongPress.call(ctx);
 
 	assert.deepEqual(emitted, ['swipe-right']);
+	assert.equal(ctx.swipeCancelled, false);
+});
+
+test('CalendarGrid does not emit swipe navigation after a vertical locked drag', () => {
+	const CalendarGrid = loadCalendarGrid();
+	const emitted = [];
+	const ctx = {
+		gestureAxisLock: 'vertical',
+		swipeCancelled: false,
+		longPressTimer: { token: true },
+		batchMode: false,
+		touchStartX: 100,
+		touchStartY: 50,
+		touchCurrentX: 100,
+		touchCurrentY: 50,
+		longPressStartedAt: Date.now() - 50,
+		$emit(eventName) {
+			emitted.push(eventName);
+		}
+	};
+
+	CalendarGrid.methods.handlePointerMove.call(ctx, 112, 80, null);
+	CalendarGrid.methods.finishLongPress.call(ctx);
+
+	assert.deepEqual(emitted, []);
 	assert.equal(ctx.swipeCancelled, false);
 });
 
