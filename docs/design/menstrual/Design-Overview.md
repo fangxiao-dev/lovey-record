@@ -41,6 +41,7 @@ The module must prove:
 - [date-state-spec.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/date-state-spec.md)
 - [token-component-mapping.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/token-component-mapping.md)
 - [function-recording-model.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/function-recording-model.md)
+- [Investigate-calendar-browse-performance.md](/D:/CodeSpace/hbuilder-projects/lovey-record/docs/design/menstrual/Investigate-calendar-browse-performance.md)
 
 ## Upstream References
 

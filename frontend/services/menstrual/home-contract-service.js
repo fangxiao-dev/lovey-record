@@ -13,6 +13,11 @@ export const DEFAULT_MENSTRUAL_HOME_CONTEXT = Object.freeze({
 	today: new Date().toLocaleDateString('en-CA')
 });
 
+const MEMORY_CACHE_TTL_MS = 5 * 60 * 1000;
+const calendarWindowMemoryCache = new Map();
+const dayDetailMemoryCache = new Map();
+const singleDayActionMemoryCache = new Map();
+
 function toDateOnly(value) {
 	return new Date(`${value}T00:00:00.000Z`);
 }
@@ -55,6 +60,159 @@ function getResolvedFocusDate({ homeView, activeDate, focusDate, today }) {
 		|| homeView.currentStatusSummary?.anchorDate
 		|| homeView.predictionSummary?.predictedStartDate
 		|| today;
+}
+
+function buildCalendarWindowCacheKey({
+	moduleInstanceId,
+	profileId,
+	viewMode,
+	startDate,
+	endDate
+}) {
+	return [
+		moduleInstanceId,
+		profileId,
+		viewMode,
+		startDate,
+		endDate
+	].join('::');
+}
+
+function buildDayDetailCacheKey({
+	moduleInstanceId,
+	profileId,
+	date
+}) {
+	return [
+		moduleInstanceId,
+		profileId,
+		date
+	].join('::');
+}
+
+function buildSingleDayActionCacheKey({
+	moduleInstanceId,
+	date
+}) {
+	return [
+		moduleInstanceId,
+		date
+	].join('::');
+}
+
+function isFreshCacheEntry(entry, now = Date.now()) {
+	return Boolean(entry) && now - entry.cachedAt < MEMORY_CACHE_TTL_MS;
+}
+
+async function loadWithMemoryCache({ store, key, meta, loader }) {
+	const entry = store.get(key);
+	if (isFreshCacheEntry(entry)) {
+		return entry.value;
+	}
+
+	const value = await loader();
+	store.set(key, {
+		value,
+		meta: meta || null,
+		cachedAt: Date.now()
+	});
+	return value;
+}
+
+function deleteCacheEntries(store, predicate) {
+	for (const [key, entry] of store.entries()) {
+		if (predicate(entry)) {
+			store.delete(key);
+		}
+	}
+}
+
+function rangesOverlap(startA, endA, startB, endB) {
+	return startA <= endB && startB <= endA;
+}
+
+export function invalidateMenstrualCalendarCacheForRange({
+	moduleInstanceId,
+	profileId,
+	focusDate,
+	viewMode
+}) {
+	if (!moduleInstanceId || !profileId || !focusDate) {
+		return;
+	}
+
+	const range = createCalendarQueryRange({
+		focusDate,
+		viewMode: viewMode || 'three-week'
+	});
+
+	deleteCacheEntries(calendarWindowMemoryCache, (entry) => {
+		const meta = entry?.meta;
+		if (!meta) return false;
+		if (meta.moduleInstanceId !== moduleInstanceId) return false;
+		if (meta.profileId !== profileId) return false;
+		return rangesOverlap(meta.startDate, meta.endDate, range.startDate, range.endDate);
+	});
+}
+
+export function invalidateMenstrualDayCachesForDate({
+	moduleInstanceId,
+	profileId,
+	date
+}) {
+	if (!moduleInstanceId || !date) {
+		return;
+	}
+
+	deleteCacheEntries(dayDetailMemoryCache, (entry) => {
+		const meta = entry?.meta;
+		if (!meta) return false;
+		return meta.moduleInstanceId === moduleInstanceId
+			&& meta.profileId === profileId
+			&& meta.date === date;
+	});
+
+	deleteCacheEntries(singleDayActionMemoryCache, (entry) => {
+		const meta = entry?.meta;
+		if (!meta) return false;
+		return meta.moduleInstanceId === moduleInstanceId
+			&& meta.date === date;
+	});
+}
+
+export function invalidateMenstrualBrowseCacheByScopes({
+	affectedScopes,
+	moduleInstanceId,
+	profileId,
+	activeDate,
+	focusDate,
+	viewMode
+} = {}) {
+	if (!Array.isArray(affectedScopes) || affectedScopes.length === 0) {
+		return;
+	}
+
+	if (affectedScopes.includes('calendar')) {
+		invalidateMenstrualCalendarCacheForRange({
+			moduleInstanceId,
+			profileId,
+			focusDate: focusDate || activeDate,
+			viewMode
+		});
+	}
+
+	if (affectedScopes.includes('dayDetail')) {
+		invalidateMenstrualDayCachesForDate({
+			moduleInstanceId,
+			profileId,
+			date: activeDate
+		});
+	}
+
+	if (affectedScopes.includes('prediction')) {
+		deleteCacheEntries(calendarWindowMemoryCache, (entry) => entry?.meta?.moduleInstanceId === moduleInstanceId);
+		deleteCacheEntries(singleDayActionMemoryCache, (entry) => entry?.meta?.moduleInstanceId === moduleInstanceId);
+	}
 }
 
 export function createCalendarQueryRange({ focusDate, viewMode }) {
@@ -106,14 +264,26 @@ export async function loadMenstrualHomeView(context = {}) {
 }
 
 export async function getSingleDayPeriodAction({ apiBaseUrl, openid, moduleInstanceId, date }) {
-	return queryEnvelope({
-		apiBaseUrl,
-		openid,
-		path: '/api/queries/getSingleDayPeriodAction',
-		data: {
+	const key = buildSingleDayActionCacheKey({
+		moduleInstanceId,
+		date
+	});
+	return loadWithMemoryCache({
+		store: singleDayActionMemoryCache,
+		key,
+		meta: {
 			moduleInstanceId,
 			date
-		}
+		},
+		loader: () => queryEnvelope({
+			apiBaseUrl,
+			openid,
+			path: '/api/queries/getSingleDayPeriodAction',
+			data: {
+				moduleInstanceId,
+				date
+			}
+		})
 	});
 }
 
@@ -137,17 +307,35 @@ export async function loadMenstrualCalendarWindow(context = {}) {
 		focusDate: resolved.focusDate || resolved.today,
 		viewMode
 	});
+	const cacheKey = buildCalendarWindowCacheKey({
+		moduleInstanceId: resolved.moduleInstanceId,
+		profileId: resolved.profileId,
+		viewMode,
+		startDate: calendarRange.startDate,
+		endDate: calendarRange.endDate
+	});
 
-	const calendarWindow = await queryEnvelope({
-		apiBaseUrl: resolved.apiBaseUrl,
-		openid: resolved.openid,
-		path: '/api/queries/getCalendarWindow',
-		data: {
+	const calendarWindow = await loadWithMemoryCache({
+		store: calendarWindowMemoryCache,
+		key: cacheKey,
+		meta: {
 			moduleInstanceId: resolved.moduleInstanceId,
 			profileId: resolved.profileId,
+			viewMode,
 			startDate: calendarRange.startDate,
 			endDate: calendarRange.endDate
-		}
+		},
+		loader: () => queryEnvelope({
+			apiBaseUrl: resolved.apiBaseUrl,
+			openid: resolved.openid,
+			path: '/api/queries/getCalendarWindow',
+			data: {
+				moduleInstanceId: resolved.moduleInstanceId,
+				profileId: resolved.profileId,
+				startDate: calendarRange.startDate,
+				endDate: calendarRange.endDate
+			}
+		})
 	});
 
 	return {
@@ -160,16 +348,37 @@ export async function loadMenstrualCalendarWindow(context = {}) {
 
 export async function loadMenstrualDayDetail(context = {}) {
 	const resolved = { ...DEFAULT_MENSTRUAL_HOME_CONTEXT, ...context };
-	return queryEnvelope({
-		apiBaseUrl: resolved.apiBaseUrl,
-		openid: resolved.openid,
-		path: '/api/queries/getDayRecordDetail',
-		data: {
+	const date = resolved.activeDate || resolved.today;
+	const cacheKey = buildDayDetailCacheKey({
+		moduleInstanceId: resolved.moduleInstanceId,
+		profileId: resolved.profileId,
+		date
+	});
+	return loadWithMemoryCache({
+		store: dayDetailMemoryCache,
+		key: cacheKey,
+		meta: {
 			moduleInstanceId: resolved.moduleInstanceId,
 			profileId: resolved.profileId,
-			date: resolved.activeDate || resolved.today
-		}
+			date
+		},
+		loader: () => queryEnvelope({
+			apiBaseUrl: resolved.apiBaseUrl,
+			openid: resolved.openid,
+			path: '/api/queries/getDayRecordDetail',
+			data: {
+				moduleInstanceId: resolved.moduleInstanceId,
+				profileId: resolved.profileId,
+				date
+			}
+		})
 	});
+}
+
+export function __resetMenstrualHomeMemoryCacheForTest() {
+	calendarWindowMemoryCache.clear();
+	dayDetailMemoryCache.clear();
+	singleDayActionMemoryCache.clear();
 }
 
 export async function loadMenstrualHomePageModel(context = {}) {

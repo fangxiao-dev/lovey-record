@@ -305,6 +305,7 @@
 	import {
 		DEFAULT_MENSTRUAL_HOME_CONTEXT,
 		getSingleDayPeriodAction,
+		invalidateMenstrualBrowseCacheByScopes,
 		loadMenstrualCalendarWindow,
 		loadMenstrualDayDetail,
 		loadMenstrualHomeView,
@@ -898,6 +899,16 @@
 							: '写入成功，但主页摘要刷新失败';
 					});
 			},
+			invalidateBrowseCache(scopes) {
+				invalidateMenstrualBrowseCacheByScopes({
+					affectedScopes: scopes,
+					moduleInstanceId: this.contractContext.moduleInstanceId,
+					profileId: this.contractContext.profileId,
+					activeDate: this.activeDate,
+					focusDate: this.focusDate,
+					viewMode: this.viewMode
+				});
+			},
 			async refreshByScopes(scopes) {
 				const plan = resolveRefreshPlan(scopes);
 				switch (plan.immediate) {
@@ -1110,6 +1121,7 @@
 				}
 
 				try {
+					this.invalidateBrowseCache(affectedScopes);
 					await this.refreshByScopes(affectedScopes);
 				} catch (error) {
 					this.page = nextPage;
@@ -1133,6 +1145,7 @@
 				}
 
 				try {
+					this.invalidateBrowseCache(affectedScopes);
 					await this.refreshByScopes(affectedScopes);
 				} catch (error) {
 					this.loadError = error instanceof Error ? `写入成功，但刷新失败：${error.message}` : '写入成功，但刷新失败';
@@ -1177,6 +1190,7 @@
 				}
 
 				try {
+					this.invalidateBrowseCache(affectedScopes);
 					await this.refreshByScopes(affectedScopes);
 				} catch (error) {
 					this.page = nextPage;

@@ -53,6 +53,7 @@ Current MVP states:
 
 - `暂无记录`
 - `经期第<N>天`
+- `记录中` with hint `记录更多以生成预测`
 - `卵泡期` with inline hint
 - `排卵期` with amber emphasis and inline hint
 - `黄体期` with inline hint
@@ -63,6 +64,7 @@ Design rule:
 
 - treat this as a reusable `status frame` pattern, not as a one-off menstrual text block
 - `暂无记录` is the pre-history fallback state and should use a neutral empty-state treatment with invitation copy
+- `记录中` is the coarse cycle fallback state for “has historical cycle data, but fine-grained phase is not yet available”; it is neutral, not exceptional
 
 ### Reference Frames
 

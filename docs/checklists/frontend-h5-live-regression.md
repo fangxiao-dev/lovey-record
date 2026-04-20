@@ -58,7 +58,7 @@ Successful execution should end with Playwright passing all current H5 live test
 
 Current expected suite size:
 
-- `10 passed`
+- `20 passed`
 
 If the suite count changes later, update this document and the release-gate references together.
 

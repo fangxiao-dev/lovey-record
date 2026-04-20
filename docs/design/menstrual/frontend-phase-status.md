@@ -47,6 +47,12 @@ Copy the four SVGs from `docs/design-drafts/assets/` into `frontend/static/menst
 
 The `经期第N天` state keeps its existing icon (`frontend/static/icons/coffee.svg`) and layout unchanged.
 If no historical period segment exists yet, `StatusHeroCard` must fall back to the empty state `暂无记录` and show the invitation copy defined in [frontend-home.md](./frontend-home.md); it should not render the phase row or reliability warning.
+If historical data exists but the prediction chain does not yet support fine-grained phase classification, `StatusHeroCard` should render a neutral coarse cycle state instead of pretending the user is in `卵泡期`.
+
+Frozen coarse-state copy:
+
+- primary status: `记录中`
+- hint text: `记录更多以生成预测`
 
 ## Emphasis States
 
@@ -98,7 +104,7 @@ Phase boundary computation, luteal sub-state threshold, and hint variable resolu
 
 ```js
 {
-  phase: '卵泡期' | '排卵期' | '黄体期' | '经期',
+  phase: '卵泡期' | '排卵期' | '黄体期' | '经期' | null,
   isLutealLate: boolean,           // true when 黄体期 && daysUntilNext <= 7
   emphasis: boolean,               // true when 排卵期 or isLutealLate
   hint: string,                    // fully resolved, variables substituted
@@ -107,7 +113,12 @@ Phase boundary computation, luteal sub-state threshold, and hint variable resolu
 }
 ```
 
-The `phase` field uses Chinese string literals throughout — adapter, tests, and component branches must all use the same values. Do not introduce English key aliases.
+Rules:
+
+- when `phase !== null`, the `phase` field uses Chinese string literals throughout — adapter, tests, and component branches must all use the same values
+- `phase = null` means the hero is currently using the neutral coarse cycle state rather than one of the three predicted out-of-period phases
+- the component must not invent its own fallback phase label when `phase = null`; it should use the frozen coarse-state copy supplied by the adapter or parent page
+- phase UI should remain anchored to the same `predictedStartDate` source as the hero `下次` range; do not derive a separate display-only phase timeline inside the component
 
 ## Related Docs
 

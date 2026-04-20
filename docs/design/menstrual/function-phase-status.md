@@ -22,23 +22,59 @@ The four phases cover the complete cycle:
 |---|---|---|
 | 经期 | Period | Day 1 through end of period |
 | 卵泡期 | Follicular | End of period through day before ovulation window |
-| 排卵期 | Ovulation | Around cycle day `cycle_length − 14`, ±1–2 days |
+| 排卵期 | Ovulation | Around predicted ovulation center `predicted_start − 14`, ±2 days |
 | 黄体期 | Luteal | After ovulation window through day before next period |
 
 ### Phase Boundary Rules (MVP)
 
-- **经期**: `today` is within the current period segment
-- **排卵期 window**: centered on `cycle_start + cycle_length − 14`, spanning ±2 days (5-day window)
-- **卵泡期**: between period end and start of ovulation window
-- **黄体期**: between end of ovulation window and next predicted period start
+- The phase model is a **prediction-based cycle classification**, not a claim about the user's exact physiological ovulation day.
+- The frontend should treat `predictionSummary.predictedStartDate` as the primary anchor for out-of-period phase computation so that the hero phase and the hero `下次` range always derive from the same prediction chain.
+- `defaultCycleLengthDays` may still exist as an upstream prediction input, but phase display should not depend on it directly once `predictedStartDate` is available.
+
+Use these derived dates:
+
+- `periodStartDate = currentSegment.startDate`
+- `periodEndDate = currentSegment.endDate`, or `periodStartDate + defaultPeriodDurationDays - 1` when the end date is absent
+- `predictedStartDate = predictionSummary.predictedStartDate`
+- `ovulationCenterDate = predictedStartDate - 14`
+- `ovulationWindowStartDate = ovulationCenterDate - 2`
+- `ovulationWindowEndDate = ovulationCenterDate + 2`
+- `lateLutealStartDate = predictedStartDate - 7`
+
+Then classify with fixed priority:
+
+- **经期**: `today ∈ [periodStartDate, periodEndDate]`
+- **排卵期**: `today ∈ [ovulationWindowStartDate, ovulationWindowEndDate]`
+- **卵泡期**: `today < ovulationWindowStartDate` after the current period ends
+- **黄体期**: `today > ovulationWindowEndDate && today < predictedStartDate`
+
+Priority is mandatory:
+
+- `经期 > 排卵期 > 卵泡期 > 黄体期`
+
+This prevents abnormal user inputs such as a very short cycle or a very long period duration from causing overlapping visual states.
 
 All phase boundaries derive from:
 
-- `lastPeriodStartDate`
+- `currentSegment.startDate`
 - `defaultPeriodDurationDays` (from module settings)
-- `defaultCycleLengthDays` (from module settings)
+- `predictionSummary.predictedStartDate`
 
 No user-entered ovulation or symptom data is consumed in this MVP.
+
+### Incomplete Prediction Fallback
+
+When historical period data exists but the app still cannot safely classify one of the three out-of-period phases, the hero should not present this as an error or abnormal state.
+
+Rules:
+
+- if no historical period segment exists, the home still uses the empty state `暂无记录`
+- if historical period data exists but `predictedStartDate` is unavailable or not yet trustworthy enough for fine-grained phase classification, the hero should enter a **coarse cycle state** rather than forcing `卵泡期`
+- the coarse cycle state is a product-level neutral status for “inside an active cycle, but phase not yet refined”
+- the coarse cycle state's frozen user-facing copy is:
+  - primary status: `记录中`
+  - hint text: `记录更多以生成预测`
+- this coarse cycle state is **not an exception state**
 
 ## Luteal Late-Stage Marker
 
@@ -48,6 +84,8 @@ The luteal phase has an internal sub-state:
 - **黄体期 · 前7天**: from day `nextPeriodPredictedStart − 7` through day before next period
 
 The front-end uses this sub-state to apply amber emphasis. The computation is the same as the luteal phase; only the visual treatment changes.
+
+This is a flag layered on top of `黄体期`, not a fifth phase.
 
 ## Hint Layer
 

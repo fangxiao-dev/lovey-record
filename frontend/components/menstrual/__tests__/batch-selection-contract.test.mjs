@@ -576,6 +576,154 @@ test('home applyBatchAction keeps the latest batch-hovered day instead of the pr
 	assert.equal(persistCalls[0].endDate, '2026-03-24');
 });
 
+test('home runOptimisticMutation invalidates browse cache before refreshing affected scopes', async () => {
+	const calls = [];
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		invalidateMenstrualBrowseCacheByScopes(payload) {
+			calls.push(['invalidate', payload]);
+		}
+	});
+
+	const ctx = {
+		page: { id: 'current-page' },
+		loadError: '',
+		isMutating: false,
+		contractContext: {
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		activeDate: '2026-03-24',
+		focusDate: '2026-03-24',
+		viewMode: 'month',
+		invalidateBrowseCache: home.methods.invalidateBrowseCache,
+		async refreshByScopes(scopes) {
+			calls.push(['refresh', scopes]);
+		}
+	};
+
+	await home.methods.runOptimisticMutation.call(ctx, { id: 'optimistic-page' }, async () => ({
+		affectedScopes: ['calendar', 'prediction']
+	}));
+
+	assert.deepEqual(normalize(calls), [
+		['invalidate', {
+			affectedScopes: ['calendar', 'prediction'],
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile',
+			activeDate: '2026-03-24',
+			focusDate: '2026-03-24',
+			viewMode: 'month'
+		}],
+		['refresh', ['calendar', 'prediction']]
+	]);
+});
+
+test('home runCommand invalidates browse cache before refreshing affected scopes', async () => {
+	const calls = [];
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		invalidateMenstrualBrowseCacheByScopes(payload) {
+			calls.push(['invalidate', payload]);
+		}
+	});
+
+	const ctx = {
+		loadError: '',
+		isMutating: false,
+		contractContext: {
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		activeDate: '2026-03-25',
+		focusDate: '2026-03-24',
+		viewMode: 'three-week',
+		invalidateBrowseCache: home.methods.invalidateBrowseCache,
+		async refreshByScopes(scopes) {
+			calls.push(['refresh', scopes]);
+		}
+	};
+
+	await home.methods.runCommand.call(ctx, async () => ({
+		affectedScopes: ['dayDetail']
+	}));
+
+	assert.deepEqual(normalize(calls), [
+		['invalidate', {
+			affectedScopes: ['dayDetail'],
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile',
+			activeDate: '2026-03-25',
+			focusDate: '2026-03-24',
+			viewMode: 'three-week'
+		}],
+		['refresh', ['dayDetail']]
+	]);
+});
+
+test('home runOptimisticBatchMutation invalidates browse cache before refreshing affected scopes', async () => {
+	const calls = [];
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		invalidateMenstrualBrowseCacheByScopes(payload) {
+			calls.push(['invalidate', payload]);
+		}
+	});
+
+	const ctx = {
+		page: { id: 'previous-page' },
+		panelMode: 'batch',
+		batchStartKey: '2026-03-23',
+		batchEndKey: '2026-03-24',
+		batchHoveredKey: '2026-03-24',
+		batchSelectedKeysState: ['2026-03-23', '2026-03-24'],
+		activeDate: '2026-03-24',
+		loadError: '',
+		isMutating: false,
+		contractContext: {
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		focusDate: '2026-03-24',
+		viewMode: 'month',
+		invalidateBrowseCache: home.methods.invalidateBrowseCache,
+		async refreshByScopes(scopes) {
+			calls.push(['refresh', scopes]);
+		}
+	};
+
+	await home.methods.runOptimisticBatchMutation.call(ctx, { id: 'optimistic-batch-page' }, async () => ({
+		affectedScopes: ['calendar', 'dayDetail', 'prediction']
+	}));
+
+	assert.deepEqual(normalize(calls), [
+		['invalidate', {
+			affectedScopes: ['calendar', 'dayDetail', 'prediction'],
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile',
+			activeDate: '2026-03-24',
+			focusDate: '2026-03-24',
+			viewMode: 'month'
+		}],
+		['refresh', ['calendar', 'dayDetail', 'prediction']]
+	]);
+});
+
 test('home applyBatchAction exits batch mode even while optimistic batch mutation keeps the page in mutating state', async () => {
 	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
 		CalendarGrid: {},
