@@ -3,6 +3,17 @@
 // version format: vMAJOR.MINOR.PATCH
 export default [
   {
+    "version": "v0.5.3",
+    "title": "优化首页和日历体验",
+    "date": "2026-04-20",
+    "anchorCommit": "db75da6d0672c257b162bbe7a5b733e1461aaa68",
+    "changes": [
+      "首页的周期提示更准确了",
+      "月经日历的浏览体验更顺手了",
+      "首页和管理页的视觉与入口更清晰了",
+    ],
+  },
+  {
     "version": "v0.5.2",
     "title": "统一聚焦模式叫法",
     "date": "2026-04-20",
