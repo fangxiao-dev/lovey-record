@@ -41,8 +41,8 @@ function createPhaseHomeReadModel({
 	phaseLabel = '非经期',
 	currentStatus = 'out_of_period',
 	currentSegment = {
-		startDate: '2026-03-01',
-		endDate: '2026-03-05',
+		startDate: '2026-03-24',
+		endDate: '2026-03-28',
 		durationDays: 5
 	},
 	moduleSettings = {
@@ -50,9 +50,9 @@ function createPhaseHomeReadModel({
 		defaultPredictionTermDays: 28
 	},
 	predictionSummary = {
-		predictedStartDate: '2026-03-29',
-		predictionWindowStart: '2026-03-27',
-		predictionWindowEnd: '2026-03-31',
+		predictedStartDate: '2026-04-20',
+		predictionWindowStart: '2026-04-18',
+		predictionWindowEnd: '2026-04-22',
 		basedOnCycleCount: 4
 	}
 } = {}) {
@@ -76,9 +76,9 @@ function createPhaseHomeReadModel({
 	};
 }
 
-test('computePhaseStatus returns 经期 when today is inside the current period segment', () => {
+test('computePhaseStatus returns 经期 when today is inside the period window anchored by the current segment', () => {
 	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
-		today: '2026-03-03',
+		today: '2026-03-26',
 		currentStatus: 'in_period',
 		phaseLabel: '经期第3天'
 	}));
@@ -86,23 +86,23 @@ test('computePhaseStatus returns 经期 when today is inside the current period 
 	assert.equal(phaseStatus.phase, '经期');
 	assert.equal(phaseStatus.emphasis, false);
 	assert.equal(phaseStatus.showReliabilityWarning, false);
-	assert.equal(phaseStatus.daysUntilNextPeriod, 26);
+	assert.equal(phaseStatus.daysUntilNextPeriod, 25);
 });
 
-test('computePhaseStatus returns 卵泡期 without emphasis when today is between period end and ovulation window', () => {
+test('computePhaseStatus returns 卵泡期 before the predicted-start anchored ovulation window', () => {
 	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
-		today: '2026-03-10'
+		today: '2026-04-03'
 	}));
 
 	assert.equal(phaseStatus.phase, '卵泡期');
 	assert.equal(phaseStatus.emphasis, false);
 	assert.equal(phaseStatus.isLutealLate, false);
-	assert.equal(phaseStatus.daysUntilNextPeriod, 19);
+	assert.equal(phaseStatus.daysUntilNextPeriod, 17);
 });
 
-test('computePhaseStatus returns 排卵期 with emphasis inside the ovulation window', () => {
+test('computePhaseStatus returns 排卵期 from predictedStartDate minus fourteen with a ±2 day window', () => {
 	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
-		today: '2026-03-15'
+		today: '2026-04-06'
 	}));
 
 	assert.equal(phaseStatus.phase, '排卵期');
@@ -111,20 +111,20 @@ test('computePhaseStatus returns 排卵期 with emphasis inside the ovulation wi
 	assert.equal(phaseStatus.daysUntilNextPeriod, 14);
 });
 
-test('computePhaseStatus returns 黄体期 without emphasis in early luteal days', () => {
+test('computePhaseStatus returns 黄体期 without emphasis after the ovulation window and before the final seven days', () => {
 	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
-		today: '2026-03-20'
+		today: '2026-04-10'
 	}));
 
 	assert.equal(phaseStatus.phase, '黄体期');
 	assert.equal(phaseStatus.isLutealLate, false);
 	assert.equal(phaseStatus.emphasis, false);
-	assert.equal(phaseStatus.daysUntilNextPeriod, 9);
+	assert.equal(phaseStatus.daysUntilNextPeriod, 10);
 });
 
-test('computePhaseStatus returns 黄体期 with late-stage emphasis in the final seven days before next period', () => {
+test('computePhaseStatus returns 黄体期 with late-stage emphasis in the final seven days before predictedStartDate', () => {
 	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
-		today: '2026-03-24'
+		today: '2026-04-15'
 	}));
 
 	assert.equal(phaseStatus.phase, '黄体期');
@@ -133,13 +133,50 @@ test('computePhaseStatus returns 黄体期 with late-stage emphasis in the final
 	assert.equal(phaseStatus.daysUntilNextPeriod, 5);
 });
 
+test('computePhaseStatus returns a coarse fallback when historical data exists but predictionSummary is missing', () => {
+	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
+		today: '2026-04-10',
+		predictionSummary: null
+	}));
+
+	assert.deepEqual(phaseStatus, {
+		phase: null,
+		emphasis: false,
+		isLutealLate: false,
+		hint: '记录更多以生成预测',
+		showReliabilityWarning: false,
+		daysUntilNextPeriod: null
+	});
+});
+
+test('computePhaseStatus returns a coarse fallback when predictedStartDate is unavailable', () => {
+	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
+		today: '2026-04-10',
+		predictionSummary: {
+			predictedStartDate: null,
+			predictionWindowStart: null,
+			predictionWindowEnd: null,
+			basedOnCycleCount: 2
+		}
+	}));
+
+	assert.deepEqual(phaseStatus, {
+		phase: null,
+		emphasis: false,
+		isLutealLate: false,
+		hint: '记录更多以生成预测',
+		showReliabilityWarning: true,
+		daysUntilNextPeriod: null
+	});
+});
+
 test('computePhaseStatus enables the reliability warning when period record count is below three', () => {
 	const phaseStatus = computePhaseStatus(createPhaseHomeReadModel({
-		today: '2026-03-15',
+		today: '2026-04-06',
 		predictionSummary: {
-			predictedStartDate: '2026-03-29',
-			predictionWindowStart: '2026-03-27',
-			predictionWindowEnd: '2026-03-31',
+			predictedStartDate: '2026-04-20',
+			predictionWindowStart: '2026-04-18',
+			predictionWindowEnd: '2026-04-22',
 			basedOnCycleCount: 2
 		}
 	}));
@@ -150,7 +187,7 @@ test('computePhaseStatus enables the reliability warning when period record coun
 
 test('computePhaseStatus resolves the luteal late countdown hint using daysUntilNextPeriod', () => {
 	const phaseInput = createPhaseHomeReadModel({
-		today: '2026-03-24'
+		today: '2026-04-15'
 	});
 	const phaseStatus = computePhaseStatus(phaseInput);
 
@@ -286,6 +323,59 @@ test('home contract adapter falls back to 暂无记录 when there is no historic
 			['next-period', '向后', true]
 		]
 	);
+});
+
+test('createMenstrualHomePageModel exposes a coarse out-of-period hero state instead of silently defaulting to 卵泡期', () => {
+	const model = createMenstrualHomePageModel({
+		homeView: {
+			moduleInstanceId: 'coarse-home-module',
+			sharingStatus: 'private',
+			currentStatusSummary: {
+				currentStatus: 'out_of_period',
+				anchorDate: '2026-04-10',
+				currentSegment: {
+					startDate: '2026-03-24',
+					endDate: '2026-03-28',
+					durationDays: 5
+				},
+				statusCard: { label: '非经期' },
+				previousSegment: null
+			},
+			predictionSummary: null,
+			historicalPeriodStarts: ['2026-03-24'],
+			calendarMarks: [
+				{ date: '2026-03-24', kind: 'period_start' },
+				{ date: '2026-03-25', kind: 'period' }
+			]
+		},
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'coarse-home-module',
+			profileId: 'coarse-home-profile',
+			date: '2026-04-10'
+		}),
+		moduleSettings: {
+			defaultPeriodDurationDays: 5,
+			defaultPredictionTermDays: 28
+		},
+		today: '2026-04-10',
+		viewMode: 'three-week',
+		focusDate: '2026-04-10'
+	});
+
+	assert.deepEqual(model.heroCard.statusFrame, {
+		state: 'out_of_period',
+		text: '记录中',
+		iconUrl: '/static/icons/coffee.svg',
+		phaseStatus: {
+			phase: null,
+			emphasis: false,
+			isLutealLate: false,
+			hint: '记录更多以生成预测',
+			showReliabilityWarning: false,
+			daysUntilNextPeriod: null
+		},
+		emptyStateCopy: ''
+	});
 });
 
 test('home contract adapter builds the calendar from getCalendarWindow and preserves the requested view mode', () => {
