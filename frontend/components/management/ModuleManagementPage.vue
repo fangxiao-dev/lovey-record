@@ -33,6 +33,14 @@
 				<text class="management-board__continuation u-text-caption">{{ page.moduleBoard.continuationText }}</text>
 			</view>
 
+			<view v-if="selectedModule && page.managementCard" class="management-page__bridge" aria-hidden="true">
+				<view class="management-page__bridge-line"></view>
+				<view class="management-page__bridge-node">
+					<view class="management-page__bridge-node-core"></view>
+				</view>
+				<view class="management-page__bridge-line"></view>
+			</view>
+
 			<view v-if="selectedModule && page.managementCard" class="management-card ui-card">
 				<view class="management-card__header ui-card__header">
 					<view class="management-card__title-block">
@@ -668,14 +676,51 @@
 	.management-page__body {
 		display: flex;
 		flex-direction: column;
-		gap: 16rpx;
-		padding: 16rpx $page-padding-x 48rpx;
+		gap: 18rpx;
+		padding: 24rpx $page-padding-x 48rpx;
 	}
 
 	.management-board,
 	.management-card,
 	.management-page__state-card {
 		background: #ffffff;
+	}
+
+	.management-page__bridge {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 16rpx;
+		padding: 2rpx 20rpx 0;
+		margin: -4rpx 0 -2rpx;
+	}
+
+	.management-page__bridge-line {
+		flex: 1;
+		max-width: 96rpx;
+		height: 2rpx;
+		background: linear-gradient(90deg, rgba(232, 196, 182, 0) 0%, rgba(232, 196, 182, 0.75) 48%, rgba(232, 196, 182, 0) 100%);
+	}
+
+	.management-page__bridge-node {
+		width: 44rpx;
+		height: 44rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 999rpx;
+		background: linear-gradient(180deg, rgba(255, 253, 251, 0.98) 0%, rgba(252, 243, 237, 0.98) 100%);
+		border: 2rpx solid rgba(234, 202, 188, 0.9);
+		box-shadow:
+			0 8rpx 18rpx rgba(208, 160, 142, 0.12),
+			inset 0 1rpx 0 rgba(255, 255, 255, 0.95);
+	}
+
+	.management-page__bridge-node-core {
+		width: 14rpx;
+		height: 14rpx;
+		border-radius: 999rpx;
+		background: radial-gradient(circle at 35% 35%, #f9d9cb 0%, #e4b09d 72%, #d89a8d 100%);
 	}
 
 	/* ── Module board title ─────────────────────────────────────── */
