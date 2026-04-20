@@ -1,12 +1,11 @@
 <template>
 	<view class="management-page">
 		<template v-if="page">
-			<PageNavBar title="记录空间" icon-src="/static/management/setting-mirror.svg" />
+			<PageNavBar title="记录空间" icon-src="/static/management/toolkit_pekomon.svg" />
 			<view class="management-page__body">
 			<view class="management-board ui-card">
 				<view class="management-board__header ui-card__header">
 					<view class="management-board__title-group">
-						<image class="management-board__title-icon" src="/static/management/toolkit_pekomon.svg" mode="aspectFit" />
 						<text class="management-board__title u-text-title-sm">{{ page.moduleBoard.title }}</text>
 					</view>
 					<view class="management-board__legend">
@@ -604,18 +603,10 @@
 		background: #ffffff;
 	}
 
-	/* ── Module board title with icon ─────────────────────────────── */
+	/* ── Module board title ─────────────────────────────────────── */
 	.management-board__title-group {
 		display: flex;
 		align-items: center;
-		gap: 10rpx;
-	}
-
-	.management-board__title-icon {
-		width: 40rpx;
-		height: 40rpx;
-		flex-shrink: 0;
-		border-radius: 50%;
 	}
 
 	.management-card {
