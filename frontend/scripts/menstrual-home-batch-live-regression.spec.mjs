@@ -30,7 +30,6 @@ const FRONTEND_URL = process.env.MENSTRUAL_HOME_URL || buildFrontendUrl(HOME_ROU
 
 async function dismissChangelogSheetIfPresent(page) {
 	const overlay = page.locator('.changelog-sheet__overlay');
-	await overlay.first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
 	if (await overlay.count()) {
 		await overlay.first().click({ force: true });
 		await page.waitForTimeout(300);
@@ -283,6 +282,61 @@ async function selectAdjacentQuickSettingChip(page, rowLabel, currentValue) {
 	}
 
 	throw new Error(`No adjacent quick chip found for ${rowLabel} current value ${currentValue}`);
+}
+
+function getSettingRow(page, rowLabel) {
+	return page.locator('.module-setting-strip').filter({ hasText: rowLabel });
+}
+
+async function openCustomPicker(page, rowLabel) {
+	const row = getSettingRow(page, rowLabel);
+	await row.locator('.module-setting-strip__chip--custom').evaluate((node) => {
+		node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+	});
+	await expect(row.locator('.module-setting-strip__picker-card')).toBeVisible();
+	return row;
+}
+
+function getSelectedNumericQuickChip(row) {
+	return row
+		.locator('.module-setting-strip__chip--selected')
+		.filter({ hasNotText: '自选' });
+}
+
+async function previewCustomPickerValue(page, rowLabel, targetLabel) {
+	const optionTexts = await getSettingRow(page, rowLabel).locator('.module-setting-strip__picker-text').allTextContents();
+	const targetIndex = optionTexts.findIndex((text) => text.trim() === String(targetLabel));
+
+	if (targetIndex < 0) {
+		throw new Error(`No picker option "${targetLabel}" found for ${rowLabel}`);
+	}
+
+	await page.evaluate(async ({ resolvedRowLabel, nextIndex, nextValue }) => {
+		const nodes = [...document.querySelectorAll('.module-setting-strip')];
+		const node = nodes.find((item) => item.textContent.includes(resolvedRowLabel));
+		if (!node) {
+			throw new Error(`No module-setting-strip found for ${resolvedRowLabel}`);
+		}
+
+		let current = node.__vueParentComponent;
+		while (current && (current.type?.name || current.type?.__name) !== 'ModuleManagementPage') {
+			current = current.parent;
+		}
+		if (!current?.proxy) {
+			throw new Error('ModuleManagementPage instance not found');
+		}
+
+		const vm = current.proxy;
+		await vm.handleCustomPickerPreviewChange(
+			resolvedRowLabel === '周期天数' ? 'prediction' : 'duration',
+			{ value: nextValue, index: nextIndex }
+		);
+		await vm.$nextTick();
+	}, {
+		resolvedRowLabel: rowLabel,
+		nextIndex: targetIndex,
+		nextValue: Number(targetLabel)
+	});
 }
 
 async function getCellLabelClasses(page, days) {
@@ -609,6 +663,36 @@ test('owner shell can update the default period duration from the live settings 
 		await page.waitForTimeout(1200);
 		await expect(page.locator('.management-card__summary-item').filter({ hasText: '经期时长' })).toContainText(`${updatedDuration} 天`);
 		await expect(page.locator('.module-setting-strip').filter({ hasText: '经期天数' }).locator('.module-setting-strip__chip--selected')).toContainText(`${updatedDuration}`);
+	} finally {
+		await ensureDefaultPeriodDuration(6);
+	}
+});
+
+test('owner shell keeps custom-picker preview and confirmed selection aligned for default period duration', async ({ page }) => {
+	await ensureDefaultPeriodDuration(5);
+	await seedChangelogAsSeen(page);
+
+	try {
+		await page.goto(buildFrontendUrl(SHELL_ROUTE, {
+			apiBaseUrl: API_BASE_URL,
+			openid: OPENID,
+			moduleInstanceId: MODULE_INSTANCE_ID,
+			profileId: 'seed-home-profile',
+			partnerUserId: PARTNER_USER_ID,
+			today: '2026-03-29'
+		}));
+		await page.waitForTimeout(1200);
+		await dismissChangelogSheetIfPresent(page);
+
+		const row = await openCustomPicker(page, '经期天数');
+		await previewCustomPickerValue(page, '经期天数', '6');
+		await expect(getSelectedNumericQuickChip(row)).toContainText('6');
+
+		await page.locator('.management-page__picker-backdrop').click({ force: true });
+		await page.waitForTimeout(1200);
+
+		await expect(page.locator('.management-card__summary-item').filter({ hasText: '经期时长' })).toContainText('6 天');
+		await expect(getSelectedNumericQuickChip(getSettingRow(page, '经期天数'))).toContainText('6');
 	} finally {
 		await ensureDefaultPeriodDuration(6);
 	}

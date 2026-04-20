@@ -124,7 +124,8 @@
 		},
 		methods: {
 			handlePickerChange(e) {
-				const index = e?.detail?.value?.[0];
+				const rawValue = e?.detail?.value;
+				const index = Array.isArray(rawValue) ? rawValue[0] : rawValue;
 				const option = this.customPickerOptions?.[index];
 				if (!option) return;
 
