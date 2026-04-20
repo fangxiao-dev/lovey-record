@@ -19,8 +19,11 @@
 
           <text class="changelog-sheet__section-label u-text-caption">最近更新</text>
           <view class="changelog-sheet__latest-entry">
-            <text class="changelog-sheet__latest-version u-text-body">{{ entries[0].version }}</text>
-            <text class="changelog-sheet__latest-title u-text-body">{{ entries[0].title }}</text>
+            <view class="changelog-sheet__latest-entry-left">
+              <text class="changelog-sheet__latest-version u-text-body">{{ entries[0].version }}</text>
+              <text class="changelog-sheet__latest-title u-text-body">{{ entries[0].title }}</text>
+            </view>
+            <text class="changelog-sheet__entry-date u-text-caption">{{ entries[0].date }}</text>
           </view>
           <view class="changelog-sheet__change-list">
             <view
@@ -49,7 +52,10 @@
                 @tap="toggleAccordion(i)"
               >
                 <text class="changelog-sheet__accordion-label u-text-body">{{ entry.version }} {{ entry.title }}</text>
-                <text class="changelog-sheet__accordion-chevron">{{ expandedIndex === i ? '˅' : '›' }}</text>
+                <view class="changelog-sheet__accordion-header-right">
+                  <text class="changelog-sheet__entry-date u-text-caption">{{ entry.date }}</text>
+                  <text class="changelog-sheet__accordion-chevron">{{ expandedIndex === i ? '˅' : '›' }}</text>
+                </view>
               </view>
               <view v-if="expandedIndex === i" class="changelog-sheet__accordion-body">
                 <view
@@ -198,8 +204,17 @@
   .changelog-sheet__latest-entry {
     display: flex;
     align-items: center;
-    gap: 10rpx;
+    justify-content: space-between;
+    gap: 16rpx;
     margin-bottom: 8rpx;
+  }
+
+  .changelog-sheet__latest-entry-left {
+    display: flex;
+    align-items: center;
+    gap: 10rpx;
+    min-width: 0;
+    flex: 1;
   }
 
   .changelog-sheet__latest-version {
@@ -211,6 +226,15 @@
   .changelog-sheet__latest-title {
     color: $text-primary;
     font-weight: 500;
+    min-width: 0;
+  }
+
+  .changelog-sheet__entry-date {
+    color: $text-muted;
+    font-weight: 500;
+    flex-shrink: 0;
+    text-align: right;
+    white-space: nowrap;
   }
 
   .changelog-sheet__change-item {
@@ -267,6 +291,14 @@
     font-weight: 500;
     color: $text-primary;
     flex: 1;
+    min-width: 0;
+  }
+
+  .changelog-sheet__accordion-header-right {
+    display: flex;
+    align-items: center;
+    gap: 14rpx;
+    flex-shrink: 0;
   }
 
   .changelog-sheet__accordion-chevron {

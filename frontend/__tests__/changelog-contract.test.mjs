@@ -117,9 +117,19 @@ test('ChangelogSheet renders latest entry changes from entries[0].changes', () =
   assert.match(source, /entries\[0\]\.changes/, 'must render entries[0].changes');
 });
 
+test('ChangelogSheet renders latest entry date in the header row', () => {
+  const source = fs.readFileSync(sheetPath, 'utf8');
+  assert.match(source, /entries\[0\]\.date/, 'must render entries[0].date');
+});
+
 test('ChangelogSheet renders history from entries.slice(1)', () => {
   const source = fs.readFileSync(sheetPath, 'utf8');
   assert.match(source, /entries\.slice\(1\)/, 'must use entries.slice(1) for history accordion');
+});
+
+test('ChangelogSheet renders history item dates in each accordion header', () => {
+  const source = fs.readFileSync(sheetPath, 'utf8');
+  assert.match(source, /entry\.date/, 'must render entry.date in history accordion headers');
 });
 
 test('ChangelogSheet does not use CSS inset shorthand', () => {

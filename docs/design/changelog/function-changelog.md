@@ -113,9 +113,9 @@ The auto-show must not trigger if:
 
 The sheet shows two sections:
 
-**最近更新** — the latest entry shows its `version` and `title` first, then the `changes` array as a compact flat list.
+**最近更新** — the latest entry shows its `version` and `title` on the left, its `date` right-aligned on the same title row, then the `changes` array as a compact flat list.
 
-**历史版本** — all entries at index 1 and beyond, presented as a collapsed accordion list. Each item shows its `version` and `title` as the header and its `changes` array when expanded.
+**历史版本** — all entries at index 1 and beyond, presented as a collapsed accordion list. Each item shows its `version` and `title` as the header, its `date` right-aligned in the same row, and its `changes` array when expanded.
 
 ### Accordion Behavior
 

@@ -95,7 +95,7 @@ From top to bottom:
 1. **Drag indicator** — centered horizontally, `32px × 4px`, `radius.pill`, `color.border.subtle`, `24px` top margin
 2. **Sheet title** `更新记录` — `font.size.title = 18px`, `font.weight: 600`, `color.text.primary`, `16px` top gap after indicator
 3. **Section label** `最近更新` — `font.size.caption = 12px`, `color.text.muted`, `20px` top gap
-4. **Latest entry summary** — the latest entry shows its `version` and `title` inline before the change bullets
+4. **Latest entry summary** — the latest entry shows its `version` and `title` on the left and its `date` right-aligned on the same row before the change bullets
 5. **Change list** — one item per `changes` entry, bullet style, `font.size.body = 14px`, `color.text.primary`, `gap: 8px` or tighter
 6. **Divider** — `1px` full-width rule, `color.border.subtle`, `20px` top and bottom margin
 7. **Section label** `历史版本` — same style as `最近更新`
@@ -110,10 +110,11 @@ Each accordion item represents a past changelog entry (all entries except the mo
 **Collapsed state**:
 
 ```
-{version} {title}                ›
+{version} {title}           {date}  ›
 ```
 
 - Label: `{version} {title}` — `font.size.body = 14px`, `font.weight: 500`, `color.text.primary`
+- Date: `{date}` — `font.size.caption = 12px`, `color.text.muted`, right-aligned in the same row
 - Chevron: `chevron-right`, `16px`, `color.text.muted`, right-aligned
 - Padding: `14px` vertical, `0` horizontal (inherits sheet padding)
 - A `1px` top border using `color.border.subtle` separates adjacent items
@@ -121,7 +122,7 @@ Each accordion item represents a past changelog entry (all entries except the mo
 **Expanded state**:
 
 ```
-{version} {title}                ˅
+{version} {title}           {date}  ˅
   · change item one
   · change item two
 ```
