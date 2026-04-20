@@ -1341,6 +1341,107 @@ test('home handleHeaderNext delegates browse navigation into buffered preload in
 	assert.equal(calls[0].effect, 'slide');
 });
 
+test('home month-view calendar stays interactive and passes focusedDate only for month mode', () => {
+	const source = fs.readFileSync(path.resolve(repoRoot, 'frontend/pages/menstrual/home.vue'), 'utf8');
+
+	assert.match(source, /:interactive="true"/);
+	assert.match(source, /:focused-date="viewMode === 'month' \? activeDate : null"/);
+});
+
+test('home calendar swipe handlers reuse the existing header navigation flow', () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {}
+	});
+	const calls = [];
+	const ctx = {
+		isBrowseBusy: false,
+		panelMode: 'single-day',
+		handleHeaderNext() {
+			calls.push('next');
+		},
+		handleHeaderPrev() {
+			calls.push('prev');
+		}
+	};
+
+	home.methods.handleCalendarSwipeLeft.call(ctx);
+	home.methods.handleCalendarSwipeRight.call(ctx);
+
+	assert.deepEqual(calls, ['next', 'prev']);
+});
+
+test('home calendar swipe handlers stay blocked during batch mode or browse transitions', () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {}
+	});
+	const calls = [];
+	const batchCtx = {
+		isBrowseBusy: false,
+		panelMode: 'batch',
+		handleHeaderNext() {
+			calls.push('next');
+		},
+		handleHeaderPrev() {
+			calls.push('prev');
+		}
+	};
+	const busyCtx = {
+		isBrowseBusy: true,
+		panelMode: 'single-day',
+		handleHeaderNext() {
+			calls.push('next');
+		},
+		handleHeaderPrev() {
+			calls.push('prev');
+		}
+	};
+
+	home.methods.handleCalendarSwipeLeft.call(batchCtx);
+	home.methods.handleCalendarSwipeRight.call(busyCtx);
+
+	assert.deepEqual(calls, []);
+});
+
+test('home month-view batch selection clamps overflow cells outside the focused month', () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null
+	});
+	const ctx = {
+		viewMode: 'month',
+		focusDate: '2026-04-15',
+		batchStartKey: '2026-03-31',
+		batchEndKey: '2026-04-02',
+		batchSelectedKeysState: [],
+		allCalendarCells: [
+			{ key: '2026-03-31', isoDate: '2026-03-31', selectable: true },
+			{ key: '2026-04-01', isoDate: '2026-04-01', selectable: true },
+			{ key: '2026-04-02', isoDate: '2026-04-02', selectable: true }
+		]
+	};
+
+	home.methods.syncBatchSelectionRange.call(ctx);
+
+	assert.deepEqual(ctx.batchSelectedKeysState, ['2026-04-01', '2026-04-02']);
+	assert.equal(ctx.batchSelectedKeysState.includes('2026-03-31'), false);
+});
+
 test('home beginBufferedBrowse keeps the current page stable until animation commit', async () => {
 	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
 		CalendarGrid: {},

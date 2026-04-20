@@ -344,6 +344,50 @@ test('home contract adapter can build a month-view calendar locally from homeVie
 	assert.equal(model.selectedDatePanel.badge, '点击记录');
 });
 
+test('home contract adapter keeps calendar cells unselected by default and applies selected overlay only after an explicit date selection', () => {
+	const { homeView, moduleSettings } = createSeededHomeContracts();
+	const baseInput = {
+		homeView,
+		moduleSettings,
+		today: '2026-03-29',
+		focusDate: '2026-03-29',
+		viewMode: 'three-week'
+	};
+
+	const unselectedModel = createMenstrualHomePageModel({
+		...baseInput,
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			date: '2026-03-27'
+		}),
+		selectedDateKey: null
+	});
+	const clickedModel = createMenstrualHomePageModel({
+		...baseInput,
+		dayDetail: createEmptyDayDetail({
+			moduleInstanceId: 'seed-home-module',
+			profileId: 'seed-home-profile',
+			date: '2026-03-27'
+		}),
+		selectedDateKey: '2026-03-27'
+	});
+
+	const unselectedCell = unselectedModel.calendarCard.weeks
+		.flatMap((week) => week.cells)
+		.find((cell) => cell.key === '2026-03-27');
+	const clickedCell = clickedModel.calendarCard.weeks
+		.flatMap((week) => week.cells)
+		.find((cell) => cell.key === '2026-03-27');
+
+	assert.ok(unselectedCell, 'expected the target date to be present in the 3-week window');
+	assert.ok(clickedCell, 'expected the clicked date to be present in the 3-week window');
+	assert.equal(unselectedModel.selectedDateKey, null);
+	assert.equal(unselectedCell.variant.startsWith('selected'), false);
+	assert.equal(clickedModel.selectedDateKey, '2026-03-27');
+	assert.equal(clickedCell.variant, 'selected');
+});
+
 test('home contract adapter renders the full predicted period range instead of only prediction_start', () => {
 	const homeView = {
 		moduleInstanceId: 'seed-home-module',

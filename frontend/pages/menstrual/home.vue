@@ -179,7 +179,8 @@
 						:key="currentCalendarKey"
 						:weeks="page.calendarCard.weeks"
 						:weekday-labels="page.calendarCard.weekdayLabels"
-						:interactive="page.viewModeControl.value === 'three-week'"
+						:interactive="true"
+						:focused-date="viewMode === 'month' ? activeDate : null"
 						:selected-keys="selectedBatchKeys"
 						:preview-period-marked="panelMode === 'batch' ? batchDraft.isPeriod : null"
 						:busy="isBrowseInteractionBusy"
@@ -187,6 +188,8 @@
 						@batch-start="handleBatchStart"
 						@batch-extend="handleBatchExtend"
 						@batch-end="handleBatchEnd"
+						@swipe-left="handleCalendarSwipeLeft"
+						@swipe-right="handleCalendarSwipeRight"
 					/>
 				</view>
 				<view
@@ -981,6 +984,14 @@
 					effect: 'slide'
 				});
 			},
+			handleCalendarSwipeLeft() {
+				if (this.isBrowseBusy || this.panelMode === 'batch') return;
+				this.handleHeaderNext();
+			},
+			handleCalendarSwipeRight() {
+				if (this.isBrowseBusy || this.panelMode === 'batch') return;
+				this.handleHeaderPrev();
+			},
 			handleJump(jumpKey) {
 				if (this.isNavigationBusy) return;
 				const headerNav = this.page?.headerNav || {};
@@ -1323,7 +1334,14 @@
 				const rangeEnd = Math.max(startIndex, endIndex);
 				this.batchSelectedKeysState = this.allCalendarCells
 					.slice(rangeStart, rangeEnd + 1)
-					.filter((cell) => cell.selectable !== false)
+					.filter((cell) => {
+						if (cell.selectable === false) return false;
+						if (this.viewMode === 'month' && cell.isoDate) {
+							const focusMonth = this.focusDate.slice(0, 7);
+							return cell.isoDate.startsWith(focusMonth);
+						}
+						return true;
+					})
 					.map((cell) => cell.key);
 			},
 			buildBatchRanges(selectedKeys) {

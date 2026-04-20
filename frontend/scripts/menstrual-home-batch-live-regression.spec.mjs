@@ -861,7 +861,6 @@ test('calendar prediction visually covers the same range that hero next displays
 	await page.waitForTimeout(1200);
 	const predictionClasses = await getCellClasses(page, expectedDayLabels);
 	expect(predictionClasses.every((item) => item.className.includes('date-cell--bg-period-soft'))).toBeTruthy();
-	expect(predictionClasses[0].className.includes('date-cell--selected')).toBeTruthy();
 
 	await expect(page.locator('.selected-date-panel__title')).toHaveText(formatHumanDate(predictedStartDate));
 });
