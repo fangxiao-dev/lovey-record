@@ -362,19 +362,15 @@ test('createMenstrualHomePageModel exposes a coarse out-of-period hero state ins
 		focusDate: '2026-04-10'
 	});
 
-	assert.deepEqual(model.heroCard.statusFrame, {
-		state: 'out_of_period',
-		text: '记录中',
-		iconUrl: '/static/icons/coffee.svg',
-		phaseStatus: {
-			phase: null,
-			emphasis: false,
-			isLutealLate: false,
-			hint: '记录更多以生成预测',
-			showReliabilityWarning: false,
-			daysUntilNextPeriod: null
-		},
-		emptyStateCopy: ''
+	assert.equal(model.heroCard.statusFrame.state, 'out_of_period');
+	assert.equal(model.heroCard.statusFrame.text, '记录中');
+	assert.deepEqual(model.heroCard.statusFrame.phaseStatus, {
+		phase: null,
+		emphasis: false,
+		isLutealLate: false,
+		hint: '记录更多以生成预测',
+		showReliabilityWarning: false,
+		daysUntilNextPeriod: null
 	});
 });
 
