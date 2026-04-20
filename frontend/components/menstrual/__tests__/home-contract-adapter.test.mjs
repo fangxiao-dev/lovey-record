@@ -241,6 +241,53 @@ test('home contract adapter shows "上次" from currentSegment when out_of_perio
 	assert.equal(model.jumpTabs.items.some((item) => item.key === 'current'), false);
 });
 
+test('home contract adapter falls back to 暂无记录 when there is no historical period data', () => {
+	const homeView = {
+		moduleInstanceId: 'empty-home-module',
+		sharingStatus: 'private',
+		currentStatusSummary: {
+			currentStatus: 'out_of_period',
+			statusCard: { label: '非经期' },
+			currentSegment: null,
+			currentCycle: null,
+			previousSegment: null
+		},
+		predictionSummary: null,
+		historicalPeriodStarts: [],
+		calendarMarks: []
+	};
+
+	const model = createMenstrualHomePageModel({
+		homeView,
+		dayDetail: null,
+		moduleSettings: {
+			defaultPeriodDurationDays: 5,
+			defaultPredictionTermDays: 28
+		},
+		today: '2026-04-20',
+		viewMode: 'three-week',
+		focusDate: '2026-04-20'
+	});
+
+	assert.equal(model.heroCard.statusFrame.state, 'no_record');
+	assert.equal(model.heroCard.statusFrame.text, '暂无记录');
+	assert.equal(model.heroCard.statusFrame.phaseStatus, null);
+	assert.equal(model.heroCard.statusFrame.emptyStateCopy, '先记录一次经期，系统会帮你推算后续阶段');
+	assert.equal(model.heroCard.previousFrame.value, '暂无记录');
+	assert.equal(model.heroCard.nextFrame.value, '暂无记录');
+	assert.equal(model.jumpTabs.value, 'today');
+	assert.deepEqual(
+		model.jumpTabs.items.map((item) => [item.key, item.label, item.disabled]),
+		[
+			['today', '今天', false],
+			['prediction', '下次预测', true],
+			['_sep', '按经期定位', undefined],
+			['prev-period', '向前', true],
+			['next-period', '向后', true]
+		]
+	);
+});
+
 test('home contract adapter builds the calendar from getCalendarWindow and preserves the requested view mode', () => {
 	// Use static test data, not dynamic seed
 	const staticHomeView = {

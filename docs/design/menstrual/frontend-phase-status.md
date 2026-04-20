@@ -10,7 +10,7 @@ For behavioral rules, phase boundary logic, and hint semantics, read the paired 
 
 ## Hero Status Row — Updated Structure
 
-The primary status frame in `StatusHeroCard` replaces the flat `经期第N天 / 非经期` text with a two-group inline row:
+The primary status frame in `StatusHeroCard` replaces the flat `经期第N天 / 非经期` text with a two-group inline row when a cycle phase exists:
 
 ```
 [phase_icon] 阶段名   [warning_icon] 提示文本
@@ -46,6 +46,7 @@ Runtime path (implementation): `frontend/static/menstrual/`
 Copy the four SVGs from `docs/design-drafts/assets/` into `frontend/static/menstrual/` as part of Task 3 before wiring the component.
 
 The `经期第N天` state keeps its existing icon (`frontend/static/icons/coffee.svg`) and layout unchanged.
+If no historical period segment exists yet, `StatusHeroCard` must fall back to the empty state `暂无记录` and show the invitation copy defined in [frontend-home.md](./frontend-home.md); it should not render the phase row or reliability warning.
 
 ## Emphasis States
 

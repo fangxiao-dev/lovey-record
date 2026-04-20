@@ -109,6 +109,7 @@ Allowed values for the current MVP:
 
 - `in_period`
 - `out_of_period`
+- `no_record`
 
 Future-compatible values may later include states such as:
 
@@ -119,6 +120,7 @@ Rules:
 
 - `in_period` means `today` is inside the latest continuous period segment's inclusive range
 - `out_of_period` means no latest continuous period segment covers `today`
+- `no_record` means no period segment exists yet in the module instance
 - if the latest persisted segment ends before `today`, the home must render `out_of_period`
 - if later edits bridge or extend the segment so the recomputed latest segment covers `today`, the home must render `in_period` again
 
@@ -126,8 +128,8 @@ Rules:
 
 ```json
 {
-  "status": "in_period",
-  "label": "经期第2天",
+  "status": "no_record",
+  "label": "暂无记录",
   "rangeText": null
 }
 ```
@@ -137,8 +139,10 @@ Rules:
 - this is the primary home status expression
 - when `status = in_period`, `label` must render as `经期第<N>天`
 - `N` is the inclusive day index of `today` inside the latest continuous segment that contains `today`
+- when `status = no_record`, `label` must render as `暂无记录`
 - when `status = out_of_period`, `rangeText` should be `null`
 - frontend should render `经期第<N>天` for `in_period`
+- frontend should render `暂无记录` for `no_record`
 - frontend should render `非经期` for `out_of_period`
 
 ### `SegmentReferenceReadModel`
@@ -166,6 +170,7 @@ Rules:
 
 - `previous` points to the continuous segment immediately before the latest segment
 - `next` points to `predictionSummary`
+- when no segment exists yet, both `previous` and `next` should render as `暂无记录` and the primary status should be `暂无记录`
 - if `previous` is missing, frontend should render `暂无记录`
 - if `next` is missing, frontend should render `暂无记录`
 - hero `next` renders the predicted period range, not just the start day
@@ -219,7 +224,7 @@ Rules:
 - if later bridge or extension logic causes the recomputed latest segment to cover `today`, `currentStatus` must return to `in_period`
 - `statusCard` expresses whether that latest segment currently covers `today`
 - `previousSegment` is optional and should be `null` when unavailable
-- if no segment exists yet, `currentStatus` still returns `out_of_period`, `statusCard` returns `非经期`, and both segment references are `null`
+- if no segment exists yet, `currentStatus` returns `no_record`, `statusCard` returns `暂无记录`, and both segment references are `null`
 - frontend should treat these fields as the durable semantic contract once implemented, rather than recomputing previous/latest segment ranking locally
 - `currentStatusSummary` may remain temporarily as a compatibility wrapper during migration, but it is deprecated compatibility output rather than the primary contract surface
 

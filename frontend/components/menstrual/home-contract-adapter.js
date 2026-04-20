@@ -432,6 +432,22 @@ function getCurrentSegment(homeView) {
 	return homeView.currentStatusSummary?.currentSegment || homeView.currentStatusSummary?.currentCycle || null;
 }
 
+function hasHistoricalPeriodData(homeView) {
+	const currentStatusSummary = homeView?.currentStatusSummary || {};
+	const currentSegment = currentStatusSummary.currentSegment || currentStatusSummary.currentCycle || null;
+	const previousSegment = currentStatusSummary.previousSegment || null;
+
+	if (currentSegment || previousSegment) {
+		return true;
+	}
+
+	if ((homeView?.historicalPeriodStarts || []).some(Boolean)) {
+		return true;
+	}
+
+	return (homeView?.calendarMarks || []).some((mark) => mark?.kind === 'period_start' || mark?.kind === 'period');
+}
+
 function getFocusDate(homeView, dayDetail, today) {
 	return dayDetail?.dayRecord?.date
 		|| homeView.selectedDay?.date
@@ -441,6 +457,9 @@ function getFocusDate(homeView, dayDetail, today) {
 }
 
 function getJumpTabValue(homeView, today) {
+	if (!hasHistoricalPeriodData(homeView)) {
+		return 'today';
+	}
 	const previousSegment = homeView.currentStatusSummary?.previousSegment;
 	if (previousSegment && today === previousSegment.startDate) {
 		return 'prev-period';
@@ -787,32 +806,42 @@ function createHeroCard(homeView, today, moduleSettings = null) {
 	const currentSegment = statusSummary.currentSegment || statusSummary.currentCycle || null;
 	const previousSegment = statusSummary.previousSegment || null;
 	const prediction = homeView.predictionSummary;
+	const hasHistory = hasHistoricalPeriodData(homeView);
+	const isNoRecord = !hasHistory;
 
-	const statusText = statusCard.label || '非经期';
+	const statusText = isNoRecord ? '暂无记录' : (statusCard.label || '非经期');
 	const predictedSegmentEndDate = resolvePredictedSegmentEndDate(prediction, moduleSettings);
 	const nextFrameValue = prediction
+		&& !isNoRecord
 		? predictedSegmentEndDate
 			? formatMonthDayRange(prediction.predictedStartDate, predictedSegmentEndDate)
 			: formatMonthDayDot(prediction.predictedStartDate)
 		: '暂无记录';
-	const phaseStatus = computePhaseStatus({
-		homeView,
-		moduleSettings,
-		today
-	});
+	const phaseStatus = isNoRecord
+		? null
+		: computePhaseStatus({
+			homeView,
+			moduleSettings,
+			today
+		});
 
 	// When in period: "上次" refers to the previous segment
 	// When out of period: "上次" refers to the segment we just exited (current segment)
-	const lastSegment = currentStatus === 'in_period' ? previousSegment : currentSegment;
+	const lastSegment = isNoRecord
+		? null
+		: (currentStatus === 'in_period' ? previousSegment : currentSegment);
 
 	return {
 		label: '当前状态',
 		sharingLabel: mapStatusLabel(homeView.sharingStatus),
 		statusFrame: {
-			state: currentStatus,
+			state: isNoRecord ? 'no_record' : currentStatus,
 			text: statusText,
 			iconUrl: STATUS_ICON[currentStatus] || STATUS_ICON.out_of_period,
-			phaseStatus
+			phaseStatus,
+			emptyStateCopy: isNoRecord
+				? '先记录一次经期，系统会帮你推算后续阶段'
+				: ''
 		},
 		previousFrame: {
 			label: '上次',
@@ -1103,6 +1132,7 @@ export function createMenstrualHomePageModel({
 		},
 		jumpTabs: {
 			value: (() => {
+				if (!hasHistoricalPeriodData(homeView)) return 'today';
 				const prevPeriodTarget = resolveJumpTargetDate(homeView, 'prev-period', today);
 				const predictionTarget = resolveJumpTargetDate(homeView, 'prediction', today);
 				if (resolvedFocusDate === today) return 'today';
@@ -1112,10 +1142,10 @@ export function createMenstrualHomePageModel({
 			})(),
 			items: [
 				{ key: 'today', label: '今天', tone: 'outlined', disabled: false },
-				{ key: 'prediction', label: '下次预测', tone: 'soft', disabled: !homeView.predictionSummary },
+				{ key: 'prediction', label: '下次预测', tone: 'soft', disabled: !homeView.predictionSummary || !hasHistoricalPeriodData(homeView) },
 				{ key: '_sep', type: 'label', label: '按经期定位' },
-				{ key: 'prev-period', label: '向前', tone: 'muted', disabled: (() => { const s = homeView.currentStatusSummary || {}; const cs = s.currentStatus || s.status || 'out_of_period'; const ls = cs === 'in_period' ? s.previousSegment : (s.currentSegment || s.currentCycle); return !ls; })() },
-				{ key: 'next-period', label: '向后', tone: 'muted', disabled: !homeView.predictionSummary }
+				{ key: 'prev-period', label: '向前', tone: 'muted', disabled: (() => { if (!hasHistoricalPeriodData(homeView)) return true; const s = homeView.currentStatusSummary || {}; const cs = s.currentStatus || s.status || 'out_of_period'; const ls = cs === 'in_period' ? s.previousSegment : (s.currentSegment || s.currentCycle); return !ls; })() },
+				{ key: 'next-period', label: '向后', tone: 'muted', disabled: !homeView.predictionSummary || !hasHistoricalPeriodData(homeView) }
 			]
 		},
 		viewModeControl: {

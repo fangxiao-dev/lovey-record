@@ -65,6 +65,19 @@
 						</view>
 					</view>
 				</template>
+				<template v-else-if="page.heroCard.statusFrame.state === 'no_record'">
+					<view class="menstrual-home__hero-empty-state">
+						<image class="menstrual-home__hero-empty-icon" src="/static/menstrual/start.png" mode="aspectFit" />
+						<view class="menstrual-home__hero-empty-copy-group">
+							<text class="menstrual-home__hero-status-text menstrual-home__hero-status-text--empty">
+								{{ page.heroCard.statusFrame.text }}
+							</text>
+							<text class="menstrual-home__hero-empty-copy">
+								{{ page.heroCard.statusFrame.emptyStateCopy }}
+							</text>
+						</view>
+					</view>
+				</template>
 				<template v-else>
 					<image class="menstrual-home__hero-status-icon" :src="page.heroCard.statusFrame.iconUrl" mode="aspectFit" />
 					<text class="menstrual-home__hero-status-text">{{ page.heroCard.statusFrame.text }}</text>
@@ -1517,6 +1530,30 @@
 		border-radius: 24rpx;
 	}
 
+	.menstrual-home__hero-empty-state {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 14rpx;
+		width: 100%;
+		padding: 4rpx 0;
+	}
+
+	.menstrual-home__hero-empty-icon {
+		width: 88rpx;
+		height: 88rpx;
+		flex-shrink: 0;
+	}
+
+	.menstrual-home__hero-empty-copy-group {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8rpx;
+		min-width: 0;
+	}
+
 	.menstrual-home__hero-phase-row {
 		display: inline-flex;
 		align-items: center;
@@ -1606,6 +1643,17 @@
 		line-height: 1;
 		font-weight: $font-weight-strong;
 		color: $text-primary;
+	}
+
+	.menstrual-home__hero-status-text--empty {
+		font-size: 34rpx;
+	}
+
+	.menstrual-home__hero-empty-copy {
+		font-size: 22rpx;
+		line-height: 1.45;
+		text-align: left;
+		color: $text-secondary;
 	}
 
 	.menstrual-home__hero-meta {

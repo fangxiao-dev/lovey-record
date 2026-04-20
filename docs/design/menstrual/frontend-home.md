@@ -51,6 +51,7 @@ The primary hero frame is not a small chip. It is a dedicated status container.
 
 Current MVP states:
 
+- `暂无记录`
 - `经期第<N>天`
 - `卵泡期` with inline hint
 - `排卵期` with amber emphasis and inline hint
@@ -61,6 +62,7 @@ Current MVP states:
 Design rule:
 
 - treat this as a reusable `status frame` pattern, not as a one-off menstrual text block
+- `暂无记录` is the pre-history fallback state and should use a neutral empty-state treatment with invitation copy
 
 ### Reference Frames
 
@@ -74,6 +76,7 @@ Rules:
 - these frames always exist in layout even when their value is missing
 - when a value is missing, the frame should render `暂无记录`
 - `上次` and `下次` are informational frames in the hero, not the main status carrier
+- when the primary status is `暂无记录`, the hero should not render phase copy or the reliability warning UI
 
 ## Jump Shortcut Row
 
@@ -86,6 +89,16 @@ Rules:
 - when no previous segment exists, `上次` is disabled
 - `本次` should be removed from the shortcut row because its semantics are now carried by the hero status frame
 - the remaining shortcuts may continue to include `今天` and `下次预测` as long as they reflect the same read-model semantics as the hero
+
+## Empty State Invitation
+
+When the home read model has no historical period segment yet, the hero should show a short invitation copy alongside `暂无记录`.
+
+Suggested copy:
+
+- `先记录一次经期，系统会帮你推算后续阶段`
+
+This copy should remain concise and encouraging, and it should not imply that phase prediction is available before the first record exists.
 
 ## Selected Date Panel
 

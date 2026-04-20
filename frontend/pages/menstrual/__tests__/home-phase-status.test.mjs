@@ -44,3 +44,14 @@ test('home page renders the reliability warning button inline with the phase nam
 	assert.match(source, /uni\.showModal\(/);
 	assert.match(source, /当前预测基于较少记录，随着记录次数增加会更准确/);
 });
+
+test('home page source includes a dedicated no-record hero branch and empty-state copy container', () => {
+	const source = readHomePageSource();
+
+	assert.match(source, /page\.heroCard\.statusFrame\.state === 'no_record'/);
+	assert.match(source, /menstrual-home__hero-empty-state/);
+	assert.match(source, /menstrual-home__hero-empty-icon/);
+	assert.match(source, /menstrual-home__hero-status-text--empty/);
+	assert.match(source, /menstrual-home__hero-empty-copy/);
+	assert.match(source, /\/static\/menstrual\/start\.png/);
+});

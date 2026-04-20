@@ -43,10 +43,12 @@ The home page must cover:
 - the hero is status-first
 - current status is derived from the latest recomputed segment, not from stale text
 - if `today` is inside the latest segment, the home shows the in-period state
-- if `today` is outside the latest segment, the home shows the current cycle phase instead of the old binary `非经期` label
+- if no historical period segment exists yet, the hero shows `暂无记录` and invites the user to record their first period
+- if `today` is outside the latest segment and historical segment data exists, the home shows the current cycle phase instead of the old binary `非经期` label
 - the out-of-period phase is derived from `lastPeriodStartDate`, `defaultCycleLengthDays`, and `defaultPeriodDurationDays`
 - the non-period hero states are `卵泡期`, `排卵期`, and `黄体期`; each state carries one inline hint string
 - `排卵期` and `黄体期` final 7 days use an emphasized amber treatment, but they still derive from the same home read model
+- the empty state `暂无记录` is not a phase; it is the fallback hero state before any period data exists
 - if later bridge or extension logic changes the latest segment, the hero status and reference ranges must update with the refreshed home read model
 
 ## Shortcut Semantics
