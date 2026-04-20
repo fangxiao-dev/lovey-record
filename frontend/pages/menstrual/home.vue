@@ -24,7 +24,9 @@
 				<text>退出共享</text>
 			</view>
 			<view class="menstrual-home__hero-status-frame">
-				<template v-if="page.heroCard.statusFrame.phaseStatus && page.heroCard.statusFrame.phaseStatus.phase !== '经期'">
+				<template
+					v-if="page.heroCard.statusFrame.phaseStatus && page.heroCard.statusFrame.phaseStatus.phase !== null && page.heroCard.statusFrame.phaseStatus.phase !== '经期'"
+				>
 					<view class="menstrual-home__hero-phase-row">
 						<view
 							class="menstrual-home__hero-phase-group"
@@ -60,6 +62,27 @@
 								class="menstrual-home__hero-hint-text"
 								:class="{ 'menstrual-home__hero-hint-text--emphasis': page.heroCard.statusFrame.phaseStatus.isLutealLate }"
 							>
+								{{ page.heroCard.statusFrame.phaseStatus.hint }}
+							</text>
+						</view>
+					</view>
+				</template>
+				<template v-else-if="page.heroCard.statusFrame.phaseStatus && page.heroCard.statusFrame.phaseStatus.phase === null">
+					<view class="menstrual-home__hero-phase-row">
+						<view class="menstrual-home__hero-phase-group">
+							<text class="menstrual-home__hero-status-text">
+								{{ page.heroCard.statusFrame.text }}
+							</text>
+							<view
+								v-if="page.heroCard.statusFrame.phaseStatus.showReliabilityWarning"
+								class="menstrual-home__hero-phase-warning-btn"
+								@tap="handlePhaseWarningTap"
+							>
+								<text class="menstrual-home__hero-phase-warning-btn-label">!</text>
+							</view>
+						</view>
+						<view class="menstrual-home__hero-hint-group">
+							<text class="menstrual-home__hero-hint-text">
 								{{ page.heroCard.statusFrame.phaseStatus.hint }}
 							</text>
 						</view>

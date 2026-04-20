@@ -55,3 +55,15 @@ test('home page source includes a dedicated no-record hero branch and empty-stat
 	assert.match(source, /menstrual-home__hero-empty-copy/);
 	assert.match(source, /\/static\/menstrual\/start\.png/);
 });
+
+test('home page source includes a dedicated coarse cycle branch for phase = null', () => {
+	const source = readHomePageSource();
+
+	assert.match(source, /page\.heroCard\.statusFrame\.phaseStatus && page\.heroCard\.statusFrame\.phaseStatus\.phase === null/);
+	assert.match(source, /page\.heroCard\.statusFrame\.text/);
+	assert.match(source, /page\.heroCard\.statusFrame\.phaseStatus\.hint/);
+	assert.match(source, /page\.heroCard\.statusFrame\.phaseStatus\.showReliabilityWarning/);
+	assert.match(source, /class="menstrual-home__hero-status-text"/);
+	assert.match(source, /class="menstrual-home__hero-hint-text"/);
+	assert.doesNotMatch(source, /phase === null[\s\S]*getPhaseIconUrl\(page\.heroCard\.statusFrame\.phaseStatus\.phase\)/);
+});
