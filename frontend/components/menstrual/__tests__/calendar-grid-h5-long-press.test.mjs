@@ -73,9 +73,16 @@ test('CalendarGrid only prevents touchmove scrolling while batch drag is active'
 	const baseCtx = {
 		touchStartX: 0,
 		touchStartY: 0,
+		touchCurrentX: 0,
+		touchCurrentY: 0,
 		longPressTimer: null,
+		cellRects: [{ left: 0, right: 40, top: 0, bottom: 40 }],
 		hitTestCell() {
 			return -1;
+		},
+		captureCellRects(onReady) {
+			onReady(this.cellRects);
+			return true;
 		},
 		allCells: [],
 		$emit() {
@@ -203,4 +210,97 @@ test('CalendarGrid invalidates cached rects when weeks change or the page scroll
 	assert.match(source, /this\.invalidateCellRects\(\)/);
 	assert.match(source, /window\.addEventListener\('scroll', this\._invalidateRects/);
 	assert.match(source, /window\.addEventListener\('resize', this\._invalidateRects/);
+});
+
+test('CalendarGrid re-captures hit-test rects during batch drag after the weeks watcher invalidates them', () => {
+	const CalendarGrid = loadCalendarGrid();
+	const emitted = [];
+	const ctx = {
+		longPressTimer: null,
+		batchMode: true,
+		touchStartX: 0,
+		touchStartY: 0,
+		touchCurrentX: 0,
+		touchCurrentY: 0,
+		cellRects: null,
+		allCells: [
+			{ key: '2026-03-23', selectable: true },
+			{ key: '2026-03-24', selectable: true }
+		],
+		hitTestCell: CalendarGrid.methods.hitTestCell,
+		captureCellRects(onReady) {
+			this.cellRects = [
+				{ left: 0, right: 100, top: 0, bottom: 100 },
+				{ left: 100, right: 200, top: 0, bottom: 100 }
+			];
+			onReady(this.cellRects);
+			return true;
+		},
+		$emit(eventName, payload) {
+			emitted.push([eventName, payload]);
+		}
+	};
+
+	CalendarGrid.methods.handlePointerMove.call(ctx, 150, 50, {
+		preventDefault() {}
+	});
+
+	assert.deepEqual(emitted, [['batch-extend', { key: '2026-03-24', selectable: true }]]);
+	assert.equal(ctx.cellRects.length, 2);
+});
+
+test('CalendarGrid exposes focusedDate so month view can visually anchor the edited day', () => {
+	const source = fs.readFileSync(calendarGridPath, 'utf8');
+
+	assert.match(source, /focusedDate:\s*\{\s*type:\s*String,/s);
+	assert.match(source, /calendar-grid__cell--focused/);
+});
+
+test('CalendarGrid emits swipe navigation after a horizontal gesture cancels long press without entering batch mode', () => {
+	const CalendarGrid = loadCalendarGrid();
+	const emitted = [];
+	const ctx = {
+		swipeCancelled: false,
+		longPressTimer: { token: true },
+		batchMode: false,
+		touchStartX: 100,
+		touchStartY: 50,
+		touchCurrentX: 100,
+		touchCurrentY: 50,
+		longPressStartedAt: Date.now() - 50,
+		$emit(eventName) {
+			emitted.push(eventName);
+		}
+	};
+
+	CalendarGrid.methods.handlePointerMove.call(ctx, 180, 54, null);
+	assert.equal(ctx.swipeCancelled, true);
+	assert.equal(ctx.longPressTimer, null);
+
+	CalendarGrid.methods.finishLongPress.call(ctx);
+
+	assert.deepEqual(emitted, ['swipe-right']);
+	assert.equal(ctx.swipeCancelled, false);
+});
+
+test('CalendarGrid does not emit swipe navigation while batch drag is active', () => {
+	const CalendarGrid = loadCalendarGrid();
+	const emitted = [];
+	const ctx = {
+		swipeCancelled: true,
+		longPressTimer: null,
+		batchMode: true,
+		touchStartX: 100,
+		touchStartY: 50,
+		touchCurrentX: 180,
+		touchCurrentY: 54,
+		longPressStartedAt: Date.now() - 50,
+		$emit(eventName) {
+			emitted.push(eventName);
+		}
+	};
+
+	CalendarGrid.methods.finishLongPress.call(ctx);
+
+	assert.deepEqual(emitted, ['batch-end']);
 });

@@ -1,399 +1,179 @@
 # 月览可编辑 Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+**Goal:** 让月览视图补齐和 3 周视图同等级别的核心编辑能力，包括点击编辑、长按批选、横滑翻页；翻页视觉效果优先复用现有日历切换机制，不单独重构一套新动画方案。
 
-**Goal:** 让月览视图与 3 周视图一样支持点击编辑、长按批选，并新增横滑翻页（含方向感知过渡动画）。
-
-**Architecture:** 月览与 3 周视图共用同一个 `CalendarGrid` 组件，差异仅在于 `interactive` prop 被关闭。本次改动分五个独立任务：开启交互 → 焦点格子高亮 → 横滑手势检测 → 过渡动画 → 批选范围限制在当前页。
+**Architecture:** 月览与 3 周视图继续共用同一个 `CalendarGrid` 组件。当前主差异是月览交互被关闭，且缺少月览焦点锚点与 swipe 翻页入口。本次改动以最小闭环补齐功能语义，现有 header 翻页、browse preload、transition/animation 机制应尽量复用。
 
 **Tech Stack:** Vue 3 Options API, uni-app, SCSS, rpx 单位
 
 ---
 
-### 约定
+## 本轮语义边界
+
+### 必须实现的功能
+
+1. 月览点击日期可进入单日编辑
+2. 月览长按可进入批量选择
+3. 月览支持左右滑动翻页
+4. 月览中当前编辑日期有明确视觉锚点
+5. 月览批选不会把上个月/下个月溢出格子纳入最终选区
+
+### 明确不作为本轮主目标的事项
+
+- 不为了对齐文档而重写现有 browse/transition 结构
+- 不单独设计一套新的翻页动画容器
+- 不把动画实现形式是否和文档示例完全一致当作验收条件
+
+### 复用原则
+
+- `CalendarGrid` 负责识别 swipe 手势并向外抛出翻页意图
+- `home.vue` 负责把 swipe 事件接到现有翻页入口
+- 现有 `handleHeaderPrev` / `handleHeaderNext`、buffered browse、preload、directional transition 都优先复用
+
+---
+
+## 约定
 
 - 所有 CSS 尺寸使用 `rpx`，过渡时长用 `ms`
-- 涉及 `px` 的 JS 手势阈值保持 `px`（uni-app touch 事件坐标是逻辑像素）
-- 每个 Task 独立提交，互不依赖
+- 涉及 `px` 的 JS 手势阈值保持 `px`，因为 uni-app touch 事件坐标是逻辑像素
+- 对齐重点是功能语义和交互结果，不要求逐字照搬文档中的内部代码写法
+- 若当前代码已有可复用能力，优先接入而非替换
 
 ---
 
-### Task 1: 开启月览交互
+## Task 1: 开启月览交互
 
-**Files:**
-- Modify: `frontend/pages/menstrual/home.vue:182`
-
-**Step 1: 修改 `interactive` prop**
-
-```diff
-- :interactive="page.viewModeControl.value === 'three-week'"
-+ :interactive="true"
-```
-
-**Step 2: 手动测试**
-
-切换到月览，点击一个历史日期，确认 SelectedDatePanel 弹出并可编辑。
-切换到 3 周视图，确认行为不变。
-
-**Step 3: Commit**
-
-```bash
-git add frontend/pages/menstrual/home.vue
-git commit -m "feat(menstrual): enable interactive mode for month view"
-```
-
----
-
-### Task 2: 月览焦点格子高亮边框
-
-> 月览不像 3 周视图会把焦点格子滚到屏幕中央，需要视觉锚点让用户知道编辑的是哪天。
-
-**Files:**
-- Modify: `frontend/components/menstrual/CalendarGrid.vue`
-
-**Step 1: 新增 prop `focusedDate`**
-
-在 `props` 中增加（找到现有 props 对象，例如 `interactive`、`busy` 同处）：
-
-```js
-focusedDate: {
-  type: String,  // ISO date string, e.g. '2026-04-19'
-  default: null
-},
-```
-
-**Step 2: 在 cell 上绑定高亮 class**
-
-找到 `:class` 绑定（约第 45-49 行），新增一项：
-
-```diff
- :class="[
-   { 'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy },
-   { 'calendar-grid__cell--boundary-right': ... },
--  { 'calendar-grid__cell--boundary-left': ... }
-+  { 'calendar-grid__cell--boundary-left': ... },
-+  { 'calendar-grid__cell--focused': focusedDate && cell.isoDate === focusedDate }
- ]"
-```
-
-**Step 3: 新增 SCSS**
-
-在 `<style>` 末尾（现有 `.calendar-grid__cell--boundary-left` 之后）添加：
-
-```scss
-.calendar-grid__cell--focused > .date-cell {
-  outline: 2rpx solid currentColor;
-  outline-offset: 2rpx;
-  border-radius: 50%;
-  opacity: 0.8;
-}
-```
-
-**Step 4: 在 home.vue 传入 `focusedDate`**
-
-找到 `<CalendarGrid>` 绑定（home.vue 约第 180-195 行），新增一行：
-
-```diff
- <CalendarGrid
-   ref="calendarGrid"
-   :weeks="page.calendarCard.weeks"
-   :weekday-labels="page.calendarCard.weekdayLabels"
-   :interactive="true"
-+  :focused-date="viewMode === 'month' ? activeDate : null"
-   :selected-keys="selectedBatchKeys"
-   ...
- />
-```
-
-> `activeDate` 是当前选中日期（home.vue data 中已有），`viewMode` 同理。
-
-**Step 5: 手动测试**
-
-月览下点击一个格子，确认被选格子有轻微高亮环。切换到 3 周视图，确认无高亮环（因为传入 `null`）。
-
-**Step 6: Commit**
-
-```bash
-git add frontend/components/menstrual/CalendarGrid.vue frontend/pages/menstrual/home.vue
-git commit -m "feat(menstrual): highlight focused cell in month view"
-```
-
----
-
-### Task 3: CalendarGrid 横滑手势检测
-
-> 在现有 touchstart / touchmove / touchend 逻辑上新增横滑识别，向 home.vue 抛出 `swipe-left` / `swipe-right` 事件。
-> 不影响现有长按批选逻辑。
-
-**Files:**
-- Modify: `frontend/components/menstrual/CalendarGrid.vue`
-
-**Step 1: 新增常量**
-
-在现有常量区（约第 124-125 行 `LONG_PRESS_DELAY` / `MOVE_CANCEL_THRESHOLD` 旁边）添加：
-
-```js
-const SWIPE_THRESHOLD = 48;   // px — 横向位移超过此值才算翻页
-const SWIPE_AXIS_RATIO = 1.5; // dx 必须是 dy 的 1.5 倍以上才算横滑
-```
-
-**Step 2: 新增 data 字段追踪当前触点位置**
-
-在 `data()` 的 return 对象中新增（与现有 `touchStartX`、`touchStartY` 相邻）：
-
-```js
-touchCurrentX: 0,
-touchCurrentY: 0,
-swipeCancelled: false,  // 长按定时器因移动被取消时置 true
-```
-
-**Step 3: 在 `handlePointerMove` 中更新当前位置 & 标记 swipe 候选**
-
-找到 `handlePointerMove`（约第 436 行），在方法开头（现有逻辑之前）插入：
-
-```js
-this.touchCurrentX = clientX;
-this.touchCurrentY = clientY;
-```
-
-在取消长按定时器的 `if` 块内（约第 440-443 行），将 `swipeCancelled` 置为 true：
-
-```diff
- if (Math.abs(dx) > MOVE_CANCEL_THRESHOLD || Math.abs(dy) > MOVE_CANCEL_THRESHOLD) {
-   clearTimeout(this.longPressTimer);
-   this.longPressTimer = null;
-+  this.swipeCancelled = true;
- }
-```
-
-**Step 4: 在 `beginLongPress` 中重置 swipeCancelled**
-
-找到 `beginLongPress`（约第 423 行），在方法开头插入：
-
-```js
-this.swipeCancelled = false;
-```
-
-**Step 5: 在 `finishLongPress` 中判断横滑并 emit**
-
-找到 `finishLongPress`（约第 462 行）。在方法**末尾**（现有逻辑之后，`this.longPressStartedAt = 0;` 之前）添加：
-
-```js
-if (this.swipeCancelled && !this.batchMode) {
-  const dx = this.touchCurrentX - this.touchStartX;
-  const dy = this.touchCurrentY - this.touchStartY;
-  const absDx = Math.abs(dx);
-  const absDy = Math.abs(dy);
-  if (absDx >= SWIPE_THRESHOLD && absDx >= absDy * SWIPE_AXIS_RATIO) {
-    // dx < 0: 手指向左 → 翻到下一页；dx > 0: 向右 → 翻到上一页
-    this.$emit(dx < 0 ? 'swipe-left' : 'swipe-right');
-  }
-}
-this.swipeCancelled = false;
-```
-
-**Step 6: 在 `onTouchCancel` 中也重置 swipeCancelled**
-
-```diff
- onTouchCancel() {
-   if (this.busy) return;
-+  this.swipeCancelled = false;
-   this.finishLongPress();
- },
-```
-
-**Step 7: 在 home.vue 中监听事件并调用现有导航方法**
-
-找到 `<CalendarGrid>` 绑定（home.vue 约第 180-195 行），新增：
-
-```diff
- @batch-end="handleBatchEnd"
-+@swipe-left="handleCalendarSwipeLeft"
-+@swipe-right="handleCalendarSwipeRight"
-```
-
-在 home.vue methods 中新增（紧跟 `handleHeaderPrev` / `handleHeaderNext` 之后）：
-
-```js
-handleCalendarSwipeLeft() {
-  if (this.isBrowseBusy || this.panelMode === 'batch') return;
-  this.handleHeaderNext();
-},
-handleCalendarSwipeRight() {
-  if (this.isBrowseBusy || this.panelMode === 'batch') return;
-  this.handleHeaderPrev();
-},
-```
-
-**Step 8: 手动测试**
-
-月览和 3 周视图均测试：向左滑翻到下一页，向右滑翻到上一页。
-确认长按批选不被误触发为翻页。
-
-**Step 9: Commit**
-
-```bash
-git add frontend/components/menstrual/CalendarGrid.vue frontend/pages/menstrual/home.vue
-git commit -m "feat(menstrual): add horizontal swipe to navigate calendar pages"
-```
-
----
-
-### Task 4: 翻页方向感知过渡动画
-
-> 翻页时日历格子向翻页方向滑入滑出，给用户明确的方向感知。不用真实动画，仅用 CSS transition。
+**目标:** 月览不再只是浏览，点击日期后要进入现有单日编辑流。
 
 **Files:**
 - Modify: `frontend/pages/menstrual/home.vue`
 
-**Step 1: 新增 data 字段**
+**Implementation intent:**
 
-在 home.vue `data()` return 中新增：
+- 将 `CalendarGrid` 的 `interactive` 从“仅 3 周视图开启”改为月览也可交互
+- 确保点击月览中的可选日期后，仍走当前 `handleCellTap -> SelectedDatePanel` 这条既有单日编辑链路
+- 不改动 3 周视图现有行为
 
-```js
-navTransitionName: '',   // '' | 'slide-left' | 'slide-right'
-calendarNavKey: 0,       // 每次翻页时 +1，触发 <transition> 的 key 变化
-```
+**Acceptance:**
 
-**Step 2: 封装翻页执行逻辑**
-
-将 `handleHeaderPrev` / `handleHeaderNext` 中重复的 `applyLocalBrowseState` + `refreshCalendarWindow` 逻辑提取为一个内部方法，并在执行前设置过渡方向：
-
-找到 `handleHeaderPrev`（约第 958 行）和 `handleHeaderNext`（约第 970 行），在各自方法开头分别插入：
-
-```js
-// handleHeaderPrev 开头：
-this.navTransitionName = 'slide-right';
-this.calendarNavKey += 1;
-
-// handleHeaderNext 开头：
-this.navTransitionName = 'slide-left';
-this.calendarNavKey += 1;
-```
-
-> `navTransitionName` 会在动画完成后自动被 Vue transition 清理（leave 完成 = 旧 key 销毁），无需手动重置。
-
-**Step 3: 用 `<transition>` 包裹 CalendarGrid**
-
-找到 `<CalendarGrid>` 绑定，外层添加：
-
-```diff
-+<transition :name="navTransitionName">
-   <CalendarGrid
-     ref="calendarGrid"
-+    :key="calendarNavKey"
-     :weeks="page.calendarCard.weeks"
-     ...
-   />
-+</transition>
-```
-
-同时用一个容器 view 防止过渡期间布局抖动：
-
-```html
-<view class="calendar-slide-wrap">
-  <transition :name="navTransitionName">
-    <CalendarGrid :key="calendarNavKey" ... />
-  </transition>
-</view>
-```
-
-**Step 4: 添加 SCSS**
-
-在 home.vue 的 `<style lang="scss">` 末尾添加：
-
-```scss
-.calendar-slide-wrap {
-  overflow: hidden;
-  position: relative;
-}
-
-.slide-left-enter-active,
-.slide-left-leave-active,
-.slide-right-enter-active,
-.slide-right-leave-active {
-  transition: transform 200ms ease-out, opacity 200ms ease-out;
-  position: absolute;
-  width: 100%;
-}
-
-.slide-left-enter-from {
-  transform: translateX(100%);
-  opacity: 0;
-}
-.slide-left-leave-to {
-  transform: translateX(-100%);
-  opacity: 0;
-}
-
-.slide-right-enter-from {
-  transform: translateX(-100%);
-  opacity: 0;
-}
-.slide-right-leave-to {
-  transform: translateX(100%);
-  opacity: 0;
-}
-```
-
-> 注意：过渡期间两个实例同时存在，`position: absolute` 会脱离流，容器需要有明确高度。若容器高度塌陷，在 `.calendar-slide-wrap` 上设置 `min-height` 或通过 computed 传入当前行数对应的高度。
-
-**Step 5: 手动测试**
-
-点击 `<<` / `>>` 按钮和横滑，确认日历内容以正确方向滑入滑出（左翻页向左滑出，右翻页向右滑出）。
-切换视图模式（3 周 ↔ 月览），确认无意外动画。
-确认 SelectedDatePanel 弹出不受影响。
-
-**Step 6: Commit**
-
-```bash
-git add frontend/pages/menstrual/home.vue
-git commit -m "feat(menstrual): add directional slide transition on calendar page navigation"
-```
+- 切换到月览，点击历史日期，`SelectedDatePanel` 弹出并进入可编辑状态
+- 切换回 3 周视图，现有单日编辑行为不变
 
 ---
 
-### Task 5: 批选范围限制在当前页
+## Task 2: 月览焦点格子高亮
 
-> 月览中，批选不可跨页（即不可选到上个月/下个月溢出的格子）。
+**目标:** 给月览补一个“当前正在编辑哪一天”的视觉锚点。
+
+> 月览不会像 3 周视图那样天然把焦点格子放在强视觉位置，因此需要额外高亮，但这不是新的选中体系，只是焦点提示。
 
 **Files:**
-- Modify: `frontend/pages/menstrual/home.vue:1300`
+- Modify: `frontend/components/menstrual/CalendarGrid.vue`
+- Modify: `frontend/pages/menstrual/home.vue`
 
-**Step 1: 在 `syncBatchSelectionRange` 中增加月份过滤**
+**Implementation intent:**
 
-找到 `syncBatchSelectionRange`（约第 1300 行），在现有 `.filter((cell) => cell.selectable !== false)` 一行中追加月份限制：
+- 在 `CalendarGrid` 中新增 `focusedDate` 输入
+- 仅当 `cell.isoDate === focusedDate` 时，为该格子增加轻量 ring/outline 高亮
+- 在 `home.vue` 中仅在月览模式下传入 `activeDate`，3 周视图传 `null`
 
-```diff
- this.batchSelectedKeysState = this.allCalendarCells
-   .slice(rangeStart, rangeEnd + 1)
--  .filter((cell) => cell.selectable !== false)
-+  .filter((cell) => {
-+    if (cell.selectable === false) return false;
-+    if (this.viewMode === 'month' && cell.isoDate) {
-+      // 只保留属于当前焦点月份的日期，排除溢出格子
-+      const focusMonth = this.focusDate.slice(0, 7); // 'YYYY-MM'
-+      return cell.isoDate.startsWith(focusMonth);
-+    }
-+    return true;
-+  })
-   .map((cell) => cell.key);
-```
+**Acceptance:**
 
-**Step 2: 手动测试**
-
-月览中，长按跨越行尾/行首的日期进行批选，确认选区不会包含上个月或下个月的溢出格子。
-3 周视图中批选跨周，确认行为不变。
-
-**Step 3: Commit**
-
-```bash
-git add frontend/pages/menstrual/home.vue
-git commit -m "feat(menstrual): clamp batch selection to current calendar page in month view"
-```
+- 月览下点击一个格子，当前编辑日期出现轻量高亮环
+- 3 周视图无额外高亮环，不和现有视觉状态冲突
 
 ---
 
-## 实现顺序建议
+## Task 3: CalendarGrid 横滑翻页
 
-1 → 2 → 3 → 5 → 4（过渡动画放最后，因为它依赖 Task 3 的 swipe 功能且视觉调参耗时较多）
+**目标:** 月览和 3 周视图都支持左右滑动翻页，且不破坏现有长按批选。
+
+**Files:**
+- Modify: `frontend/components/menstrual/CalendarGrid.vue`
+- Modify: `frontend/pages/menstrual/home.vue`
+
+**Implementation intent:**
+
+- 在现有 `touchstart / touchmove / touchend` 与桌面 long-press 兼容逻辑上，新增横滑识别
+- `CalendarGrid` 只负责 emit `swipe-left` / `swipe-right`
+- `home.vue` 接收到 swipe 后，分别调用现有 `handleHeaderNext` / `handleHeaderPrev`
+- 横滑判定必须和长按批选逻辑隔离，避免把批选拖动误判成翻页
+
+**Recommended event mapping:**
+
+- `swipe-left` -> 下一页
+- `swipe-right` -> 上一页
+
+**Acceptance:**
+
+- 月览下左滑进入下一页，右滑进入上一页
+- 3 周视图下左滑/右滑也沿用同一翻页语义
+- 长按进入批选后拖动扩选时，不会误触发翻页
+
+---
+
+## Task 4: 翻页效果复用现有过渡机制
+
+**目标:** swipe 翻页接入现有过渡链路，而不是为本轮功能单独重写一套动画系统。
+
+**Files:**
+- Modify only if needed: `frontend/pages/menstrual/home.vue`
+
+**Implementation intent:**
+
+- 优先复用当前已有的 header prev/next 浏览切换机制
+- 如果现有 browse preload、pending/current layer、direction-aware animation 已能承接 swipe 翻页，则不需要改成新的 `<transition>` 包裹写法
+- 只有在 swipe 接入现有机制时暴露真实缺口，才做最小范围补丁
+
+**Explicit non-goal:**
+
+- 不要求把当前 `home.vue` 的日历切换实现重构成文档示例中的新 transition 容器
+
+**Acceptance:**
+
+- 点击 header 翻页和横滑翻页都走同一条翻页执行语义
+- 页面已有方向感知动画继续生效，或至少不退化为无反馈切换
+- 不因接入 swipe 而破坏当前 browse preload / buffered browse 机制
+
+---
+
+## Task 5: 月览批选范围限制在当前月份
+
+**目标:** 月览批选时，最终有效选区只能包含当前焦点月份的日期。
+
+> 这里的“限制在当前页”语义，实际指向月览当前焦点月份，而不是仅仅指 6x7 网格内所有格子。上个月和下个月的溢出格子即使可见，也不能进入最终 selection。
+
+**Files:**
+- Modify: `frontend/pages/menstrual/home.vue`
+
+**Implementation intent:**
+
+- 在 `syncBatchSelectionRange` 的连续范围筛选中，保留现有 `selectable !== false` 过滤
+- 当 `viewMode === 'month'` 时，进一步按 `focusDate.slice(0, 7)` 过滤 `cell.isoDate`
+- 3 周视图不受该限制，继续维持当前连续范围语义
+
+**Acceptance:**
+
+- 月览中长按跨越行尾/行首拖选时，最终选区不会包含上个月或下个月的溢出格子
+- 3 周视图中的批选跨周行为保持不变
+
+---
+
+## 推荐实现顺序
+
+1. Task 1: 开启月览交互
+2. Task 2: 月览焦点格子高亮
+3. Task 3: 横滑翻页
+4. Task 5: 月览批选范围限制
+5. Task 4: 仅在需要时补齐 swipe 接入现有过渡机制的缺口
+
+---
+
+## 验收清单
+
+- 月览点击日期可进入单日编辑
+- 月览当前编辑日期有可见焦点锚点
+- 月览长按可进入批选
+- 月览批选不会跨入非当前月份的溢出格子
+- 月览和 3 周视图都支持左右滑动翻页
+- swipe 翻页复用现有翻页与过渡机制，不引入额外的动画链路重构

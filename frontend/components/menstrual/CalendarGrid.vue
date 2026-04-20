@@ -45,7 +45,10 @@
 					v-for="cell in weekCellsBefore(week, weekIndex)"
 					:key="cell.key || cell.label"
 					class="calendar-grid__cell"
-					:class="{ 'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy }"
+					:class="{
+						'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy,
+						'calendar-grid__cell--focused': focusedDate && cell.isoDate === focusedDate
+					}"
 					:hover-class="interactive && cell.selectable !== false && !busy ? 'ui-pressable-hover' : ''"
 					:hover-stay-time="70"
 					@tap.stop="onCellTap(cell)"
@@ -73,7 +76,10 @@
 					v-for="cell in weekCellsAfter(week, weekIndex)"
 					:key="cell.key || cell.label"
 					class="calendar-grid__cell"
-					:class="{ 'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy }"
+					:class="{
+						'calendar-grid__cell--tappable': interactive && cell.selectable !== false && !busy,
+						'calendar-grid__cell--focused': focusedDate && cell.isoDate === focusedDate
+					}"
 					:hover-class="interactive && cell.selectable !== false && !busy ? 'ui-pressable-hover' : ''"
 					:hover-stay-time="70"
 					@tap.stop="onCellTap(cell)"
@@ -123,6 +129,8 @@
 
 	const LONG_PRESS_DELAY = 400; // ms
 	const MOVE_CANCEL_THRESHOLD = 10; // px
+	const SWIPE_THRESHOLD = 48; // px
+	const SWIPE_AXIS_RATIO = 1.5;
 
 	function normalizeVariant(variant) {
 		return SELECT_VARIANT_REVERSE_MAP[variant] || variant;
@@ -223,6 +231,10 @@
 				type: Boolean,
 				default: true
 			},
+			focusedDate: {
+				type: String,
+				default: null
+			},
 			/** Keys of cells currently in the batch selection range */
 			selectedKeys: {
 				type: Array,
@@ -239,7 +251,7 @@
 				default: false
 			}
 		},
-		emits: ['cell-tap', 'batch-start', 'batch-extend', 'batch-end'],
+		emits: ['cell-tap', 'batch-start', 'batch-extend', 'batch-end', 'swipe-left', 'swipe-right'],
 		data() {
 			return {
 				batchMode: false,
@@ -247,6 +259,9 @@
 				longPressStartedAt: 0,
 				touchStartX: 0,
 				touchStartY: 0,
+				touchCurrentX: 0,
+				touchCurrentY: 0,
+				swipeCancelled: false,
 				cellRects: null,
 				suppressTapUntil: 0,
 				desktopRootEl: null,
@@ -417,12 +432,16 @@
 
 			onTouchCancel() {
 				if (this.busy) return;
+				this.swipeCancelled = false;
 				this.finishLongPress();
 			},
 
 			beginLongPress(clientX, clientY) {
 				this.touchStartX = clientX;
 				this.touchStartY = clientY;
+				this.touchCurrentX = clientX;
+				this.touchCurrentY = clientY;
+				this.swipeCancelled = false;
 				this.longPressStartedAt = Date.now();
 				if (this.longPressTimer) {
 					clearTimeout(this.longPressTimer);
@@ -434,6 +453,8 @@
 			},
 
 			handlePointerMove(clientX, clientY, e) {
+				this.touchCurrentX = clientX;
+				this.touchCurrentY = clientY;
 				const dx = clientX - this.touchStartX;
 				const dy = clientY - this.touchStartY;
 
@@ -441,6 +462,7 @@
 					if (Math.abs(dx) > MOVE_CANCEL_THRESHOLD || Math.abs(dy) > MOVE_CANCEL_THRESHOLD) {
 						clearTimeout(this.longPressTimer);
 						this.longPressTimer = null;
+						this.swipeCancelled = true;
 					}
 					return;
 				}
@@ -449,17 +471,26 @@
 					if (typeof e?.preventDefault === 'function') {
 						e.preventDefault();
 					}
-					const idx = this.hitTestCell(clientX, clientY);
-					if (idx !== -1) {
+					const extendBatchFromPoint = () => {
+						const idx = this.hitTestCell(clientX, clientY);
+						if (idx === -1) return;
 						const cell = this.allCells[idx];
 						if (cell.selectable !== false) {
 							this.$emit('batch-extend', cell);
 						}
+					};
+					if (!this.cellRects?.length) {
+						this.captureCellRects(() => {
+							extendBatchFromPoint();
+						});
+						return;
 					}
+					extendBatchFromPoint();
 				}
 			},
 
 			finishLongPress() {
+				const wasBatchMode = this.batchMode;
 				const holdElapsed = this.longPressStartedAt ? Date.now() - this.longPressStartedAt : 0;
 				if (this.longPressTimer) {
 					clearTimeout(this.longPressTimer);
@@ -473,6 +504,16 @@
 					this.batchMode = false;
 					this.$emit('batch-end');
 				}
+				if (this.swipeCancelled && !wasBatchMode) {
+					const dx = this.touchCurrentX - this.touchStartX;
+					const dy = this.touchCurrentY - this.touchStartY;
+					const absDx = Math.abs(dx);
+					const absDy = Math.abs(dy);
+					if (absDx >= SWIPE_THRESHOLD && absDx >= absDy * SWIPE_AXIS_RATIO) {
+						this.$emit(dx < 0 ? 'swipe-left' : 'swipe-right');
+					}
+				}
+				this.swipeCancelled = false;
 				this.longPressStartedAt = 0;
 			},
 
@@ -611,6 +652,13 @@
 
 	.calendar-grid__cell--tappable {
 		cursor: pointer;
+	}
+
+	.calendar-grid__cell--focused :deep(.date-cell) {
+		outline: 2rpx solid currentColor;
+		outline-offset: 2rpx;
+		border-radius: 50%;
+		opacity: 0.8;
 	}
 
 	/* Boundary slot: chip + divider as a real flex item between the two cell groups */
