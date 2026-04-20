@@ -2,31 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
+import { loadVueOptions } from './helpers/load-vue-options.mjs';
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const componentPath = path.resolve(repoRoot, 'components/management/ModuleSettingStrip.vue');
 
 function loadModuleSettingStrip() {
-	const source = fs.readFileSync(componentPath, 'utf8');
-	const scriptMatch = source.match(/<script>([\s\S]*?)<\/script>/);
-	if (!scriptMatch) {
-		throw new Error(`No <script> block found in ${componentPath}`);
-	}
-
-	const transformed = scriptMatch[1]
-		.replace(/^\s*import[\s\S]*?from\s+['"][^'"]+['"];\s*$/gm, '')
-		.replace(/export default/, 'module.exports =');
-
-	const module = { exports: {} };
-	const sandbox = vm.createContext({
-		module,
-		exports: module.exports,
-		console
-	});
-
-	vm.runInContext(transformed, sandbox, { filename: componentPath });
-	return module.exports;
+	return loadVueOptions('frontend/components/management/ModuleSettingStrip.vue');
 }
 
 function normalize(value) {

@@ -2,29 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+import { loadVueOptions } from '../../../__tests__/helpers/load-vue-options.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const calendarGridPath = path.resolve(__dirname, '..', 'CalendarGrid.vue');
 
 function loadCalendarGrid() {
-	const source = fs.readFileSync(calendarGridPath, 'utf8');
-	const scriptMatch = source.match(/<script>([\s\S]*?)<\/script>/);
-	const transformed = scriptMatch[1]
-		.replace(/^\s*import[\s\S]*?from\s+['"][^'"]+['"];\s*$/gm, '')
-		.replace(/export default/, 'module.exports =');
-	const module = { exports: {} };
-	const sandbox = vm.createContext({
-		module,
-		exports: module.exports,
-		console,
-		setTimeout,
-		clearTimeout,
+	return loadVueOptions('frontend/components/menstrual/CalendarGrid.vue', {
 		DateCell: {}
 	});
-	vm.runInContext(transformed, sandbox, { filename: calendarGridPath });
-	return module.exports;
 }
 
 test('CalendarGrid wires desktop H5 long-press events in addition to touch events', () => {
@@ -73,10 +60,60 @@ test('CalendarGrid falls back to DOM bounding rects when selectorQuery cannot re
 	assert.match(source, /const fallbackRects = this\.captureCellRectsFromDom\(\)/);
 });
 
-test('CalendarGrid intercepts touchmove on the root node so mini-program batch dragging does not scroll the page', () => {
+test('CalendarGrid only wires root touchmove to the handler so scroll blocking is decided at runtime', () => {
 	const source = fs.readFileSync(calendarGridPath, 'utf8');
 
-	assert.match(source, /@touchmove\.stop\.prevent="onTouchMove"/);
+	assert.match(source, /@touchmove="onTouchMove"/);
+	assert.doesNotMatch(source, /@touchmove\.stop\.prevent="onTouchMove"/);
+});
+
+test('CalendarGrid only prevents touchmove scrolling while batch drag is active', () => {
+	const CalendarGrid = loadCalendarGrid();
+	let preventCount = 0;
+	const baseCtx = {
+		touchStartX: 0,
+		touchStartY: 0,
+		longPressTimer: null,
+		hitTestCell() {
+			return -1;
+		},
+		allCells: [],
+		$emit() {
+			throw new Error('batch events are not expected in this regression test');
+		}
+	};
+
+	CalendarGrid.methods.handlePointerMove.call(
+		{
+			...baseCtx,
+			batchMode: false
+		},
+		25,
+		40,
+		{
+			preventDefault() {
+				preventCount += 1;
+			}
+		}
+	);
+
+	assert.equal(preventCount, 0);
+
+	CalendarGrid.methods.handlePointerMove.call(
+		{
+			...baseCtx,
+			batchMode: true
+		},
+		25,
+		40,
+		{
+			preventDefault() {
+				preventCount += 1;
+			}
+		}
+	);
+
+	assert.equal(preventCount, 1);
 });
 
 test('CalendarGrid treats a stationary long press release as batch entry once the hold duration has elapsed', () => {

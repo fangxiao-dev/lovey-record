@@ -108,7 +108,7 @@
 			<SegmentedControl
 				:options="page.viewModeControl.options"
 				:value="page.viewModeControl.value"
-				:busy="isBrowseBusy"
+				:busy="isNavigationBusy"
 				@change="handleViewModeChange"
 			/>
 			<HeaderNav
@@ -122,7 +122,7 @@
 				:next-invalid="false"
 				:inline-message="''"
 				:inline-message-side="'next'"
-				:busy="isBrowseBusy"
+				:busy="isNavigationBusy"
 				@prev="handleHeaderPrev"
 				@next="handleHeaderNext"
 			/>
@@ -131,7 +131,7 @@
 					class="menstrual-home__jump-tabs"
 					:items="resolvedJumpTabItems"
 					:value="page.jumpTabs.value"
-					:busy="isBrowseBusy"
+					:busy="isNavigationBusy"
 					:inline-message="headerInlineMessage"
 					:inline-message-key="headerInlineMessageSide"
 					@jump="handleJump"
@@ -141,6 +141,7 @@
 					<view
 						v-if="panelMode !== 'batch'"
 						class="menstrual-home__batch-btn menstrual-home__batch-btn--toggle"
+						:class="{ 'menstrual-home__batch-btn--disabled': isNavigationBusy }"
 						hover-class="ui-pressable-hover"
 						:hover-stay-time="70"
 						@tap="handleBatchToggleTap"
@@ -168,19 +169,45 @@
 					</template>
 				</view>
 			</view>
-			<CalendarGrid
-				ref="calendarGrid"
-				:weeks="page.calendarCard.weeks"
-				:weekday-labels="page.calendarCard.weekdayLabels"
-				:interactive="page.viewModeControl.value === 'three-week'"
-				:selected-keys="selectedBatchKeys"
-				:preview-period-marked="panelMode === 'batch' ? batchDraft.isPeriod : null"
-				:busy="isBrowseBusy"
-				@cell-tap="handleCellTap"
-				@batch-start="handleBatchStart"
-				@batch-extend="handleBatchExtend"
-				@batch-end="handleBatchEnd"
-			/>
+			<view class="menstrual-home__calendar-stage">
+				<view
+					class="menstrual-home__calendar-layer menstrual-home__calendar-layer--current"
+					:class="currentCalendarLayerClasses"
+				>
+					<CalendarGrid
+						ref="calendarGrid"
+						:key="currentCalendarKey"
+						:weeks="page.calendarCard.weeks"
+						:weekday-labels="page.calendarCard.weekdayLabels"
+						:interactive="page.viewModeControl.value === 'three-week'"
+						:selected-keys="selectedBatchKeys"
+						:preview-period-marked="panelMode === 'batch' ? batchDraft.isPeriod : null"
+						:busy="isBrowseInteractionBusy"
+						@cell-tap="handleCellTap"
+						@batch-start="handleBatchStart"
+						@batch-extend="handleBatchExtend"
+						@batch-end="handleBatchEnd"
+					/>
+				</view>
+				<view
+					v-if="pendingBrowsePayload"
+					class="menstrual-home__calendar-layer menstrual-home__calendar-layer--pending"
+					:class="pendingCalendarLayerClasses"
+				>
+					<CalendarGrid
+						:key="pendingCalendarKey"
+						:weeks="pendingBrowsePayload.pageModel.calendarCard.weeks"
+						:weekday-labels="pendingBrowsePayload.pageModel.calendarCard.weekdayLabels"
+						:interactive="false"
+						:selected-keys="[]"
+						:preview-period-marked="null"
+						:busy="true"
+					/>
+				</view>
+				<view v-if="browseMaskVisible" class="menstrual-home__calendar-mask">
+					<text class="menstrual-home__calendar-mask-label">正在切换日历…</text>
+				</view>
+			</view>
 			<CalendarLegend :items="page.legend" />
 			<SelectedDatePanel
 				v-if="page && userRole !== 'viewer'"
@@ -258,6 +285,7 @@
 	import { createInviteToken, leaveModule } from '../../services/sharing/sharing-command-service.js';
 	import { createJoinPageUrl } from '../../services/menstrual/module-shell-service.js';
 
+	const BROWSE_ANIMATION_MS = 200;
 	const PHASE_ICON_URL_MAP = Object.freeze({
 		卵泡期: '/static/menstrual/embryo.svg',
 		排卵期: '/static/menstrual/sun.svg',
@@ -293,6 +321,14 @@
 				isRefreshingCalendar: false,
 				isRefreshingDayDetail: false,
 				isRefreshingHero: false,
+				browseTransitionPhase: 'idle',
+				browseTransitionDirection: null,
+				browseTransitionEffect: 'slide',
+				pendingBrowsePayload: null,
+				currentCalendarKey: 0,
+				pendingCalendarKey: 0,
+				browseRequestId: 0,
+				browseAnimationTimer: null,
 				snapshotRequestId: 0,
 				calendarRequestId: 0,
 				dayDetailRequestId: 0,
@@ -318,6 +354,7 @@
 		},
 		beforeUnmount() {
 			this.clearHeaderInlineMessage();
+			this.clearBrowseAnimationTimer();
 		},
 		computed: {
 			browseNavLabels() {
@@ -337,7 +374,40 @@
 				return this.isRefreshingSnapshot || this.isRefreshingCalendar || this.isRefreshingDayDetail;
 			},
 			isBrowseBusy() {
-				return this.isRefreshing || this.isMutating;
+				return this.isRefreshing || this.isMutating || this.browseTransitionPhase !== 'idle';
+			},
+			isNavigationBusy() {
+				return this.isBrowseBusy || this.panelMode === 'batch';
+			},
+			isBrowseInteractionBusy() {
+				return this.isRefreshing || this.isMutating || this.browseTransitionPhase !== 'idle';
+			},
+			browseMaskVisible() {
+				return this.browseTransitionPhase === 'preloading';
+			},
+			currentCalendarLayerClasses() {
+				return {
+					'menstrual-home__calendar-layer--slide-out-left': this.browseTransitionPhase === 'animating'
+						&& this.browseTransitionEffect === 'slide'
+						&& this.browseTransitionDirection === 'next',
+					'menstrual-home__calendar-layer--slide-out-right': this.browseTransitionPhase === 'animating'
+						&& this.browseTransitionEffect === 'slide'
+						&& this.browseTransitionDirection === 'prev',
+					'menstrual-home__calendar-layer--fade-out': this.browseTransitionPhase === 'animating'
+						&& this.browseTransitionEffect === 'fade'
+				};
+			},
+			pendingCalendarLayerClasses() {
+				return {
+					'menstrual-home__calendar-layer--slide-in-left': this.browseTransitionPhase === 'animating'
+						&& this.browseTransitionEffect === 'slide'
+						&& this.browseTransitionDirection === 'next',
+					'menstrual-home__calendar-layer--slide-in-right': this.browseTransitionPhase === 'animating'
+						&& this.browseTransitionEffect === 'slide'
+						&& this.browseTransitionDirection === 'prev',
+					'menstrual-home__calendar-layer--fade-in': this.browseTransitionPhase === 'animating'
+						&& this.browseTransitionEffect === 'fade'
+				};
 			},
 			batchPanelTitle() {
 				const cells = this.allCalendarCells.filter(c => this.selectedBatchKeys.includes(c.key) && c.isoDate);
@@ -442,6 +512,152 @@
 					useCalendarWindow,
 					dayDetail
 				});
+			},
+			clearBrowseAnimationTimer() {
+				if (this.browseAnimationTimer) {
+					clearTimeout(this.browseAnimationTimer);
+					this.browseAnimationTimer = null;
+				}
+			},
+			buildBrowsePayload({
+				selectedDate,
+				focusDate,
+				viewMode,
+				calendarWindow,
+				dayDetail,
+				singleDayPeriodAction
+			}) {
+				const nextRawContracts = {
+					...this.rawContracts,
+					calendarWindow,
+					dayDetail,
+					singleDayPeriodAction,
+					focusDate,
+					viewMode
+				};
+
+				return {
+					pageModel: createMenstrualHomePageModel({
+						homeView: nextRawContracts.homeView,
+						moduleSettings: nextRawContracts.moduleSettings,
+						calendarWindow,
+						dayDetail,
+						singleDayPeriodAction,
+						today: this.contractContext.today,
+						focusDate,
+						viewMode
+					}),
+					rawContracts: nextRawContracts,
+					activeDate: selectedDate,
+					focusDate,
+					viewMode
+				};
+			},
+			async loadBrowseDependencies({ selectedDate, focusDate, viewMode, requestId }) {
+				const [calendarResult, dayDetail, singleDayPeriodAction] = await Promise.all([
+					loadMenstrualCalendarWindow({
+						...this.contractContext,
+						focusDate,
+						viewMode
+					}),
+					loadMenstrualDayDetail({
+						...this.contractContext,
+						activeDate: selectedDate
+					}),
+					getSingleDayPeriodAction({
+						apiBaseUrl: this.contractContext.apiBaseUrl,
+						openid: this.contractContext.openid,
+						moduleInstanceId: this.contractContext.moduleInstanceId,
+						date: selectedDate
+					})
+				]);
+
+				if (requestId !== this.browseRequestId) {
+					return null;
+				}
+
+				return this.buildBrowsePayload({
+					selectedDate,
+					focusDate,
+					viewMode,
+					calendarWindow: calendarResult.calendarWindow,
+					dayDetail,
+					singleDayPeriodAction
+				});
+			},
+			startBrowseAnimation() {
+				const requestId = this.browseRequestId;
+				this.browseTransitionPhase = 'animating';
+				this.clearBrowseAnimationTimer();
+				this.browseAnimationTimer = setTimeout(() => {
+					this.commitBufferedBrowse(requestId);
+				}, BROWSE_ANIMATION_MS);
+			},
+			commitBufferedBrowse(requestId = this.browseRequestId) {
+				if (requestId !== this.browseRequestId || !this.pendingBrowsePayload) {
+					return;
+				}
+
+				const pending = this.pendingBrowsePayload;
+				this.page = pending.pageModel;
+				this.rawContracts = pending.rawContracts;
+				this.activeDate = pending.activeDate;
+				this.focusDate = pending.focusDate;
+				this.viewMode = pending.viewMode;
+				this.currentCalendarKey = this.pendingCalendarKey;
+				this.pendingBrowsePayload = null;
+				this.pendingCalendarKey = 0;
+				this.browseTransitionPhase = 'idle';
+				this.browseTransitionDirection = null;
+				this.browseTransitionEffect = 'slide';
+				this.clearBrowseAnimationTimer();
+			},
+			resetBufferedBrowse() {
+				this.pendingBrowsePayload = null;
+				this.pendingCalendarKey = 0;
+				this.browseTransitionPhase = 'idle';
+				this.browseTransitionDirection = null;
+				this.browseTransitionEffect = 'slide';
+				this.clearBrowseAnimationTimer();
+			},
+			async beginBufferedBrowse({
+				selectedDate,
+				focusDate,
+				viewMode,
+				direction = 'next',
+				effect = 'slide'
+			}) {
+				if (!this.rawContracts?.homeView || !this.rawContracts?.moduleSettings) return;
+				if (this.isNavigationBusy) return;
+
+				const requestId = ++this.browseRequestId;
+				this.loadError = '';
+				this.panelMode = 'single-day';
+				this.clearHeaderInlineMessage();
+				this.browseTransitionPhase = 'preloading';
+				this.browseTransitionDirection = direction;
+				this.browseTransitionEffect = effect;
+
+				try {
+					const pendingPayload = await this.loadBrowseDependencies({
+						selectedDate,
+						focusDate,
+						viewMode,
+						requestId
+					});
+					if (!pendingPayload || requestId !== this.browseRequestId) {
+						return;
+					}
+					this.pendingBrowsePayload = pendingPayload;
+					this.pendingCalendarKey = this.currentCalendarKey + 1;
+					this.startBrowseAnimation();
+				} catch (error) {
+					if (requestId !== this.browseRequestId) {
+						return;
+					}
+					this.loadError = error instanceof Error ? error.message : '联调环境请求失败';
+					this.resetBufferedBrowse();
+				}
 			},
 			async refreshHomeSnapshot(activeDate, options = {}) {
 				const requestId = options.requestId || ++this.snapshotRequestId;
@@ -687,76 +903,42 @@
 				}).catch(() => {});
 			},
 			handleViewModeChange(nextMode) {
-				if (this.isBrowseBusy) return;
+				if (this.isNavigationBusy) return;
 				if (!nextMode || nextMode === this.viewMode) return;
-				this.clearHeaderInlineMessage();
-				this.panelMode = 'single-day';
-				this.applyLocalBrowseState({
+				this.beginBufferedBrowse({
 					selectedDate: this.activeDate,
 					focusDate: this.focusDate,
 					viewMode: nextMode,
-					useCalendarWindow: false
+					direction: 'next',
+					effect: 'fade'
 				});
-				this.refreshCalendarWindow({
-					selectedDate: this.activeDate,
-					focusDate: this.focusDate,
-					viewMode: nextMode
-				}).catch(() => {});
 			},
 			handleHeaderPrev() {
-				if (this.isBrowseBusy) return;
-				this.panelMode = 'single-day';
-				this.clearHeaderInlineMessage();
+				if (this.isNavigationBusy) return;
 				const nextFocusDate = shiftFocusDate(this.focusDate, this.viewMode, -1);
 				if (!nextFocusDate) return;
-				this.applyLocalBrowseState({
+				this.beginBufferedBrowse({
 					selectedDate: nextFocusDate,
 					focusDate: nextFocusDate,
 					viewMode: this.viewMode,
-					useCalendarWindow: false,
-					dayDetail: this.getSelectedDayDetail(nextFocusDate)
+					direction: 'prev',
+					effect: 'slide'
 				});
-				Promise.all([
-					this.refreshCalendarWindow({
-						selectedDate: nextFocusDate,
-						focusDate: nextFocusDate,
-						viewMode: this.viewMode
-					}),
-					this.refreshSelectedDayDetail({
-						selectedDate: nextFocusDate,
-						focusDate: nextFocusDate,
-						viewMode: this.viewMode
-					})
-				]).catch(() => {});
 			},
 			handleHeaderNext() {
-				if (this.isBrowseBusy) return;
-				this.panelMode = 'single-day';
-				this.clearHeaderInlineMessage();
+				if (this.isNavigationBusy) return;
 				const nextFocusDate = shiftFocusDate(this.focusDate, this.viewMode, 1);
 				if (!nextFocusDate) return;
-				this.applyLocalBrowseState({
+				this.beginBufferedBrowse({
 					selectedDate: nextFocusDate,
 					focusDate: nextFocusDate,
 					viewMode: this.viewMode,
-					useCalendarWindow: false,
-					dayDetail: this.getSelectedDayDetail(nextFocusDate)
+					direction: 'next',
+					effect: 'slide'
 				});
-				Promise.all([
-					this.refreshCalendarWindow({
-						selectedDate: nextFocusDate,
-						focusDate: nextFocusDate,
-						viewMode: this.viewMode
-					}),
-					this.refreshSelectedDayDetail({
-						selectedDate: nextFocusDate,
-						focusDate: nextFocusDate,
-						viewMode: this.viewMode
-					})
-				]).catch(() => {});
 			},
 			handleJump(jumpKey) {
-				if (this.isBrowseBusy) return;
+				if (this.isNavigationBusy) return;
 				const headerNav = this.page?.headerNav || {};
 				const targetDate = jumpKey === 'next-period'
 					? headerNav.nextPeriodStart || null
@@ -768,27 +950,13 @@
 					return;
 				}
 				if (!targetDate) return;
-				this.clearHeaderInlineMessage();
-				this.panelMode = 'single-day';
-				this.applyLocalBrowseState({
+				this.beginBufferedBrowse({
 					selectedDate: targetDate,
 					focusDate: targetDate,
 					viewMode: this.viewMode,
-					useCalendarWindow: false,
-					dayDetail: this.getSelectedDayDetail(targetDate)
+					direction: 'next',
+					effect: 'fade'
 				});
-				Promise.all([
-					this.refreshCalendarWindow({
-						selectedDate: targetDate,
-						focusDate: targetDate,
-						viewMode: this.viewMode
-					}),
-					this.refreshSelectedDayDetail({
-						selectedDate: targetDate,
-						focusDate: targetDate,
-						viewMode: this.viewMode
-					})
-				]).catch(() => {});
 			},
 			createEmptyBatchDraft() {
 				return {
@@ -1465,6 +1633,100 @@
 
 	.menstrual-home__batch-btn--disabled {
 		opacity: 0.45;
+	}
+
+	.menstrual-home__calendar-stage {
+		position: relative;
+		display: grid;
+		overflow: hidden;
+	}
+
+	.menstrual-home__calendar-layer {
+		grid-area: 1 / 1;
+		width: 100%;
+		will-change: transform, opacity;
+	}
+
+	.menstrual-home__calendar-layer--current {
+		z-index: 1;
+	}
+
+	.menstrual-home__calendar-layer--pending {
+		z-index: 2;
+	}
+
+	.menstrual-home__calendar-mask {
+		grid-area: 1 / 1;
+		z-index: 3;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(250, 247, 242, 0.58);
+		backdrop-filter: blur(2px);
+	}
+
+	.menstrual-home__calendar-mask-label {
+		padding: 12rpx 20rpx;
+		border-radius: 999rpx;
+		background: rgba(255, 255, 255, 0.9);
+		font-size: 22rpx;
+		line-height: 1;
+		font-weight: $font-weight-medium;
+		color: $text-secondary;
+	}
+
+	.menstrual-home__calendar-layer--slide-out-left {
+		animation: menstrual-calendar-slide-out-left 200ms ease-out forwards;
+	}
+
+	.menstrual-home__calendar-layer--slide-out-right {
+		animation: menstrual-calendar-slide-out-right 200ms ease-out forwards;
+	}
+
+	.menstrual-home__calendar-layer--slide-in-left {
+		animation: menstrual-calendar-slide-in-left 200ms ease-out forwards;
+	}
+
+	.menstrual-home__calendar-layer--slide-in-right {
+		animation: menstrual-calendar-slide-in-right 200ms ease-out forwards;
+	}
+
+	.menstrual-home__calendar-layer--fade-out {
+		animation: menstrual-calendar-fade-out 200ms ease-out forwards;
+	}
+
+	.menstrual-home__calendar-layer--fade-in {
+		animation: menstrual-calendar-fade-in 200ms ease-out forwards;
+	}
+
+	@keyframes menstrual-calendar-slide-out-left {
+		from { transform: translateX(0); opacity: 1; }
+		to { transform: translateX(-10%); opacity: 0; }
+	}
+
+	@keyframes menstrual-calendar-slide-out-right {
+		from { transform: translateX(0); opacity: 1; }
+		to { transform: translateX(10%); opacity: 0; }
+	}
+
+	@keyframes menstrual-calendar-slide-in-left {
+		from { transform: translateX(12%); opacity: 0; }
+		to { transform: translateX(0); opacity: 1; }
+	}
+
+	@keyframes menstrual-calendar-slide-in-right {
+		from { transform: translateX(-12%); opacity: 0; }
+		to { transform: translateX(0); opacity: 1; }
+	}
+
+	@keyframes menstrual-calendar-fade-out {
+		from { opacity: 1; }
+		to { opacity: 0; }
+	}
+
+	@keyframes menstrual-calendar-fade-in {
+		from { opacity: 0; }
+		to { opacity: 1; }
 	}
 
 	.menstrual-home__batch-btn-label {

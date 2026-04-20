@@ -106,7 +106,7 @@
 		<view v-if="showShareModal" class="share-modal-mask" @tap="showShareModal = false">
 			<view class="share-modal" @tap.stop>
 				<view class="share-modal__header">
-					<text class="share-modal__title u-text-title-sm">共享 加入</text>
+					<text class="share-modal__title u-text-title-sm">共享模块</text>
 					<text class="share-modal__module-name u-text-body">{{ selectedModule && selectedModule.moduleName }}</text>
 				</view>
 
@@ -134,7 +134,7 @@
 							<view v-if="selectedPermission === 'PARTNER'" class="share-modal__perm-option-radio-dot" />
 						</view>
 						<view class="share-modal__perm-option-body">
-							<text class="share-modal__perm-option-label">一起记录</text>
+							<text class="share-modal__perm-option-label">可编辑</text>
 							<text class="share-modal__perm-option-desc">TA 可以帮你添加和编辑</text>
 						</view>
 					</view>
@@ -142,7 +142,7 @@
 
 				<view class="share-modal__badge" :class="{ 'share-modal__badge--partner': selectedPermission === 'PARTNER' }">
 					<view class="share-modal__badge-dot" />
-					<text class="share-modal__badge-text">{{ selectedPermission === 'PARTNER' ? '共同记录' : '查看权限' }}</text>
+					<text class="share-modal__badge-text">{{ selectedPermission === 'PARTNER' ? '可编辑权限' : '只读权限' }}</text>
 				</view>
 
 				<view class="share-modal__perms">

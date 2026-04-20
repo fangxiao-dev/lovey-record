@@ -265,6 +265,26 @@ async function getCellClasses(page, days) {
 	}), days);
 }
 
+async function selectAdjacentQuickSettingChip(page, rowLabel, currentValue) {
+	const nextLowerValue = String(currentValue - 1);
+	const nextHigherValue = String(currentValue + 1);
+	const row = page.locator('.module-setting-strip').filter({ hasText: rowLabel });
+	const lowerChip = row.locator('.module-setting-strip__chip').filter({ hasText: nextLowerValue });
+
+	if (await lowerChip.count()) {
+		await lowerChip.first().click();
+		return currentValue - 1;
+	}
+
+	const higherChip = row.locator('.module-setting-strip__chip').filter({ hasText: nextHigherValue });
+	if (await higherChip.count()) {
+		await higherChip.first().click();
+		return currentValue + 1;
+	}
+
+	throw new Error(`No adjacent quick chip found for ${rowLabel} current value ${currentValue}`);
+}
+
 async function getCellLabelClasses(page, days) {
 	return await page.evaluate((labels) => labels.map((label) => {
 		const node = [...document.querySelectorAll('.date-cell__label')]
@@ -585,10 +605,10 @@ test('owner shell can update the default period duration from the live settings 
 		await page.waitForTimeout(1200);
 
 		await expect(page.locator('.management-card__summary-item').filter({ hasText: '经期时长' })).toContainText('6 天');
-		await page.locator('.module-setting-strip').filter({ hasText: '设置时长' }).locator('.module-setting-strip__chip').filter({ hasText: '5' }).click();
+		const updatedDuration = await selectAdjacentQuickSettingChip(page, '经期天数', 6);
 		await page.waitForTimeout(1200);
-		await expect(page.locator('.management-card__summary-item').filter({ hasText: '经期时长' })).toContainText('5 天');
-		await expect(page.locator('.module-setting-strip').filter({ hasText: '设置时长' }).locator('.module-setting-strip__chip--selected')).toContainText('5');
+		await expect(page.locator('.management-card__summary-item').filter({ hasText: '经期时长' })).toContainText(`${updatedDuration} 天`);
+		await expect(page.locator('.module-setting-strip').filter({ hasText: '经期天数' }).locator('.module-setting-strip__chip--selected')).toContainText(`${updatedDuration}`);
 	} finally {
 		await ensureDefaultPeriodDuration(6);
 	}

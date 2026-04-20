@@ -37,6 +37,9 @@ test('module management share action opens a confirmation modal instead of copyi
 
 	assert.match(source, /showShareModal/);
 	assert.doesNotMatch(source, /uni\.setClipboardData\(/);
+	assert.match(source, /share-modal__title[\s\S]*共享模块/);
+	assert.match(source, /selectedPermission === 'PARTNER' \? '可编辑权限' : '只读权限'/);
+	assert.match(source, /share-modal__perm-option-label">可编辑</);
 });
 
 test('management alias page defines onShareAppMessage for native WeChat forward', () => {

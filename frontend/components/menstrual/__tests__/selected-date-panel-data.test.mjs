@@ -2,32 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
+import { loadVueOptions } from '../../../__tests__/helpers/load-vue-options.mjs';
 
 import { createSelectedDatePanelData } from '../selected-date-panel-data.js';
-
-function loadVueOptions(relativePath, injected = {}) {
-	const filePath = path.resolve(process.cwd(), relativePath);
-	const source = fs.readFileSync(filePath, 'utf8');
-	const scriptMatch = source.match(/<script>([\s\S]*?)<\/script>/);
-	if (!scriptMatch) {
-		throw new Error(`No <script> block found in ${filePath}`);
-	}
-
-	const transformed = scriptMatch[1]
-		.replace(/^\s*import[\s\S]*?from\s+['"][^'"]+['"];\s*$/gm, '')
-		.replace(/export default/, 'module.exports =');
-
-	const module = { exports: {} };
-	const sandbox = vm.createContext({
-		module,
-		exports: module.exports,
-		console,
-		...injected
-	});
-	vm.runInContext(transformed, sandbox, { filename: filePath });
-	return module.exports;
-}
 
 test('selected date panel data exposes the approved home-panel content structure', () => {
 	const panel = createSelectedDatePanelData();

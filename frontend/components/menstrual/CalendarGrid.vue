@@ -3,7 +3,7 @@
 		class="calendar-grid"
 		:class="rootClasses"
 		@touchstart="onTouchStart"
-		@touchmove.stop.prevent="onTouchMove"
+		@touchmove="onTouchMove"
 		@touchend="onTouchEnd"
 		@touchcancel="onTouchCancel"
 	>

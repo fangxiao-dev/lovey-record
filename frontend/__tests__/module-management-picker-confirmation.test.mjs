@@ -1,33 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
-import vm from 'node:vm';
-
-const repoRoot = path.resolve(import.meta.dirname, '..');
-const componentPath = path.resolve(repoRoot, 'components/management/ModuleManagementPage.vue');
+import { loadVueOptions } from './helpers/load-vue-options.mjs';
 
 function loadModuleManagementPage() {
-	const source = fs.readFileSync(componentPath, 'utf8');
-	const scriptMatch = source.match(/<script>([\s\S]*?)<\/script>/);
-	if (!scriptMatch) {
-		throw new Error(`No <script> block found in ${componentPath}`);
-	}
-
-	const transformed = scriptMatch[1]
-		.replace(/^\s*import[\s\S]*?from\s+['"][^'"]+['"];\s*$/gm, '')
-		.replace(/export default/, 'module.exports =');
-
-	const module = { exports: {} };
-	const sandbox = vm.createContext({
-		module,
-		exports: module.exports,
-		console,
+	return loadVueOptions('frontend/components/management/ModuleManagementPage.vue', {
 		SharedLegendChip: {},
 		ModuleTileCompact: {},
 		ModuleActionRow: {},
 		ModuleSettingStrip: {},
-		LoadingScreen: {},
 		ChangelogEntryRow: {},
 		ChangelogSheet: {},
 		DEFAULT_MODULE_SHELL_CONTEXT: {},
@@ -48,9 +28,6 @@ function loadModuleManagementPage() {
 		},
 		process: { env: { NODE_ENV: 'development' } }
 	});
-
-	vm.runInContext(transformed, sandbox, { filename: componentPath });
-	return module.exports;
 }
 
 function createPageContext() {

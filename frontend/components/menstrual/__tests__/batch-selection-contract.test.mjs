@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+import { loadVueOptions } from '../../../__tests__/helpers/load-vue-options.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,31 +11,6 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..', '..');
 
 function normalize(value) {
 	return JSON.parse(JSON.stringify(value));
-}
-
-function loadVueOptions(relativePath, injected = {}) {
-	const filePath = path.resolve(repoRoot, relativePath);
-	const source = fs.readFileSync(filePath, 'utf8');
-	const scriptMatch = source.match(/<script>([\s\S]*?)<\/script>/);
-	if (!scriptMatch) {
-		throw new Error(`No <script> block found in ${filePath}`);
-	}
-
-	const transformed = scriptMatch[1]
-		.replace(/^\s*import[\s\S]*?from\s+['"][^'"]+['"];\s*$/gm, '')
-		.replace(/export default/, 'module.exports =');
-
-	const module = { exports: {} };
-	const sandbox = vm.createContext({
-		module,
-		exports: module.exports,
-		console,
-		setTimeout,
-		clearTimeout,
-		...injected
-	});
-	vm.runInContext(transformed, sandbox, { filename: filePath });
-	return module.exports;
 }
 
 function createCalendarCells() {
