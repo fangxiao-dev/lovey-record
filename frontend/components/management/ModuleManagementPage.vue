@@ -281,7 +281,9 @@
 				const selectedValue = control?.value;
 				const customPickerValueIndex = customPickerOptions.findIndex((option) => option.value === selectedValue);
 				const anchor = this.quickWindowAnchors[key] ?? selectedValue ?? 0;
-				const options = buildCenteredQuickOptions(anchor, selectedValue, customPickerOptions);
+				const previewValue = this.activeCustomPickerKey === key ? this.quickWindowAnchors[key] : undefined;
+				const resolvedSelectedValue = typeof previewValue === 'number' ? previewValue : selectedValue;
+				const options = buildCenteredQuickOptions(anchor, resolvedSelectedValue, customPickerOptions);
 				const resolvedValueIndex = customPickerValueIndex >= 0 ? customPickerValueIndex : 0;
 
 				return {

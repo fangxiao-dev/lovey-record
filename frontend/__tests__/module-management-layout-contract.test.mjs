@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { loadVueOptions } from './helpers/load-vue-options.mjs';
+import { buildCenteredQuickOptions } from '../utils/picker-quick-options.js';
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const managementPagePath = path.resolve(repoRoot, 'components/management/ModuleManagementPage.vue');
@@ -34,6 +36,104 @@ function readModuleSettingStrip() {
 function readModuleShellService() {
 	return fs.readFileSync(moduleShellServicePath, 'utf8');
 }
+
+test('module management page uses preview value as the temporary selected chip while custom picker is open', () => {
+	const ModuleManagementPage = loadVueOptions('frontend/components/management/ModuleManagementPage.vue', {
+		buildCenteredQuickOptions,
+		SharedLegendChip: {},
+		ModuleTileCompact: {},
+		ModuleActionRow: {},
+		ModuleSettingStrip: {},
+		LoadingScreen: {},
+		ChangelogEntryRow: {},
+		ChangelogSheet: {},
+		PageNavBar: {}
+	});
+
+	const row = ModuleManagementPage.methods.buildSettingRow.call(
+		{
+			quickWindowAnchors: { duration: 6 },
+			activeCustomPickerKey: 'duration',
+			customPickerDraftIndices: { duration: 1 },
+			getActiveCustomPickerDraftIndex(key, fallbackIndex) {
+				return this.customPickerDraftIndices[key] ?? fallbackIndex;
+			}
+		},
+		'duration',
+		{
+			label: '经期时长',
+			value: 5,
+			customLabel: '自选',
+			customPickerOptions: [
+				{ value: 5, label: '5' },
+				{ value: 6, label: '6' },
+				{ value: 7, label: '7' }
+			]
+		}
+	);
+
+	assert.deepStrictEqual(row.options.map((option) => option.value), [5, 6, 7]);
+	assert.deepStrictEqual(row.options.map((option) => option.selected), [false, true, false]);
+	assert.equal(row.customPickerValueIndex, 1);
+});
+
+test('module management page keeps the selected chip in sync across consecutive custom picker previews', () => {
+	const ModuleManagementPage = loadVueOptions('frontend/components/management/ModuleManagementPage.vue', {
+		buildCenteredQuickOptions,
+		SharedLegendChip: {},
+		ModuleTileCompact: {},
+		ModuleActionRow: {},
+		ModuleSettingStrip: {},
+		LoadingScreen: {},
+		ChangelogEntryRow: {},
+		ChangelogSheet: {},
+		PageNavBar: {}
+	});
+
+	const baseContext = {
+		quickWindowAnchors: { duration: 6 },
+		activeCustomPickerKey: 'duration',
+		customPickerDraftIndices: { duration: 1 },
+		getActiveCustomPickerDraftIndex(key, fallbackIndex) {
+			return this.customPickerDraftIndices[key] ?? fallbackIndex;
+		}
+	};
+
+	const firstRow = ModuleManagementPage.methods.buildSettingRow.call(baseContext, 'duration', {
+		label: '经期时长',
+		value: 5,
+		customLabel: '自选',
+		customPickerOptions: [
+			{ value: 5, label: '5' },
+			{ value: 6, label: '6' },
+			{ value: 7, label: '7' }
+		]
+	});
+
+	const secondRow = ModuleManagementPage.methods.buildSettingRow.call(
+		{
+			...baseContext,
+			quickWindowAnchors: { duration: 7 },
+			customPickerDraftIndices: { duration: 2 }
+		},
+		'duration',
+		{
+			label: '经期时长',
+			value: 5,
+			customLabel: '自选',
+			customPickerOptions: [
+				{ value: 5, label: '5' },
+				{ value: 6, label: '6' },
+				{ value: 7, label: '7' }
+			]
+		}
+	);
+
+	assert.deepStrictEqual(firstRow.options.map((option) => option.selected), [false, true, false]);
+	assert.deepStrictEqual(secondRow.options.map((option) => option.selected), [false, false, true]);
+	assert.equal(firstRow.customPickerValueIndex, 1);
+	assert.equal(secondRow.customPickerValueIndex, 2);
+});
 
 test('module management page uses compact module tiles, split action layout, and inline custom pickers', () => {
 	const pageSource = readManagementPage();
@@ -117,7 +217,7 @@ test('module management page keeps only the shared-module legend while preservin
 	assert.doesNotMatch(pageSource, /私人模块/);
 	assert.match(settingStripSource, /customLabel:\s*\{\s*type:\s*String,/);
 	assert.match(settingStripSource, /customPickerVisible:\s*\{\s*type:\s*Boolean,/);
-	assert.match(serviceSource, /customLabel:\s*'自定义'/);
+	assert.match(serviceSource, /customLabel:\s*'自选'/);
 	assert.match(serviceSource, /customPickerOptions:\s*buildNumericOptions\(1,\s*15\)/);
 	assert.match(serviceSource, /customPickerOptions:\s*buildNumericOptions\(20,\s*45\)/);
 	assert.match(pageSource, /showShareModal/);
