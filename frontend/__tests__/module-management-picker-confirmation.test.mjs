@@ -39,7 +39,7 @@ function withComponentMethods(component, overrides = {}) {
 	};
 }
 
-function createPageContext() {
+function createPageContext(overrides = {}) {
 	return {
 		page: {
 			managementCard: {
@@ -74,7 +74,8 @@ function createPageContext() {
 		},
 		getSettingControlByKey(key) {
 			return key === 'duration' ? this.page.managementCard.settingsControl : null;
-		}
+		},
+		...overrides
 	};
 }
 
@@ -103,6 +104,41 @@ test('ModuleManagementPage keeps picker changes in draft until backdrop tap conf
 	assert.equal(Object.keys(ctx.customPickerDraftIndices).length, 0);
 	assert.equal(Object.keys(ctx.customPickerPreviewValues).length, 0);
 	assert.deepEqual(ctx.persistCalls, [['duration', 12]]);
+	assert.equal(ctx.retryCalls, 1);
+	assert.equal(ctx.page.managementCard.settingsControl.value, 12);
+});
+
+test('ModuleManagementPage closes the picker immediately while custom selection persists in background', async () => {
+	const ModuleManagementPage = loadModuleManagementPage();
+	let resolveCommit;
+	const ctx = withComponentMethods(ModuleManagementPage, createPageContext({
+		async persistSettingByKey(key, days) {
+			this.persistCalls.push([key, days]);
+			await new Promise((resolve) => {
+				resolveCommit = resolve;
+			});
+		}
+	}));
+	ctx.commitCustomPickerSelection = ModuleManagementPage.methods.commitCustomPickerSelection;
+
+	ModuleManagementPage.methods.toggleCustomPicker.call(ctx, 'duration');
+	await ModuleManagementPage.methods.handleCustomPickerPreviewChange.call(ctx, 'duration', {
+		index: 2,
+		value: 12
+	});
+
+	const closePromise = ModuleManagementPage.methods.handleCustomPickerBackdropTap.call(ctx);
+	await Promise.resolve();
+
+	assert.equal(ctx.activeCustomPickerKey, '');
+	assert.equal(Object.keys(ctx.customPickerDraftIndices).length, 0);
+	assert.equal(Object.keys(ctx.customPickerPreviewValues).length, 0);
+	assert.equal(ctx.isMutating, true);
+	assert.deepEqual(ctx.persistCalls, [['duration', 12]]);
+
+	resolveCommit();
+	await closePromise;
+
 	assert.equal(ctx.retryCalls, 1);
 	assert.equal(ctx.page.managementCard.settingsControl.value, 12);
 });

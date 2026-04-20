@@ -213,6 +213,8 @@
 	}
 
 	.module-setting-strip__picker-card {
+		position: relative;
+		z-index: 23;
 		width: 188rpx;
 		padding: 0;
 		border-radius: 24rpx;

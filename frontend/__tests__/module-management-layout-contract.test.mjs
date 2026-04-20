@@ -443,7 +443,9 @@ test('module management page keeps only the shared-module legend while preservin
 	assert.match(aliasSource, /\$refs\.managementPage/);
 	assert.match(aliasSource, /\.context/);
 	assert.doesNotMatch(pageSource, /persistModuleSharingState/);
-	assert.match(actionRowSource, /@tap="\$emit\('share'\)"/);
+	assert.match(actionRowSource, /@tap="handleShareTap"/);
+	assert.match(actionRowSource, /handleShareTap\(\)/);
+	assert.doesNotMatch(actionRowSource, /处理中\.\.\./);
 });
 
 test('module management page composes extracted management primitives and removes inline sharing-state text', () => {

@@ -58,8 +58,10 @@
 		},
 		created() {
 			try {
-				const info = uni.getSystemInfoSync();
+				// #ifdef MP-WEIXIN
+				const info = wx.getWindowInfo();
 				this.statusBarHeight = info.statusBarHeight ?? 20;
+				// #endif
 			} catch (_) {}
 		},
 		methods: {

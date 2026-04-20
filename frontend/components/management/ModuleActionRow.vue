@@ -6,12 +6,13 @@
 			</navigator>
 			<view
 				class="management-action management-action--main management-action--share ui-button ui-button--secondary"
+				:class="{ 'management-action--busy': isMutating }"
 				hover-class="ui-pressable-hover"
 				:hover-stay-time="70"
-				@tap="$emit('share')"
+				@tap="handleShareTap"
 			>
 				<text class="ui-button__text management-action__text management-action__text--share">
-					{{ isMutating ? '处理中...' : secondaryLabel }}
+					{{ secondaryLabel }}
 				</text>
 			</view>
 		</view>
@@ -47,6 +48,12 @@
 			isMutating: {
 				type: Boolean,
 				default: false
+			}
+		},
+		methods: {
+			handleShareTap() {
+				if (this.isMutating) return;
+				this.$emit('share');
 			}
 		}
 	};
@@ -86,6 +93,7 @@
 		border-radius: 24rpx;
 		padding: 0 24rpx;
 		box-sizing: border-box;
+		transition: opacity 120ms ease, transform 120ms ease, filter 120ms ease;
 	}
 
 	.management-action--main {
@@ -102,6 +110,12 @@
 
 	.management-action--share {
 		background: $management-shared-soft;
+	}
+
+	.management-action--busy {
+		opacity: 0.68;
+		pointer-events: none;
+		filter: saturate(0.92);
 	}
 
 	.management-action__text--share {

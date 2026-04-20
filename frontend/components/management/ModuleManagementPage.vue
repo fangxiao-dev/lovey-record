@@ -555,9 +555,16 @@
 					this.isMutating = false;
 				}
 			},
-			async commitCustomPickerSelection(key) {
+			closeCustomPicker() {
+				this.activeCustomPickerKey = '';
+				this.customPickerDraftIndices = {};
+				this.customPickerPreviewValues = {};
+			},
+			async commitCustomPickerSelection(key, draftIndexOverride) {
 				const control = this.getSettingControlByKey(key);
-				const draftIndex = this.customPickerDraftIndices?.[key];
+				const draftIndex = typeof draftIndexOverride === 'number'
+					? draftIndexOverride
+					: this.customPickerDraftIndices?.[key];
 				const option = control?.customPickerOptions?.[draftIndex];
 				const nextValue = option?.value;
 				const nextAnchor = this.resolveCommittedQuickWindowAnchorAfterSelection(key, control, nextValue);
@@ -586,16 +593,13 @@
 					this.isMutating = false;
 				}
 			},
-			async handleCustomPickerBackdropTap() {
+			handleCustomPickerBackdropTap() {
 				if (!this.activeCustomPickerKey || this.isMutating) return;
 
 				const key = this.activeCustomPickerKey;
-				const committed = await this.commitCustomPickerSelection(key);
-				if (committed === false) return;
-
-				this.activeCustomPickerKey = '';
-				this.customPickerDraftIndices = {};
-				this.customPickerPreviewValues = {};
+				const draftIndex = this.customPickerDraftIndices?.[key];
+				this.closeCustomPicker();
+				return this.commitCustomPickerSelection(key, draftIndex);
 			},
 			async handleCustomPickerPreviewChange(key, payload) {
 				const index = payload?.index;
@@ -682,7 +686,6 @@
 
 	.management-card {
 		position: relative;
-		z-index: 21;
 	}
 
 	.management-page__title {
