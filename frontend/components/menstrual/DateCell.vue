@@ -54,7 +54,8 @@
 
 <style lang="scss">
 	.date-cell {
-		width: 100%;
+		width: 90rpx;
+		min-width: 90rpx;
 		max-width: 90rpx;
 		height: 90rpx;
 		padding: 16rpx 0 0;

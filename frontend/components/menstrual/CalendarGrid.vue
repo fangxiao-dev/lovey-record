@@ -39,7 +39,10 @@
 					</view>
 				</template>
 			</view>
-			<view class="calendar-grid__cells">
+			<view
+				class="calendar-grid__cells"
+				:class="{ 'calendar-grid__cells--with-boundary': weekBoundaryInfo[weekIndex].inRowBoundaryAfterIndex >= 0 }"
+			>
 				<!-- cells before the month boundary (or all 7 cells when no boundary) -->
 				<view
 					v-for="cell in weekCellsBefore(week, weekIndex)"
@@ -649,13 +652,17 @@
 	.calendar-grid__cells {
 		/*
 		 * Flex row so the boundary-slot chip is a real layout participant.
-		 * Each cell gets flex:1 (equal share of remaining space after chip).
-		 * This ensures chip and cells never overlap — no absolute positioning tricks.
+		 * Standard weeks keep the looser rhythm; boundary weeks opt into a tighter gap
+		 * so the month chip fits without forcing DateCell away from its square contract.
 		 */
 		display: flex;
 		flex-direction: row;
 		gap: 8rpx;
 		align-items: stretch;
+	}
+
+	.calendar-grid__cells--with-boundary {
+		gap: 4rpx;
 	}
 
 	.calendar-grid__cell {
@@ -688,8 +695,8 @@
 		align-items: center;
 		justify-content: center;
 		align-self: stretch;
-		padding: 0 4rpx;
-		min-width: 28rpx;
+		padding: 0;
+		min-width: 0;
 	}
 
 	.calendar-grid__boundary-slot--between-row {
