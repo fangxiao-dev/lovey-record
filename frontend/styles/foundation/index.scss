@@ -1,6 +1,6 @@
-@import "../tokens/primitives.scss";
-@import "../tokens/semantic.scss";
-@import "./mixins.scss";
-@import "./base.scss";
-@import "./utilities.scss";
-@import "./patterns.scss";
+@forward "../tokens/primitives.scss";
+@forward "../tokens/semantic.scss";
+@forward "./mixins.scss";
+@forward "./base.scss";
+@forward "./utilities.scss";
+@forward "./patterns.scss";

@@ -1,4 +1,4 @@
-@import "./primitives.scss";
+@use "./primitives.scss" as *;
 
 /* Semantic color tokens */
 $bg-base: $color-warm-050;

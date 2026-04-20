@@ -1,5 +1,5 @@
-@import "../tokens/semantic.scss";
-@import "./mixins.scss";
+@use "../tokens/semantic.scss" as *;
+@use "./mixins.scss" as *;
 
 .ui-card {
 	@include surface-card();

@@ -1,4 +1,4 @@
-@import "../tokens/semantic.scss";
+@use "../tokens/semantic.scss" as *;
 
 .u-mt-0 {
 	margin-top: 0;

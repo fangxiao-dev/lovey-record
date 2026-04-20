@@ -1,4 +1,4 @@
-@import "@/styles/foundation/index.scss";
+@use "@/styles/foundation/index.scss" as *;
 
 /* uni-app compatibility aliases */
 $uni-color-primary: $action-primary-bg;
