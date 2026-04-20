@@ -446,16 +446,18 @@
 				}
 
 				if (this.batchMode) {
-					if (typeof e?.preventDefault === 'function') {
-						e.preventDefault();
-					}
-					const idx = this.hitTestCell(clientX, clientY);
-					if (idx !== -1) {
-						const cell = this.allCells[idx];
-						if (cell.selectable !== false) {
-							this.$emit('batch-extend', cell);
+					this.captureCellRects(() => {
+						if (typeof e?.preventDefault === 'function') {
+							e.preventDefault();
 						}
-					}
+						const idx = this.hitTestCell(clientX, clientY);
+						if (idx !== -1) {
+							const cell = this.allCells[idx];
+							if (cell.selectable !== false) {
+								this.$emit('batch-extend', cell);
+							}
+						}
+					});
 				}
 			},
 
@@ -526,6 +528,7 @@
 							this.batchMode = true;
 							this.suppressTapUntil = Date.now() + 500;
 							this.longPressStartedAt = 0;
+							this.invalidateCellRects();
 							this.$emit('batch-start', cell);
 							return;
 						}

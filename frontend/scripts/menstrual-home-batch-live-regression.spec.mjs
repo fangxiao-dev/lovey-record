@@ -631,8 +631,10 @@ test('fresh not-period day shows 月经 and single tap applies the default forwa
 	try {
 		await page.goto(FRONTEND_URL);
 		await page.waitForTimeout(1200);
+		await waitForSelectionState(page, { '23': false, '24': false });
 
 		await openDay(page, '23');
+		await waitForSelectionState(page, { '23': true, '24': false });
 		await expect(page.locator('.selected-date-panel__title')).toHaveText('3 月 23 日');
 		await expect(getPeriodChip(page, '月经')).not.toHaveClass(/selected-date-panel__chip--accent/);
 

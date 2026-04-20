@@ -569,7 +569,8 @@
 						singleDayPeriodAction,
 						today: this.contractContext.today,
 						focusDate,
-						viewMode
+						viewMode,
+						selectedDateKey: selectedDate
 					}),
 					rawContracts: nextRawContracts,
 					activeDate: selectedDate,
@@ -628,7 +629,7 @@
 				this.rawContracts = pending.rawContracts;
 				this.activeDate = pending.activeDate;
 				this.focusDate = pending.focusDate;
-				this.selectedDateKey = null;
+				this.selectedDateKey = pending.pageModel?.selectedDateKey || pending.activeDate || null;
 				this.viewMode = pending.viewMode;
 				this.currentCalendarKey = this.pendingCalendarKey;
 				this.pendingBrowsePayload = null;
