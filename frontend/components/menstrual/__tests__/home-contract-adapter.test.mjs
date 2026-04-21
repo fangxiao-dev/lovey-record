@@ -238,7 +238,7 @@ test('home contract adapter maps query responses into the formal menstrual home 
 	assert.equal(model.calendarCard.weeks.flatMap((week) => week.cells).length, 14);
 	// Badge depends on whether selected date is today and has attributes
 	assert.ok(model.selectedDatePanel.badge);
-	assert.equal(model.selectedDatePanel.periodChipText, '月经');
+	assert.equal(model.selectedDatePanel.periodChipText, '记录月经');
 	assert.equal(model.selectedDatePanel.periodChipSelected, false);
 	assert.equal(model.selectedDatePanel.attributeRows.length, 3);
 });
@@ -676,7 +676,7 @@ test('home contract adapter supports implicit non-period day detail without leak
 
 	assert.equal(model.selectedDatePanel.title, '4 月 2 日');
 	assert.equal(model.selectedDatePanel.badge, '点击记录');
-	assert.equal(model.selectedDatePanel.periodChipText, '月经');
+	assert.equal(model.selectedDatePanel.periodChipText, '记录月经');
 	assert.equal(model.selectedDatePanel.periodChipSelected, false);
 	assert.deepEqual(model.selectedDatePanel.summaryItems, []);
 	assert.equal(model.selectedDatePanel.note, '');
@@ -747,7 +747,7 @@ test('home contract adapter keeps period-only days recorded without adding an ey
 	});
 
 	assert.equal(model.selectedDatePanel.badge, '已记录');
-	assert.equal(model.selectedDatePanel.periodChipText, '月经开始');
+	assert.equal(model.selectedDatePanel.periodChipText, '取消经期');
 	assert.equal(model.selectedDatePanel.periodChipSelected, true);
 	assert.deepEqual(model.selectedDatePanel.summaryItems, []);
 	assert.equal(
@@ -950,7 +950,7 @@ test('home contract adapter optimistically marks a non-period day as period usin
 	const selectedCell = next.calendarCard.weeks.flatMap((week) => week.cells).find((cell) => cell.key === '2026-03-28');
 	assert.equal(selectedCell.variant, 'selectedPeriod');
 	assert.equal(next.selectedDatePanel.periodChipSelected, true);
-	assert.equal(next.selectedDatePanel.periodChipText, '月经开始');
+	assert.equal(next.selectedDatePanel.periodChipText, '取消经期');
 	assert.equal(next.selectedDatePanel.badge, '已记录');
 });
 

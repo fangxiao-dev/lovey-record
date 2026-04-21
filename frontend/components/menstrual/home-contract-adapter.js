@@ -322,7 +322,7 @@ function diffDays(startDate, endDate) {
 function deriveSingleDayPeriodChip({ homeView, dayRecord }) {
 	if (!dayRecord?.isPeriod || !dayRecord?.date) {
 		return {
-			text: '月经',
+			text: '记录月经',
 			selected: false
 		};
 	}
@@ -340,7 +340,7 @@ function deriveSingleDayPeriodChip({ homeView, dayRecord }) {
 	const hasNextPeriod = periodDates.has(nextDate);
 
 	return {
-		text: hasPreviousPeriod ? '月经结束' : '月经开始',
+		text: hasPreviousPeriod ? '月经结束' : '取消经期',
 		selected: true,
 		role: !hasPreviousPeriod && !hasNextPeriod
 			? 'start'
@@ -957,7 +957,7 @@ function buildVisiblePeriodDates(pageModel, overrides = {}) {
 function deriveChipFromPeriodDates(selectedDate, periodDates) {
 	if (!selectedDate || !periodDates.has(selectedDate)) {
 		return {
-			text: '月经',
+			text: '记录月经',
 			selected: false
 		};
 	}
@@ -965,7 +965,7 @@ function deriveChipFromPeriodDates(selectedDate, periodDates) {
 	const hasPreviousPeriod = periodDates.has(addDays(selectedDate, -1));
 	const hasNextPeriod = periodDates.has(addDays(selectedDate, 1));
 	return {
-		text: hasPreviousPeriod ? '月经结束' : '月经开始',
+		text: hasPreviousPeriod ? '月经结束' : '取消经期',
 		selected: true
 	};
 }

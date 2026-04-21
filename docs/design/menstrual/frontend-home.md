@@ -113,13 +113,15 @@ This copy should remain concise and encouraging, and it should not imply that ph
 
 ## Selected Date Panel
 
-- The panel always shows two independent chips: contextual period action chip (`月经` / `月经开始` / `月经结束`) and `+ 记录详情` (attribute grid toggle).
+- The panel always shows two independent chips: contextual period action chip (`记录月经` / `取消经期` / `月经结束`) and `+ 记录详情` (attribute grid toggle).
 - The period chip text is derived from the selected date's role inside the current period segment:
-  - `not-period` => `月经`
-  - `start` => `月经开始`
+  - `not-period` => `记录月经`
+  - `start` => `取消经期`
   - `in-progress` / `end` => `月经结束`
+- The chip copy is a user-facing label only; the underlying single-day semantic actions remain the contract-level source of truth.
 - Period marking and attribute recording are independent actions.
 - Single-day period editing must go through the resolve/apply flow; it is no longer treated as a blind boolean toggle on the page.
+- Home may show a temporary floating `撤回` only after successful supported single-day period actions. This affordance is page-scoped, excludes batch/attribute/note flows, and is not a global undo system.
 - The attribute summary bar only renders when at least one attribute is recorded.
 - The attribute grid is controlled by `+ 记录详情` / `↑ 收起`, not by tapping the summary bar.
 - Attribute changes are WYSIWYG (immediate persistence); there is no save button.

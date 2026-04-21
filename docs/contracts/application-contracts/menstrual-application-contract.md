@@ -234,10 +234,12 @@ Single-day period editing is no longer interpreted as a generic boolean `isPerio
 
 The frontend must render a contextual chip based on the selected date's derived role inside the current continuous period segment:
 
-- `not-period` => `月经`
-- `start` => `月经开始`
+- `not-period` => `记录月经`
+- `start` => `取消经期`
 - `in-progress` => `月经结束`
 - `end` => `月经结束`
+
+The chip copy is a user-facing action label, not the canonical action enum. The frontend may show a more direct CTA than the internal action name as long as the resolved semantic action remains stable.
 
 The persisted source of truth remains day-based:
 
@@ -271,7 +273,7 @@ Allowed values:
 Rules:
 
 - `start` means "start a new segment here or bridge from here"
-- `revoke-start` means "the selected day is already the segment start; tapping the selected `月经开始` revokes the whole segment"
+- `revoke-start` means "the selected day is already the segment start; tapping the selected `取消经期` revokes the whole segment"
 - `end-here` means "the selected day becomes the final day of the segment"
 - `noop` is currently allowed only when the selected day is already `end` and the user taps `月经结束`
 
@@ -349,7 +351,7 @@ Rules:
   "selectedDate": "2026-03-22",
   "role": "not-period",
   "chip": {
-    "text": "月经",
+    "text": "记录月经",
     "selected": false
   },
   "resolvedAction": {
@@ -394,7 +396,7 @@ Rules:
 
 `revoke-start` on `start`:
 
-- chip text remains `月经开始`
+- chip text remains `取消经期`
 - chip appears selected
 - tapping it revokes the entire current segment
 - required effect: clear all dates in the selected segment
@@ -445,6 +447,28 @@ Recommended flow:
 5. if confirmation is required:
    - frontend shows the prompt first
    - on confirm, frontend calls `applySingleDayPeriodAction`
+
+### Home Scoped Undo Boundary
+
+The home page may expose a temporary floating `撤回` action after a successful single-day period mutation, but this is intentionally a page-scoped interaction affordance rather than a general application history system.
+
+Rules:
+
+- undo is owned by the home page interaction layer and must not be treated as a durable cross-page or cross-session contract
+- undo is shown only after backend success; it is not an optimistic pre-success affordance
+- undo currently supports only these successful single-day period outcomes on home:
+  - `start` from `not-period`
+  - `revoke-start` from `start`
+  - confirmed bridge flows that still resolve to the same single-day apply command path
+- undo must not be assumed for:
+  - batch mode
+  - attribute mutations
+  - note mutations
+  - unrelated home actions
+- undo payload shape is intentionally frontend-local as long as it contains enough metadata to dispatch the reverse single-day command
+- `start` outcomes that leave the selected day as the segment start may reverse with `revoke-start` on that same selected day
+- forward-bridge outcomes that extend an earlier segment through the selected day must reverse with `end-here` on the pre-bridge segment end day; `revoke-start` on the selected day is stale in that case
+- undo may expire and may be replaced by a newer supported action; nested undo/redo is out of scope
 
 Suggested apply input:
 
@@ -1393,7 +1417,7 @@ If the team wants the smallest practical first contract, stabilize these first:
 This slice is enough to support:
 
 - first-time entry
-- contextual single-day `月经 / 月经开始 / 月经结束`
+- contextual single-day `记录月经 / 取消经期 / 月经结束`
 - bridge confirmation before single-day merge/extension
 - apply-time revalidation for single-day edits
 - detail refinement

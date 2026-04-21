@@ -269,6 +269,9 @@
 				@toggle-period="handleTogglePeriod"
 				@note-change="handleNoteChange"
 			/>
+			<view v-if="pendingUndoAction" class="menstrual-home__undo-float" @tap.stop="handleUndoTap">
+				<text class="menstrual-home__undo-float-label">撤回</text>
+			</view>
 		</view>
 		<view
 			v-if="calendarInlineHintMessage && calendarInlineHintAnchorRect"
@@ -341,6 +344,16 @@
 	const CALENDAR_INLINE_HINT_DURATION_MS = 1500;
 	const CALENDAR_INLINE_HINT_EDGE_PADDING_PX = 72;
 	const VIEW_MODE_STORAGE_KEY = 'menstrual-home-view-mode';
+	function addIsoDays(isoDate, offsetDays) {
+		if (!isoDate || !Number.isInteger(offsetDays)) {
+			return null;
+		}
+
+		const next = new Date(`${isoDate}T00:00:00.000Z`);
+		next.setUTCDate(next.getUTCDate() + offsetDays);
+		return next.toISOString().slice(0, 10);
+	}
+
 	const PHASE_ICON_URL_MAP = Object.freeze({
 		卵泡期: '/static/menstrual/embryo.svg',
 		排卵期: '/static/menstrual/sun.svg',
@@ -409,6 +422,8 @@
 				headerInlineMessage: '',
 				headerInlineMessageSide: 'next',
 				headerInlineMessageTimer: null,
+				pendingUndoAction: null,
+				undoExpiryTimer: null,
 				contractContext: { ...DEFAULT_MENSTRUAL_HOME_CONTEXT },
 				rawContracts: null,
 				userRole: 'owner'
@@ -419,6 +434,7 @@
 			this.clearHeaderInlineMessage();
 			this.clearBrowseAnimationTimer();
 			this.clearBrowseMaskTimer();
+			this.clearPendingUndoAction();
 		},
 		computed: {
 			browseNavLabels() {
@@ -560,6 +576,7 @@
 			},
 			handleHomeRootTap() {
 				this.clearCalendarInlineHint();
+				this.clearPendingUndoAction();
 			},
 			clearCalendarInlineHint() {
 				if (this.calendarInlineHintTimer) {
@@ -615,6 +632,86 @@
 					return this.rawContracts.singleDayPeriodAction;
 				}
 				return null;
+			},
+			resolvePendingUndoCommand(resolvedAction) {
+				const action = resolvedAction?.action;
+				if (action === 'revoke-start') {
+					return {
+						action: 'start',
+						activeDate: this.activeDate
+					};
+				}
+
+				if (action !== 'start') {
+					return null;
+				}
+
+				const effect = resolvedAction?.effect || {};
+				if (effect.bridgeType === 'forward') {
+					const previousSegmentEndDate = effect.writeDates?.[0]
+						? addIsoDays(effect.writeDates[0], -1)
+						: null;
+					if (!previousSegmentEndDate) {
+						return null;
+					}
+					return {
+						action: 'end-here',
+						activeDate: previousSegmentEndDate
+					};
+				}
+
+				if (effect.bridgeType === 'both') {
+					return null;
+				}
+
+				return {
+					action: 'revoke-start',
+					activeDate: this.activeDate
+				};
+			},
+			isSupportedSinglePeriodUndoAction(resolvedAction) {
+				return Boolean(this.resolvePendingUndoCommand(resolvedAction));
+			},
+			createPendingUndoAction(resolvedAction) {
+				const undoAction = this.resolvePendingUndoCommand(resolvedAction);
+				if (!undoAction) {
+					return null;
+				}
+
+				return {
+					key: `${this.activeDate}-${resolvedAction.action}-${Date.now()}`,
+					visible: true,
+					undoAction
+				};
+			},
+			showPendingUndoAction(pendingUndoAction) {
+				if (this.pendingUndoAction) {
+					this.clearPendingUndoAction();
+					setTimeout(() => {
+						this.pendingUndoAction = pendingUndoAction;
+						this.scheduleUndoExpiry();
+					}, 0);
+					return;
+				}
+
+				this.pendingUndoAction = pendingUndoAction;
+				this.scheduleUndoExpiry();
+			},
+			scheduleUndoExpiry() {
+				if (this.undoExpiryTimer) {
+					clearTimeout(this.undoExpiryTimer);
+				}
+				this.undoExpiryTimer = setTimeout(() => {
+					this.undoExpiryTimer = null;
+					this.clearPendingUndoAction();
+				}, 2000);
+			},
+			clearPendingUndoAction() {
+				if (this.undoExpiryTimer) {
+					clearTimeout(this.undoExpiryTimer);
+					this.undoExpiryTimer = null;
+				}
+				this.pendingUndoAction = null;
 			},
 			rebuildLocalPage({ selectedDate = this.activeDate, focusDate = this.focusDate, viewMode = this.viewMode, useCalendarWindow = true, dayDetail = null, selectedDateKey = this.selectedDateKey } = {}) {
 				if (!this.rawContracts?.homeView) {
@@ -1325,6 +1422,36 @@
 					pageModel: nextPage
 				}));
 			},
+			async handleUndoTap() {
+				const undoAction = this.pendingUndoAction?.undoAction;
+				if (!undoAction?.action || this.isMutating) return;
+
+				this.clearPendingUndoAction();
+				this.loadError = '';
+				this.isMutating = true;
+
+				let affectedScopes = null;
+				try {
+					affectedScopes = (await applySingleDayPeriodAction({
+						context: this.contractContext,
+						activeDate: undoAction.activeDate || this.activeDate,
+						action: undoAction.action
+					}))?.affectedScopes ?? null;
+				} catch (error) {
+					this.isMutating = false;
+					uni.showToast({ title: '撤回失败', icon: 'none' });
+					return;
+				}
+
+				try {
+					this.invalidateBrowseCache(affectedScopes);
+					await this.refreshByScopes(affectedScopes);
+				} catch (error) {
+					this.loadError = error instanceof Error ? `写入成功，但刷新失败：${error.message}` : '写入成功，但刷新失败';
+				} finally {
+					this.isMutating = false;
+				}
+			},
 			async handleTogglePeriod(isPeriodMarked) {
 				if (this.panelMode === 'batch') {
 					this.batchDraft = { ...this.batchDraft, isPeriod: isPeriodMarked };
@@ -1349,20 +1476,42 @@
 					});
 					if (!confirmed) return;
 					const nextPage = applySingleDayPeriodActionToPageModel(this.page, { resolvedAction });
-					return this.runOptimisticMutation(nextPage, () => applySingleDayPeriodAction({
-						context: this.contractContext,
-						activeDate: this.activeDate,
-						action: resolvedAction.action,
-						confirmed: true
-					}));
+					return this.runOptimisticMutation(nextPage, async () => {
+						const result = await applySingleDayPeriodAction({
+							context: this.contractContext,
+							activeDate: this.activeDate,
+							action: resolvedAction.action,
+							confirmed: true
+						});
+
+						const pendingUndoAction = typeof this.createPendingUndoAction === 'function'
+							? this.createPendingUndoAction(resolvedAction)
+							: null;
+						if (pendingUndoAction && typeof this.showPendingUndoAction === 'function') {
+							this.showPendingUndoAction(pendingUndoAction);
+						}
+
+						return result;
+					});
 				}
 
 				const nextPage = applySingleDayPeriodActionToPageModel(this.page, { resolvedAction });
-				return this.runOptimisticMutation(nextPage, () => applySingleDayPeriodAction({
-					context: this.contractContext,
-					activeDate: this.activeDate,
-					action: resolvedAction.action
-				}));
+				return this.runOptimisticMutation(nextPage, async () => {
+					const result = await applySingleDayPeriodAction({
+						context: this.contractContext,
+						activeDate: this.activeDate,
+						action: resolvedAction.action
+					});
+
+					const pendingUndoAction = typeof this.createPendingUndoAction === 'function'
+						? this.createPendingUndoAction(resolvedAction)
+						: null;
+					if (pendingUndoAction && typeof this.showPendingUndoAction === 'function') {
+						this.showPendingUndoAction(pendingUndoAction);
+					}
+
+					return result;
+				});
 			},
 			handleNoteChange(note) {
 				if (note === this.page?.selectedDatePanel?.note) return;
@@ -1959,6 +2108,28 @@
 		line-height: 1;
 		font-weight: $font-weight-medium;
 		color: $text-secondary;
+	}
+
+	.menstrual-home__undo-float {
+		position: fixed;
+		right: 32rpx;
+		bottom: 48rpx;
+		z-index: 70;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 72rpx;
+		padding: 0 28rpx;
+		border-radius: 999rpx;
+		background: rgba(32, 27, 23, 0.86);
+		box-shadow: 0 12rpx 28rpx rgba(32, 27, 23, 0.18);
+	}
+
+	.menstrual-home__undo-float-label {
+		font-size: 24rpx;
+		line-height: 1;
+		font-weight: $font-weight-strong;
+		color: #fffdf9;
 	}
 
 	.menstrual-home__calendar-layer--slide-out-left {

@@ -51,14 +51,34 @@ Users can:
 
 The period chip is no longer a blind `经期` toggle. It is a contextual action chip:
 
-- `not-period`: show `月经`, unselected. Tapping starts a new segment here; if no bridge applies, the backend auto-fills forward by `defaultPeriodDurationDays - 1`.
-- `start`: show selected `月经开始`. Tapping revokes the whole current segment.
+- `not-period`: show `记录月经`, unselected. Tapping starts a new segment here; if no bridge applies, the backend auto-fills forward by `defaultPeriodDurationDays - 1`.
+- `start`: show selected `取消经期`. Tapping revokes the whole current segment.
 - `in-progress`: show selected `月经结束`. Tapping means "所选这一天是该段经期的最后一天" and clears only later dates in the same segment.
 - `end`: show selected `月经结束`. Tapping is currently a no-op.
 
-If the selected `月经` would bridge to nearby existing period records, the page must show the backend-provided confirmation prompt before applying.
+The chip copy is user-facing CTA text. It does not rename the underlying semantic actions (`start`, `revoke-start`, `end-here`, `noop`).
+
+If the selected `记录月经` would bridge to nearby existing period records, the page must show the backend-provided confirmation prompt before applying.
 
 Period action does not affect recorded attributes or note content. They remain independent data axes.
+
+### Home Scoped Undo
+
+Home may show a temporary floating `撤回` action only for successful single-day period actions that are easy to reverse immediately.
+
+Rules:
+- This undo is scoped to the home page only. It is not a global history, redo, or persistence mechanism.
+- Only these home scenarios are supported:
+  - non-period day -> `记录月经`
+  - first day of an existing segment -> `取消经期`
+  - confirmed previous/next bridge flows that still apply through the single-day period command path
+- Undo appears only after backend success.
+- Undo must carry enough frontend-local metadata to dispatch the correct reverse single-day command for the resulting segment shape.
+- A successful `start` that lands on a new segment start may reverse with `revoke-start`.
+- A successful forward-bridge from an existing segment tail must reverse with `end-here` on that original tail day, not `revoke-start` on the newly bridged day.
+- Batch mode must not show this undo.
+- Attribute editing, `清空`, and note editing do not participate in this undo.
+- Undo may expire automatically and may be replaced by a newer supported single-day period action.
 
 ### Record Detail Chip Behavior
 
@@ -156,7 +176,7 @@ The panel has 4 orthogonal state axes:
 
 | Aspect | Current Pencil | New Design |
 |---|---|---|
-| Chips | `经期` + `特殊标记` | contextual `月经 / 月经开始 / 月经结束` + `+ 记录详情` / `↑ 收起` |
+| Chips | `经期` + `特殊标记` | contextual `记录月经 / 取消经期 / 月经结束` + `+ 记录详情` / `↑ 收起` |
 | Summary bar | Always present inside `SingleDayClickEditor` | Conditional, lives directly in `SelectedDatePanel` |
 | Attribute grid | Part of `SingleDayClickEditor` composite | Inline in `SelectedDatePanel`, controlled by RecordDetailChip |
 | Action button | `保存当天记录` (always present) | `清空` (conditional, only when attributes exist) |
@@ -166,7 +186,7 @@ The panel has 4 orthogonal state axes:
 
 | Aspect | Current Vue | New Design |
 |---|---|---|
-| `chips` prop | `['经期', '特殊标记']` | contextual `月经 / 月经开始 / 月经结束` chip + `+ 记录详情` stateful expand/collapse chip |
+| `chips` prop | `['经期', '特殊标记']` | contextual `记录月经 / 取消经期 / 月经结束` chip + `+ 记录详情` stateful expand/collapse chip |
 | `summaryItems` | Always rendered | Always rendered; empty state shows hint text |
 | `isEditorOpen` | Toggled by tapping summary row | Toggled by tapping RecordDetailChip |
 | `actionLabel` | `'保存当天记录'` (always visible) | `'清空'` (visible only when attributes recorded) |

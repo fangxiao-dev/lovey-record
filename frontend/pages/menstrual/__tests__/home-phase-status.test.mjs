@@ -67,3 +67,12 @@ test('home page source includes a dedicated coarse cycle branch for phase = null
 	assert.match(source, /class="menstrual-home__hero-hint-text"/);
 	assert.doesNotMatch(source, /phase === null[\s\S]*getPhaseIconUrl\(page\.heroCard\.statusFrame\.phaseStatus\.phase\)/);
 });
+
+test('home page source scaffolds scoped undo state and floating action anchors', () => {
+	const source = readHomePageSource();
+
+	assert.match(source, /pendingUndoAction:/);
+	assert.match(source, /menstrual-home__undo-float/);
+	assert.match(source, /scheduleUndoExpiry/);
+	assert.match(source, /clearPendingUndoAction/);
+});
