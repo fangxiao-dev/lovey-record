@@ -3,6 +3,17 @@
 // version format: vMAJOR.MINOR.PATCH
 export default [
   {
+    "version": "v0.5.3",
+    "title": "提升报告和记录稳定性",
+    "date": "2026-04-21",
+    "anchorCommit": "4de7f291595a69f35959763eb3597d5ec8ea53ce",
+    "changes": [
+      "新增：支持“一键对齐”周期与时长",
+      "新增：月经记录支持撤回",
+      "优化：日历浏览、页面加载与同步稳定性",
+    ],
+  },
+  {
     "version": "v0.5.2",
     "title": "优化日历和快速选择体验",
     "date": "2026-04-20",
