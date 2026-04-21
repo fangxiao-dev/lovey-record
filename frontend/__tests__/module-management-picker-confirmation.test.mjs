@@ -249,3 +249,48 @@ test('ModuleManagementPage recenters the quick window anchor when a custom selec
 	assert.equal(ctx.quickWindowAnchors.duration, 11);
 	assert.deepEqual(ctx.persistCalls, [['duration', 11]]);
 });
+
+test('ModuleManagementPage resets quick chip anchors to the latest server values after a reload', () => {
+	const ModuleManagementPage = loadModuleManagementPage();
+	const ctx = withComponentMethods(ModuleManagementPage, createPageContext({
+		quickWindowAnchors: {
+			duration: 5,
+			prediction: 15
+		}
+	}));
+
+	ModuleManagementPage.methods.syncQuickWindowAnchorsFromPage.call(ctx, {
+		managementCard: {
+			settingsControl: {
+				value: 7,
+				options: [
+					{ value: 5, label: '5' },
+					{ value: 6, label: '6' },
+					{ value: 7, label: '7' }
+				]
+			},
+			predictionSettingsControl: {
+				value: 15,
+				options: [
+					{ value: 15, label: '15' },
+					{ value: 16, label: '16' },
+					{ value: 17, label: '17' }
+				]
+			}
+		}
+	});
+
+	assert.equal(ctx.quickWindowAnchors.duration, 7);
+	assert.equal(ctx.quickWindowAnchors.prediction, 15);
+
+	const predictionRow = ModuleManagementPage.methods.buildSettingRow.call(ctx, 'prediction', {
+		value: 15,
+		customPickerOptions: Array.from({ length: 36 }, (_, index) => ({
+			value: index + 15,
+			label: String(index + 15)
+		}))
+	});
+
+	assert.deepEqual(predictionRow.options.map((option) => option.value), [15, 16, 17]);
+	assert.deepEqual(predictionRow.options.map((option) => option.selected), [true, false, false]);
+});

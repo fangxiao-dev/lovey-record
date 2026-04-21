@@ -176,7 +176,7 @@ export function createModuleShellPageModel({
 					selected: days === defaultPeriodDurationDays
 				})),
 				customLabel: '自选',
-				customPickerOptions: buildNumericOptions(1, 15)
+				customPickerOptions: buildNumericOptions(1, 20)
 			},
 			predictionSettingsControl: {
 				label: '周期天数',
@@ -187,7 +187,7 @@ export function createModuleShellPageModel({
 					selected: days === defaultPredictionTermDays
 				})),
 				customLabel: '自选',
-				customPickerOptions: buildNumericOptions(20, 45)
+				customPickerOptions: buildNumericOptions(15, 50)
 			},
 			secondaryAction: {
 				label: '共享',

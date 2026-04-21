@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildCenteredQuickOptions } from '../utils/picker-quick-options.js';
 
-const ALL_DURATION = Array.from({ length: 15 }, (_, i) => ({ value: i + 1, label: `${i + 1}` }));
-const ALL_CYCLE = Array.from({ length: 26 }, (_, i) => ({ value: i + 20, label: `${i + 20}` }));
+const ALL_DURATION = Array.from({ length: 20 }, (_, i) => ({ value: i + 1, label: `${i + 1}` }));
+const ALL_CYCLE = Array.from({ length: 36 }, (_, i) => ({ value: i + 15, label: `${i + 15}` }));
 
 test('中间值正常居中', () => {
 	const result = buildCenteredQuickOptions(6, 6, ALL_DURATION);
@@ -24,8 +24,8 @@ test('锚点在下边界时 clamp 到 [min, min+1, min+2]', () => {
 });
 
 test('锚点在上边界时 clamp 到 [max-2, max-1, max]', () => {
-	const result = buildCenteredQuickOptions(15, 15, ALL_DURATION);
-	assert.deepStrictEqual(result.map((option) => option.value), [13, 14, 15]);
+	const result = buildCenteredQuickOptions(20, 20, ALL_DURATION);
+	assert.deepStrictEqual(result.map((option) => option.value), [18, 19, 20]);
 	assert.ok(result[2].selected);
 });
 
@@ -39,6 +39,12 @@ test('周期范围正常工作（anchor=28）', () => {
 	const result = buildCenteredQuickOptions(28, 28, ALL_CYCLE);
 	assert.deepStrictEqual(result.map((option) => option.value), [27, 28, 29]);
 	assert.ok(result[1].selected);
+});
+
+test('周期范围在新下边界时 clamp 到 [15, 16, 17]', () => {
+	const result = buildCenteredQuickOptions(15, 15, ALL_CYCLE);
+	assert.deepStrictEqual(result.map((option) => option.value), [15, 16, 17]);
+	assert.ok(result[0].selected);
 });
 
 test('allOptions 为空时返回空数组', () => {

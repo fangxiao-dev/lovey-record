@@ -432,8 +432,8 @@ test('module management page keeps only the shared-module legend while preservin
 	assert.match(settingStripSource, /customLabel:\s*\{\s*type:\s*String,/);
 	assert.match(settingStripSource, /customPickerVisible:\s*\{\s*type:\s*Boolean,/);
 	assert.match(serviceSource, /customLabel:\s*'自选'/);
-	assert.match(serviceSource, /customPickerOptions:\s*buildNumericOptions\(1,\s*15\)/);
-	assert.match(serviceSource, /customPickerOptions:\s*buildNumericOptions\(20,\s*45\)/);
+	assert.match(serviceSource, /customPickerOptions:\s*buildNumericOptions\(1,\s*20\)/);
+	assert.match(serviceSource, /customPickerOptions:\s*buildNumericOptions\(15,\s*50\)/);
 	assert.match(pageSource, /showShareModal/);
 	assert.doesNotMatch(pageSource, /createInviteToken/);
 	assert.doesNotMatch(pageSource, /uni\.navigateTo\(\{\s*url\s*\}\)/);

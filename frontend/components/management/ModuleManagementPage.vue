@@ -387,8 +387,8 @@
 				if (!card) return;
 
 				this.quickWindowAnchors = {
-					duration: this.getCommittedQuickWindowAnchor('duration', card.settingsControl),
-					prediction: this.getCommittedQuickWindowAnchor('prediction', card.predictionSettingsControl)
+					duration: this.getDefaultQuickWindowAnchor(card.settingsControl),
+					prediction: this.getDefaultQuickWindowAnchor(card.predictionSettingsControl)
 				};
 			},
 			updateDemoSettingRow(control, days) {
@@ -519,6 +519,13 @@
 					this.page = null;
 					this.loadError = error instanceof Error ? error.message : '联调环境请求失败';
 				}
+			},
+			refreshOnShow() {
+				if (this.isDemoMode || this.isMutating || !this.context?.moduleInstanceId) {
+					return;
+				}
+
+				return this.retryInitialLoad();
 			},
 			handleModuleSelect(moduleId) {
 				if (!moduleId || moduleId === this.selectedModuleId) return;

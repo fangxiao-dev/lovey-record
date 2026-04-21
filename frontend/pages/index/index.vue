@@ -11,9 +11,18 @@
 			ModuleManagementPage
 		},
 		onLoad(options) {
+			this._skipNextShowRefresh = true;
 			this.$nextTick(() => {
 				this.$refs.managementPage?.initialize(options || {});
 			});
+		},
+		onShow() {
+			if (this._skipNextShowRefresh) {
+				this._skipNextShowRefresh = false;
+				return;
+			}
+
+			this.$refs.managementPage?.refreshOnShow?.();
 		}
 	};
 </script>
