@@ -1115,12 +1115,12 @@ export function createMenstrualHomePageModel({
 						monthLabel: formatMonthLabel(resolvedFocusDate),
 						startYearLabel: '',
 						endYearLabel: '',
-						previousPeriodStart: null,
-						nextPeriodStart: null,
-						focusedNodeType: null,
-						focusedAnchorDate: resolvedFocusDate,
-						isForwardBoundary: false,
-						isBackwardBoundary: false
+						previousPeriodStart: focusedNavigation.previousPeriodStart,
+						nextPeriodStart: focusedNavigation.nextPeriodStart,
+						focusedNodeType: focusedNavigation.focusedNodeType,
+						focusedAnchorDate: focusedNavigation.focusedAnchorDate,
+						isForwardBoundary: focusedNavigation.isForwardBoundary,
+						isBackwardBoundary: focusedNavigation.isBackwardBoundary
 					};
 				}
 				const windowStartDate = startOfWeek(resolvedFocusDate);

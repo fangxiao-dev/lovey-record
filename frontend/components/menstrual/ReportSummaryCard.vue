@@ -32,9 +32,9 @@
 					</text>
 				</text>
 				<view class="report-summary-card__footer-actions">
-					<view
+					<button
 						class="report-summary-card__footer-trigger"
-						hover-class="ui-pressable-hover"
+						hover-class="button-hover"
 						:hover-stay-time="70"
 						@tap="$emit('footer-tap', { footer, action: 'settings' })"
 					>
@@ -49,10 +49,10 @@
 								mode="aspectFit"
 							/>
 						</template>
-					</view>
-					<view
-						class="report-summary-card__footer-trigger report-summary-card__footer-trigger--ghost"
-						hover-class="ui-pressable-hover"
+					</button>
+					<button
+						class="report-summary-card__footer-trigger"
+						hover-class="button-hover"
 						:hover-stay-time="70"
 						@tap="$emit('footer-tap', { footer, action: 'align' })"
 					>
@@ -62,7 +62,7 @@
 							src="/static/icons/refresh.png"
 							mode="aspectFit"
 						/>
-					</view>
+					</button>
 				</view>
 			</view>
 		</view>
@@ -198,13 +198,15 @@
 		gap: 10rpx;
 		min-height: 56rpx;
 		padding: 0 18rpx;
+		margin: 0;
+		line-height: 1;
 		border-radius: 999rpx;
 		background: #f6efe7;
 		border: 2rpx solid rgba(230, 222, 213, 0.9);
-	}
 
-	.report-summary-card__footer-trigger--ghost {
-		background: rgba(255, 255, 255, 0.72);
+		&::after {
+			border: none;
+		}
 	}
 
 	.report-summary-card__footer-action {

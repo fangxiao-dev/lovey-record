@@ -34,12 +34,14 @@ export async function cloudRequest({ path, method = 'GET', data, headers }) {
   }
 }
 
+const CLOUD_REQUEST_TIMEOUT_MS = 15000;
+
 /**
  * Call wx.cloud.callContainer (production mode)
  * WeChat gateway automatically injects X-WX-OPENID header
  */
 async function callCloudContainer({ path, method, data, headers }) {
-  return new Promise((resolve, reject) => {
+  const requestPromise = new Promise((resolve, reject) => {
     try {
       wx.cloud.callContainer({
         config: {
@@ -49,17 +51,15 @@ async function callCloudContainer({ path, method, data, headers }) {
         method,
         header: {
           ...headers,
-          'X-WX-SERVICE': CLOUD_CONFIG.serviceName, // Service name header
+          'X-WX-SERVICE': CLOUD_CONFIG.serviceName,
           'content-type': 'application/json',
         },
         data,
         success: (response) => {
-          // Convert wx.cloud.callContainer response format to match uni.request
-          const result = {
+          resolve({
             statusCode: 200,
-            data: response.data || response, // Handle both response formats
-          };
-          resolve(result);
+            data: response.data || response,
+          });
         },
         fail: (error) => {
           reject(new Error(error?.message || 'Cloud request failed'));
@@ -69,6 +69,12 @@ async function callCloudContainer({ path, method, data, headers }) {
       reject(error);
     }
   });
+
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('请求超时，请重试')), CLOUD_REQUEST_TIMEOUT_MS)
+  );
+
+  return Promise.race([requestPromise, timeoutPromise]);
 }
 
 /**

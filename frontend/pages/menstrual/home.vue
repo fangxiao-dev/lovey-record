@@ -283,7 +283,7 @@
 			<view class="menstrual-home__calendar-inline-hint-arrow"></view>
 		</view>
 
-		<LoadingScreen v-else :error-message="loadError" @retry="retryInitialLoad" />
+		<LoadingScreen v-if="!page" :error-message="loadError" @retry="retryInitialLoad" />
 	</view>
 </template>
 
