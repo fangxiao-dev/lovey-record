@@ -16,9 +16,18 @@
 			// Store options for mounted(); in H5, $refs are not available at onLoad time
 			// because child components have not mounted yet. mounted() guarantees refs exist.
 			this._loadOptions = options || {};
+			this._skipNextShowRefresh = true;
 		},
 		mounted() {
 			this.$refs.managementPage?.initialize(this._loadOptions || {});
+		},
+		onShow() {
+			if (this._skipNextShowRefresh) {
+				this._skipNextShowRefresh = false;
+				return;
+			}
+
+			this.$refs.managementPage?.refreshOnShow?.();
 		},
 		onShareAppMessage() {
 			const page = this.$refs.managementPage;
