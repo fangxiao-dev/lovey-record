@@ -10,7 +10,7 @@ describe('singleDayPeriodAction.service', () => {
     });
 
     expect(result.role).toBe('not-period');
-    expect(result.chip).toEqual({ text: '月经', selected: false });
+    expect(result.chip).toEqual({ text: '记录月经', selected: false });
     expect(result.resolvedAction.action).toBe('start');
     expect(result.resolvedAction.bridgeType).toBe('none');
     expect(result.resolvedAction.prompt).toBeNull();
@@ -35,7 +35,7 @@ describe('singleDayPeriodAction.service', () => {
     });
 
     expect(result.role).toBe('start');
-    expect(result.chip).toEqual({ text: '月经开始', selected: true });
+    expect(result.chip).toEqual({ text: '取消经期', selected: true });
     expect(result.resolvedAction.action).toBe('revoke-start');
     expect(result.resolvedAction.prompt).toBeNull();
     expect(result.resolvedAction.effect.writeDates).toEqual([]);
@@ -99,7 +99,7 @@ describe('singleDayPeriodAction.service', () => {
     });
 
     expect(result.role).toBe('not-period');
-    expect(result.chip).toEqual({ text: '月经', selected: false });
+    expect(result.chip).toEqual({ text: '记录月经', selected: false });
     expect(result.resolvedAction.action).toBe('start');
     expect(result.resolvedAction.bridgeType).toBe('forward');
     expect(result.resolvedAction.prompt).toEqual({
@@ -130,7 +130,7 @@ describe('singleDayPeriodAction.service', () => {
     });
 
     expect(result.role).toBe('not-period');
-    expect(result.chip).toEqual({ text: '月经', selected: false });
+    expect(result.chip).toEqual({ text: '记录月经', selected: false });
     expect(result.resolvedAction.action).toBe('start');
     expect(result.resolvedAction.bridgeType).toBe('backward');
     expect(result.resolvedAction.prompt).toEqual({
@@ -161,7 +161,7 @@ describe('singleDayPeriodAction.service', () => {
     });
 
     expect(result.role).toBe('not-period');
-    expect(result.chip).toEqual({ text: '月经', selected: false });
+    expect(result.chip).toEqual({ text: '记录月经', selected: false });
     expect(result.resolvedAction.action).toBe('start');
     expect(result.resolvedAction.bridgeType).toBe('both');
     expect(result.resolvedAction.prompt).toEqual({

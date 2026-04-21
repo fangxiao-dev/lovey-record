@@ -1634,6 +1634,34 @@ test('home captures a pending undo action after a supported non-period single-da
 	assert.equal(ctx.pendingUndoAction.visible, true);
 });
 
+test('home maps revoke-start success to a set-period undo command for the exact cleared segment', () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {}
+	});
+
+	const undoAction = home.methods.resolvePendingUndoCommand.call(
+		{ activeDate: '2026-04-16' },
+		{
+			action: 'revoke-start',
+			effect: {
+				action: 'revoke-start',
+				clearDates: ['2026-04-16', '2026-04-17', '2026-04-18', '2026-04-19']
+			}
+		}
+	);
+
+	assert.deepEqual(normalize(undoAction), {
+		action: 'set-period',
+		startDate: '2026-04-16',
+		endDate: '2026-04-19'
+	});
+});
+
 test('home maps a forward-bridge single-day success to an end-here undo command at the previous segment end', async () => {
 	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
 		CalendarGrid: {},
@@ -1724,6 +1752,100 @@ test('home maps a forward-bridge single-day success to an end-here undo command 
 
 	assert.equal(ctx.pendingUndoAction.undoAction.action, 'end-here');
 	assert.equal(ctx.pendingUndoAction.undoAction.activeDate, '2026-04-17');
+	assert.equal(ctx.pendingUndoAction.visible, true);
+});
+
+test('home maps a backward-bridge single-day success to a range-clear undo command for only the newly introduced dates', async () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		applySingleDayPeriodActionToPageModel: () => ({
+			id: 'optimistic-single-day-page'
+		}),
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-04-20',
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({}),
+		applySingleDayPeriodAction: async () => ({ affectedScopes: ['calendar', 'dayDetail', 'prediction'] }),
+		uni: {
+			showModal(options) {
+				options.success({ confirm: true, cancel: false });
+			}
+		}
+	});
+
+	const ctx = {
+		panelMode: 'single-day',
+		contractContext: {
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module'
+		},
+		activeDate: '2026-04-13',
+		pendingUndoAction: null,
+		rawContracts: {
+			singleDayPeriodAction: {
+				resolvedAction: {
+					action: 'start',
+					bridgeType: 'backward',
+					prompt: {
+						required: true,
+						type: 'backward',
+						message: '已在 04/16 标记了经期开始，要提前到 04/13 吗？',
+						confirmLabel: '确认',
+						cancelLabel: '取消'
+					},
+					effect: {
+						action: 'bridge-backward',
+						bridgeType: 'backward',
+						selectedDate: '2026-04-13',
+						writeDates: ['2026-04-13', '2026-04-14', '2026-04-15', '2026-04-16'],
+						clearDates: [],
+						resultingSegment: {
+							startDate: '2026-04-13',
+							endDate: '2026-04-20'
+						}
+					}
+				}
+			}
+		},
+		resolvePendingUndoCommand: home.methods.resolvePendingUndoCommand,
+		isSupportedSinglePeriodUndoAction: home.methods.isSupportedSinglePeriodUndoAction,
+		createPendingUndoAction: home.methods.createPendingUndoAction,
+		showPendingUndoAction: home.methods.showPendingUndoAction,
+		scheduleUndoExpiry() {},
+		clearPendingUndoAction() {
+			this.pendingUndoAction = null;
+		},
+		runOptimisticMutation(nextPage, command) {
+			assert.equal(nextPage.id, 'optimistic-single-day-page');
+			return command();
+		},
+		uni: {
+			showModal(options) {
+				options.success({ confirm: true, cancel: false });
+			}
+		}
+	};
+
+	await home.methods.handleTogglePeriod.call(ctx, true);
+
+	assert.equal(ctx.pendingUndoAction.undoAction.action, 'clear-record');
+	assert.equal(ctx.pendingUndoAction.undoAction.startDate, '2026-04-13');
+	assert.equal(ctx.pendingUndoAction.undoAction.endDate, '2026-04-15');
 	assert.equal(ctx.pendingUndoAction.visible, true);
 });
 
@@ -1950,6 +2072,134 @@ test('home handleUndoTap supports forward-bridge rollback via end-here at the pr
 		},
 		activeDate: '2026-04-17',
 		action: 'end-here'
+	});
+	assert.equal(ctx.pendingUndoAction, null);
+});
+
+test('home handleUndoTap supports backward-bridge rollback via range clear for only the newly introduced dates', async () => {
+	const commandCalls = [];
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-04-20',
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		persistBatchPeriodRange: async (payload) => {
+			commandCalls.push(payload);
+			return { affectedScopes: ['calendar', 'dayDetail', 'prediction'] };
+		},
+		uni: {
+			showToast() {
+				throw new Error('showToast should not run on successful undo');
+			}
+		}
+	});
+
+	const ctx = {
+		isMutating: false,
+		loadError: '',
+		contractContext: {
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module'
+		},
+		pendingUndoAction: {
+			key: 'undo-backward-1',
+			visible: true,
+			undoAction: {
+				action: 'clear-record',
+				startDate: '2026-04-13',
+				endDate: '2026-04-15'
+			}
+		},
+		clearPendingUndoAction: home.methods.clearPendingUndoAction,
+		invalidateBrowseCache() {},
+		async refreshByScopes() {}
+	};
+
+	await home.methods.handleUndoTap.call(ctx);
+
+	assert.deepEqual(normalize(commandCalls.at(-1)), {
+		context: {
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module'
+		},
+		action: 'clear-record',
+		startDate: '2026-04-13',
+		endDate: '2026-04-15'
+	});
+	assert.equal(ctx.pendingUndoAction, null);
+});
+
+test('home handleUndoTap supports revoke-start rollback via exact range restore', async () => {
+	const commandCalls = [];
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-04-20',
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		persistBatchPeriodRange: async (payload) => {
+			commandCalls.push(payload);
+			return { affectedScopes: ['calendar', 'dayDetail', 'prediction'] };
+		},
+		uni: {
+			showToast() {
+				throw new Error('showToast should not run on successful undo');
+			}
+		}
+	});
+
+	const ctx = {
+		isMutating: false,
+		loadError: '',
+		contractContext: {
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module'
+		},
+		pendingUndoAction: {
+			key: 'undo-revoke-start-range-1',
+			visible: true,
+			undoAction: {
+				action: 'set-period',
+				startDate: '2026-04-16',
+				endDate: '2026-04-19'
+			}
+		},
+		clearPendingUndoAction: home.methods.clearPendingUndoAction,
+		invalidateBrowseCache() {},
+		async refreshByScopes() {}
+	};
+
+	await home.methods.handleUndoTap.call(ctx);
+
+	assert.deepEqual(normalize(commandCalls.at(-1)), {
+		context: {
+			apiBaseUrl: 'http://localhost:3004',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module'
+		},
+		action: 'set-period',
+		startDate: '2026-04-16',
+		endDate: '2026-04-19'
 	});
 	assert.equal(ctx.pendingUndoAction, null);
 });

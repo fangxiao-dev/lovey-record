@@ -636,6 +636,16 @@
 			resolvePendingUndoCommand(resolvedAction) {
 				const action = resolvedAction?.action;
 				if (action === 'revoke-start') {
+					const clearedDates = Array.isArray(resolvedAction?.effect?.clearDates)
+						? resolvedAction.effect.clearDates
+						: [];
+					if (clearedDates.length > 0) {
+						return {
+							action: 'set-period',
+							startDate: clearedDates[0],
+							endDate: clearedDates[clearedDates.length - 1]
+						};
+					}
 					return {
 						action: 'start',
 						activeDate: this.activeDate
@@ -657,6 +667,20 @@
 					return {
 						action: 'end-here',
 						activeDate: previousSegmentEndDate
+					};
+				}
+
+				if (effect.bridgeType === 'backward') {
+					const introducedDates = Array.isArray(effect.writeDates)
+						? effect.writeDates.slice(0, -1)
+						: [];
+					if (introducedDates.length === 0) {
+						return null;
+					}
+					return {
+						action: 'clear-record',
+						startDate: introducedDates[0],
+						endDate: introducedDates[introducedDates.length - 1]
 					};
 				}
 
@@ -1432,11 +1456,24 @@
 
 				let affectedScopes = null;
 				try {
-					affectedScopes = (await applySingleDayPeriodAction({
-						context: this.contractContext,
-						activeDate: undoAction.activeDate || this.activeDate,
-						action: undoAction.action
-					}))?.affectedScopes ?? null;
+					if (
+						(undoAction.action === 'clear-record' || undoAction.action === 'set-period') &&
+						undoAction.startDate &&
+						undoAction.endDate
+					) {
+						affectedScopes = (await persistBatchPeriodRange({
+							context: this.contractContext,
+							action: undoAction.action,
+							startDate: undoAction.startDate,
+							endDate: undoAction.endDate
+						}))?.affectedScopes ?? null;
+					} else {
+						affectedScopes = (await applySingleDayPeriodAction({
+							context: this.contractContext,
+							activeDate: undoAction.activeDate || this.activeDate,
+							action: undoAction.action
+						}))?.affectedScopes ?? null;
+					}
 				} catch (error) {
 					this.isMutating = false;
 					uni.showToast({ title: '撤回失败', icon: 'none' });
