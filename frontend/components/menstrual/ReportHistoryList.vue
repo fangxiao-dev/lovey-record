@@ -57,18 +57,18 @@
 	}
 
 	.report-history-list__header {
-		padding-bottom: 12rpx;
+		padding-bottom: 16rpx;
 	}
 
 	.report-history-list__row {
-		padding: 16rpx 0;
+		padding: 20rpx 0;
 		border-top: 2rpx solid #f4ece2;
 	}
 
 	.report-history-list__year-cell {
 		flex-shrink: 0;
-		width: 56rpx;
-		font-size: 20rpx;
+		width: 72rpx;
+		font-size: 26rpx;
 		color: $text-muted;
 	}
 
@@ -80,7 +80,7 @@
 
 	.report-history-list__dates-group > .report-history-list__header-cell,
 	.report-history-list__dates-group > .report-history-list__cell {
-		width: 76rpx;
+		width: 88rpx;
 	}
 
 	.report-history-list__metrics-group {
@@ -92,17 +92,18 @@
 
 	.report-history-list__metrics-group > .report-history-list__header-cell,
 	.report-history-list__metrics-group > .report-history-list__cell {
-		width: 56rpx;
+		width: 68rpx;
 		text-align: right;
 	}
 
 	.report-history-list__header-cell {
-		font-size: 20rpx;
+		font-size: 26rpx;
+		font-weight: $font-weight-medium;
 		color: $text-muted;
 	}
 
 	.report-history-list__cell {
-		font-size: 22rpx;
+		font-size: 28rpx;
 		color: $text-primary;
 	}
 </style>

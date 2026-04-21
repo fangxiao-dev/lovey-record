@@ -1,6 +1,6 @@
 <template>
 	<view class="report-summary-card ui-card">
-		<text class="report-summary-card__title">摘要（平均值）</text>
+		<text class="report-summary-card__title">摘要（实际均值）</text>
 		<view
 			v-for="row in rows"
 			:key="row.key"
@@ -17,17 +17,52 @@
 			class="report-summary-card__footer"
 		>
 			<view class="report-summary-card__footer-main">
-				<text class="report-summary-card__footer-copy">{{ footer.currentSettingsText }}</text>
-				<view class="report-summary-card__footer-divider" />
-				<view
-					class="report-summary-card__footer-trigger"
-					hover-class="ui-pressable-hover"
-					:hover-stay-time="70"
-					@tap="$emit('footer-tap', footer)"
-				>
-					<text class="report-summary-card__footer-action">
-						{{ footer.portalMode === 'readonly-warning' ? '!' : '可手动调整>' }}
+				<text class="report-summary-card__footer-copy">
+					<text
+						v-for="(segment, index) in footerCopySegments"
+						:key="`${segment.text}-${index}`"
+						:class="[
+							'report-summary-card__footer-copy-segment',
+							segment.tone === 'primary'
+								? 'report-summary-card__footer-copy-segment--primary'
+								: 'report-summary-card__footer-copy-segment--muted'
+						]"
+					>
+						{{ segment.text }}
 					</text>
+				</text>
+				<view class="report-summary-card__footer-actions">
+					<view
+						class="report-summary-card__footer-trigger"
+						hover-class="ui-pressable-hover"
+						:hover-stay-time="70"
+						@tap="$emit('footer-tap', { footer, action: 'settings' })"
+					>
+						<template v-if="footer.portalMode === 'readonly-warning'">
+							<text class="report-summary-card__footer-action">!</text>
+						</template>
+						<template v-else>
+							<text class="report-summary-card__footer-action">手动调整</text>
+							<image
+								class="report-summary-card__footer-icon"
+								src="/static/icons/wrench.png"
+								mode="aspectFit"
+							/>
+						</template>
+					</view>
+					<view
+						class="report-summary-card__footer-trigger report-summary-card__footer-trigger--ghost"
+						hover-class="ui-pressable-hover"
+						:hover-stay-time="70"
+						@tap="$emit('footer-tap', { footer, action: 'align' })"
+					>
+						<text class="report-summary-card__footer-action">一键对齐</text>
+						<image
+							class="report-summary-card__footer-icon"
+							src="/static/icons/refresh.png"
+							mode="aspectFit"
+						/>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -47,6 +82,20 @@
 				type: Object,
 				default: null
 			}
+		},
+		computed: {
+			footerCopySegments() {
+				const text = this.footer?.currentSettingsText || '';
+				if (!text) return [];
+
+				return text
+					.split(/(\d+|-)/g)
+					.filter((segment) => segment)
+					.map((segment) => ({
+						text: segment,
+						tone: /^(\d+|-)$/.test(segment) ? 'primary' : 'muted'
+					}));
+			}
 		}
 	};
 </script>
@@ -61,11 +110,13 @@
 	.report-summary-card__title {
 		display: block;
 		text-align: center;
-		font-size: 22rpx;
-		color: $text-muted;
-		padding-bottom: 12rpx;
+		font-size: 30rpx;
+		line-height: 1.4;
+		font-weight: $font-weight-medium;
+		color: $text-primary;
+		padding-bottom: 14rpx;
 		border-bottom: 2rpx solid #f1e7dc;
-		margin-bottom: 4rpx;
+		margin-bottom: 8rpx;
 	}
 
 	.report-summary-card__row {
@@ -90,7 +141,7 @@
 	.report-summary-card__label,
 	.report-summary-card__average,
 	.report-summary-card__fluctuation {
-		font-size: 24rpx;
+		font-size: 26rpx;
 		line-height: 1.4;
 	}
 
@@ -109,49 +160,63 @@
 	}
 
 	.report-summary-card__footer {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 16rpx;
 		padding-top: 16rpx;
 		margin-top: 6rpx;
 		border-top: 2rpx solid #f1e7dc;
 	}
 
 	.report-summary-card__footer-main {
-		display: inline-flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 12rpx;
-		flex: 1;
-		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 18rpx;
 	}
 
 	.report-summary-card__footer-copy {
-		font-size: 22rpx;
+		font-size: 26rpx;
 		line-height: 1.5;
+	}
+
+	.report-summary-card__footer-copy-segment--primary {
+		color: $text-primary;
+	}
+
+	.report-summary-card__footer-copy-segment--muted {
 		color: $text-muted;
 	}
 
-	.report-summary-card__footer-divider {
-		width: 2rpx;
-		height: 22rpx;
-		background: rgba(176, 148, 132, 0.28);
-		flex-shrink: 0;
+	.report-summary-card__footer-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 16rpx;
 	}
 
 	.report-summary-card__footer-trigger {
 		display: inline-flex;
 		align-items: center;
-		justify-content: flex-start;
-		min-height: 44rpx;
-		padding-right: 6rpx;
-		flex-shrink: 0;
+		gap: 10rpx;
+		min-height: 56rpx;
+		padding: 0 18rpx;
+		border-radius: 999rpx;
+		background: #f6efe7;
+		border: 2rpx solid rgba(230, 222, 213, 0.9);
+	}
+
+	.report-summary-card__footer-trigger--ghost {
+		background: rgba(255, 255, 255, 0.72);
 	}
 
 	.report-summary-card__footer-action {
-		font-size: 22rpx;
-		line-height: 1.4;
+		font-size: 24rpx;
+		line-height: 1;
+		font-weight: $font-weight-medium;
 		color: $text-primary;
+	}
+
+	.report-summary-card__footer-icon {
+		width: 26rpx;
+		height: 26rpx;
+		flex-shrink: 0;
 	}
 </style>

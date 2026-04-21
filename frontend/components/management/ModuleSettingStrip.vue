@@ -15,29 +15,29 @@
 			:class="`module-setting-strip__control-group--${resolvedPickerAlign}`"
 		>
 			<view class="module-setting-strip__quick-row">
-				<view
+				<button
 					v-for="option in options"
 					:key="option.value"
 					class="module-setting-strip__chip"
-					hover-class="ui-pressable-hover"
+					hover-class="button-hover"
 					:hover-stay-time="70"
 					@tap="$emit('select', option.value)"
 				>
 					<text class="module-setting-strip__chip-text">
 						{{ option.label }}
 					</text>
-				</view>
+				</button>
 
-				<view
+				<button
 					class="module-setting-strip__chip module-setting-strip__chip--custom"
-					hover-class="ui-pressable-hover"
+					hover-class="button-hover"
 					:hover-stay-time="70"
 					@tap="$emit('custom')"
 				>
 					<text class="module-setting-strip__chip-text module-setting-strip__chip-text--custom">
 						{{ customLabel }}
 					</text>
-				</view>
+				</button>
 			</view>
 
 			<view
@@ -196,6 +196,12 @@
 		background: $bg-subtle;
 		box-sizing: border-box;
 		overflow: hidden;
+		margin: 0;
+		line-height: 1;
+
+		&::after {
+			border: none;
+		}
 	}
 
 	.module-setting-strip__chip--custom {
@@ -205,7 +211,7 @@
 	.module-setting-strip__chip-text {
 		font-size: $font-size-caption;
 		line-height: 1;
-		color: $text-secondary;
+		color: $text-primary;
 	}
 
 	.module-setting-strip__chip-text--custom {

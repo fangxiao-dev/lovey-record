@@ -53,9 +53,18 @@ test('report contract adapter formats summary, trend, and history from cycle rec
 	assert.equal(viewModel.trend.cycle.hasMinimumPoints, true);
 	assert.equal(viewModel.trend.duration.hasMinimumPoints, true);
 	assert.deepEqual(viewModel.summary.footer, {
-		currentSettingsText: '当前周期 31 天 · 时长 6 天',
+		currentSettingsText: '当前设置：周期 31 天 · 时长 6 天',
 		portalMode: 'link',
-		targetModuleInstanceId: null
+		targetModuleInstanceId: null,
+		align: {
+			scenario: 'full',
+			currentDurationDays: 6,
+			currentPredictionTermDays: 31,
+			nextDurationDays: 5,
+			nextPredictionTermDays: 31,
+			canAlignDuration: true,
+			canAlignPrediction: true
+		}
 	});
 
 	assert.deepEqual(viewModel.history.rows, [
@@ -132,6 +141,106 @@ test('report contract adapter uses placeholders instead of zeroes when cycle his
 	]);
 });
 
+test('report contract adapter builds empty align candidates when there are no usable records', () => {
+	const viewModel = createReportPageViewModel({
+		moduleSettings: {
+			defaultPeriodDurationDays: 7,
+			defaultPredictionTermDays: 28
+		},
+		records: []
+	});
+
+	assert.deepEqual(viewModel.summary.footer, {
+		currentSettingsText: '当前设置：周期 28 天 · 时长 7 天',
+		portalMode: 'link',
+		targetModuleInstanceId: null,
+		align: {
+			scenario: 'empty',
+			currentDurationDays: 7,
+			currentPredictionTermDays: 28,
+			nextDurationDays: null,
+			nextPredictionTermDays: null,
+			canAlignDuration: false,
+			canAlignPrediction: false
+		}
+	});
+});
+
+test('report contract adapter builds duration-only align candidates from a single record using rounded duration average', () => {
+	const viewModel = createReportPageViewModel({
+		moduleSettings: {
+			defaultPeriodDurationDays: 7,
+			defaultPredictionTermDays: 28
+		},
+		records: [
+			{ startDate: '2026-04-12', endDate: '2026-04-17', durationDays: 5.6 }
+		]
+	});
+
+	assert.deepEqual(viewModel.summary.footer.align, {
+		scenario: 'duration-only',
+		currentDurationDays: 7,
+		currentPredictionTermDays: 28,
+		nextDurationDays: 6,
+		nextPredictionTermDays: null,
+		canAlignDuration: true,
+		canAlignPrediction: false
+	});
+});
+
+test('report contract adapter builds full align candidates from rounded duration and cycle averages', () => {
+	const viewModel = createReportPageViewModel({
+		moduleSettings: {
+			defaultPeriodDurationDays: 7,
+			defaultPredictionTermDays: 28
+		},
+		records: [
+			{ startDate: '2026-01-01', endDate: '2026-01-05', durationDays: 4 },
+			{ startDate: '2026-01-31', endDate: '2026-02-04', durationDays: 5 },
+			{ startDate: '2026-03-03', endDate: '2026-03-09', durationDays: 6 }
+		]
+	});
+
+	assert.deepEqual(viewModel.summary.footer.align, {
+		scenario: 'full',
+		currentDurationDays: 7,
+		currentPredictionTermDays: 28,
+		nextDurationDays: 5,
+		nextPredictionTermDays: 31,
+		canAlignDuration: true,
+		canAlignPrediction: true
+	});
+});
+
+test('report contract adapter falls back to the safest align scenario when only cycle history is usable', () => {
+	const viewModel = createReportPageViewModel({
+		moduleSettings: {
+			defaultPeriodDurationDays: 7,
+			defaultPredictionTermDays: 28
+		},
+		records: [
+			{ startDate: '2026-01-01', endDate: '2026-01-05', durationDays: null },
+			{ startDate: '2026-01-31', endDate: '2026-02-04' },
+			{ startDate: '2026-03-03', endDate: '2026-03-09', durationDays: Number.NaN }
+		]
+	});
+
+	assert.deepEqual(viewModel.summary.footer, {
+		currentSettingsText: '当前设置：周期 28 天 · 时长 7 天',
+		portalMode: 'link',
+		targetModuleInstanceId: null,
+		align: {
+			scenario: 'empty',
+			currentDurationDays: 7,
+			currentPredictionTermDays: 28,
+			nextDurationDays: null,
+			nextPredictionTermDays: null,
+			canAlignDuration: false,
+			canAlignPrediction: false
+		}
+	});
+});
+
 test('report contract adapter uses module settings in the footer and falls back safely when settings are missing', () => {
 	const withViewerAccess = createReportPageViewModel({
 		moduleInstanceId: 'mi_report',
@@ -148,9 +257,18 @@ test('report contract adapter uses module settings in the footer and falls back 
 	});
 
 	assert.deepEqual(withViewerAccess.summary.footer, {
-		currentSettingsText: '当前周期 28 天 · 时长 5 天',
+		currentSettingsText: '当前设置：周期 28 天 · 时长 5 天',
 		portalMode: 'readonly-warning',
-		targetModuleInstanceId: 'mi_report'
+		targetModuleInstanceId: 'mi_report',
+		align: {
+			scenario: 'duration-only',
+			currentDurationDays: 5,
+			currentPredictionTermDays: 28,
+			nextDurationDays: 6,
+			nextPredictionTermDays: null,
+			canAlignDuration: true,
+			canAlignPrediction: false
+		}
 	});
 
 	const withoutSettings = createReportPageViewModel({
@@ -158,8 +276,17 @@ test('report contract adapter uses module settings in the footer and falls back 
 	});
 
 	assert.deepEqual(withoutSettings.summary.footer, {
-		currentSettingsText: '当前周期 - · 时长 -',
+		currentSettingsText: '当前设置：周期 - · 时长 -',
 		portalMode: 'link',
-		targetModuleInstanceId: 'mi_report'
+		targetModuleInstanceId: 'mi_report',
+		align: {
+			scenario: 'empty',
+			currentDurationDays: null,
+			currentPredictionTermDays: null,
+			nextDurationDays: null,
+			nextPredictionTermDays: null,
+			canAlignDuration: false,
+			canAlignPrediction: false
+		}
 	});
 });

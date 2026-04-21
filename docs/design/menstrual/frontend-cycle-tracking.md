@@ -106,6 +106,55 @@ Do not split these into:
 
 ---
 
+### 2.5 Footer Settings Actions
+
+Below the two historical summary rows, the summary card includes one compact footer settings row:
+
+- `当前周期 X 天 · 时长 Y 天`
+
+This footer row is not a third historical metric.
+It is a settings affordance area owned by the report page.
+
+Allowed actions:
+
+- `手动调整`
+- `一键对齐`
+
+Interaction rules:
+
+- `手动调整` still routes to the management page
+- `一键对齐` stays on the report page and opens a custom modal
+- do not replace `一键对齐` with navigation to management
+- editable users see the settings affordances on this footer row
+- read-only users see `!` instead of the jump affordance
+- tapping `!` explains that current settings cannot be changed under read-only access
+- readonly state must block mutation affordances explicitly
+
+---
+
+### 2.6 Align Modal Presentation
+
+`一键对齐` uses a custom report-page modal rather than a native system modal.
+
+Presentation requirements:
+
+- the dialog must support separate bold text styling for `周期` and `时长`
+- the dialog must support multi-line diff rows
+- non-executable and partial-data states use a friendly illustration
+
+Scenario presentation:
+
+- `empty`: show the approved copy `还没有统计到数据噢，先记一笔吧`, show a friendly illustration, and render only one `知道了` button
+- `duration-only`: show the approved copy `周期统计至少需要两次记录，本次只会更改时长噢`, show a friendly illustration, and keep the executable action focused on `时长`
+- `full`: show the approved diff rows for both `周期` and `时长`
+
+Diff copy format must remain exact:
+
+- `周期：<old> 天 -> <next> 天`
+- `时长：<old> 天 -> <next> 天`
+
+---
+
 ## 3. Trend Area
 
 ### 3.1 Structure
@@ -119,7 +168,7 @@ Tab-based switch:
 ### 3.2 Chart Design
 
 #### Type
-- Smooth line (low tension)
+- Simple line
 - No fill
 
 ---
@@ -128,7 +177,7 @@ Tab-based switch:
 
 Include:
 - Line
-- Points
+- Solid points
 
 Exclude:
 - Labels
@@ -159,7 +208,9 @@ X-axis:
 - Hidden
 
 Y-axis:
-- Optional (minimal ticks or none)
+- `周期` keeps its historical-range y-axis behavior
+- `时长` renders from `0` on the y-axis
+- ticks may remain minimal or hidden
 
 ---
 
@@ -284,8 +335,8 @@ Bottom:
 - No predictions
 - No alerts
 - No health scoring
-- No settings guidance text
-- No editing actions
+- No extra settings guidance text beyond the approved footer row and align modal copy
+- No editing actions outside the approved footer row actions
 
 ---
 

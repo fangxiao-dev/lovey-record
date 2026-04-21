@@ -154,12 +154,18 @@
 	}
 
 	.report-trend-card__label {
-		font-size: 22rpx;
-		color: $text-muted;
+		font-size: 30rpx;
+		line-height: 1.4;
+		font-weight: $font-weight-medium;
+		color: $text-primary;
 	}
 
 	.report-trend-card__tabs {
-		width: 280rpx;
+		width: 320rpx;
+	}
+
+	.report-trend-card__tabs :deep(.segmented-control__label) {
+		font-size: 28rpx;
 	}
 
 	.report-trend-card__chart-wrapper {
@@ -179,7 +185,7 @@
 		position: absolute;
 		right: 0;
 		transform: translateY(50%);
-		font-size: 18rpx;
+		font-size: 20rpx;
 		color: $text-muted;
 		line-height: 1;
 	}
@@ -238,7 +244,7 @@
 
 	.report-trend-card__point-label {
 		flex: 1;
-		font-size: 18rpx;
+		font-size: 20rpx;
 		color: $text-muted;
 		text-align: center;
 		max-width: 60rpx;
@@ -252,7 +258,7 @@
 	}
 
 	.report-trend-card__empty-copy {
-		font-size: 24rpx;
+		font-size: 26rpx;
 		color: $text-muted;
 	}
 </style>

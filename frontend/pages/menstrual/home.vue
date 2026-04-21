@@ -1682,7 +1682,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 8rpx;
+		gap: 12rpx;
 		min-width: 0;
 	}
 

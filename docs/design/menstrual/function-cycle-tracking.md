@@ -55,8 +55,14 @@ Notes:
 ### 3.2 Cycle Calculation Rules
 
 - Only calculate if previous record exists
-- Ignore incomplete data
+- Ignore records that cannot produce a valid cycle interval
 - No interpolation
+
+This means:
+
+- cycle calculation requires two consecutive usable period starts
+- a record may still contribute `duration` if its duration can be determined
+- missing or non-usable cycle context does not invalidate an otherwise valid duration value
 
 ---
 
@@ -105,7 +111,7 @@ Chart rendering rules:
 
 - `周期` trend keeps its historical-range y-axis behavior
 - `时长` trend must render from `0` on the y-axis because the metric range is intentionally small
-- both trends render as `average line + solid dots`
+- both trends render as a simple line with solid dots
 - the previous column/bar expression is no longer used
 
 ---
@@ -222,6 +228,109 @@ Rules:
 - editable users jump to the current module's management page
 - read-only users see `!` instead of the jump affordance
 - tapping `!` shows a permission explanation modal stating that current settings cannot be changed under read-only access
+
+---
+
+### 6.6 Report-Page Align Action Contract
+
+The report page also owns one local settings-alignment action:
+
+- `一键对齐`
+
+This action is part of the report page itself.
+
+It must:
+
+- stay on the report page
+- open a report-local custom modal
+- not navigate to management before or after execution
+
+The management page remains the manual-settings surface.
+The report page `一键对齐` is only a fast alignment flow that writes the same settings model.
+
+---
+
+### 6.7 Align Candidate Calculation Rules
+
+`一键对齐` uses historical averages from the report dataset and converts them into the next settings values.
+
+Average sources:
+
+- next `时长` uses the average of all valid `duration`
+- next `周期` uses the average of all valid `cycle_length`
+
+Rounding rule:
+
+- both averages use standard nearest-integer rounding before applying the aligned setting values
+
+Executable scenarios:
+
+- `empty`
+- `duration-only`
+- `full`
+
+Scenario rules:
+
+- `empty`: no usable records for alignment, so no update can run
+- `duration-only`: there is enough data to align `时长`, but not enough valid cycle data to align `周期`
+- `full`: there is enough data to align both `时长` and `周期`
+
+Minimum data interpretation:
+
+- `0` records -> `empty`
+- `1` record -> `duration-only`
+- `2+` usable records with at least one valid `cycle_length` -> `full`
+
+---
+
+### 6.8 Align Modal Copy And Diff Contract
+
+Approved non-executable / partial-data copy must appear exactly as follows:
+
+- `还没有统计到数据噢，先记一笔吧`
+- `周期统计至少需要两次记录，本次只会更改时长噢`
+
+For executable scenarios, the modal diff rows use this exact format:
+
+- `周期：<old> 天 -> <next> 天`
+- `时长：<old> 天 -> <next> 天`
+
+Where:
+
+- `<old>` is the current module setting shown in the report footer
+- `<next>` is the rounded historical average target for this action
+
+In `duration-only`:
+
+- the exact copy `周期统计至少需要两次记录，本次只会更改时长噢` must still be shown
+- only the `时长` line is executable and persisted
+- `周期` remains unchanged
+
+In `empty`:
+
+- the exact copy `还没有统计到数据噢，先记一笔吧` must be shown
+- no diff execution is offered
+
+---
+
+### 6.9 Permission, Optimistic Update, And Rollback Rules
+
+Readonly behavior:
+
+- readonly users cannot mutate settings from report
+- if the report footer is in readonly mode, `一键对齐` must be blocked
+- the flow must follow the same permission semantics as other report-page setting mutations
+
+Optimistic behavior:
+
+- after confirm, the report footer updates immediately to the target value set
+- `duration-only` updates only `时长`
+- `full` updates both `周期` and `时长`
+
+Rollback behavior:
+
+- if the align update fails, the report footer must roll back to the exact pre-confirm values
+- the user must receive a failure result instead of leaving the optimistic values on screen
 
 ---
 

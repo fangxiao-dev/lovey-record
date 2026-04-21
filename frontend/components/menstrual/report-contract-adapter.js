@@ -14,6 +14,19 @@ function formatCurrentSettingValue(value) {
 	return Number.isFinite(value) ? `${value} 天` : '-';
 }
 
+function getFiniteNumberOrNull(value) {
+	return Number.isFinite(value) ? value : null;
+}
+
+function getRoundedAverageOrNull(values) {
+	if (!values.length) {
+		return null;
+	}
+
+	const average = values.reduce((sum, value) => sum + value, 0) / values.length;
+	return Math.round(average);
+}
+
 function formatFluctuationText(values) {
 	if (!values.length) {
 		return '波动 -';
@@ -113,18 +126,66 @@ function createHistoryRows(records) {
 		}));
 }
 
+function createSummaryFooterAlign({ moduleSettings = null, records = [] } = {}) {
+	const durationValues = records
+		.map((record) => record.durationDays)
+		.filter((value) => Number.isFinite(value));
+	const cycleValues = records
+		.map((record) => record.cycleLength)
+		.filter((value) => Number.isFinite(value));
+
+	const nextDurationDays = getRoundedAverageOrNull(durationValues);
+	const nextPredictionTermDays = getRoundedAverageOrNull(cycleValues);
+	const canAlignDuration = Number.isFinite(nextDurationDays);
+	const canAlignPrediction = Number.isFinite(nextPredictionTermDays);
+
+	const align = {
+		scenario: 'empty',
+		currentDurationDays: getFiniteNumberOrNull(moduleSettings?.defaultPeriodDurationDays),
+		currentPredictionTermDays: getFiniteNumberOrNull(moduleSettings?.defaultPredictionTermDays),
+		nextDurationDays,
+		nextPredictionTermDays,
+		canAlignDuration,
+		canAlignPrediction
+	};
+
+	if (align.canAlignDuration && align.canAlignPrediction) {
+		align.scenario = 'full';
+		return align;
+	}
+
+	if (align.canAlignDuration) {
+		align.scenario = 'duration-only';
+		align.nextPredictionTermDays = null;
+		align.canAlignPrediction = false;
+		return align;
+	}
+
+	align.nextPredictionTermDays = null;
+	align.canAlignPrediction = false;
+	return align;
+}
+
+function createCurrentSettingsText(align) {
+	return `当前设置：周期 ${formatCurrentSettingValue(align?.currentPredictionTermDays)} · 时长 ${formatCurrentSettingValue(align?.currentDurationDays)}`;
+}
+
 function createSummaryFooter({
 	moduleInstanceId = null,
 	moduleSettings = null,
-	accessState = null
+	accessState = null,
+	records = []
 } = {}) {
-	const defaultPredictionTermDays = moduleSettings?.defaultPredictionTermDays;
-	const defaultPeriodDurationDays = moduleSettings?.defaultPeriodDurationDays;
+	const align = createSummaryFooterAlign({
+		moduleSettings,
+		records
+	});
 
 	return {
-		currentSettingsText: `当前周期 ${formatCurrentSettingValue(defaultPredictionTermDays)} · 时长 ${formatCurrentSettingValue(defaultPeriodDurationDays)}`,
+		currentSettingsText: createCurrentSettingsText(align),
 		portalMode: accessState?.callerRole === 'viewer' ? 'readonly-warning' : 'link',
-		targetModuleInstanceId: moduleInstanceId
+		targetModuleInstanceId: moduleInstanceId,
+		align
 	};
 }
 
@@ -144,7 +205,8 @@ export function createReportPageViewModel({
 			footer: createSummaryFooter({
 				moduleInstanceId,
 				moduleSettings,
-				accessState
+				accessState,
+				records: normalizedRecords
 			})
 		},
 		trend: {
