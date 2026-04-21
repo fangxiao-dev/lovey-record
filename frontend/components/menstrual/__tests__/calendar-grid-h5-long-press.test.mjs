@@ -14,6 +14,10 @@ function loadCalendarGrid() {
 	});
 }
 
+function normalize(value) {
+	return JSON.parse(JSON.stringify(value));
+}
+
 test('CalendarGrid wires desktop H5 long-press events in addition to touch events', () => {
 	const source = fs.readFileSync(calendarGridPath, 'utf8');
 
@@ -394,4 +398,124 @@ test('CalendarGrid does not emit swipe navigation while batch drag is active', (
 	CalendarGrid.methods.finishLongPress.call(ctx);
 
 	assert.deepEqual(emitted, ['batch-end']);
+});
+
+test('CalendarGrid emits a blocked-future-tap payload with the tapped cell anchor rect instead of cell-tap', () => {
+	const CalendarGrid = loadCalendarGrid();
+	const emitted = [];
+	const cell = {
+		key: '2026-04-07',
+		isoDate: '2026-04-07',
+		selectable: false,
+		variant: 'futureMuted'
+	};
+	const ctx = {
+		busy: false,
+		interactive: true,
+		suppressTapUntil: 0,
+		batchMode: false,
+		allCells: [cell],
+		cellRects: [{
+			left: 120,
+			right: 170,
+			top: 240,
+			bottom: 290
+		}],
+		isBlockedFutureCell: CalendarGrid.methods.isBlockedFutureCell,
+		emitBlockedFutureTap: CalendarGrid.methods.emitBlockedFutureTap,
+		$emit(eventName, payload) {
+			emitted.push([eventName, payload]);
+		}
+	};
+
+	CalendarGrid.methods.onCellTap.call(ctx, cell);
+
+	assert.deepEqual(normalize(emitted), [[
+		'blocked-future-tap',
+		{
+			cell,
+			message: '暂无法操控未来 :)',
+			anchorRect: {
+				left: 120,
+				right: 170,
+				top: 240,
+				bottom: 290
+			}
+		}
+	]]);
+});
+
+test('CalendarGrid captures cell rects before emitting blocked-future-tap when no cached rect exists yet', () => {
+	const CalendarGrid = loadCalendarGrid();
+	const emitted = [];
+	const cell = {
+		key: '2026-04-07',
+		isoDate: '2026-04-07',
+		selectable: false,
+		variant: 'futureMuted'
+	};
+	const ctx = {
+		busy: false,
+		interactive: true,
+		suppressTapUntil: 0,
+		batchMode: false,
+		allCells: [cell],
+		cellRects: null,
+		isBlockedFutureCell: CalendarGrid.methods.isBlockedFutureCell,
+		emitBlockedFutureTap: CalendarGrid.methods.emitBlockedFutureTap,
+		captureCellRects(onReady) {
+			this.cellRects = [{
+				left: 90,
+				right: 150,
+				top: 210,
+				bottom: 270
+			}];
+			onReady(this.cellRects);
+			return true;
+		},
+		$emit(eventName, payload) {
+			emitted.push([eventName, payload]);
+		}
+	};
+
+	CalendarGrid.methods.onCellTap.call(ctx, cell);
+
+	assert.deepEqual(normalize(emitted), [[
+		'blocked-future-tap',
+		{
+			cell,
+			message: '暂无法操控未来 :)',
+			anchorRect: {
+				left: 90,
+				right: 150,
+				top: 210,
+				bottom: 270
+			}
+		}
+	]]);
+});
+
+test('CalendarGrid still emits a normal cell-tap for selectable dates', () => {
+	const CalendarGrid = loadCalendarGrid();
+	const emitted = [];
+	const cell = {
+		key: '2026-03-29',
+		isoDate: '2026-03-29',
+		selectable: true,
+		variant: 'today'
+	};
+	const ctx = {
+		busy: false,
+		interactive: true,
+		suppressTapUntil: 0,
+		batchMode: false,
+		isBlockedFutureCell: CalendarGrid.methods.isBlockedFutureCell,
+		$emit(eventName, payload) {
+			emitted.push([eventName, payload]);
+		}
+	};
+
+	CalendarGrid.methods.onCellTap.call(ctx, cell);
+
+	assert.deepEqual(emitted, [['cell-tap', cell]]);
 });

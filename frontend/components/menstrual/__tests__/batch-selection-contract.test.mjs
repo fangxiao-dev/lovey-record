@@ -98,7 +98,120 @@ test('home forwards page scroll invalidation to CalendarGrid so stale rect cache
 
 	assert.match(source, /ref="calendarGrid"/);
 	assert.match(source, /onPageScroll\(\)\s*\{/);
+	assert.match(source, /this\.clearCalendarInlineHint\(\)/);
 	assert.match(source, /this\.\$refs\.calendarGrid\?\.invalidateCellRects\?\.\(\)/);
+});
+
+test('home template wires blocked future taps into a page-level inline hint layer', () => {
+	const source = fs.readFileSync(path.resolve(repoRoot, 'frontend/pages/menstrual/home.vue'), 'utf8');
+
+	assert.match(source, /@blocked-future-tap="handleBlockedFutureTap"/);
+	assert.match(source, /menstrual-home__calendar-inline-hint/);
+	assert.match(source, /position:\s*fixed/);
+});
+
+test('home toggles the page-level calendar inline hint for the same blocked future cell key', () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({})
+	});
+
+	const payload = {
+		cell: { key: '2026-04-07', isoDate: '2026-04-07' },
+		message: '暂无法操控未来 :)',
+		anchorRect: { left: 120, right: 170, top: 240, bottom: 290 }
+	};
+	const ctx = {
+		calendarInlineHintKey: '',
+		calendarInlineHintMessage: '',
+		calendarInlineHintAnchorRect: null,
+		calendarInlineHintTimer: null,
+		clearCalendarInlineHint: home.methods.clearCalendarInlineHint
+	};
+
+	home.methods.showCalendarInlineHint.call(ctx, payload);
+	assert.equal(ctx.calendarInlineHintKey, '2026-04-07');
+	assert.equal(ctx.calendarInlineHintMessage, '暂无法操控未来 :)');
+	assert.deepEqual(normalize(ctx.calendarInlineHintAnchorRect), payload.anchorRect);
+
+	home.methods.showCalendarInlineHint.call(ctx, payload);
+	assert.equal(ctx.calendarInlineHintKey, '');
+	assert.equal(ctx.calendarInlineHintMessage, '');
+	assert.equal(ctx.calendarInlineHintAnchorRect, null);
+});
+
+test('home handleCellTap clears any visible calendar inline hint before selecting a normal day', () => {
+	const home = loadVueOptions('frontend/pages/menstrual/home.vue', {
+		CalendarGrid: {},
+		CalendarLegend: {},
+		HeaderNav: {},
+		JumpTabs: {},
+		SelectedDatePanel: {},
+		SegmentedControl: {},
+		applyClearAttributesToPageModel: () => {},
+		applySelectedDateNoteToPageModel: () => {},
+		applyToggleAttributeOptionToPageModel: () => {},
+		resolveJumpTargetDate: () => null,
+		shiftFocusDate: () => null,
+		DEFAULT_MENSTRUAL_HOME_CONTEXT: {
+			today: '2026-03-29',
+			apiBaseUrl: 'http://localhost:3000/api',
+			openid: 'seed-openid',
+			moduleInstanceId: 'seed-module',
+			profileId: 'seed-profile'
+		},
+		loadMenstrualHomePageModel: async () => ({})
+	});
+
+	let cleared = 0;
+	const cell = {
+		key: '2026-03-29',
+		isoDate: '2026-03-29',
+		selectable: true
+	};
+	const ctx = {
+		panelMode: 'single-day',
+		isBrowseBusy: false,
+		focusDate: '2026-03-29',
+		viewMode: 'three-week',
+		activeDate: '2026-03-28',
+		selectedDateKey: null,
+		getSelectedDayDetail() {
+			return { dayRecord: { date: cell.isoDate } };
+		},
+		clearCalendarInlineHint() {
+			cleared += 1;
+		},
+		applyLocalBrowseState(args) {
+			this.lastBrowseState = args;
+		},
+		refreshSelectedDayDetail() {
+			return Promise.resolve();
+		}
+	};
+
+	home.methods.handleCellTap.call(ctx, cell);
+
+	assert.equal(cleared, 1);
+	assert.equal(ctx.selectedDateKey, cell.isoDate);
+	assert.equal(ctx.lastBrowseState.selectedDate, cell.isoDate);
 });
 
 test('home batch selection updates the active single-day context to the latest dragged date', () => {

@@ -136,6 +136,7 @@
 	const SWIPE_THRESHOLD = 48; // px
 	const SWIPE_AXIS_RATIO = 1.5;
 	const HORIZONTAL_LOCK_RATIO = 1.35;
+	const FUTURE_HINT_MESSAGE = '暂无法操控未来 :)';
 
 	function normalizeVariant(variant) {
 		return SELECT_VARIANT_REVERSE_MAP[variant] || variant;
@@ -256,7 +257,7 @@
 				default: false
 			}
 		},
-		emits: ['cell-tap', 'batch-start', 'batch-extend', 'batch-end', 'swipe-left', 'swipe-right'],
+		emits: ['cell-tap', 'blocked-future-tap', 'batch-start', 'batch-extend', 'batch-end', 'swipe-left', 'swipe-right'],
 		data() {
 			return {
 				batchMode: false,
@@ -361,12 +362,42 @@
 				return cell.variant;
 			},
 
+			isBlockedFutureCell(cell) {
+				if (cell?.selectable !== false) return false;
+				return /^future/.test(normalizeVariant(cell?.variant || ''));
+			},
+			emitBlockedFutureTap(cell) {
+				if (!cell?.key) return;
+				const emitWithRect = (anchorRect = null) => {
+					this.$emit('blocked-future-tap', {
+						cell,
+						message: FUTURE_HINT_MESSAGE,
+						anchorRect
+					});
+				};
+				const cellIndex = this.allCells.findIndex((item) => item?.key === cell.key);
+				if (cellIndex === -1) {
+					emitWithRect(null);
+					return;
+				}
+				if (this.cellRects?.[cellIndex]) {
+					emitWithRect(this.cellRects[cellIndex]);
+					return;
+				}
+				this.captureCellRects((rects) => {
+					emitWithRect(rects?.[cellIndex] || null);
+				});
+			},
 			onCellTap(cell) {
 				if (this.busy) return;
 				if (!this.interactive) return;
-				if (cell.selectable === false) return;
 				if (Date.now() < this.suppressTapUntil) return;
 				if (this.batchMode) return;
+				if (this.isBlockedFutureCell(cell)) {
+					this.emitBlockedFutureTap(cell);
+					return;
+				}
+				if (cell.selectable === false) return;
 				this.$emit('cell-tap', cell);
 			},
 
@@ -667,6 +698,7 @@
 
 	.calendar-grid__cell {
 		flex: 1;
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
