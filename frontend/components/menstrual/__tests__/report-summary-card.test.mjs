@@ -30,11 +30,13 @@ test('report summary card renders two flattened rows with average and fluctuatio
 	assert.match(source, /report-summary-card__footer-actions/);
 	assert.match(source, /report-summary-card__footer-trigger/);
 	assert.match(source, /report-summary-card__footer-action/);
+	assert.match(source, /hover-class="button-hover"/);
 	assert.match(source, /手动调整/);
 	assert.match(source, /一键对齐/);
 	assert.match(source, /report-summary-card__footer-icon/);
 	assert.match(source, /\/static\/icons\/wrench\.png/);
 	assert.match(source, /\/static\/icons\/refresh\.png/);
+	assert.doesNotMatch(source, /report-summary-card__footer-trigger--ghost/);
 	assert.match(
 		source,
 		/@tap="\$emit\('footer-tap',\s*\{\s*footer,\s*action:\s*'settings'\s*\}\)"/

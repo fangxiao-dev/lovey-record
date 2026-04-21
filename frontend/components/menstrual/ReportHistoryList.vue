@@ -103,7 +103,7 @@
 	}
 
 	.report-history-list__cell {
-		font-size: 28rpx;
+		font-size: 26rpx;
 		color: $text-primary;
 	}
 </style>

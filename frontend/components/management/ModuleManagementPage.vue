@@ -257,6 +257,7 @@
 				quickWindowAnchors: {},
 				customPickerDraftIndices: {},
 				customPickerPreviewValues: {},
+				optimisticSettingValues: {},
 				context: { ...DEFAULT_MODULE_SHELL_CONTEXT },
 				showChangelogSheet: false,
 				changelogEntries,
@@ -288,9 +289,10 @@
 		methods: {
 			buildSettingRow(key, control) {
 				const customPickerOptions = control?.customPickerOptions || [];
-				const selectedValue = control?.value;
+				const optimisticValue = this.optimisticSettingValues?.[key];
+				const selectedValue = typeof optimisticValue === 'number' ? optimisticValue : control?.value;
 				const customPickerValueIndex = customPickerOptions.findIndex((option) => option.value === selectedValue);
-				const anchor = this.resolveQuickWindowAnchorForRender(key, control);
+				const anchor = this.resolveQuickWindowAnchorForRender(key, control, selectedValue);
 				const previewValue = this.activeCustomPickerKey === key
 					? this.customPickerPreviewValues?.[key]
 					: undefined;
@@ -345,9 +347,11 @@
 				return buildCenteredQuickOptions(anchor, selectedValue, allOptions)
 					.some((option) => option.value === nextValue);
 			},
-			resolveQuickWindowAnchorForRender(key, control) {
+			resolveQuickWindowAnchorForRender(key, control, selectedValueOverride) {
 				const customPickerOptions = control?.customPickerOptions || [];
-				const selectedValue = control?.value;
+				const selectedValue = typeof selectedValueOverride === 'number'
+					? selectedValueOverride
+					: control?.value;
 				const committedAnchor = this.getCommittedQuickWindowAnchor(key, control);
 
 				if (this.activeCustomPickerKey !== key) {
@@ -366,9 +370,13 @@
 				return previewValue;
 			},
 			resolvedSummaryDisplay(key, serverValue) {
-				if (this.activeCustomPickerKey !== key) return serverValue;
-				const preview = this.customPickerPreviewValues?.[key];
-				return typeof preview === 'number' ? `${preview} 天` : serverValue;
+				if (this.activeCustomPickerKey === key) {
+					const preview = this.customPickerPreviewValues?.[key];
+					return typeof preview === 'number' ? `${preview} 天` : serverValue;
+				}
+
+				const optimistic = this.optimisticSettingValues?.[key];
+				return typeof optimistic === 'number' ? `${optimistic} 天` : serverValue;
 			},
 			resolveCommittedQuickWindowAnchorAfterSelection(key, control, nextValue) {
 				return nextValue;
@@ -442,6 +450,7 @@
 				this.quickWindowAnchors = {};
 				this.customPickerDraftIndices = {};
 				this.customPickerPreviewValues = {};
+				this.optimisticSettingValues = {};
 				this.loadError = '';
 				this.context = {
 					...DEFAULT_MODULE_SHELL_CONTEXT,
@@ -460,6 +469,7 @@
 					this.syncQuickWindowAnchorsFromPage(result.page);
 					this.customPickerDraftIndices = {};
 					this.customPickerPreviewValues = {};
+					this.optimisticSettingValues = {};
 					return;
 				}
 
@@ -500,6 +510,7 @@
 					this.activeCustomPickerKey = '';
 					this.customPickerDraftIndices = {};
 					this.customPickerPreviewValues = {};
+					this.optimisticSettingValues = {};
 					this.selectedModuleId = result.page?.moduleBoard?.modules?.find((module) => module.selected)?.id
 						|| result.page?.moduleBoard?.modules?.[0]?.id
 						|| '';
@@ -548,16 +559,22 @@
 					this.applyDemoSettingUpdate(key, days);
 					this.activeCustomPickerKey = '';
 					this.customPickerPreviewValues = {};
+					this.optimisticSettingValues = {};
 					return;
 				}
 
+				const previousAnchor = this.quickWindowAnchors[key];
+				const previousOptimisticSettingValues = { ...this.optimisticSettingValues };
 				this.isMutating = true;
 				this.loadError = '';
+				this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: days };
+				this.optimisticSettingValues = { ...this.optimisticSettingValues, [key]: days };
 				try {
 					await this.persistSettingByKey(key, days);
 					await this.retryInitialLoad();
-					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: days };
 				} catch (error) {
+					this.quickWindowAnchors = { ...this.quickWindowAnchors, [key]: previousAnchor };
+					this.optimisticSettingValues = previousOptimisticSettingValues;
 					this.loadError = error instanceof Error ? error.message : '模块设置更新失败';
 				} finally {
 					this.isMutating = false;

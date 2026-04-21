@@ -19,8 +19,8 @@
 					v-for="option in options"
 					:key="option.value"
 					class="module-setting-strip__chip"
-					hover-class="button-hover"
-					:hover-stay-time="70"
+					hover-class="module-setting-strip__chip--pressed"
+					:hover-stay-time="140"
 					@tap="$emit('select', option.value)"
 				>
 					<text class="module-setting-strip__chip-text">
@@ -30,8 +30,8 @@
 
 				<button
 					class="module-setting-strip__chip module-setting-strip__chip--custom"
-					hover-class="button-hover"
-					:hover-stay-time="70"
+					hover-class="module-setting-strip__chip--pressed"
+					:hover-stay-time="140"
 					@tap="$emit('custom')"
 				>
 					<text class="module-setting-strip__chip-text module-setting-strip__chip-text--custom">
@@ -198,10 +198,15 @@
 		overflow: hidden;
 		margin: 0;
 		line-height: 1;
+		transition: box-shadow 140ms ease;
 
 		&::after {
 			border: none;
 		}
+	}
+
+	.module-setting-strip__chip--pressed {
+		box-shadow: 0 8rpx 18rpx rgba(216, 154, 141, 0.18);
 	}
 
 	.module-setting-strip__chip--custom {

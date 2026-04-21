@@ -57,6 +57,7 @@ function createPageContext(overrides = {}) {
 		customPickerDraftIndices: {},
 		quickWindowAnchors: {},
 		customPickerPreviewValues: {},
+		optimisticSettingValues: {},
 		isMutating: false,
 		isDemoMode: false,
 		context: { apiBaseUrl: 'http://localhost:3004', openid: 'seed-openid', moduleInstanceId: 'module-1' },
@@ -186,6 +187,42 @@ test('ModuleManagementPage recenters the quick window on the selected value when
 
 	assert.equal(ctx.quickWindowAnchors.duration, 9);
 	assert.deepEqual(ctx.persistCalls, [['duration', 9]]);
+});
+
+test('ModuleManagementPage shows an optimistic summary value immediately after tapping a quick chip', async () => {
+	const ModuleManagementPage = loadModuleManagementPage();
+	let resolvePersist;
+	const ctx = withComponentMethods(ModuleManagementPage, createPageContext({
+		page: {
+			managementCard: {
+				settingsControl: {
+					value: 5,
+					customPickerOptions: [
+						{ value: 4, label: '4 天' },
+						{ value: 5, label: '5 天' },
+						{ value: 6, label: '6 天' }
+					]
+				}
+			}
+		},
+		async persistSettingByKey(key, days) {
+			this.persistCalls.push([key, days]);
+			await new Promise((resolve) => {
+				resolvePersist = resolve;
+			});
+		}
+	}));
+
+	const updatePromise = ModuleManagementPage.methods.handleSettingOptionSelect.call(ctx, 'duration', 6);
+	await Promise.resolve();
+
+	assert.equal(
+		ModuleManagementPage.methods.resolvedSummaryDisplay.call(ctx, 'duration', '5 天'),
+		'6 天'
+	);
+
+	resolvePersist();
+	await updatePromise;
 });
 
 test('ModuleManagementPage recenters the quick window anchor when a custom selection moves outside it', async () => {
